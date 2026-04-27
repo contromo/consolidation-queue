@@ -1,0 +1,69 @@
+# Product Progress
+
+## 2026-04-26 — Naive eager baseline added
+
+### What shipped
+
+- added `NaiveEagerWriteLite` as a third oracle-mode baseline on the shared substrate
+- updated the default runner to compare `ReflectionEagerWriteLite`, `ConsolidationQueueLite`, and `NaiveEagerWriteLite`
+- normalized `forced_contradiction_dirty_v2` so it forbids both old candidate ids, matching `dirty_v4`
+- hardened the dashboard timeline by sorting lifecycle events before oracle-turn bucketing
+- extended regression coverage to pin Naive behavior by template and verify the demotion event lands in the correct held-out turn bucket
+
+### Why it matters
+
+- the benchmark now separates three policies instead of two: staged promotion, reflected eager write, and append-only eager write
+- `NaiveEagerWriteLite` isolates what Reflection's overwrite-margin is buying and where it hurts
+- the key result is template-specific: Reflection fails on `dirty_v2`, while Naive recovers because it keeps both durables active and answers from the higher-confidence new durable
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 28 tests
+- mixed oracle run (`python3 -m cq.eval.runner --scenarios 6 --template-mix mixed`) shows:
+  - `reflection_eager_write_lite`: `false_assertion=0.67`, `recovery=0.33`
+  - `consolidation_queue_lite`: `false_assertion=0.00`, `recovery=1.00`
+  - `naive_eager_write_lite`: `false_assertion=0.33`, `recovery=0.67`
+- per-template mixed result:
+  - `dirty_v1`: Reflection fails, CQ recovers, Naive fails
+  - `dirty_v2`: Reflection fails, CQ recovers, Naive recovers
+- held-out oracle run (`python3 -m cq.eval.runner --scenarios 4 --template-mix heldout`) shows Naive matches Reflection and loses on both `dirty_v3` and `dirty_v4`
+- saved artifacts:
+  - `data/runs/forced_contradiction_oracle.json`
+  - `data/runs/forced_contradiction_oracle_heldout.json`
+  - `data/results/forced_contradiction_oracle_metrics.csv`
+  - `data/results/forced_contradiction_oracle_heldout_metrics.csv`
+
+### Open issues / next
+
+- the held-out contradiction family still needs more independent mechanisms because `dirty_v2` and `dirty_v4` are both corroborated-old/sub-margin contradiction cases
+- `NoMemory` and `TranscriptRAG` remain unimplemented
+- preference drift and scope contamination are still the next benchmark families to add
+
+## 2026-04-26 — Phase 1 contradiction slice hardened
+
+### What shipped
+
+- expanded the forced-contradiction oracle family from one clean path into multiple dirty variants plus held-out templates
+- added per-template-kind, per-template-split, and per-template-id summaries
+- added a static dashboard timeline grouped by oracle turn
+- tightened regression coverage around dirty-template rotation, held-out behavior, summary slicing, and dashboard rendering
+
+### Why it matters
+
+- the contradiction benchmark stopped being a clean-path demo and became a real policy comparison
+- CQ's advantage is now visible on dirty and held-out cases rather than only as “pending use versus early durable commit”
+- saved traces make failure modes inspectable instead of hiding them inside aggregate scores
+
+### Evidence
+
+- the current mixed/held-out artifacts still preserve the core two-policy result:
+  - Reflection fails on the dirty contradiction templates
+  - CQ recovers on all shipped contradiction templates
+- dashboard outputs:
+  - `data/results/dashboard.html`
+  - `data/results/dashboard_heldout.html`
+
+### Open issues / next
+
+- the contradiction family still needs more held-out mechanisms before the held-out split should carry much interpretive weight
+- the repo still lacked a simpler eager baseline at this stage, which is why `NaiveEagerWriteLite` was added next
