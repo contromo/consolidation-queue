@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local editor / agent settings
+.claude/
+
+# Generated experiment artifacts
+data/runs/
+data/results/
