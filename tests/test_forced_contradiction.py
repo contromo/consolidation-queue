@@ -20,8 +20,13 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
         if template_id in {"forced_contradiction_dirty_v1", "forced_contradiction_dirty_v2"}:
             scenarios = generate_forced_contradiction_scenarios(2, seed=11, template_mix="dirty")
             return [scenario for scenario in scenarios if scenario.template_id == template_id][0]
-        if template_id in {"forced_contradiction_dirty_v3", "forced_contradiction_dirty_v4"}:
-            scenarios = generate_forced_contradiction_scenarios(2, seed=13, template_mix="heldout")
+        if template_id in {
+            "forced_contradiction_dirty_v3",
+            "forced_contradiction_dirty_v4",
+            "forced_contradiction_dirty_v5",
+            "forced_contradiction_dirty_v6",
+        }:
+            scenarios = generate_forced_contradiction_scenarios(4, seed=13, template_mix="heldout")
             return [scenario for scenario in scenarios if scenario.template_id == template_id][0]
         raise AssertionError("Unsupported template id: {}".format(template_id))
 
@@ -102,15 +107,15 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
             [
                 "forced_contradiction_dirty_v3",
                 "forced_contradiction_dirty_v4",
-                "forced_contradiction_dirty_v3",
-                "forced_contradiction_dirty_v4",
+                "forced_contradiction_dirty_v5",
+                "forced_contradiction_dirty_v6",
             ],
         )
         self.assertEqual({scenario.template_kind for scenario in scenarios}, {"dirty"})
         self.assertEqual({scenario.template_split for scenario in scenarios}, {"heldout"})
 
     def test_heldout_dirty_variants_are_reserved_and_run(self) -> None:
-        scenarios = generate_forced_contradiction_scenarios(2, seed=13, template_mix="heldout")
+        scenarios = generate_forced_contradiction_scenarios(4, seed=13, template_mix="heldout")
 
         for scenario in scenarios:
             eager_result = execute_scenario(ReflectionEagerWriteLite, scenario)
@@ -120,7 +125,7 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
             self.assertEqual(cq_result["metrics"]["false_assertion_after_contradiction"], 0.0)
 
     def test_dirty_v4_creates_heldout_policy_divergence(self) -> None:
-        scenarios = generate_forced_contradiction_scenarios(2, seed=13, template_mix="heldout")
+        scenarios = generate_forced_contradiction_scenarios(4, seed=13, template_mix="heldout")
         scenario = [item for item in scenarios if item.template_id == "forced_contradiction_dirty_v4"][0]
 
         after_question = [event.question for event in scenario.oracle_events if event.question and event.question.phase == "after_contradiction"][0]
@@ -145,6 +150,8 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
             "forced_contradiction_dirty_v2": (0.0, 1.0),
             "forced_contradiction_dirty_v3": (1.0, 0.0),
             "forced_contradiction_dirty_v4": (1.0, 0.0),
+            "forced_contradiction_dirty_v5": (0.0, 1.0),
+            "forced_contradiction_dirty_v6": (1.0, 0.0),
         }
 
         for template_id, (false_assertion, recovery) in expectations.items():
@@ -196,8 +203,10 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
         self.assertEqual(eager_mixed["summary_by_template_id"]["forced_contradiction_clean_v1"]["scenario_count"], 2)
         self.assertEqual(eager_mixed["summary_by_template_id"]["forced_contradiction_dirty_v1"]["scenario_count"], 2)
         self.assertEqual(eager_mixed["summary_by_template_id"]["forced_contradiction_dirty_v2"]["scenario_count"], 2)
-        self.assertEqual(eager_heldout["summary_by_template_id"]["forced_contradiction_dirty_v3"]["scenario_count"], 2)
-        self.assertEqual(eager_heldout["summary_by_template_id"]["forced_contradiction_dirty_v4"]["scenario_count"], 2)
+        self.assertEqual(eager_heldout["summary_by_template_id"]["forced_contradiction_dirty_v3"]["scenario_count"], 1)
+        self.assertEqual(eager_heldout["summary_by_template_id"]["forced_contradiction_dirty_v4"]["scenario_count"], 1)
+        self.assertEqual(eager_heldout["summary_by_template_id"]["forced_contradiction_dirty_v5"]["scenario_count"], 1)
+        self.assertEqual(eager_heldout["summary_by_template_id"]["forced_contradiction_dirty_v6"]["scenario_count"], 1)
         self.assertEqual(
             policy_names,
             {
@@ -221,7 +230,12 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
         self.assertTrue(template_rows)
         self.assertEqual(
             {row["template_id"] for row in template_rows},
-            {"forced_contradiction_dirty_v3", "forced_contradiction_dirty_v4"},
+            {
+                "forced_contradiction_dirty_v3",
+                "forced_contradiction_dirty_v4",
+                "forced_contradiction_dirty_v5",
+                "forced_contradiction_dirty_v6",
+            },
         )
 
     def test_dashboard_renders_template_id_summary_and_timeline(self) -> None:
