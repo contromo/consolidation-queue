@@ -117,6 +117,7 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
     def test_heldout_dirty_variants_are_reserved_and_run(self) -> None:
         scenarios = generate_forced_contradiction_scenarios(4, seed=13, template_mix="heldout")
 
+        # Naive is intentionally excluded here because dirty_v5 is a held-out recovery case for it.
         for scenario in scenarios:
             eager_result = execute_scenario(ReflectionEagerWriteLite, scenario)
             cq_result = execute_scenario(ConsolidationQueueLite, scenario)
@@ -139,6 +140,15 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
 
         self.assertEqual(eager_result["metrics"]["false_assertion_after_contradiction"], 1.0)
         self.assertEqual(eager_result["metrics"]["contradiction_recovery_rate"], 0.0)
+        self.assertEqual(cq_result["metrics"]["false_assertion_after_contradiction"], 0.0)
+        self.assertEqual(cq_result["metrics"]["contradiction_recovery_rate"], 1.0)
+        self.assertEqual(cq_result["question_traces"][1]["used_pending"], True)
+
+    def test_dirty_v6_uses_pending_for_cq_recovery(self) -> None:
+        scenario = self._scenario_by_template_id("forced_contradiction_dirty_v6")
+
+        cq_result = execute_scenario(ConsolidationQueueLite, scenario)
+
         self.assertEqual(cq_result["metrics"]["false_assertion_after_contradiction"], 0.0)
         self.assertEqual(cq_result["metrics"]["contradiction_recovery_rate"], 1.0)
         self.assertEqual(cq_result["question_traces"][1]["used_pending"], True)
@@ -251,6 +261,7 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
         turn_html = html_text[turn_start:turn_end]
         self.assertIn("candidate_observed", turn_html)
 
+        # This assumes the first two held-out slots remain v3 and v4.
         demotion_turn_marker = "id='scenario-consolidation_queue_lite-forced_contradiction_002-turn-4'"
         demotion_turn_start = html_text.index(demotion_turn_marker)
         demotion_turn_end = html_text.index("</div>", demotion_turn_start)

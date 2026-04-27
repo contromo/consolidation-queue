@@ -798,8 +798,8 @@ def _build_dirty_v5_scenario(
         raw_text=second_correction_text,
         canonical_claim=new_claim,
         observed_at=base_time + timedelta(minutes=3),
-        trust_score=0.84,
-        verification_score=0.84,
+        trust_score=0.88,
+        verification_score=0.88,
         source_kind="court_clarification",
         corroboration_count=1,
         contradicts=[old_candidate_id],
@@ -825,6 +825,8 @@ def _build_dirty_v5_scenario(
         asked_at=base_time + timedelta(minutes=4),
     )
 
+    # Keep second_new below Reflection's overwrite threshold (0.88 < 0.86 + 0.05),
+    # but strong enough that Naive's reinforce path lifts first_new above old (0.91 > 0.86).
     return Scenario(
         scenario_id=scenario_id,
         task_family=TaskFamily.FORCED_CONTRADICTION,

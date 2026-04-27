@@ -16,10 +16,11 @@
   - a held-out case where Naive also recovers, so CQ's advantage is not limited to beating Reflection
   - a held-out case where confidence-first durable selection is itself the failure mode
 - this makes the contradiction family a sharper probe of what CQ buys beyond simple confidence ranking
+- `dirty_v5` is intentionally subtle: Naive recovers there by reinforcing the newer correction durable above the old claim, not by clean contradiction resolution
 
 ### Evidence
 
-- `python3 -m unittest discover -s tests -p 'test_*.py'` still passes with 28 tests
+- `python3 -m unittest discover -s tests -p 'test_*.py'` still passes with 29 tests
 - held-out oracle run (`python3 -m cq.eval.runner --scenarios 4 --template-mix heldout`) now shows:
   - `reflection_eager_write_lite`: `false_assertion=1.00`, `recovery=0.00`
   - `consolidation_queue_lite`: `false_assertion=0.00`, `recovery=1.00`
@@ -27,8 +28,8 @@
 - per-template held-out result:
   - `dirty_v3`: Reflection fails, CQ recovers, Naive fails
   - `dirty_v4`: Reflection fails, CQ recovers, Naive fails
-  - `dirty_v5`: Reflection fails, CQ recovers, Naive recovers
-  - `dirty_v6`: Reflection fails, CQ recovers, Naive fails
+  - `dirty_v5`: Reflection fails, CQ recovers, Naive recovers via reinforcement into the newer correction durable
+  - `dirty_v6`: Reflection fails, CQ recovers via pending memory, Naive fails
 
 ### Open issues / next
 
