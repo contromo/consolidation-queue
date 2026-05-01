@@ -106,6 +106,7 @@ def _render_summary_metrics(summary: Dict[str, object]) -> str:
         ("Early durable commit", "durable_commit_before_contradiction"),
         ("False assertion", "false_assertion_after_contradiction"),
         ("Recovery", "contradiction_recovery_rate"),
+        ("Correctness", "answer_correctness_after_contradiction"),
         ("Avg time to demotion", "average_time_to_demotion"),
     ):
         parts.append(
@@ -250,6 +251,8 @@ def _timeline_row_from_lifecycle(event: Dict[str, object]) -> Dict[str, object]:
         state = details.get("state")
         if state:
             markers.append(state)
+    if event["event_type"] == "observation_ignored":
+        markers.append("ignored")
     if event["event_type"] == "candidate_state_changed":
         new_state = details.get("new_state")
         if new_state:
