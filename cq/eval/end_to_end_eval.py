@@ -53,6 +53,7 @@ def compute_forced_contradiction_metrics(
     used_pending_before = 1.0 if before_trace.used_pending else 0.0
     durable_commit_before = 1.0 if _old_claim_became_durable(store_snapshot, scenario.expected_lifecycle["old_candidate_id"]) else 0.0
     false_assertion = 1.0 if _contains_any(after_trace.resolved_candidate_ids, after_question.forbidden_candidate_ids) else 0.0
+    answer_correctness = 1.0 if _contains_any(after_trace.resolved_candidate_ids, after_question.gold_candidate_ids) else 0.0
 
     invalidated = _old_claim_invalidated(
         store_snapshot,
@@ -60,7 +61,7 @@ def compute_forced_contradiction_metrics(
     )
     recovered = (
         1.0
-        if _contains_any(after_trace.resolved_candidate_ids, after_question.gold_candidate_ids) and invalidated
+        if answer_correctness == 1.0 and invalidated
         else 0.0
     )
     time_to_demotion = _time_to_invalidation(
@@ -76,6 +77,7 @@ def compute_forced_contradiction_metrics(
         durable_commit_before_contradiction=durable_commit_before,
         false_assertion_after_contradiction=false_assertion,
         contradiction_recovery_rate=recovered,
+        answer_correctness_after_contradiction=answer_correctness,
         time_to_demotion=time_to_demotion,
     )
 
@@ -95,6 +97,7 @@ def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics
                 durable_commit_before_contradiction=metric["durable_commit_before_contradiction"],
                 false_assertion_after_contradiction=metric["false_assertion_after_contradiction"],
                 contradiction_recovery_rate=metric["contradiction_recovery_rate"],
+                answer_correctness_after_contradiction=metric["answer_correctness_after_contradiction"],
                 time_to_demotion=metric["time_to_demotion"],
             )
         )

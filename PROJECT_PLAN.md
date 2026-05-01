@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-04-26
+Last updated: 2026-05-01
 
 ## Goal
 
@@ -48,11 +48,13 @@ Implemented:
 - shared candidate and durable memory schemas
 - `ReflectionEagerWriteLite`
 - `NaiveEagerWriteLite`
+- `NoMemoryLite`
 - `ConsolidationQueueLite`
 - oracle forced-contradiction scenario generation
 - multiple clean and dirty forced-contradiction templates with scenario metadata
 - four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
+- strict contradiction recovery metric plus `answer_correctness_after_contradiction`
 - per-template-kind and per-template-split oracle summaries
 - per-template-id oracle summaries
 - trace dashboard with per-kind summary views and static turn timelines
@@ -61,7 +63,6 @@ Implemented:
 
 Not implemented yet:
 
-- `NoMemory`
 - `TranscriptRAG`
 - preference drift scenarios
 - scope contamination scenarios
@@ -105,21 +106,23 @@ Immediate gap:
 
 - the contradiction family now has multiple dirty variants and four held-out templates
 - the held-out split now includes both a Naive-recovery case and a confidence-first Naive failure case
+- `NoMemoryLite` and `answer_correctness_after_contradiction` now make the contradiction slice easier to interpret
 - it still needs more held-out variants and richer failure extraction before conclusions mean much
 
 ### Phase 2: Stronger Oracle Benchmark
 
 Add:
 
-- preference drift family
 - scope contamination family
-- `NoMemory` and `TranscriptRAG`
+- `TranscriptRAG`
+- preference drift family
 - scenario-level failure example extraction
 
 Required outcome:
 
 - CQ and ReflectionEagerWrite diverge on meaningful held-out oracle cases
 - metrics cover scope leakage and premature promotion in addition to contradiction recovery
+- transcript retrieval baselines can be evaluated on a family where off-scope text should hurt
 
 ### Phase 3: Component Evaluation Harness
 
@@ -251,11 +254,12 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Add more held-out contradiction templates with distinct failure mechanisms.
-2. Add `NoMemory` and `TranscriptRAG` baselines on the same substrate interface where possible.
-3. Add preference drift and scope contamination oracle families.
-4. Extend the progress log with concise experiment-result entries as major benchmark slices land.
-5. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
+1. Add the scope contamination oracle family.
+2. Add `TranscriptRAGLite` paired with scope contamination, not contradiction alone.
+3. Add the preference drift oracle family.
+4. Add more held-out contradiction templates only when they introduce a genuinely new mechanism.
+5. Extend the progress log with concise experiment-result entries as major benchmark slices land.
+6. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
 
 ## Working Rules
 

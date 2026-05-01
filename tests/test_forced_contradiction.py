@@ -9,6 +9,7 @@ from cq.eval.end_to_end_eval import execute_scenario
 from cq.eval.runner import write_outputs
 from cq.memory.consolidation_queue import ConsolidationQueueLite
 from cq.memory.naive_eager_write import NaiveEagerWriteLite
+from cq.memory.no_memory import NoMemoryLite
 from cq.memory.reflection_eager_write import ReflectionEagerWriteLite
 from cq.simulator.scenario_generator import generate_forced_contradiction_scenarios
 
@@ -179,6 +180,17 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
                 msg=template_id,
             )
 
+    def test_no_memory_is_a_zero_history_floor(self) -> None:
+        scenario = self._scenario_by_template_id("forced_contradiction_clean_v1")
+
+        result = execute_scenario(NoMemoryLite, scenario)
+
+        self.assertEqual(result["metrics"]["durable_commit_before_contradiction"], 0.0)
+        self.assertEqual(result["metrics"]["useful_recall_before_contradiction"], 0.0)
+        self.assertEqual(result["metrics"]["false_assertion_after_contradiction"], 0.0)
+        self.assertEqual(result["metrics"]["contradiction_recovery_rate"], 0.0)
+        self.assertEqual(result["metrics"]["answer_correctness_after_contradiction"], 0.0)
+
     def test_run_artifact_summarizes_by_template_kind(self) -> None:
         artifact = build_run_artifact(6, template_mix="mixed")
         eager_policy = [
@@ -223,10 +235,11 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
                 "reflection_eager_write_lite",
                 "consolidation_queue_lite",
                 "naive_eager_write_lite",
+                "no_memory_lite",
             },
         )
 
-    def test_csv_emits_template_id_rows(self) -> None:
+    def test_csv_emits_template_id_rows_and_correctness_column(self) -> None:
         artifact = build_run_artifact(4, template_mix="heldout")
         with tempfile.TemporaryDirectory() as tmpdir:
             output_json = Path(tmpdir) / "run.json"
@@ -234,10 +247,12 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
             write_outputs(artifact, output_json, output_csv)
 
             with output_csv.open("r", encoding="utf-8", newline="") as handle:
-                rows = list(csv.DictReader(handle))
+                reader = csv.DictReader(handle)
+                rows = list(reader)
 
         template_rows = [row for row in rows if row["summary_scope"] == "template_id"]
         self.assertTrue(template_rows)
+        self.assertIn("answer_correctness_after_contradiction", rows[0])
         self.assertEqual(
             {row["template_id"] for row in template_rows},
             {
@@ -254,6 +269,7 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
 
         self.assertIn("By Template ID", html_text)
         self.assertIn("Timeline", html_text)
+        self.assertLess(html_text.index("Recovery"), html_text.index("Correctness"))
 
         turn_marker = "id='scenario-consolidation_queue_lite-forced_contradiction_001-turn-1'"
         turn_start = html_text.index(turn_marker)
@@ -268,6 +284,13 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
         demotion_turn_html = html_text[demotion_turn_start:demotion_turn_end]
         self.assertIn("memory_demoted", demotion_turn_html)
         self.assertIn("demoted", demotion_turn_html)
+
+        no_memory_turn_marker = "id='scenario-no_memory_lite-forced_contradiction_001-turn-1'"
+        no_memory_turn_start = html_text.index(no_memory_turn_marker)
+        no_memory_turn_end = html_text.index("</div>", no_memory_turn_start)
+        no_memory_turn_html = html_text[no_memory_turn_start:no_memory_turn_end]
+        self.assertIn("observation_ignored", no_memory_turn_html)
+        self.assertIn("ignored", no_memory_turn_html)
 
 
 if __name__ == "__main__":

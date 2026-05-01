@@ -13,6 +13,7 @@ class PolicyScenarioMetrics:
     durable_commit_before_contradiction: float
     false_assertion_after_contradiction: float
     contradiction_recovery_rate: float
+    answer_correctness_after_contradiction: float
     time_to_demotion: Optional[float]
 
 
@@ -25,6 +26,7 @@ class PolicySummaryMetrics:
     durable_commit_before_contradiction: float
     false_assertion_after_contradiction: float
     contradiction_recovery_rate: float
+    answer_correctness_after_contradiction: float
     average_time_to_demotion: float
 
     @classmethod
@@ -39,6 +41,7 @@ class PolicySummaryMetrics:
                 durable_commit_before_contradiction=0.0,
                 false_assertion_after_contradiction=0.0,
                 contradiction_recovery_rate=0.0,
+                answer_correctness_after_contradiction=0.0,
                 average_time_to_demotion=0.0,
             )
         demotions = [metric.time_to_demotion for metric in metrics if metric.time_to_demotion is not None]
@@ -61,5 +64,9 @@ class PolicySummaryMetrics:
             )
             / count,
             contradiction_recovery_rate=sum(metric.contradiction_recovery_rate for metric in metrics) / count,
+            answer_correctness_after_contradiction=sum(
+                metric.answer_correctness_after_contradiction for metric in metrics
+            )
+            / count,
             average_time_to_demotion=average_time,
         )

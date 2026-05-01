@@ -9,6 +9,7 @@ from typing import Dict, List
 from cq.eval.end_to_end_eval import execute_scenario, summarize_runs
 from cq.memory.consolidation_queue import ConsolidationQueueLite
 from cq.memory.naive_eager_write import NaiveEagerWriteLite
+from cq.memory.no_memory import NoMemoryLite
 from cq.memory.reflection_eager_write import ReflectionEagerWriteLite
 from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import generate_forced_contradiction_scenarios
@@ -29,7 +30,12 @@ def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, d
 
 def build_run_artifact(scenario_count: int, template_mix: str = "mixed") -> dict:
     scenarios = generate_forced_contradiction_scenarios(scenario_count, template_mix=template_mix)
-    policies = [ReflectionEagerWriteLite, ConsolidationQueueLite, NaiveEagerWriteLite]
+    policies = [
+        ReflectionEagerWriteLite,
+        ConsolidationQueueLite,
+        NaiveEagerWriteLite,
+        NoMemoryLite,
+    ]
     policy_runs = []
     for policy_cls in policies:
         run_records = [execute_scenario(policy_cls, scenario) for scenario in scenarios]
@@ -82,6 +88,7 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                 "durable_commit_before_contradiction",
                 "false_assertion_after_contradiction",
                 "contradiction_recovery_rate",
+                "answer_correctness_after_contradiction",
                 "average_time_to_demotion",
             ],
         )
@@ -161,40 +168,44 @@ def main(argv: List[str] = None) -> int:
         print(
             "{policy_name}: useful_recall={useful:.2f} pending_use={pending:.2f} "
             "early_durable_commit={durable:.2f} false_assertion={false:.2f} "
-            "recovery={recovery:.2f} avg_time_to_demotion={demotion:.2f}".format(
+            "recovery={recovery:.2f} correctness={correctness:.2f} avg_time_to_demotion={demotion:.2f}".format(
                 policy_name=summary["policy_name"],
                 useful=summary["useful_recall_before_contradiction"],
                 pending=summary["used_pending_before_contradiction"],
                 durable=summary["durable_commit_before_contradiction"],
                 false=summary["false_assertion_after_contradiction"],
                 recovery=summary["contradiction_recovery_rate"],
+                correctness=summary["answer_correctness_after_contradiction"],
                 demotion=summary["average_time_to_demotion"],
             )
         )
         for template_kind, kind_summary in policy.get("summary_by_template_kind", {}).items():
             print(
-                "  kind={template_kind}: false_assertion={false:.2f} recovery={recovery:.2f} count={count}".format(
+                "  kind={template_kind}: false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} count={count}".format(
                     template_kind=template_kind,
                     false=kind_summary["false_assertion_after_contradiction"],
                     recovery=kind_summary["contradiction_recovery_rate"],
+                    correctness=kind_summary["answer_correctness_after_contradiction"],
                     count=kind_summary["scenario_count"],
                 )
             )
         for template_split, split_summary in policy.get("summary_by_template_split", {}).items():
             print(
-                "  split={template_split}: false_assertion={false:.2f} recovery={recovery:.2f} count={count}".format(
+                "  split={template_split}: false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} count={count}".format(
                     template_split=template_split,
                     false=split_summary["false_assertion_after_contradiction"],
                     recovery=split_summary["contradiction_recovery_rate"],
+                    correctness=split_summary["answer_correctness_after_contradiction"],
                     count=split_summary["scenario_count"],
                 )
             )
         for template_id, template_summary in policy.get("summary_by_template_id", {}).items():
             print(
-                "  template={template_id}: false_assertion={false:.2f} recovery={recovery:.2f} count={count}".format(
+                "  template={template_id}: false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} count={count}".format(
                     template_id=template_id,
                     false=template_summary["false_assertion_after_contradiction"],
                     recovery=template_summary["contradiction_recovery_rate"],
+                    correctness=template_summary["answer_correctness_after_contradiction"],
                     count=template_summary["scenario_count"],
                 )
             )

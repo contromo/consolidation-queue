@@ -1,5 +1,37 @@
 # Product Progress
 
+## 2026-05-01 — NoMemory floor baseline and correctness metric added
+
+### What shipped
+
+- added `NoMemoryLite` as the zero-history floor baseline on the oracle contradiction slice
+- added `answer_correctness_after_contradiction` alongside the existing strict recovery metric
+- updated the runner, CSV, and dashboard summaries to show correctness after recovery
+- explicitly deferred `TranscriptRAGLite` until the first scope-contamination patch
+
+### Why it matters
+
+- the contradiction slice now separates “answered the post-contradiction question correctly” from “recovered by invalidating prior memory”
+- `NoMemoryLite` makes the lower bound explicit without pretending current-session transcript use is “no memory”
+- deferring `TranscriptRAGLite` keeps the current contradiction benchmark sharper instead of adding a transcript baseline that would mostly look good because the corrective turn is still adjacent
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` now passes with 34 tests
+- mixed oracle run (`python3 -m cq.eval.runner --scenarios 6 --template-mix mixed`) shows:
+  - `reflection_eager_write_lite`: `false_assertion=0.67`, `recovery=0.33`, `correctness=0.33`
+  - `consolidation_queue_lite`: `false_assertion=0.00`, `recovery=1.00`, `correctness=1.00`
+  - `naive_eager_write_lite`: `false_assertion=0.33`, `recovery=0.67`, `correctness=0.67`
+  - `no_memory_lite`: `false_assertion=0.00`, `recovery=0.00`, `correctness=0.00`
+- held-out oracle run (`python3 -m cq.eval.runner --scenarios 4 --template-mix heldout`) shows:
+  - `no_memory_lite`: `false_assertion=0.00`, `recovery=0.00`, `correctness=0.00`
+
+### Open issues / next
+
+- the next family should be scope contamination, paired with `TranscriptRAGLite`
+- preference drift should follow scope contamination
+- the contradiction family still needs more independent held-out mechanisms, but only when they sharpen the result
+
 ## 2026-04-26 — Held-out contradiction family diversified
 
 ### What shipped
