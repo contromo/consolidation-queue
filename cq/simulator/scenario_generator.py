@@ -61,6 +61,8 @@ TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
     "heldout": [
         "forced_contradiction_dirty_v3",
         "forced_contradiction_dirty_v4",
+        "forced_contradiction_dirty_v5",
+        "forced_contradiction_dirty_v6",
     ],
 }
 
@@ -749,6 +751,258 @@ def _build_dirty_v4_scenario(
     )
 
 
+def _build_dirty_v5_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    buyer: str,
+    target: str,
+    base_time: datetime,
+    claim_text: str,
+    contradiction_text: str,
+    question_before: str,
+    question_after: str,
+) -> Scenario:
+    old_candidate_id = scenario_id + "-candidate-old"
+    first_new_candidate_id = scenario_id + "-candidate-new-1"
+    second_new_candidate_id = scenario_id + "-candidate-new-2"
+    old_claim = "{} acquired {}".format(buyer, target)
+    new_claim = "{} did not acquire {}".format(buyer, target)
+    second_correction_text = (
+        "A later clarification confirms {} did not complete the acquisition of {}.".format(buyer, target)
+    )
+
+    old_candidate = _make_candidate(
+        candidate_id=old_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=claim_text,
+        canonical_claim=old_claim,
+        observed_at=base_time,
+        trust_score=0.86,
+        verification_score=0.86,
+        source_kind="press_release",
+    )
+    first_new_candidate = _make_candidate(
+        candidate_id=first_new_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=contradiction_text,
+        canonical_claim=new_claim,
+        observed_at=base_time + timedelta(minutes=2),
+        trust_score=0.72,
+        verification_score=0.72,
+        source_kind="preliminary_court_update",
+        contradicts=[old_candidate_id],
+    )
+    second_new_candidate = _make_candidate(
+        candidate_id=second_new_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=second_correction_text,
+        canonical_claim=new_claim,
+        observed_at=base_time + timedelta(minutes=3),
+        trust_score=0.88,
+        verification_score=0.88,
+        source_kind="court_clarification",
+        corroboration_count=1,
+        contradicts=[old_candidate_id],
+        supports=[first_new_candidate_id],
+    )
+
+    before_question = _make_question(
+        question_id=scenario_id + "-question-before",
+        text=question_before,
+        canonical_id=canonical_id,
+        phase="before_contradiction",
+        gold_candidate_ids=[old_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=1),
+    )
+    after_question = _make_question(
+        question_id=scenario_id + "-question-after",
+        text=question_after,
+        canonical_id=canonical_id,
+        phase="after_contradiction",
+        gold_candidate_ids=[second_new_candidate_id],
+        forbidden_candidate_ids=[old_candidate_id],
+        asked_at=base_time + timedelta(minutes=4),
+    )
+
+    # Keep second_new below Reflection's overwrite threshold (0.88 < 0.86 + 0.05),
+    # but strong enough that Naive's reinforce path lifts first_new above old (0.91 > 0.86).
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.FORCED_CONTRADICTION,
+        description=(
+            "A two-step correction cascade arrives after an early acquisition claim, letting CQ and Naive recover while Reflection still blocks overwrite."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "true_state_sequence": [
+                {"turn": 1, "truth": old_claim},
+                {"turn": 4, "truth": new_claim},
+            ],
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=claim_text,
+                candidate=old_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.QUESTION,
+                turn_index=2,
+                text=question_before,
+                question=before_question,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.OBSERVATION,
+                turn_index=3,
+                text=contradiction_text,
+                candidate=first_new_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-4",
+                kind=EventKind.OBSERVATION,
+                turn_index=4,
+                text=second_correction_text,
+                candidate=second_new_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-5",
+                kind=EventKind.QUESTION,
+                turn_index=5,
+                text=question_after,
+                question=after_question,
+            ),
+        ],
+        expected_lifecycle={
+            "contradiction_turn": 3,
+            "contradiction_timestamp": (base_time + timedelta(minutes=2)).isoformat(),
+            "old_candidate_id": old_candidate_id,
+            "new_candidate_id": second_new_candidate_id,
+            "new_candidate_ids": [first_new_candidate_id, second_new_candidate_id],
+        },
+        template_id="forced_contradiction_dirty_v5",
+        template_kind="dirty",
+        template_split="heldout",
+    )
+
+
+def _build_dirty_v6_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    buyer: str,
+    target: str,
+    base_time: datetime,
+    claim_text: str,
+    contradiction_text: str,
+    question_before: str,
+    question_after: str,
+) -> Scenario:
+    old_candidate_id = scenario_id + "-candidate-old"
+    new_candidate_id = scenario_id + "-candidate-new"
+    old_claim = "{} acquired {}".format(buyer, target)
+    new_claim = "{} did not acquire {}".format(buyer, target)
+
+    old_candidate = _make_candidate(
+        candidate_id=old_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=claim_text,
+        canonical_claim=old_claim,
+        observed_at=base_time,
+        trust_score=0.86,
+        verification_score=0.86,
+        source_kind="press_release",
+    )
+    new_candidate = _make_candidate(
+        candidate_id=new_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=contradiction_text,
+        canonical_claim=new_claim,
+        observed_at=base_time + timedelta(minutes=2),
+        trust_score=0.84,
+        verification_score=0.84,
+        source_kind="court_filing_extract",
+        semantic_uncertainty=0.10,
+        contradicts=[old_candidate_id],
+    )
+
+    before_question = _make_question(
+        question_id=scenario_id + "-question-before",
+        text=question_before,
+        canonical_id=canonical_id,
+        phase="before_contradiction",
+        gold_candidate_ids=[old_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=1),
+    )
+    after_question = _make_question(
+        question_id=scenario_id + "-question-after",
+        text=question_after,
+        canonical_id=canonical_id,
+        phase="after_contradiction",
+        gold_candidate_ids=[new_candidate_id],
+        forbidden_candidate_ids=[old_candidate_id],
+        asked_at=base_time + timedelta(minutes=3),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.FORCED_CONTRADICTION,
+        description=(
+            "A cautious but authoritative contradiction arrives with enough uncertainty that CQ recovers through demotion-plus-pending while confidence-first eager policies cling to the old belief."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "true_state_sequence": [
+                {"turn": 1, "truth": old_claim},
+                {"turn": 3, "truth": new_claim},
+            ],
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=claim_text,
+                candidate=old_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.QUESTION,
+                turn_index=2,
+                text=question_before,
+                question=before_question,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.OBSERVATION,
+                turn_index=3,
+                text=contradiction_text,
+                candidate=new_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-4",
+                kind=EventKind.QUESTION,
+                turn_index=4,
+                text=question_after,
+                question=after_question,
+            ),
+        ],
+        expected_lifecycle={
+            "contradiction_turn": 3,
+            "contradiction_timestamp": (base_time + timedelta(minutes=2)).isoformat(),
+            "old_candidate_id": old_candidate_id,
+            "new_candidate_id": new_candidate_id,
+        },
+        template_id="forced_contradiction_dirty_v6",
+        template_kind="dirty",
+        template_split="heldout",
+    )
+
+
 def generate_forced_contradiction_scenarios(
     count: int,
     seed: int = 7,
@@ -822,6 +1076,30 @@ def generate_forced_contradiction_scenarios(
             )
         elif template_id == "forced_contradiction_dirty_v4":
             scenario = _build_dirty_v4_scenario(
+                scenario_id,
+                canonical_id,
+                buyer,
+                target,
+                base_time,
+                claim_text,
+                contradiction_text,
+                question_before,
+                question_after,
+            )
+        elif template_id == "forced_contradiction_dirty_v5":
+            scenario = _build_dirty_v5_scenario(
+                scenario_id,
+                canonical_id,
+                buyer,
+                target,
+                base_time,
+                claim_text,
+                contradiction_text,
+                question_before,
+                question_after,
+            )
+        elif template_id == "forced_contradiction_dirty_v6":
+            scenario = _build_dirty_v6_scenario(
                 scenario_id,
                 canonical_id,
                 buyer,

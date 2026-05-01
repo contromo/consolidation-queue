@@ -1,5 +1,42 @@
 # Product Progress
 
+## 2026-04-26 — Held-out contradiction family diversified
+
+### What shipped
+
+- expanded the held-out contradiction split from `dirty_v3`/`dirty_v4` to `dirty_v3` through `dirty_v6`
+- added `dirty_v5`, a two-step correction cascade where Naive also recovers
+- added `dirty_v6`, a cautious authoritative contradiction where Naive's confidence-first answer selection still hurts
+- updated the held-out regression coverage and regenerated the held-out oracle artifacts
+
+### Why it matters
+
+- the held-out contradiction family no longer tests only “old confidence stays above new confidence”
+- the new split now includes both:
+  - a held-out case where Naive also recovers, so CQ's advantage is not limited to beating Reflection
+  - a held-out case where confidence-first durable selection is itself the failure mode
+- this makes the contradiction family a sharper probe of what CQ buys beyond simple confidence ranking
+- `dirty_v5` is intentionally subtle: Naive recovers there by reinforcing the newer correction durable above the old claim, not by clean contradiction resolution
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` still passes with 29 tests
+- held-out oracle run (`python3 -m cq.eval.runner --scenarios 4 --template-mix heldout`) now shows:
+  - `reflection_eager_write_lite`: `false_assertion=1.00`, `recovery=0.00`
+  - `consolidation_queue_lite`: `false_assertion=0.00`, `recovery=1.00`
+  - `naive_eager_write_lite`: `false_assertion=0.75`, `recovery=0.25`
+- per-template held-out result:
+  - `dirty_v3`: Reflection fails, CQ recovers, Naive fails
+  - `dirty_v4`: Reflection fails, CQ recovers, Naive fails
+  - `dirty_v5`: Reflection fails, CQ recovers, Naive recovers via reinforcement into the newer correction durable
+  - `dirty_v6`: Reflection fails, CQ recovers via pending memory, Naive fails
+
+### Open issues / next
+
+- the held-out contradiction family is better, but it still needs more independent mechanisms before it should carry strong conclusions by itself
+- `NoMemory` and `TranscriptRAG` remain unimplemented
+- preference drift and scope contamination are still the next benchmark families to add
+
 ## 2026-04-26 — Naive eager baseline added
 
 ### What shipped

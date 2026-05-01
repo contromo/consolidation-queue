@@ -51,7 +51,7 @@ Implemented:
 - `ConsolidationQueueLite`
 - oracle forced-contradiction scenario generation
 - multiple clean and dirty forced-contradiction templates with scenario metadata
-- two reserved held-out dirty contradiction templates
+- four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
 - per-template-kind and per-template-split oracle summaries
 - per-template-id oracle summaries
@@ -103,7 +103,8 @@ Required outcome:
 
 Immediate gap:
 
-- the contradiction family now has multiple dirty variants and two held-out templates
+- the contradiction family now has multiple dirty variants and four held-out templates
+- the held-out split now includes both a Naive-recovery case and a confidence-first Naive failure case
 - it still needs more held-out variants and richer failure extraction before conclusions mean much
 
 ### Phase 2: Stronger Oracle Benchmark
