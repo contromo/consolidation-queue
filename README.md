@@ -5,7 +5,7 @@ Local prototype for staged memory governance experiments.
 The first slice in this repository is intentionally narrow:
 
 - oracle-mode forced-contradiction scenarios
-- oracle-mode scope-contamination scenarios, currently framed as broad-claim premature promotion
+- oracle-mode scope-contamination scenarios, framed as broad-claim premature promotion
 - shared in-memory substrate
 - `NoMemory-lite`
 - `ReflectionEagerWrite-lite`
@@ -42,6 +42,17 @@ This writes:
 - `data/runs/scope_contamination_oracle.json`
 - `data/results/scope_contamination_oracle_metrics.csv`
 
+Run the held-out scope-contamination slice:
+
+```bash
+python3 -m cq.eval.runner --family scope_contamination --scenarios 4 --template-mix heldout --output-json data/runs/scope_contamination_oracle_heldout.json --output-csv data/results/scope_contamination_oracle_heldout_metrics.csv
+```
+
+This writes:
+
+- `data/runs/scope_contamination_oracle_heldout.json`
+- `data/results/scope_contamination_oracle_heldout_metrics.csv`
+
 Open the dashboard against the saved run:
 
 ```bash
@@ -72,4 +83,4 @@ python3 -m unittest discover -s tests -p 'test_*.py'
   - scope-blind transcript RAG is an oracle-id recency baseline that intentionally ignores scope
 - `contradiction_recovery_rate` remains the headline memory-governance metric.
 - `answer_correctness_after_contradiction` is the policy-agnostic answer-quality view used alongside recovery.
-- Scope-contamination v1 is in-distribution only. It shows broad-claim premature promotion under the current permissive `WORLD_GLOBAL` scope-match rule, not a general claim that CQ reasons about scope better than Reflection.
+- Scope-contamination now includes main and held-out broad-claim probes. These show premature promotion and broad-first absorption under the current permissive `WORLD_GLOBAL` scope-match rule, not a general claim that CQ reasons about scope better than Reflection.
