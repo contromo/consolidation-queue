@@ -1,5 +1,39 @@
 # Product Progress
 
+## 2026-05-02 — Held-out scope-contamination split added
+
+### What shipped
+
+- added `heldout` support for the scope-contamination oracle family
+- added `scope_contamination_clean_v2`, a held-out clean project-scope recency probe
+- added `scope_contamination_dirty_broad_claim_v3`, a held-out broad-first ordering probe with explicit contradiction provenance
+- pinned the dirty held-out calibration inequalities that make Reflection, CQ, and Naive diverge for the intended reasons
+
+### Why it matters
+
+- clean_v2 checks that the scope-blind transcript baseline still leaks under a held-out surface form
+- dirty_v3 checks whether a broad global convention can be prematurely promoted and then block a lower-strength project override
+- this extends Phase 2 coverage without changing the shared substrate, policy interfaces, or metric definitions
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 53 tests
+- held-out scope run (`python3 -m cq.eval.runner --family scope_contamination --scenarios 4 --template-mix heldout --output-json data/runs/scope_contamination_oracle_heldout.json --output-csv data/results/scope_contamination_oracle_heldout_metrics.csv`) shows:
+  - `reflection_eager_write_lite`: `leakage=0.50`, `correctness=0.50`, `premature_promotion=0.50`
+  - `consolidation_queue_lite`: `leakage=0.00`, `correctness=1.00`, `premature_promotion=0.00`
+  - `naive_eager_write_lite`: `leakage=0.50`, `correctness=0.50`, `premature_promotion=0.50`
+  - `no_memory_lite`: `leakage=0.00`, `correctness=0.00`, `premature_promotion=0.00`
+  - `scope_blind_transcript_rag_lite`: `leakage=0.50`, `correctness=0.50`, `premature_promotion=0.00`
+- per-template held-out result:
+  - `scope_contamination_clean_v2`: Reflection/CQ/Naive are correct with no leakage; NoMemory has no recall; ScopeBlindTranscriptRAG leaks by recency
+  - `scope_contamination_dirty_broad_claim_v3`: Reflection and Naive leak and prematurely promote; CQ answers from scoped pending memory; ScopeBlindTranscriptRAG answers correctly by recency
+
+### Open issues / next
+
+- this is still a broad-claim premature-promotion result, not evidence that CQ has better semantic scope inference
+- preference drift and scenario-level failure example extraction remain next Phase 2 work
+- a future non-broad-claim scope mechanism is still needed before making broader held-out scope claims
+
 ## 2026-05-02 — Broad-claim premature promotion scope slice added
 
 ### What shipped

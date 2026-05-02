@@ -24,7 +24,7 @@ FORCED_CONTRADICTION = "forced_contradiction"
 SCOPE_CONTAMINATION = "scope_contamination"
 TEMPLATE_MIXES_BY_FAMILY = {
     FORCED_CONTRADICTION: ("mixed", "clean", "dirty", "heldout"),
-    SCOPE_CONTAMINATION: ("mixed", "clean", "dirty"),
+    SCOPE_CONTAMINATION: ("mixed", "clean", "dirty", "heldout"),
 }
 
 

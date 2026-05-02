@@ -74,6 +74,10 @@ SCOPE_TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
         "scope_contamination_clean_v1",
         "scope_contamination_dirty_broad_claim_v1",
     ],
+    "heldout": [
+        "scope_contamination_clean_v2",
+        "scope_contamination_dirty_broad_claim_v3",
+    ],
 }
 
 
@@ -180,6 +184,8 @@ def _make_scoped_candidate(
     *,
     semantic_uncertainty: float = 0.0,
     staleness_score: float = 0.0,
+    contradicts: List[str] = None,
+    supports: List[str] = None,
 ) -> CandidateUpdate:
     return CandidateUpdate(
         candidate_id=candidate_id,
@@ -203,6 +209,8 @@ def _make_scoped_candidate(
         staleness_score=staleness_score,
         created_at=observed_at,
         updated_at=observed_at,
+        contradicts=contradicts or [],
+        supports=supports or [],
     )
 
 
@@ -1297,6 +1305,216 @@ def _build_scope_dirty_broad_claim_v1_scenario(
     )
 
 
+def _build_scope_clean_v2_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project_a: str,
+    project_b: str,
+    base_time: datetime,
+) -> Scenario:
+    project_a_scope = "project-" + project_a
+    project_b_scope = "project-" + project_b
+    project_a_candidate_id = scenario_id + "-candidate-project-a-heldout"
+    project_b_candidate_id = scenario_id + "-candidate-project-b-heldout"
+    project_a_claim = "{} verification uses pytest -q".format(project_a)
+    project_b_claim = "{} verification uses npm test".format(project_b)
+    project_a_text = "For project {}, verification runs with pytest -q.".format(project_a)
+    project_b_text = "For project {}, verification runs with npm test.".format(project_b)
+
+    project_a_candidate = _make_scoped_candidate(
+        candidate_id=project_a_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=project_a_text,
+        canonical_claim=project_a_claim,
+        observed_at=base_time,
+        trust_score=0.82,
+        verification_score=0.82,
+        source_kind="project_readme",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_a_scope,
+    )
+    project_b_candidate = _make_scoped_candidate(
+        candidate_id=project_b_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=project_b_text,
+        canonical_claim=project_b_claim,
+        observed_at=base_time + timedelta(minutes=1),
+        trust_score=0.84,
+        verification_score=0.84,
+        source_kind="project_readme",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_b_scope,
+    )
+    probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-off-scope-probe",
+        text="For project {}, which command should run verification?".format(project_a),
+        canonical_id=canonical_id,
+        phase="off_scope_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_a_scope,
+        gold_candidate_ids=[project_a_candidate_id],
+        forbidden_candidate_ids=[project_b_candidate_id],
+        asked_at=base_time + timedelta(minutes=2),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.SCOPE_CONTAMINATION,
+        description=(
+            "Held-out clean scope probe with two project-scoped verification commands sharing a canonical id."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "scope_truth": {
+                project_a_scope: project_a_claim,
+                project_b_scope: project_b_claim,
+            },
+            "probe_scope_key": project_a_scope,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=project_a_text,
+                candidate=project_a_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.OBSERVATION,
+                turn_index=2,
+                text=project_b_text,
+                candidate=project_b_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.QUESTION,
+                turn_index=3,
+                text=probe_question.text,
+                question=probe_question,
+            ),
+        ],
+        expected_lifecycle={
+            "probe_phase": "off_scope_probe",
+            "gold_candidate_id": project_a_candidate_id,
+            "forbidden_candidate_ids": [project_b_candidate_id],
+            "should_not_promote_candidate_ids": [],
+        },
+        template_id="scope_contamination_clean_v2",
+        template_kind="clean",
+        template_split="heldout",
+    )
+
+
+def _build_scope_dirty_broad_claim_v3_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project_a: str,
+    project_b: str,
+    base_time: datetime,
+) -> Scenario:
+    project_a_scope = "project-" + project_a
+    broad_candidate_id = scenario_id + "-candidate-broad-contaminant-heldout"
+    project_candidate_id = scenario_id + "-candidate-project-override"
+    broad_claim = "All projects use npm test"
+    project_claim = "{} tests use pytest -q".format(project_a)
+    broad_text = "A workspace-wide note says all projects should use npm test for tests."
+    project_text = (
+        "In project {}, tests use pytest -q, overriding the workspace-wide npm test note.".format(project_a)
+    )
+
+    broad_candidate = _make_scoped_candidate(
+        candidate_id=broad_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=broad_text,
+        canonical_claim=broad_claim,
+        observed_at=base_time,
+        trust_score=0.66,
+        verification_score=0.66,
+        source_kind="workspace_note",
+        scope_level=ScopeLevel.WORLD_GLOBAL,
+        scope_key="global",
+    )
+    project_candidate = _make_scoped_candidate(
+        candidate_id=project_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=project_text,
+        canonical_claim=project_claim,
+        observed_at=base_time + timedelta(minutes=1),
+        trust_score=0.64,
+        verification_score=0.64,
+        source_kind="project_override",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_a_scope,
+        contradicts=[broad_candidate_id],
+    )
+    probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-off-scope-probe",
+        text="For project {}, which command should run tests?".format(project_a),
+        canonical_id=canonical_id,
+        phase="off_scope_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_a_scope,
+        gold_candidate_ids=[project_candidate_id],
+        forbidden_candidate_ids=[broad_candidate_id],
+        asked_at=base_time + timedelta(minutes=2),
+    )
+
+    # Calibration enforced by test_heldout_dirty_template_pins_broad_first_calibration:
+    # broad.promotion_score (0.66) < CQ project-convention threshold (0.70).
+    # project.strength (0.64) < broad.strength + overwrite_margin (0.71), so Reflection blocks overwrite.
+    # broad.strength (0.66) > project.strength (0.64), so Naive picks broad confidence-first.
+    # project.strength (0.64) >= pending-use threshold (0.35), so CQ can pending-answer.
+    # The project override later contests the broad candidate in-store, lowering its score further.
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.SCOPE_CONTAMINATION,
+        description=(
+            "Held-out broad-first probe where a global testing convention is followed by a lower-strength project override."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "scope_truth": {
+                project_a_scope: project_claim,
+                "global": "broad claim should not override a project-specific command",
+            },
+            "probe_scope_key": project_a_scope,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=broad_text,
+                candidate=broad_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.OBSERVATION,
+                turn_index=2,
+                text=project_text,
+                candidate=project_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.QUESTION,
+                turn_index=3,
+                text=probe_question.text,
+                question=probe_question,
+            ),
+        ],
+        expected_lifecycle={
+            "probe_phase": "off_scope_probe",
+            "gold_candidate_id": project_candidate_id,
+            "forbidden_candidate_ids": [broad_candidate_id],
+            "should_not_promote_candidate_ids": [broad_candidate_id],
+        },
+        template_id="scope_contamination_dirty_broad_claim_v3",
+        template_kind="dirty",
+        template_split="heldout",
+    )
+
+
 def generate_scope_contamination_scenarios(
     count: int,
     seed: int = 17,
@@ -1321,6 +1539,22 @@ def generate_scope_contamination_scenarios(
             )
         elif template_id == "scope_contamination_dirty_broad_claim_v1":
             scenario = _build_scope_dirty_broad_claim_v1_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                project_b,
+                base_time,
+            )
+        elif template_id == "scope_contamination_clean_v2":
+            scenario = _build_scope_clean_v2_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                project_b,
+                base_time,
+            )
+        elif template_id == "scope_contamination_dirty_broad_claim_v3":
+            scenario = _build_scope_dirty_broad_claim_v3_scenario(
                 scenario_id,
                 canonical_id,
                 project_a,

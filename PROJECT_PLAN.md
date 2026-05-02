@@ -55,6 +55,7 @@ Implemented:
 - initial oracle scope-contamination scenario generation, framed as broad-claim premature promotion
 - multiple clean and dirty forced-contradiction templates with scenario metadata
 - clean and dirty main-split scope-contamination templates
+- held-out scope-contamination templates for clean recency and broad-first premature-promotion probes
 - four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
 - family-selectable oracle runner
@@ -69,7 +70,7 @@ Implemented:
 Not implemented yet:
 
 - preference drift scenarios
-- held-out scope-contamination scenarios
+- non-broad-claim scope-contamination mechanisms
 - poisoning scenarios
 - false corroboration scenarios
 - useful-pending-memory scenarios beyond the current contradiction slice
@@ -116,7 +117,7 @@ Immediate gap:
 
 ### Phase 2: Stronger Oracle Benchmark
 
-Status: in progress, first broad-claim premature-promotion slice exists
+Status: in progress, broad-claim premature-promotion scope slice now has main and held-out variants
 
 Add:
 
@@ -133,7 +134,8 @@ Required outcome:
 
 Current caveat:
 
-- the first scope-contamination slice is not held-out and should be described as broad-claim premature promotion under the current permissive `WORLD_GLOBAL` scope-match rule, not as evidence that CQ performs better scope reasoning than Reflection
+- the scope-contamination split should still be described as broad-claim premature promotion under the current permissive `WORLD_GLOBAL` scope-match rule, not as evidence that CQ performs better semantic scope inference than Reflection
+- Phase 2 is only partially addressed for scope: preference drift and a non-broad-claim scope mechanism are still needed before the broader held-out-divergence requirement is satisfied
 
 ### Phase 3: Component Evaluation Harness
 
@@ -265,9 +267,9 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Add held-out scope-contamination variants before making generalization claims.
-2. Add the preference drift oracle family.
-3. Add scenario-level failure example extraction for Phase 2 families.
+1. Add the preference drift oracle family.
+2. Add scenario-level failure example extraction for Phase 2 families.
+3. Add a non-broad-claim scope-contamination mechanism before making broader scope-inference claims.
 4. Add more held-out contradiction templates only when they introduce a genuinely new mechanism.
 5. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
 
