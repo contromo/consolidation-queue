@@ -1,5 +1,6 @@
 from datetime import datetime
 import unittest
+from typing import get_type_hints
 
 from cq.eval.end_to_end_eval import _contains_any, compute_forced_contradiction_metrics, compute_scope_contamination_metrics
 from cq.schemas.memory import AnswerTrace
@@ -73,6 +74,15 @@ class PolicySummaryMetricsTests(unittest.TestCase):
         self.assertEqual(metric.useful_recall, 0.0)
         self.assertEqual(metric.used_pending, 0.0)
         self.assertEqual(metric.durable_commit, 0.0)
+
+    def test_generic_metric_read_annotations_are_not_optional(self) -> None:
+        hints = get_type_hints(PolicyScenarioMetrics)
+
+        self.assertIs(hints["answer_correctness"], float)
+        self.assertIs(hints["false_assertion_rate"], float)
+        self.assertIs(hints["useful_recall"], float)
+        self.assertIs(hints["used_pending"], float)
+        self.assertIs(hints["durable_commit"], float)
 
     def test_empty_resolved_ids_do_not_match_gold_ids(self) -> None:
         self.assertFalse(_contains_any([], ["candidate-1"]))
