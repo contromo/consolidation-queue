@@ -50,6 +50,30 @@ class PolicySummaryMetricsTests(unittest.TestCase):
         summary = PolicySummaryMetrics.from_scenarios("test-policy", metrics)
         self.assertEqual(summary.average_time_to_demotion, 2.5)
 
+    def test_generic_metric_zero_is_not_overwritten_by_legacy_alias(self) -> None:
+        metric = PolicyScenarioMetrics(
+            scenario_id="scenario-1",
+            policy_name="test-policy",
+            useful_recall_before_contradiction=1.0,
+            used_pending_before_contradiction=1.0,
+            durable_commit_before_contradiction=1.0,
+            false_assertion_after_contradiction=1.0,
+            contradiction_recovery_rate=1.0,
+            answer_correctness_after_contradiction=1.0,
+            time_to_demotion=None,
+            answer_correctness=0.0,
+            false_assertion_rate=0.0,
+            useful_recall=0.0,
+            used_pending=0.0,
+            durable_commit=0.0,
+        )
+
+        self.assertEqual(metric.answer_correctness, 0.0)
+        self.assertEqual(metric.false_assertion_rate, 0.0)
+        self.assertEqual(metric.useful_recall, 0.0)
+        self.assertEqual(metric.used_pending, 0.0)
+        self.assertEqual(metric.durable_commit, 0.0)
+
     def test_empty_resolved_ids_do_not_match_gold_ids(self) -> None:
         self.assertFalse(_contains_any([], ["candidate-1"]))
 

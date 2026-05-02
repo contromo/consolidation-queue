@@ -64,7 +64,9 @@ def compute_forced_contradiction_metrics(
 
     useful_recall = 1.0 if _contains_any(before_trace.resolved_candidate_ids, before_question.gold_candidate_ids) else 0.0
     used_pending_before = 1.0 if before_trace.used_pending else 0.0
-    durable_commit_before = 1.0 if _old_claim_became_durable(store_snapshot, scenario.expected_lifecycle["old_candidate_id"]) else 0.0
+    durable_commit_before = (
+        1.0 if _candidate_became_durable(store_snapshot, scenario.expected_lifecycle["old_candidate_id"]) else 0.0
+    )
     false_assertion = 1.0 if _contains_any(after_trace.resolved_candidate_ids, after_question.forbidden_candidate_ids) else 0.0
     answer_correctness = 1.0 if _contains_any(after_trace.resolved_candidate_ids, after_question.gold_candidate_ids) else 0.0
 
@@ -123,6 +125,7 @@ def compute_scope_contamination_metrics(
     leakage = 1.0 if _contains_any(probe_trace.resolved_candidate_ids, probe_question.forbidden_candidate_ids) else 0.0
     premature_promotion = _premature_promotion_rate(store_snapshot, scenario)
 
+    # In this first scope family, the only false assertion is an off-scope leak.
     return PolicyScenarioMetrics(
         scenario_id=scenario.scenario_id,
         policy_name=policy_name,
@@ -198,9 +201,9 @@ def _old_claim_invalidated(store_snapshot: Dict[str, object], old_candidate_id: 
     return False
 
 
-def _old_claim_became_durable(store_snapshot: Dict[str, object], old_candidate_id: str) -> bool:
+def _candidate_became_durable(store_snapshot: Dict[str, object], candidate_id: str) -> bool:
     for durable in store_snapshot["durable_memories"]:
-        if old_candidate_id in durable["created_from_candidate_ids"]:
+        if candidate_id in durable["created_from_candidate_ids"]:
             return True
     return False
 
@@ -211,7 +214,7 @@ def _premature_promotion_rate(store_snapshot: Dict[str, object], scenario: Scena
         return 0.0
     promoted = 0
     for candidate_id in should_not_promote:
-        if _old_claim_became_durable(store_snapshot, candidate_id):
+        if _candidate_became_durable(store_snapshot, candidate_id):
             promoted += 1
     return promoted / len(should_not_promote)
 

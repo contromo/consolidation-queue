@@ -1,11 +1,13 @@
 import csv
+import io
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 from cq.dashboard.app import render_dashboard
 from cq.eval.end_to_end_eval import execute_scenario
-from cq.eval.runner import build_run_artifact, write_outputs
+from cq.eval.runner import build_run_artifact, main, write_outputs
 from cq.memory.consolidation_queue import ConsolidationQueueLite
 from cq.memory.naive_eager_write import NaiveEagerWriteLite
 from cq.memory.no_memory import NoMemoryLite
@@ -111,6 +113,38 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
 
         self.assertEqual(artifact["experiment"], "scope_contamination_oracle")
         self.assertIn("scope_blind_transcript_rag_lite", policy_names)
+
+    def test_scope_family_rejects_heldout_template_mix_upfront(self) -> None:
+        with self.assertRaises(ValueError):
+            build_run_artifact(1, template_mix="heldout", family="scope_contamination")
+
+        with redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as raised:
+                main(["--family", "scope_contamination", "--template-mix", "heldout"])
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_scope_cli_main_writes_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_json = Path(tmpdir) / "scope.json"
+            output_csv = Path(tmpdir) / "scope.csv"
+
+            with redirect_stdout(io.StringIO()):
+                result = main(
+                    [
+                        "--family",
+                        "scope_contamination",
+                        "--scenarios",
+                        "1",
+                        "--output-json",
+                        str(output_json),
+                        "--output-csv",
+                        str(output_csv),
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            self.assertTrue(output_json.exists())
+            self.assertTrue(output_csv.exists())
 
     def test_scope_csv_emits_generic_and_legacy_metric_columns(self) -> None:
         artifact = build_run_artifact(2, template_mix="mixed", family="scope_contamination")

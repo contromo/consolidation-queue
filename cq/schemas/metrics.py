@@ -15,24 +15,24 @@ class PolicyScenarioMetrics:
     contradiction_recovery_rate: float
     answer_correctness_after_contradiction: float
     time_to_demotion: Optional[float]
-    answer_correctness: float = 0.0
-    false_assertion_rate: float = 0.0
+    answer_correctness: Optional[float] = None
+    false_assertion_rate: Optional[float] = None
     leakage_rate: float = 0.0
     premature_promotion_rate: float = 0.0
-    useful_recall: float = 0.0
-    used_pending: float = 0.0
-    durable_commit: float = 0.0
+    useful_recall: Optional[float] = None
+    used_pending: Optional[float] = None
+    durable_commit: Optional[float] = None
 
     def __post_init__(self) -> None:
-        if self.answer_correctness == 0.0 and self.answer_correctness_after_contradiction != 0.0:
+        if self.answer_correctness is None:
             self.answer_correctness = self.answer_correctness_after_contradiction
-        if self.false_assertion_rate == 0.0 and self.false_assertion_after_contradiction != 0.0:
+        if self.false_assertion_rate is None:
             self.false_assertion_rate = self.false_assertion_after_contradiction
-        if self.useful_recall == 0.0 and self.useful_recall_before_contradiction != 0.0:
+        if self.useful_recall is None:
             self.useful_recall = self.useful_recall_before_contradiction
-        if self.used_pending == 0.0 and self.used_pending_before_contradiction != 0.0:
+        if self.used_pending is None:
             self.used_pending = self.used_pending_before_contradiction
-        if self.durable_commit == 0.0 and self.durable_commit_before_contradiction != 0.0:
+        if self.durable_commit is None:
             self.durable_commit = self.durable_commit_before_contradiction
 
 

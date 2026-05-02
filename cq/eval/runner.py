@@ -22,6 +22,10 @@ from cq.simulator.render_events import render_scenario_transcript
 
 FORCED_CONTRADICTION = "forced_contradiction"
 SCOPE_CONTAMINATION = "scope_contamination"
+TEMPLATE_MIXES_BY_FAMILY = {
+    FORCED_CONTRADICTION: ("mixed", "clean", "dirty", "heldout"),
+    SCOPE_CONTAMINATION: ("mixed", "clean", "dirty"),
+}
 
 
 def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, dict]:
@@ -37,11 +41,26 @@ def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, d
 
 
 def _generate_scenarios(family: str, scenario_count: int, template_mix: str):
+    _validate_template_mix(family, template_mix)
     if family == FORCED_CONTRADICTION:
         return generate_forced_contradiction_scenarios(scenario_count, template_mix=template_mix)
     if family == SCOPE_CONTAMINATION:
         return generate_scope_contamination_scenarios(scenario_count, template_mix=template_mix)
     raise ValueError("Unsupported family: {}".format(family))
+
+
+def _validate_template_mix(family: str, template_mix: str) -> None:
+    allowed = TEMPLATE_MIXES_BY_FAMILY.get(family)
+    if allowed is None:
+        raise ValueError("Unsupported family: {}".format(family))
+    if template_mix not in allowed:
+        raise ValueError(
+            "Template mix '{}' is not supported for family '{}'. Allowed: {}".format(
+                template_mix,
+                family,
+                ", ".join(allowed),
+            )
+        )
 
 
 def _policies_for_family(family: str):
@@ -200,6 +219,10 @@ def main(argv: List[str] = None) -> int:
         help="Path to the summary metrics CSV.",
     )
     args = parser.parse_args(argv)
+    try:
+        _validate_template_mix(args.family, args.template_mix)
+    except ValueError as error:
+        parser.error(str(error))
 
     output_json = args.output_json or "data/runs/{}_oracle.json".format(args.family)
     output_csv = args.output_csv or "data/results/{}_oracle_metrics.csv".format(args.family)
