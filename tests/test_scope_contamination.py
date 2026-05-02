@@ -106,7 +106,7 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
         )
         candidates = [event.candidate for event in scenario.oracle_events if event.candidate is not None]
 
-        self.assertEqual([candidate.strength for candidate in candidates], [0.82, 0.84])
+        self.assertEqual(sorted(candidate.strength for candidate in candidates), [0.82, 0.84])
         for policy_cls in (ReflectionEagerWriteLite, ConsolidationQueueLite, NaiveEagerWriteLite):
             result = execute_scenario(policy_cls, scenario)
             self.assertEqual(result["metrics"]["answer_correctness"], 1.0, msg=policy_cls.policy_name)
@@ -224,22 +224,32 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
 
     def test_scope_family_accepts_heldout_template_mix(self) -> None:
         artifact = build_run_artifact(4, template_mix="heldout", family="scope_contamination")
-        policy = artifact["policies"][0]
 
-        self.assertIn("heldout", policy["summary_by_template_split"])
-        self.assertEqual(policy["summary_by_template_split"]["heldout"]["scenario_count"], 4)
-        self.assertEqual(
-            {
-                "scope_contamination_clean_v2",
-                "scope_contamination_dirty_broad_claim_v3",
-            },
-            set(policy["summary_by_template_id"]),
-        )
-        self.assertEqual(policy["summary_by_template_id"]["scope_contamination_clean_v2"]["scenario_count"], 2)
-        self.assertEqual(
-            policy["summary_by_template_id"]["scope_contamination_dirty_broad_claim_v3"]["scenario_count"],
-            2,
-        )
+        for policy in artifact["policies"]:
+            self.assertIn("heldout", policy["summary_by_template_split"], msg=policy["policy_name"])
+            self.assertEqual(
+                policy["summary_by_template_split"]["heldout"]["scenario_count"],
+                4,
+                msg=policy["policy_name"],
+            )
+            self.assertEqual(
+                {
+                    "scope_contamination_clean_v2",
+                    "scope_contamination_dirty_broad_claim_v3",
+                },
+                set(policy["summary_by_template_id"]),
+                msg=policy["policy_name"],
+            )
+            self.assertEqual(
+                policy["summary_by_template_id"]["scope_contamination_clean_v2"]["scenario_count"],
+                2,
+                msg=policy["policy_name"],
+            )
+            self.assertEqual(
+                policy["summary_by_template_id"]["scope_contamination_dirty_broad_claim_v3"]["scenario_count"],
+                2,
+                msg=policy["policy_name"],
+            )
 
     def test_scope_family_rejects_unknown_template_mix_upfront(self) -> None:
         with self.assertRaises(ValueError):
@@ -291,10 +301,15 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
 
     def test_dashboard_renders_scope_and_forced_contradiction_metrics(self) -> None:
         scope_html = render_dashboard(build_run_artifact(2, template_mix="mixed", family="scope_contamination"))
+        heldout_scope_html = render_dashboard(
+            build_run_artifact(2, template_mix="heldout", family="scope_contamination")
+        )
         forced_html = render_dashboard(build_run_artifact(2, template_mix="mixed"))
 
         self.assertIn("Leakage rate", scope_html)
         self.assertIn("Premature promotion rate", scope_html)
+        self.assertIn("<strong>Template mix:</strong> heldout", heldout_scope_html)
+        self.assertIn("scope_contamination_dirty_broad_claim_v3", heldout_scope_html)
         self.assertIn("Recovery", forced_html)
         self.assertIn("Correctness", forced_html)
 

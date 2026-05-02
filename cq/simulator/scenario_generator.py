@@ -1460,8 +1460,12 @@ def _build_scope_dirty_broad_claim_v3_scenario(
         asked_at=base_time + timedelta(minutes=2),
     )
 
-    # The broad candidate must stay below CQ's project-convention promotion threshold;
-    # the project override later contests it in-store, lowering its score further.
+    # Calibration enforced by test_heldout_dirty_template_pins_broad_first_calibration:
+    # broad.promotion_score (0.66) < CQ project-convention threshold (0.70).
+    # project.strength (0.64) < broad.strength + overwrite_margin (0.71), so Reflection blocks overwrite.
+    # broad.strength (0.66) > project.strength (0.64), so Naive picks broad confidence-first.
+    # project.strength (0.64) >= pending-use threshold (0.35), so CQ can pending-answer.
+    # The project override later contests the broad candidate in-store, lowering its score further.
     return Scenario(
         scenario_id=scenario_id,
         task_family=TaskFamily.SCOPE_CONTAMINATION,
@@ -1472,7 +1476,7 @@ def _build_scope_dirty_broad_claim_v3_scenario(
             "canonical_id": canonical_id,
             "scope_truth": {
                 project_a_scope: project_claim,
-                "global": "not durable enough for project-specific override",
+                "global": "broad claim should not override a project-specific command",
             },
             "probe_scope_key": project_a_scope,
         },
