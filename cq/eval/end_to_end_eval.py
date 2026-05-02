@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Type
 from cq.eval.metrics import iso_to_datetime, minutes_between
 from cq.schemas.memory import MemoryState, jsonable
 from cq.schemas.metrics import PolicyScenarioMetrics, PolicySummaryMetrics
-from cq.schemas.scenario import EventKind, QuestionSpec, Scenario
+from cq.schemas.scenario import EventKind, QuestionSpec, Scenario, TaskFamily
 
 
 def execute_scenario(policy_cls: Type[object], scenario: Scenario) -> Dict[str, object]:
@@ -16,7 +16,7 @@ def execute_scenario(policy_cls: Type[object], scenario: Scenario) -> Dict[str, 
             policy.observe_candidate(event.candidate)
         if event.kind == EventKind.QUESTION and event.question is not None:
             question_traces.append(policy.answer_question(event.question))
-    metrics = compute_forced_contradiction_metrics(
+    metrics = compute_policy_metrics(
         policy.policy_name,
         scenario,
         question_traces,
@@ -31,6 +31,19 @@ def execute_scenario(policy_cls: Type[object], scenario: Scenario) -> Dict[str, 
         "metrics": jsonable(metrics),
         "store": policy.store,
     }
+
+
+def compute_policy_metrics(
+    policy_name: str,
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+) -> PolicyScenarioMetrics:
+    if scenario.task_family == TaskFamily.FORCED_CONTRADICTION:
+        return compute_forced_contradiction_metrics(policy_name, scenario, question_traces, store_snapshot)
+    if scenario.task_family == TaskFamily.SCOPE_CONTAMINATION:
+        return compute_scope_contamination_metrics(policy_name, scenario, question_traces, store_snapshot)
+    raise ValueError("Unsupported task family: {}".format(scenario.task_family))
 
 
 def compute_forced_contradiction_metrics(
@@ -69,6 +82,7 @@ def compute_forced_contradiction_metrics(
         scenario.expected_lifecycle["old_candidate_id"],
         scenario.expected_lifecycle["contradiction_timestamp"],
     )
+    premature_promotion = _premature_promotion_rate(store_snapshot, scenario)
     return PolicyScenarioMetrics(
         scenario_id=scenario.scenario_id,
         policy_name=policy_name,
@@ -79,6 +93,53 @@ def compute_forced_contradiction_metrics(
         contradiction_recovery_rate=recovered,
         answer_correctness_after_contradiction=answer_correctness,
         time_to_demotion=time_to_demotion,
+        answer_correctness=answer_correctness,
+        false_assertion_rate=false_assertion,
+        leakage_rate=0.0,
+        premature_promotion_rate=premature_promotion,
+        useful_recall=useful_recall,
+        used_pending=used_pending_before,
+        durable_commit=durable_commit_before,
+    )
+
+
+def compute_scope_contamination_metrics(
+    policy_name: str,
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+) -> PolicyScenarioMetrics:
+    questions = {}
+    for event in scenario.sorted_events():
+        if event.question is not None:
+            questions[event.question.phase] = event.question
+    traces = {trace.question_id: trace for trace in question_traces}
+    probe_question = questions["off_scope_probe"]
+    probe_trace = traces[probe_question.question_id]
+
+    answer_correctness = (
+        1.0 if _contains_any(probe_trace.resolved_candidate_ids, probe_question.gold_candidate_ids) else 0.0
+    )
+    leakage = 1.0 if _contains_any(probe_trace.resolved_candidate_ids, probe_question.forbidden_candidate_ids) else 0.0
+    premature_promotion = _premature_promotion_rate(store_snapshot, scenario)
+
+    return PolicyScenarioMetrics(
+        scenario_id=scenario.scenario_id,
+        policy_name=policy_name,
+        useful_recall_before_contradiction=0.0,
+        used_pending_before_contradiction=1.0 if probe_trace.used_pending else 0.0,
+        durable_commit_before_contradiction=0.0,
+        false_assertion_after_contradiction=0.0,
+        contradiction_recovery_rate=0.0,
+        answer_correctness_after_contradiction=0.0,
+        time_to_demotion=None,
+        answer_correctness=answer_correctness,
+        false_assertion_rate=leakage,
+        leakage_rate=leakage,
+        premature_promotion_rate=premature_promotion,
+        useful_recall=answer_correctness,
+        used_pending=1.0 if probe_trace.used_pending else 0.0,
+        durable_commit=0.0,
     )
 
 
@@ -99,6 +160,25 @@ def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics
                 contradiction_recovery_rate=metric["contradiction_recovery_rate"],
                 answer_correctness_after_contradiction=metric["answer_correctness_after_contradiction"],
                 time_to_demotion=metric["time_to_demotion"],
+                answer_correctness=metric.get("answer_correctness", metric["answer_correctness_after_contradiction"]),
+                false_assertion_rate=metric.get(
+                    "false_assertion_rate",
+                    metric["false_assertion_after_contradiction"],
+                ),
+                leakage_rate=metric.get("leakage_rate", 0.0),
+                premature_promotion_rate=metric.get("premature_promotion_rate", 0.0),
+                useful_recall=metric.get(
+                    "useful_recall",
+                    metric["useful_recall_before_contradiction"],
+                ),
+                used_pending=metric.get(
+                    "used_pending",
+                    metric["used_pending_before_contradiction"],
+                ),
+                durable_commit=metric.get(
+                    "durable_commit",
+                    metric["durable_commit_before_contradiction"],
+                ),
             )
         )
     return PolicySummaryMetrics.from_scenarios(policy_name, metrics)
@@ -123,6 +203,17 @@ def _old_claim_became_durable(store_snapshot: Dict[str, object], old_candidate_i
         if old_candidate_id in durable["created_from_candidate_ids"]:
             return True
     return False
+
+
+def _premature_promotion_rate(store_snapshot: Dict[str, object], scenario: Scenario) -> float:
+    should_not_promote = scenario.expected_lifecycle.get("should_not_promote_candidate_ids", [])
+    if not should_not_promote:
+        return 0.0
+    promoted = 0
+    for candidate_id in should_not_promote:
+        if _old_claim_became_durable(store_snapshot, candidate_id):
+            promoted += 1
+    return promoted / len(should_not_promote)
 
 
 def _time_to_invalidation(

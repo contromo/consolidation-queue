@@ -15,6 +15,25 @@ class PolicyScenarioMetrics:
     contradiction_recovery_rate: float
     answer_correctness_after_contradiction: float
     time_to_demotion: Optional[float]
+    answer_correctness: float = 0.0
+    false_assertion_rate: float = 0.0
+    leakage_rate: float = 0.0
+    premature_promotion_rate: float = 0.0
+    useful_recall: float = 0.0
+    used_pending: float = 0.0
+    durable_commit: float = 0.0
+
+    def __post_init__(self) -> None:
+        if self.answer_correctness == 0.0 and self.answer_correctness_after_contradiction != 0.0:
+            self.answer_correctness = self.answer_correctness_after_contradiction
+        if self.false_assertion_rate == 0.0 and self.false_assertion_after_contradiction != 0.0:
+            self.false_assertion_rate = self.false_assertion_after_contradiction
+        if self.useful_recall == 0.0 and self.useful_recall_before_contradiction != 0.0:
+            self.useful_recall = self.useful_recall_before_contradiction
+        if self.used_pending == 0.0 and self.used_pending_before_contradiction != 0.0:
+            self.used_pending = self.used_pending_before_contradiction
+        if self.durable_commit == 0.0 and self.durable_commit_before_contradiction != 0.0:
+            self.durable_commit = self.durable_commit_before_contradiction
 
 
 @dataclass
@@ -28,6 +47,13 @@ class PolicySummaryMetrics:
     contradiction_recovery_rate: float
     answer_correctness_after_contradiction: float
     average_time_to_demotion: float
+    answer_correctness: float = 0.0
+    false_assertion_rate: float = 0.0
+    leakage_rate: float = 0.0
+    premature_promotion_rate: float = 0.0
+    useful_recall: float = 0.0
+    used_pending: float = 0.0
+    durable_commit: float = 0.0
 
     @classmethod
     def from_scenarios(cls, policy_name: str, metrics: List[PolicyScenarioMetrics]) -> "PolicySummaryMetrics":
@@ -43,6 +69,13 @@ class PolicySummaryMetrics:
                 contradiction_recovery_rate=0.0,
                 answer_correctness_after_contradiction=0.0,
                 average_time_to_demotion=0.0,
+                answer_correctness=0.0,
+                false_assertion_rate=0.0,
+                leakage_rate=0.0,
+                premature_promotion_rate=0.0,
+                useful_recall=0.0,
+                used_pending=0.0,
+                durable_commit=0.0,
             )
         demotions = [metric.time_to_demotion for metric in metrics if metric.time_to_demotion is not None]
         average_time = sum(demotions) / len(demotions) if demotions else 0.0
@@ -69,4 +102,11 @@ class PolicySummaryMetrics:
             )
             / count,
             average_time_to_demotion=average_time,
+            answer_correctness=sum(metric.answer_correctness for metric in metrics) / count,
+            false_assertion_rate=sum(metric.false_assertion_rate for metric in metrics) / count,
+            leakage_rate=sum(metric.leakage_rate for metric in metrics) / count,
+            premature_promotion_rate=sum(metric.premature_promotion_rate for metric in metrics) / count,
+            useful_recall=sum(metric.useful_recall for metric in metrics) / count,
+            used_pending=sum(metric.used_pending for metric in metrics) / count,
+            durable_commit=sum(metric.durable_commit for metric in metrics) / count,
         )
