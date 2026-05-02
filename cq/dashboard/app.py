@@ -100,7 +100,7 @@ def render_dashboard(run_data: Dict[str, object]) -> str:
 
 def _render_summary_metrics(summary: Dict[str, object]) -> str:
     parts = ["<div class='summary'>"]
-    for label, key in (
+    preferred = (
         ("Useful recall", "useful_recall_before_contradiction"),
         ("Pending use", "used_pending_before_contradiction"),
         ("Early durable commit", "durable_commit_before_contradiction"),
@@ -108,13 +108,36 @@ def _render_summary_metrics(summary: Dict[str, object]) -> str:
         ("Recovery", "contradiction_recovery_rate"),
         ("Correctness", "answer_correctness_after_contradiction"),
         ("Avg time to demotion", "average_time_to_demotion"),
-    ):
+        ("Answer correctness", "answer_correctness"),
+        ("False assertion rate", "false_assertion_rate"),
+        ("Leakage rate", "leakage_rate"),
+        ("Premature promotion rate", "premature_promotion_rate"),
+        ("Useful recall", "useful_recall"),
+        ("Pending use", "used_pending"),
+        ("Durable commit", "durable_commit"),
+    )
+    rendered = set()
+    for label, key in preferred:
+        if key not in summary:
+            continue
+        rendered.add(key)
         parts.append(
             "<div class='metric'><strong>{}</strong><br>{:.2f}</div>".format(
                 html.escape(label),
                 float(summary[key]),
             )
         )
+    for key in sorted(summary.keys()):
+        if key in rendered or key in {"policy_name", "scenario_count"}:
+            continue
+        value = summary[key]
+        if isinstance(value, (int, float)):
+            parts.append(
+                "<div class='metric'><strong>{}</strong><br>{:.2f}</div>".format(
+                    html.escape(key.replace("_", " ").title()),
+                    float(value),
+                )
+            )
     parts.append("</div>")
     return "".join(parts)
 

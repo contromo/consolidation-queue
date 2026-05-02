@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-01
+Last updated: 2026-05-02
 
 ## Goal
 
@@ -50,11 +50,16 @@ Implemented:
 - `NaiveEagerWriteLite`
 - `NoMemoryLite`
 - `ConsolidationQueueLite`
+- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination probes
 - oracle forced-contradiction scenario generation
+- initial oracle scope-contamination scenario generation, framed as broad-claim premature promotion
 - multiple clean and dirty forced-contradiction templates with scenario metadata
+- clean and dirty main-split scope-contamination templates
 - four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
+- family-selectable oracle runner
 - strict contradiction recovery metric plus `answer_correctness_after_contradiction`
+- generic answer correctness, leakage, false assertion, and premature-promotion metrics with contradiction aliases
 - per-template-kind and per-template-split oracle summaries
 - per-template-id oracle summaries
 - trace dashboard with per-kind summary views and static turn timelines
@@ -63,12 +68,12 @@ Implemented:
 
 Not implemented yet:
 
-- `TranscriptRAG`
 - preference drift scenarios
-- scope contamination scenarios
+- held-out scope-contamination scenarios
 - poisoning scenarios
 - false corroboration scenarios
 - useful-pending-memory scenarios beyond the current contradiction slice
+- lexical or embedding-based `TranscriptRAG`
 - component evaluation harness
 - local-model noisy pipeline
 - 32B/70B routing
@@ -111,6 +116,8 @@ Immediate gap:
 
 ### Phase 2: Stronger Oracle Benchmark
 
+Status: in progress, first broad-claim premature-promotion slice exists
+
 Add:
 
 - scope contamination family
@@ -123,6 +130,10 @@ Required outcome:
 - CQ and ReflectionEagerWrite diverge on meaningful held-out oracle cases
 - metrics cover scope leakage and premature promotion in addition to contradiction recovery
 - transcript retrieval baselines can be evaluated on a family where off-scope text should hurt
+
+Current caveat:
+
+- the first scope-contamination slice is not held-out and should be described as broad-claim premature promotion under the current permissive `WORLD_GLOBAL` scope-match rule, not as evidence that CQ performs better scope reasoning than Reflection
 
 ### Phase 3: Component Evaluation Harness
 
@@ -254,12 +265,11 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Add the scope contamination oracle family.
-2. Add `TranscriptRAGLite` paired with scope contamination, not contradiction alone.
-3. Add the preference drift oracle family.
+1. Add held-out scope-contamination variants before making generalization claims.
+2. Add the preference drift oracle family.
+3. Add scenario-level failure example extraction for Phase 2 families.
 4. Add more held-out contradiction templates only when they introduce a genuinely new mechanism.
-5. Extend the progress log with concise experiment-result entries as major benchmark slices land.
-6. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
+5. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
 
 ## Working Rules
 

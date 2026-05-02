@@ -1,5 +1,37 @@
 # Product Progress
 
+## 2026-05-02 — Broad-claim premature promotion scope slice added
+
+### What shipped
+
+- added the first scope-contamination oracle family as a broad-claim premature-promotion slice
+- added `ScopeBlindTranscriptRAGLite`, an oracle-id recency baseline that intentionally ignores scope
+- generalized the runner with `--family forced_contradiction|scope_contamination`
+- added generic answer correctness, false assertion, leakage, and premature-promotion metrics while preserving contradiction aliases
+- updated CSV/dashboard rendering so non-contradiction metrics are visible
+
+### Why it matters
+
+- this extends Phase 2 without changing the shared substrate or giving CQ richer memory than Reflection
+- the dirty template isolates staged-vs-eager behavior: the same broad `WORLD_GLOBAL` contaminant is promoted by Reflection and left pending by CQ
+- the clean template is deliberately narrow: it validates that the scope-blind transcript baseline leaks under oracle-id recency, not that CQ has special scope reasoning
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 44 tests
+- mixed scope run (`python3 -m cq.eval.runner --family scope_contamination --scenarios 2 --template-mix mixed`) shows:
+  - `reflection_eager_write_lite`: `leakage=0.50`, `correctness=0.50`, `premature_promotion=0.50`
+  - `consolidation_queue_lite`: `leakage=0.00`, `correctness=1.00`, `premature_promotion=0.00`
+  - `naive_eager_write_lite`: `leakage=0.00`, `correctness=1.00`, `premature_promotion=0.50`
+  - `no_memory_lite`: `leakage=0.00`, `correctness=0.00`, `premature_promotion=0.00`
+  - `scope_blind_transcript_rag_lite`: `leakage=1.00`, `correctness=0.00`, `premature_promotion=0.00`
+
+### Open issues / next
+
+- these results are in-distribution only and should not be cited as generalization evidence until held-out scope templates land
+- the dirty result should be described as staged promotion resisting a broad contaminant, not as CQ doing better scope-aware reasoning
+- preference drift and scenario-level failure example extraction remain next Phase 2 work
+
 ## 2026-05-01 — NoMemory floor baseline and correctness metric added
 
 ### What shipped

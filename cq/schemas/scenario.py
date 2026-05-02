@@ -10,6 +10,7 @@ from cq.schemas.memory import CandidateUpdate, ScopeLevel
 
 class TaskFamily(str, Enum):
     FORCED_CONTRADICTION = "forced_contradiction"
+    SCOPE_CONTAMINATION = "scope_contamination"
 
 
 class EventKind(str, Enum):

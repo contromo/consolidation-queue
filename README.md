@@ -5,11 +5,13 @@ Local prototype for staged memory governance experiments.
 The first slice in this repository is intentionally narrow:
 
 - oracle-mode forced-contradiction scenarios
+- oracle-mode scope-contamination scenarios, currently framed as broad-claim premature promotion
 - shared in-memory substrate
 - `NoMemory-lite`
 - `ReflectionEagerWrite-lite`
 - `NaiveEagerWrite-lite`
 - `CQ-Agent-lite`
+- `ScopeBlindTranscriptRAG-lite` on the scope-contamination family
 - end-to-end metrics and run artifacts
 - a small local dashboard for inspecting traces
 - a running product progress log in `docs/product_progress.md`
@@ -28,6 +30,17 @@ This writes:
 
 - `data/runs/forced_contradiction_oracle.json`
 - `data/results/forced_contradiction_oracle_metrics.csv`
+
+Run the scope-contamination slice:
+
+```bash
+python3 -m cq.eval.runner --family scope_contamination --scenarios 10 --template-mix mixed
+```
+
+This writes:
+
+- `data/runs/scope_contamination_oracle.json`
+- `data/results/scope_contamination_oracle_metrics.csv`
 
 Open the dashboard against the saved run:
 
@@ -56,6 +69,7 @@ python3 -m unittest discover -s tests -p 'test_*.py'
   - naive eager write commits immediately and keeps contradictory durables active
   - reflection eager write commits immediately but only overwrites on a contradiction margin
   - CQ can use pending memory without durable promotion
+  - scope-blind transcript RAG is an oracle-id recency baseline that intentionally ignores scope
 - `contradiction_recovery_rate` remains the headline memory-governance metric.
 - `answer_correctness_after_contradiction` is the policy-agnostic answer-quality view used alongside recovery.
-- `TranscriptRAG-lite` is intentionally deferred until the first scope-contamination patch, where transcript retrieval can fail informatively.
+- Scope-contamination v1 is in-distribution only. It shows broad-claim premature promotion under the current permissive `WORLD_GLOBAL` scope-match rule, not a general claim that CQ reasons about scope better than Reflection.

@@ -67,8 +67,34 @@ TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
 }
 
 
+SCOPE_TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
+    "clean": ["scope_contamination_clean_v1"],
+    "dirty": ["scope_contamination_dirty_broad_claim_v1"],
+    "mixed": [
+        "scope_contamination_clean_v1",
+        "scope_contamination_dirty_broad_claim_v1",
+    ],
+}
+
+
+PROJECT_SCOPE_PAIRS: Sequence[Tuple[str, str]] = (
+    ("atlas", "beacon"),
+    ("cedar", "delta"),
+    ("ember", "forge"),
+    ("granite", "harbor"),
+    ("ivy", "juniper"),
+)
+
+
 def _template_id_for_index(index: int, template_mix: str) -> str:
     template_ids = TEMPLATE_IDS_BY_MIX[template_mix]
+    return template_ids[index % len(template_ids)]
+
+
+def _scope_template_id_for_index(index: int, template_mix: str) -> str:
+    if template_mix not in SCOPE_TEMPLATE_IDS_BY_MIX:
+        raise ValueError("Unsupported scope-contamination template mix: {}".format(template_mix))
+    template_ids = SCOPE_TEMPLATE_IDS_BY_MIX[template_mix]
     return template_ids[index % len(template_ids)]
 
 
@@ -133,6 +159,70 @@ def _make_question(
         relevant_canonical_id=canonical_id,
         scope_level=ScopeLevel.WORLD_GLOBAL,
         scope_key="global",
+        phase=phase,
+        gold_candidate_ids=gold_candidate_ids,
+        forbidden_candidate_ids=forbidden_candidate_ids,
+        asked_at=asked_at,
+    )
+
+
+def _make_scoped_candidate(
+    candidate_id: str,
+    canonical_id: str,
+    raw_text: str,
+    canonical_claim: str,
+    observed_at: datetime,
+    trust_score: float,
+    verification_score: float,
+    source_kind: str,
+    scope_level: ScopeLevel,
+    scope_key: str,
+    *,
+    semantic_uncertainty: float = 0.0,
+    staleness_score: float = 0.0,
+) -> CandidateUpdate:
+    return CandidateUpdate(
+        candidate_id=candidate_id,
+        canonical_id=canonical_id,
+        raw_text=raw_text,
+        raw_claim=raw_text,
+        canonical_claim=canonical_claim,
+        claim_type=ClaimType.PROJECT_CONVENTION,
+        scope_level=scope_level,
+        scope_key=scope_key,
+        provenance=[
+            ProvenanceRecord(
+                source_kind=source_kind,
+                source_id="source-" + candidate_id,
+                trust_score=trust_score,
+                observed_at=observed_at,
+            )
+        ],
+        verification_score=verification_score,
+        semantic_uncertainty=semantic_uncertainty,
+        staleness_score=staleness_score,
+        created_at=observed_at,
+        updated_at=observed_at,
+    )
+
+
+def _make_scoped_question(
+    question_id: str,
+    text: str,
+    canonical_id: str,
+    phase: str,
+    scope_level: ScopeLevel,
+    scope_key: str,
+    gold_candidate_ids: List[str],
+    forbidden_candidate_ids: List[str],
+    asked_at: datetime,
+) -> QuestionSpec:
+    return QuestionSpec(
+        question_id=question_id,
+        text=text,
+        relevant_canonical_id=canonical_id,
+        scope_level=scope_level,
+        scope_key=scope_key,
         phase=phase,
         gold_candidate_ids=gold_candidate_ids,
         forbidden_candidate_ids=forbidden_candidate_ids,
@@ -1001,6 +1091,246 @@ def _build_dirty_v6_scenario(
         template_kind="dirty",
         template_split="heldout",
     )
+
+
+def _build_scope_clean_v1_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project_a: str,
+    project_b: str,
+    base_time: datetime,
+) -> Scenario:
+    project_a_scope = "project-" + project_a
+    project_b_scope = "project-" + project_b
+    project_a_candidate_id = scenario_id + "-candidate-project-a"
+    project_b_candidate_id = scenario_id + "-candidate-project-b"
+    project_a_claim = "{} tests use pytest -q".format(project_a)
+    project_b_claim = "{} tests use npm test".format(project_b)
+    project_a_text = "In project {}, the test command is pytest -q.".format(project_a)
+    project_b_text = "In project {}, the test command is npm test.".format(project_b)
+
+    project_a_candidate = _make_scoped_candidate(
+        candidate_id=project_a_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=project_a_text,
+        canonical_claim=project_a_claim,
+        observed_at=base_time,
+        trust_score=0.82,
+        verification_score=0.82,
+        source_kind="project_readme",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_a_scope,
+    )
+    project_b_candidate = _make_scoped_candidate(
+        candidate_id=project_b_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=project_b_text,
+        canonical_claim=project_b_claim,
+        observed_at=base_time + timedelta(minutes=1),
+        trust_score=0.84,
+        verification_score=0.84,
+        source_kind="project_readme",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_b_scope,
+    )
+    probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-off-scope-probe",
+        text="For project {}, which command should run tests?".format(project_a),
+        canonical_id=canonical_id,
+        phase="off_scope_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_a_scope,
+        gold_candidate_ids=[project_a_candidate_id],
+        forbidden_candidate_ids=[project_b_candidate_id],
+        asked_at=base_time + timedelta(minutes=2),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.SCOPE_CONTAMINATION,
+        description=(
+            "Two project-scoped conventions share a canonical id; scope-aware memory lookup should answer with the requested project."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "scope_truth": {
+                project_a_scope: project_a_claim,
+                project_b_scope: project_b_claim,
+            },
+            "probe_scope_key": project_a_scope,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=project_a_text,
+                candidate=project_a_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.OBSERVATION,
+                turn_index=2,
+                text=project_b_text,
+                candidate=project_b_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.QUESTION,
+                turn_index=3,
+                text=probe_question.text,
+                question=probe_question,
+            ),
+        ],
+        expected_lifecycle={
+            "probe_phase": "off_scope_probe",
+            "gold_candidate_id": project_a_candidate_id,
+            "forbidden_candidate_ids": [project_b_candidate_id],
+            "should_not_promote_candidate_ids": [],
+        },
+        template_id="scope_contamination_clean_v1",
+        template_kind="clean",
+        template_split="main",
+    )
+
+
+def _build_scope_dirty_broad_claim_v1_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project_a: str,
+    project_b: str,
+    base_time: datetime,
+) -> Scenario:
+    project_a_scope = "project-" + project_a
+    project_candidate_id = scenario_id + "-candidate-project"
+    broad_candidate_id = scenario_id + "-candidate-broad-contaminant"
+    project_claim = "{} tests use pytest -q".format(project_a)
+    broad_claim = "All projects use npm test"
+    project_text = "In project {}, the test command is pytest -q.".format(project_a)
+    broad_text = (
+        "A workspace note says all projects, including {}, should use npm test for tests.".format(project_b)
+    )
+
+    project_candidate = _make_scoped_candidate(
+        candidate_id=project_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=project_text,
+        canonical_claim=project_claim,
+        observed_at=base_time,
+        trust_score=0.82,
+        verification_score=0.82,
+        source_kind="project_readme",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_a_scope,
+    )
+    broad_candidate = _make_scoped_candidate(
+        candidate_id=broad_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=broad_text,
+        canonical_claim=broad_claim,
+        observed_at=base_time + timedelta(minutes=1),
+        trust_score=0.66,
+        verification_score=0.66,
+        source_kind="workspace_note",
+        scope_level=ScopeLevel.WORLD_GLOBAL,
+        scope_key="global",
+        semantic_uncertainty=0.02,
+    )
+    probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-off-scope-probe",
+        text="For project {}, which command should run tests?".format(project_a),
+        canonical_id=canonical_id,
+        phase="off_scope_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_a_scope,
+        gold_candidate_ids=[project_candidate_id],
+        forbidden_candidate_ids=[broad_candidate_id],
+        asked_at=base_time + timedelta(minutes=2),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.SCOPE_CONTAMINATION,
+        description=(
+            "A project-scoped convention is followed by a broad lower-confidence contaminant that eager policies may promote under permissive global scope matching."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "scope_truth": {
+                project_a_scope: project_claim,
+                "global": "not durable enough for project-specific override",
+            },
+            "probe_scope_key": project_a_scope,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=project_text,
+                candidate=project_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.OBSERVATION,
+                turn_index=2,
+                text=broad_text,
+                candidate=broad_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.QUESTION,
+                turn_index=3,
+                text=probe_question.text,
+                question=probe_question,
+            ),
+        ],
+        expected_lifecycle={
+            "probe_phase": "off_scope_probe",
+            "gold_candidate_id": project_candidate_id,
+            "forbidden_candidate_ids": [broad_candidate_id],
+            "should_not_promote_candidate_ids": [broad_candidate_id],
+        },
+        template_id="scope_contamination_dirty_broad_claim_v1",
+        template_kind="dirty",
+        template_split="main",
+    )
+
+
+def generate_scope_contamination_scenarios(
+    count: int,
+    seed: int = 17,
+    template_mix: str = "mixed",
+) -> List[Scenario]:
+    rng = random.Random(seed)
+    scenarios = []
+    for index in range(count):
+        project_a, project_b = rng.choice(PROJECT_SCOPE_PAIRS)
+        template_id = _scope_template_id_for_index(index, template_mix)
+        scenario_id = "scope_contamination_{:03d}".format(index + 1)
+        canonical_id = "project-convention-test-command"
+        base_time = datetime(2026, 2, 1, 9, 0, 0) + timedelta(days=index)
+
+        if template_id == "scope_contamination_clean_v1":
+            scenario = _build_scope_clean_v1_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                project_b,
+                base_time,
+            )
+        elif template_id == "scope_contamination_dirty_broad_claim_v1":
+            scenario = _build_scope_dirty_broad_claim_v1_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                project_b,
+                base_time,
+            )
+        else:
+            raise ValueError("Unsupported template_id: {}".format(template_id))
+        scenarios.append(scenario)
+    return scenarios
 
 
 def generate_forced_contradiction_scenarios(
