@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
-from cq.eval.end_to_end_eval import execute_scenario, summarize_runs
+from cq.eval.end_to_end_eval import execute_scenario, failure_example_sort_key, summarize_runs
 from cq.memory.consolidation_queue import ConsolidationQueueLite
 from cq.memory.naive_eager_write import NaiveEagerWriteLite
 from cq.memory.no_memory import NoMemoryLite
@@ -41,15 +41,6 @@ def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, d
         for field_value, group_records in sorted(grouped.items())
         if field_value
     }
-
-
-def _failure_example_sort_key(example: dict) -> tuple:
-    return (
-        str(example["scenario_id"]),
-        str(example["failure_type"]),
-        str(example["question_phase"]),
-        str(example["question_id"]),
-    )
 
 
 def _generate_scenarios(family: str, scenario_count: int, template_mix: str):
@@ -106,7 +97,7 @@ def build_run_artifact(
                 for record in run_records
                 for example in record.get("failure_examples", [])
             ],
-            key=_failure_example_sort_key,
+            key=failure_example_sort_key,
         )
         policy_runs.append(
             {

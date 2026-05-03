@@ -2,7 +2,10 @@ import json
 import unittest
 
 from cq.dashboard.app import render_dashboard
+from cq.eval.end_to_end_eval import execute_scenario, failure_example_sort_key
 from cq.eval.runner import build_run_artifact
+from cq.memory.reflection_eager_write import ReflectionEagerWriteLite
+from cq.simulator.scenario_generator import generate_forced_contradiction_scenarios
 
 
 def _policies_by_name(artifact):
@@ -105,14 +108,22 @@ class FailureExampleTest(unittest.TestCase):
             ]
             expected = sorted(
                 scenario_examples,
-                key=lambda example: (
-                    example["scenario_id"],
-                    example["failure_type"],
-                    example["question_phase"],
-                    example["question_id"],
-                ),
+                key=failure_example_sort_key,
             )
             self.assertEqual(policy["failure_examples"], expected)
+
+    def test_forced_contradiction_premature_promotion_has_explicit_reason(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1)[0]
+        should_not_promote_id = scenario.expected_lifecycle["old_candidate_id"]
+        scenario.expected_lifecycle["should_not_promote_candidate_ids"] = [should_not_promote_id]
+
+        result = execute_scenario(ReflectionEagerWriteLite, scenario)
+
+        premature = _failure_by_type(result, "premature_promotion")
+        self.assertEqual(
+            premature["reason"],
+            "should_not_promote_contradiction_candidate_promoted",
+        )
 
     def test_failure_examples_match_metrics_across_mixed_runs(self) -> None:
         artifacts = [

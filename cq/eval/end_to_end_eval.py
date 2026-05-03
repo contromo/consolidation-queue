@@ -28,6 +28,7 @@ def execute_scenario(policy_cls: Type[object], scenario: Scenario) -> Dict[str, 
         scenario,
         question_traces,
         store_snapshot,
+        is_floor_baseline=bool(getattr(policy_cls, "is_floor_baseline", False)),
     )
     return {
         "policy_name": policy.policy_name,
@@ -80,6 +81,7 @@ ASSERTION_FAILURE_BY_FAMILY = {
 
 
 PREMATURE_PROMOTION_REASON_BY_FAMILY = {
+    TaskFamily.FORCED_CONTRADICTION: "should_not_promote_contradiction_candidate_promoted",
     TaskFamily.SCOPE_CONTAMINATION: "should_not_promote_scope_candidate_promoted",
     TaskFamily.PREFERENCE_DRIFT: "should_not_promote_preference_candidate_promoted",
 }
@@ -90,6 +92,8 @@ def extract_failure_examples(
     scenario: Scenario,
     question_traces: List[object],
     store_snapshot: Dict[str, object],
+    *,
+    is_floor_baseline: bool = False,
 ) -> List[Dict[str, object]]:
     questions = {
         event.question.phase: event.question
@@ -118,10 +122,9 @@ def extract_failure_examples(
     )
 
     examples = []
-    assertion_failure_emitted = False
+    assertion_failure_emitted = bool(forbidden_asserted_ids)
     if forbidden_asserted_ids:
         failure_type, reason = ASSERTION_FAILURE_BY_FAMILY[scenario.task_family]
-        assertion_failure_emitted = failure_type in {"false_assertion", "scope_leakage"}
         examples.append(
             _build_failure_example(
                 policy_name=policy_name,
@@ -139,21 +142,26 @@ def extract_failure_examples(
 
     if promoted_should_not_promote_ids:
         reason = PREMATURE_PROMOTION_REASON_BY_FAMILY.get(scenario.task_family)
-        if reason is not None:
-            examples.append(
-                _build_failure_example(
-                    policy_name=policy_name,
-                    scenario=scenario,
-                    question=diagnostic_question,
-                    trace=diagnostic_trace,
-                    store_snapshot=store_snapshot,
-                    failure_type="premature_promotion",
-                    failure_subtype="",
-                    reason=reason,
-                    asserted_candidate_ids=asserted_candidate_ids,
-                    promoted_should_not_promote_candidate_ids=promoted_should_not_promote_ids,
+        if reason is None:
+            raise ValueError(
+                "Premature-promotion reason is missing for family: {}".format(
+                    scenario.task_family
                 )
             )
+        examples.append(
+            _build_failure_example(
+                policy_name=policy_name,
+                scenario=scenario,
+                question=diagnostic_question,
+                trace=diagnostic_trace,
+                store_snapshot=store_snapshot,
+                failure_type="premature_promotion",
+                failure_subtype="",
+                reason=reason,
+                asserted_candidate_ids=asserted_candidate_ids,
+                promoted_should_not_promote_candidate_ids=promoted_should_not_promote_ids,
+            )
+        )
 
     if not answer_correct and not assertion_failure_emitted:
         examples.append(
@@ -164,14 +172,14 @@ def extract_failure_examples(
                 trace=diagnostic_trace,
                 store_snapshot=store_snapshot,
                 failure_type="incorrect_answer",
-                failure_subtype="no_memory_floor" if policy_name == "no_memory_lite" else "",
+                failure_subtype="no_memory_floor" if is_floor_baseline else "",
                 reason="gold_candidate_not_resolved",
                 asserted_candidate_ids=asserted_candidate_ids,
                 promoted_should_not_promote_candidate_ids=[],
             )
         )
 
-    return sorted(examples, key=_failure_example_sort_key)
+    return sorted(examples, key=failure_example_sort_key)
 
 
 def _build_failure_example(
@@ -221,7 +229,7 @@ def _build_failure_example(
     }
 
 
-def _failure_example_sort_key(example: Dict[str, object]) -> tuple:
+def failure_example_sort_key(example: Dict[str, object]) -> tuple:
     return (
         str(example["scenario_id"]),
         str(example["failure_type"]),
