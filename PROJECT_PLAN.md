@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-02
+Last updated: 2026-05-03
 
 ## Goal
 
@@ -50,12 +50,15 @@ Implemented:
 - `NaiveEagerWriteLite`
 - `NoMemoryLite`
 - `ConsolidationQueueLite`
-- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination probes
+- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination and preference-drift probes
 - oracle forced-contradiction scenario generation
 - initial oracle scope-contamination scenario generation, framed as broad-claim premature promotion
+- oracle preference-drift scenario generation with explicit-update, one-off exception, and drift-back probes
 - multiple clean and dirty forced-contradiction templates with scenario metadata
 - clean and dirty main-split scope-contamination templates
 - held-out scope-contamination templates for clean recency and broad-first premature-promotion probes
+- clean and dirty main-split preference-drift templates
+- held-out preference-drift templates for stable preference and drift-back probes
 - four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
 - family-selectable oracle runner
@@ -69,7 +72,6 @@ Implemented:
 
 Not implemented yet:
 
-- preference drift scenarios
 - non-broad-claim scope-contamination mechanisms
 - poisoning scenarios
 - false corroboration scenarios
@@ -117,7 +119,7 @@ Immediate gap:
 
 ### Phase 2: Stronger Oracle Benchmark
 
-Status: in progress, broad-claim premature-promotion scope slice now has main and held-out variants
+Status: in progress, broad-claim premature-promotion scope and preference-drift v1 slices now have main and held-out variants
 
 Add:
 
@@ -135,7 +137,8 @@ Required outcome:
 Current caveat:
 
 - the scope-contamination split should still be described as broad-claim premature promotion under the current permissive `WORLD_GLOBAL` scope-match rule, not as evidence that CQ performs better semantic scope inference than Reflection
-- Phase 2 is only partially addressed for scope: preference drift and a non-broad-claim scope mechanism are still needed before the broader held-out-divergence requirement is satisfied
+- preference drift now includes an explicit-update calibration point plus one-off and drift-back probes that distinguish staged promotion from pure recency
+- Phase 2 is only partially addressed for scope: a non-broad-claim scope mechanism is still needed before making broader scope-inference claims
 
 ### Phase 3: Component Evaluation Harness
 
@@ -267,11 +270,10 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Add the preference drift oracle family.
-2. Add scenario-level failure example extraction for Phase 2 families.
-3. Add a non-broad-claim scope-contamination mechanism before making broader scope-inference claims.
-4. Add more held-out contradiction templates only when they introduce a genuinely new mechanism.
-5. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
+1. Add scenario-level failure example extraction for Phase 2 families.
+2. Add a non-broad-claim scope-contamination mechanism before making broader scope-inference claims.
+3. Add more held-out contradiction or preference-drift templates only when they introduce a genuinely new mechanism.
+4. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
 
 ## Working Rules
 

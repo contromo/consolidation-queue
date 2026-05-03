@@ -15,6 +15,7 @@ from cq.memory.scope_blind_transcript_rag import ScopeBlindTranscriptRAGLite
 from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import (
     generate_forced_contradiction_scenarios,
+    generate_preference_drift_scenarios,
     generate_scope_contamination_scenarios,
 )
 from cq.simulator.render_events import render_scenario_transcript
@@ -22,9 +23,11 @@ from cq.simulator.render_events import render_scenario_transcript
 
 FORCED_CONTRADICTION = "forced_contradiction"
 SCOPE_CONTAMINATION = "scope_contamination"
+PREFERENCE_DRIFT = "preference_drift"
 TEMPLATE_MIXES_BY_FAMILY = {
     FORCED_CONTRADICTION: ("mixed", "clean", "dirty", "heldout"),
     SCOPE_CONTAMINATION: ("mixed", "clean", "dirty", "heldout"),
+    PREFERENCE_DRIFT: ("mixed", "clean", "dirty", "heldout"),
 }
 
 
@@ -46,6 +49,8 @@ def _generate_scenarios(family: str, scenario_count: int, template_mix: str):
         return generate_forced_contradiction_scenarios(scenario_count, template_mix=template_mix)
     if family == SCOPE_CONTAMINATION:
         return generate_scope_contamination_scenarios(scenario_count, template_mix=template_mix)
+    if family == PREFERENCE_DRIFT:
+        return generate_preference_drift_scenarios(scenario_count, template_mix=template_mix)
     raise ValueError("Unsupported family: {}".format(family))
 
 
@@ -70,7 +75,7 @@ def _policies_for_family(family: str):
         NaiveEagerWriteLite,
         NoMemoryLite,
     ]
-    if family == SCOPE_CONTAMINATION:
+    if family in {SCOPE_CONTAMINATION, PREFERENCE_DRIFT}:
         policies.append(ScopeBlindTranscriptRAGLite)
     return policies
 
@@ -197,7 +202,7 @@ def main(argv: List[str] = None) -> int:
     parser = argparse.ArgumentParser(description="Run oracle memory-governance experiments.")
     parser.add_argument(
         "--family",
-        choices=[FORCED_CONTRADICTION, SCOPE_CONTAMINATION],
+        choices=[FORCED_CONTRADICTION, SCOPE_CONTAMINATION, PREFERENCE_DRIFT],
         default=FORCED_CONTRADICTION,
         help="Oracle benchmark family to run.",
     )

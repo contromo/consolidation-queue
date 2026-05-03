@@ -43,6 +43,8 @@ def compute_policy_metrics(
         return compute_forced_contradiction_metrics(policy_name, scenario, question_traces, store_snapshot)
     if scenario.task_family == TaskFamily.SCOPE_CONTAMINATION:
         return compute_scope_contamination_metrics(policy_name, scenario, question_traces, store_snapshot)
+    if scenario.task_family == TaskFamily.PREFERENCE_DRIFT:
+        return compute_preference_drift_metrics(policy_name, scenario, question_traces, store_snapshot)
     raise ValueError("Unsupported task family: {}".format(scenario.task_family))
 
 
@@ -67,7 +69,8 @@ def compute_forced_contradiction_metrics(
     durable_commit_before = (
         1.0 if _candidate_became_durable(store_snapshot, scenario.expected_lifecycle["old_candidate_id"]) else 0.0
     )
-    false_assertion = 1.0 if _contains_any(after_trace.resolved_candidate_ids, after_question.forbidden_candidate_ids) else 0.0
+    after_asserted_ids = _asserted_candidate_ids(after_trace, store_snapshot)
+    false_assertion = 1.0 if _contains_any(after_asserted_ids, after_question.forbidden_candidate_ids) else 0.0
     answer_correctness = 1.0 if _contains_any(after_trace.resolved_candidate_ids, after_question.gold_candidate_ids) else 0.0
 
     invalidated = _old_claim_invalidated(
@@ -119,10 +122,11 @@ def compute_scope_contamination_metrics(
     probe_question = questions["off_scope_probe"]
     probe_trace = traces[probe_question.question_id]
 
+    probe_asserted_ids = _asserted_candidate_ids(probe_trace, store_snapshot)
     answer_correctness = (
         1.0 if _contains_any(probe_trace.resolved_candidate_ids, probe_question.gold_candidate_ids) else 0.0
     )
-    leakage = 1.0 if _contains_any(probe_trace.resolved_candidate_ids, probe_question.forbidden_candidate_ids) else 0.0
+    leakage = 1.0 if _contains_any(probe_asserted_ids, probe_question.forbidden_candidate_ids) else 0.0
     premature_promotion = _premature_promotion_rate(store_snapshot, scenario)
 
     # In this first scope family, the only false assertion is an off-scope leak.
@@ -143,6 +147,53 @@ def compute_scope_contamination_metrics(
         useful_recall=answer_correctness,
         used_pending=1.0 if probe_trace.used_pending else 0.0,
         durable_commit=0.0,
+    )
+
+
+def compute_preference_drift_metrics(
+    policy_name: str,
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+) -> PolicyScenarioMetrics:
+    questions = {}
+    for event in scenario.sorted_events():
+        if event.question is not None:
+            questions[event.question.phase] = event.question
+    traces = {trace.question_id: trace for trace in question_traces}
+    before_question = questions["before_drift"]
+    after_question = questions["after_drift"]
+    before_trace = traces[before_question.question_id]
+    after_trace = traces[after_question.question_id]
+    after_asserted_ids = _asserted_candidate_ids(after_trace, store_snapshot)
+
+    useful_recall = 1.0 if _contains_any(before_trace.resolved_candidate_ids, before_question.gold_candidate_ids) else 0.0
+    answer_correctness = 1.0 if _contains_any(after_trace.resolved_candidate_ids, after_question.gold_candidate_ids) else 0.0
+    false_assertion = 1.0 if _contains_any(after_asserted_ids, after_question.forbidden_candidate_ids) else 0.0
+    old_candidate_id = scenario.expected_lifecycle.get("old_candidate_id", "")
+    contradiction_timestamp = scenario.expected_lifecycle.get("contradiction_timestamp")
+    time_to_demotion = (
+        _time_to_invalidation(store_snapshot, old_candidate_id, contradiction_timestamp)
+        if old_candidate_id and contradiction_timestamp
+        else None
+    )
+    return PolicyScenarioMetrics(
+        scenario_id=scenario.scenario_id,
+        policy_name=policy_name,
+        useful_recall_before_contradiction=0.0,
+        used_pending_before_contradiction=0.0,
+        durable_commit_before_contradiction=0.0,
+        false_assertion_after_contradiction=0.0,
+        contradiction_recovery_rate=0.0,
+        answer_correctness_after_contradiction=0.0,
+        time_to_demotion=time_to_demotion,
+        answer_correctness=answer_correctness,
+        false_assertion_rate=false_assertion,
+        leakage_rate=0.0,
+        premature_promotion_rate=_premature_promotion_rate(store_snapshot, scenario),
+        useful_recall=useful_recall,
+        used_pending=1.0 if after_trace.used_pending else 0.0,
+        durable_commit=1.0 if old_candidate_id and _candidate_became_durable(store_snapshot, old_candidate_id) else 0.0,
     )
 
 
@@ -189,6 +240,37 @@ def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics
 
 def _contains_any(resolved_ids: List[str], gold_ids: List[str]) -> bool:
     return any(candidate_id in resolved_ids for candidate_id in gold_ids)
+
+
+def _asserted_candidate_ids(trace: object, store_snapshot: Dict[str, object]) -> List[str]:
+    used_memory_ids = getattr(trace, "used_memory_ids", [])
+    resolved_candidate_ids = list(getattr(trace, "resolved_candidate_ids", []))
+    if not used_memory_ids:
+        return resolved_candidate_ids
+
+    asserted_ids = []
+    unresolved_used_ids = []
+    durable_by_id = {
+        durable["memory_id"]: durable
+        for durable in store_snapshot.get("durable_memories", [])
+    }
+    for memory_id in used_memory_ids:
+        durable = durable_by_id.get(memory_id)
+        if durable is None:
+            unresolved_used_ids.append(memory_id)
+            continue
+        created_from_ids = durable.get("created_from_candidate_ids", [])
+        if created_from_ids:
+            # A reinforced durable asserts its original durable claim, not every corroborating source.
+            asserted_ids.append(created_from_ids[0])
+        else:
+            unresolved_used_ids.append(memory_id)
+    if asserted_ids:
+        for candidate_id in resolved_candidate_ids:
+            if candidate_id in unresolved_used_ids and candidate_id not in asserted_ids:
+                asserted_ids.append(candidate_id)
+        return asserted_ids
+    return resolved_candidate_ids
 
 
 def _old_claim_invalidated(store_snapshot: Dict[str, object], old_candidate_id: str) -> bool:
