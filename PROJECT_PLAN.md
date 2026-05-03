@@ -50,15 +50,18 @@ Implemented:
 - `NaiveEagerWriteLite`
 - `NoMemoryLite`
 - `ConsolidationQueueLite`
-- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination and preference-drift probes
+- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination, preference-drift, and useful-pending probes
 - oracle forced-contradiction scenario generation
 - initial oracle scope-contamination scenario generation, framed as broad-claim premature promotion
 - oracle preference-drift scenario generation with explicit-update, one-off exception, and drift-back probes
+- oracle useful-pending-memory scenario generation with clean calibration and dirty refinement probes
 - multiple clean and dirty forced-contradiction templates with scenario metadata
 - clean and dirty main-split scope-contamination templates
 - held-out scope-contamination templates for clean recency and broad-first premature-promotion probes
 - clean and dirty main-split preference-drift templates
 - held-out preference-drift templates for stable preference and drift-back probes
+- clean and dirty main-split useful-pending-memory templates
+- held-out useful-pending-memory templates for clean calibration and dirty refinement probes
 - four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
 - family-selectable oracle runner
@@ -77,7 +80,6 @@ Not implemented yet:
 - non-broad-claim scope-contamination mechanisms
 - poisoning scenarios
 - false corroboration scenarios
-- useful-pending-memory scenarios beyond the current contradiction slice
 - lexical or embedding-based `TranscriptRAG`
 - component evaluation harness
 - local-model noisy pipeline
@@ -121,13 +123,14 @@ Immediate gap:
 
 ### Phase 2: Stronger Oracle Benchmark
 
-Status: in progress, broad-claim premature-promotion scope and preference-drift v1 slices now have main and held-out variants
+Status: in progress, broad-claim premature-promotion scope, preference-drift v1, and useful-pending-memory v1 slices now have main and held-out variants
 
 Add:
 
 - scope contamination family
 - `TranscriptRAG`
 - preference drift family
+- useful pending memory family
 - scenario-level failure example extraction
 
 Required outcome:
@@ -140,8 +143,10 @@ Current caveat:
 
 - the scope-contamination split should still be described as broad-claim premature promotion under the current permissive `WORLD_GLOBAL` scope-match rule, not as evidence that CQ performs better semantic scope inference than Reflection
 - preference drift now includes an explicit-update calibration point plus one-off and drift-back probes that distinguish staged promotion from pure recency
+- useful-pending memory now includes clean calibration and dirty refinement probes where all candidates are below durable-promotion threshold but strong enough for pending use
 - scenario-level failure examples now expose assertion, leakage, premature-promotion, and no-memory floor failures in saved artifacts and the dashboard
 - Phase 2 is only partially addressed for scope: a non-broad-claim scope mechanism is still needed before making broader scope-inference claims
+- ScopeBlindTranscriptRAG follows truth by recency on useful-pending-memory probes, so that family should be read as CQ-vs-eager policy evidence, not retrieval-baseline evidence
 
 ### Phase 3: Component Evaluation Harness
 
@@ -263,6 +268,7 @@ CQ should earn its complexity with at least one of:
 - `>= 10` point contradiction recovery improvement
 - `>= 10` point poison promotion reduction
 - `>= 10` point scope leakage reduction
+- pending utility gain without useful recall loss
 
 Without:
 
@@ -274,7 +280,7 @@ Without:
 These are the highest-priority implementation steps right now.
 
 1. Add a non-broad-claim scope-contamination mechanism before making broader scope-inference claims.
-2. Add more held-out contradiction or preference-drift templates only when they introduce a genuinely new mechanism.
+2. Add poisoning or false-corroboration scenarios only when their oracle mechanisms are explicit and diagnosable.
 3. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
 
 ## Working Rules
