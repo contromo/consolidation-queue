@@ -299,6 +299,30 @@ class PolicySummaryMetricsTests(unittest.TestCase):
         self.assertEqual(metrics.used_pending, 0.0)
         self.assertEqual(metrics.durable_commit, 1.0)
 
+    def test_useful_pending_metrics_requires_pending_probe_question(self) -> None:
+        scenario = generate_useful_pending_memory_scenarios(1, seed=31, template_mix="clean")[0]
+        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
+        probe_question.phase = "renamed_probe"
+
+        with self.assertRaisesRegex(ValueError, "missing pending_probe question"):
+            compute_useful_pending_memory_metrics(
+                "test-policy",
+                scenario,
+                [],
+                {"candidate_memories": [], "durable_memories": [], "lifecycle_events": []},
+            )
+
+    def test_useful_pending_metrics_requires_pending_probe_trace(self) -> None:
+        scenario = generate_useful_pending_memory_scenarios(1, seed=31, template_mix="clean")[0]
+
+        with self.assertRaisesRegex(ValueError, "missing trace for pending_probe question"):
+            compute_useful_pending_memory_metrics(
+                "test-policy",
+                scenario,
+                [],
+                {"candidate_memories": [], "durable_memories": [], "lifecycle_events": []},
+            )
+
     def test_asserted_candidate_ids_use_primary_durable_source(self) -> None:
         trace = AnswerTrace(
             answer_id="answer-1",

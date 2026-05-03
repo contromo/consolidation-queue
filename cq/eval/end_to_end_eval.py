@@ -359,8 +359,17 @@ def compute_useful_pending_memory_metrics(
         if event.question is not None:
             questions[event.question.phase] = event.question
     traces = {trace.question_id: trace for trace in question_traces}
-    probe_question = questions["pending_probe"]
-    probe_trace = traces[probe_question.question_id]
+    probe_question = questions.get("pending_probe")
+    if probe_question is None:
+        raise ValueError("Scenario {} is missing pending_probe question".format(scenario.scenario_id))
+    probe_trace = traces.get(probe_question.question_id)
+    if probe_trace is None:
+        raise ValueError(
+            "Scenario {} is missing trace for pending_probe question {}".format(
+                scenario.scenario_id,
+                probe_question.question_id,
+            )
+        )
 
     asserted_ids = _asserted_candidate_ids(probe_trace, store_snapshot)
     answer_correctness = (
