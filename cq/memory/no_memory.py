@@ -7,6 +7,7 @@ from cq.schemas.scenario import QuestionSpec
 
 class NoMemoryLite:
     policy_name = "no_memory_lite"
+    is_floor_baseline = True
 
     def __init__(self) -> None:
         self.store = MemoryStore(self.policy_name)

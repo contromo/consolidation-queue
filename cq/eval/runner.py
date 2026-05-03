@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
-from cq.eval.end_to_end_eval import execute_scenario, summarize_runs
+from cq.eval.end_to_end_eval import execute_scenario, failure_example_sort_key, summarize_runs
 from cq.memory.consolidation_queue import ConsolidationQueueLite
 from cq.memory.naive_eager_write import NaiveEagerWriteLite
 from cq.memory.no_memory import NoMemoryLite
@@ -91,6 +91,14 @@ def build_run_artifact(
     for policy_cls in policies:
         run_records = [execute_scenario(policy_cls, scenario) for scenario in scenarios]
         summary = summarize_runs(run_records)
+        failure_examples = sorted(
+            [
+                example
+                for record in run_records
+                for example in record.get("failure_examples", [])
+            ],
+            key=failure_example_sort_key,
+        )
         policy_runs.append(
             {
                 "policy_name": policy_cls.policy_name,
@@ -98,6 +106,7 @@ def build_run_artifact(
                 "summary_by_template_kind": _summaries_by_field(run_records, "template_kind"),
                 "summary_by_template_split": _summaries_by_field(run_records, "template_split"),
                 "summary_by_template_id": _summaries_by_field(run_records, "template_id"),
+                "failure_examples": failure_examples,
                 "scenarios": [
                     {
                         "scenario_id": record["scenario_id"],
@@ -106,6 +115,7 @@ def build_run_artifact(
                         "question_traces": record["question_traces"],
                         "store_snapshot": record["store_snapshot"],
                         "metrics": record["metrics"],
+                        "failure_examples": record["failure_examples"],
                     }
                     for index, record in enumerate(run_records)
                 ],

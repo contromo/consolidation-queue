@@ -28,6 +28,7 @@ def render_dashboard(run_data: Dict[str, object]) -> str:
         ".timeline-turn h4{margin:0 0 8px 0;}",
         ".timeline-meta{margin:6px 0 0 0;color:#5d5345;}",
         ".badge{display:inline-block;padding:2px 6px;border-radius:999px;background:#e7dcc6;margin-right:6px;}",
+        ".failure-floor td{background:#f4f1ea;color:#5d5345;}",
         "</style></head><body>",
         "<h1>Consolidation Queue Dashboard</h1>",
         "<div class='card'><strong>Experiment:</strong> {}<br><strong>Scenarios:</strong> {}</div>".format(
@@ -63,6 +64,8 @@ def render_dashboard(run_data: Dict[str, object]) -> str:
             for template_id, template_summary in policy["summary_by_template_id"].items():
                 parts.append("<p><strong>{}</strong></p>".format(html.escape(template_id)))
                 parts.append(_render_summary_metrics(template_summary))
+        parts.append("<h3>Failure Examples</h3>")
+        parts.append(_render_failure_examples(policy.get("failure_examples", []), summary["policy_name"], True))
 
         for scenario in policy["scenarios"]:
             parts.append(
@@ -80,6 +83,8 @@ def render_dashboard(run_data: Dict[str, object]) -> str:
                     html.escape(str(scenario["scenario"].get("description", ""))),
                 )
             )
+            parts.append("<h3>Failure Examples</h3>")
+            parts.append(_render_failure_examples(scenario.get("failure_examples", []), summary["policy_name"], False))
             parts.append("<h3>Transcript</h3><pre>{}</pre>".format(html.escape("\n".join(scenario["transcript"]))))
             parts.append("<h3>Timeline</h3>")
             parts.append(_render_timeline(summary["policy_name"], scenario))
@@ -140,6 +145,51 @@ def _render_summary_metrics(summary: Dict[str, object]) -> str:
             )
     parts.append("</div>")
     return "".join(parts)
+
+
+def _render_failure_examples(examples: List[Dict[str, object]], policy_name: str, include_link: bool) -> str:
+    if not examples:
+        return "<p><em>No failure examples</em></p>"
+    parts = [
+        "<table><thead><tr>",
+        "<th>Failure</th><th>Subtype</th><th>Reason</th><th>Scenario</th>",
+        "<th>Template</th><th>Split</th><th>Phase</th><th>Answer</th><th>Involved Claims</th>",
+    ]
+    if include_link:
+        parts.append("<th>Link</th>")
+    parts.append("</tr></thead><tbody>")
+    for example in examples:
+        row_class = " class='failure-floor'" if example.get("failure_subtype") == "no_memory_floor" else ""
+        parts.append("<tr{}>".format(row_class))
+        parts.append("<td><pre>{}</pre></td>".format(html.escape(str(example.get("failure_type", "")))))
+        parts.append("<td><pre>{}</pre></td>".format(html.escape(str(example.get("failure_subtype", "")))))
+        parts.append("<td><pre>{}</pre></td>".format(html.escape(str(example.get("reason", "")))))
+        parts.append("<td><pre>{}</pre></td>".format(html.escape(str(example.get("scenario_id", "")))))
+        parts.append("<td><pre>{}</pre></td>".format(html.escape(str(example.get("template_id", "")))))
+        parts.append("<td><pre>{}</pre></td>".format(html.escape(str(example.get("template_split", "")))))
+        parts.append("<td><pre>{}</pre></td>".format(html.escape(str(example.get("question_phase", "")))))
+        parts.append("<td><pre>{}</pre></td>".format(html.escape(str(example.get("answer_text", "")))))
+        parts.append("<td><pre>{}</pre></td>".format(html.escape(_render_failure_claims(example))))
+        if include_link:
+            anchor = "scenario-{}-{}".format(policy_name, example.get("scenario_id", ""))
+            parts.append(
+                "<td><a href='#{}'>context</a></td>".format(
+                    html.escape(anchor, quote=True)
+                )
+            )
+        parts.append("</tr>")
+    parts.append("</tbody></table>")
+    return "".join(parts)
+
+
+def _render_failure_claims(example: Dict[str, object]) -> str:
+    claims = {
+        "candidates": example.get("candidate_claims", {}),
+        "durables": example.get("durable_claims", {}),
+    }
+    if not claims["candidates"] and not claims["durables"]:
+        return "none"
+    return json.dumps(claims, indent=2, sort_keys=True)
 
 
 def _render_table(rows: List[Dict[str, object]]) -> str:
