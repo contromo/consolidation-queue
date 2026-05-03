@@ -244,10 +244,12 @@ def _contains_any(resolved_ids: List[str], gold_ids: List[str]) -> bool:
 
 def _asserted_candidate_ids(trace: object, store_snapshot: Dict[str, object]) -> List[str]:
     used_memory_ids = getattr(trace, "used_memory_ids", [])
+    resolved_candidate_ids = list(getattr(trace, "resolved_candidate_ids", []))
     if not used_memory_ids:
-        return list(getattr(trace, "resolved_candidate_ids", []))
+        return resolved_candidate_ids
 
     asserted_ids = []
+    unresolved_used_ids = []
     durable_by_id = {
         durable["memory_id"]: durable
         for durable in store_snapshot.get("durable_memories", [])
@@ -255,13 +257,20 @@ def _asserted_candidate_ids(trace: object, store_snapshot: Dict[str, object]) ->
     for memory_id in used_memory_ids:
         durable = durable_by_id.get(memory_id)
         if durable is None:
+            unresolved_used_ids.append(memory_id)
             continue
         created_from_ids = durable.get("created_from_candidate_ids", [])
         if created_from_ids:
+            # A reinforced durable asserts its original durable claim, not every corroborating source.
             asserted_ids.append(created_from_ids[0])
+        else:
+            unresolved_used_ids.append(memory_id)
     if asserted_ids:
+        for candidate_id in resolved_candidate_ids:
+            if candidate_id in unresolved_used_ids and candidate_id not in asserted_ids:
+                asserted_ids.append(candidate_id)
         return asserted_ids
-    return list(getattr(trace, "resolved_candidate_ids", []))
+    return resolved_candidate_ids
 
 
 def _old_claim_invalidated(store_snapshot: Dict[str, object], old_candidate_id: str) -> bool:

@@ -284,6 +284,35 @@ class PolicySummaryMetricsTests(unittest.TestCase):
 
         self.assertEqual(asserted_ids, ["old-candidate"])
 
+    def test_asserted_candidate_ids_preserve_mixed_pending_sources(self) -> None:
+        trace = AnswerTrace(
+            answer_id="answer-1",
+            question_id="question-1",
+            query="query",
+            relevant_canonical_id="canonical",
+            scope_level=generate_preference_drift_scenarios(1)[0].oracle_events[0].candidate.scope_level,
+            scope_key="user",
+            resolved_candidate_ids=["old-candidate", "pending-candidate"],
+            used_memory_ids=["memory-old-candidate", "pending-candidate"],
+            answer_text="answer",
+            used_pending=True,
+            created_at=datetime(2026, 1, 1, 9, 0, 0),
+        )
+
+        asserted_ids = _asserted_candidate_ids(
+            trace,
+            {
+                "durable_memories": [
+                    {
+                        "memory_id": "memory-old-candidate",
+                        "created_from_candidate_ids": ["old-candidate", "reinforcer-candidate"],
+                    }
+                ]
+            },
+        )
+
+        self.assertEqual(asserted_ids, ["old-candidate", "pending-candidate"])
+
     def test_preference_metrics_do_not_treat_reinforcer_as_asserted_answer(self) -> None:
         scenario = generate_preference_drift_scenarios(3, seed=23, template_mix="mixed")[2]
         before_question = [
