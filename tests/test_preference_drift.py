@@ -69,12 +69,25 @@ class PreferenceDriftScenarioTests(unittest.TestCase):
             self.assertEqual(candidate.scope_key, "user")
 
     def test_calibration_pins_pre_policy_strengths_and_scores(self) -> None:
+        stable = self._scenario_by_template_id("preference_drift_clean_stable_v1")
+        heldout_stable = self._scenario_by_template_id("preference_drift_clean_stable_v2", "heldout", 2)
+        stable_candidate = self._candidate_by_id(stable, stable.expected_lifecycle["old_candidate_id"])
+        heldout_stable_candidate = self._candidate_by_id(
+            heldout_stable,
+            heldout_stable.expected_lifecycle["old_candidate_id"],
+        )
         explicit = self._scenario_by_template_id("preference_drift_dirty_explicit_update_v1")
         old_candidate = self._candidate_by_id(explicit, explicit.expected_lifecycle["old_candidate_id"])
         new_candidate = self._candidate_by_id(explicit, explicit.expected_lifecycle["new_candidate_id"])
         one_off = self._scenario_by_template_id("preference_drift_dirty_one_off_exception_v1")
         one_off_candidate_id = one_off.expected_lifecycle["should_not_promote_candidate_ids"][0]
         one_off_candidate = self._candidate_by_id(one_off, one_off_candidate_id)
+
+        for candidate in (stable_candidate, heldout_stable_candidate):
+            self.assertEqual(candidate.strength, 0.76)
+            self.assertEqual(candidate.promotion_score, 0.76)
+            self.assertEqual(candidate.provenance[0].trust_score, 0.76)
+            self.assertEqual(candidate.verification_score, 0.76)
 
         self.assertEqual(old_candidate.strength, 0.86)
         self.assertEqual(old_candidate.promotion_score, 0.86)

@@ -33,6 +33,7 @@
 - per-template held-out result:
   - `preference_drift_clean_stable_v2`: Reflection/CQ/Naive/RAG are correct; NoMemory has no recall
   - `preference_drift_dirty_drift_back_v2`: Reflection and Naive stale-assert and prematurely absorb the one-off; CQ answers from pending current preference; RAG follows the newest one-off and fails
+- generated `data/runs/` and `data/results/` artifacts are ignored by git; the commands above record the reproducible artifacts rather than committing generated files
 
 ### Open issues / next
 

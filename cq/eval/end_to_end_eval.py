@@ -168,7 +168,7 @@ def compute_preference_drift_metrics(
     after_asserted_ids = _asserted_candidate_ids(after_trace, store_snapshot)
 
     useful_recall = 1.0 if _contains_any(before_trace.resolved_candidate_ids, before_question.gold_candidate_ids) else 0.0
-    answer_correctness = 1.0 if _contains_any(after_asserted_ids, after_question.gold_candidate_ids) else 0.0
+    answer_correctness = 1.0 if _contains_any(after_trace.resolved_candidate_ids, after_question.gold_candidate_ids) else 0.0
     false_assertion = 1.0 if _contains_any(after_asserted_ids, after_question.forbidden_candidate_ids) else 0.0
     old_candidate_id = scenario.expected_lifecycle.get("old_candidate_id", "")
     contradiction_timestamp = scenario.expected_lifecycle.get("contradiction_timestamp")
