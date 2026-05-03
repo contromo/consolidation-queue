@@ -99,6 +99,20 @@ PREFERENCE_TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
 }
 
 
+USEFUL_PENDING_TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
+    "clean": ["useful_pending_clean_v1"],
+    "dirty": ["useful_pending_dirty_refinement_v1"],
+    "mixed": [
+        "useful_pending_clean_v1",
+        "useful_pending_dirty_refinement_v1",
+    ],
+    "heldout": [
+        "useful_pending_clean_v2",
+        "useful_pending_dirty_refinement_v2",
+    ],
+}
+
+
 PROJECT_SCOPE_PAIRS: Sequence[Tuple[str, str]] = (
     ("atlas", "beacon"),
     ("cedar", "delta"),
@@ -149,6 +163,13 @@ def _preference_template_id_for_index(index: int, template_mix: str) -> str:
     if template_mix not in PREFERENCE_TEMPLATE_IDS_BY_MIX:
         raise ValueError("Unsupported preference-drift template mix: {}".format(template_mix))
     template_ids = PREFERENCE_TEMPLATE_IDS_BY_MIX[template_mix]
+    return template_ids[index % len(template_ids)]
+
+
+def _useful_pending_template_id_for_index(index: int, template_mix: str) -> str:
+    if template_mix not in USEFUL_PENDING_TEMPLATE_IDS_BY_MIX:
+        raise ValueError("Unsupported useful-pending-memory template mix: {}".format(template_mix))
+    template_ids = USEFUL_PENDING_TEMPLATE_IDS_BY_MIX[template_mix]
     return template_ids[index % len(template_ids)]
 
 
@@ -1624,6 +1645,208 @@ def _build_scope_dirty_broad_claim_v3_scenario(
     )
 
 
+def _build_useful_pending_clean_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project: str,
+    base_time: datetime,
+    *,
+    template_id: str,
+    template_split: str,
+    command: str,
+    activity: str,
+    strength: float,
+) -> Scenario:
+    project_scope = "project-" + project
+    candidate_id = scenario_id + "-candidate-useful-pending"
+    claim = "{} {} use {}".format(project, activity, command)
+    text = "A project note says {} in project {} use {}, pending confirmation.".format(
+        activity,
+        project,
+        command,
+    )
+    candidate = _make_scoped_candidate(
+        candidate_id=candidate_id,
+        canonical_id=canonical_id,
+        raw_text=text,
+        canonical_claim=claim,
+        observed_at=base_time,
+        trust_score=strength,
+        verification_score=strength,
+        source_kind="project_note",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+    )
+    probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-pending-probe",
+        text="For project {}, which command should run {}?".format(project, activity),
+        canonical_id=canonical_id,
+        phase="pending_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+        gold_candidate_ids=[candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=1),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.USEFUL_PENDING_MEMORY,
+        description=(
+            "A useful project convention stays below the durable-promotion threshold but is strong enough for pending use."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "pending_truth": {
+                project_scope: claim,
+            },
+            "probe_scope_key": project_scope,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=text,
+                candidate=candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.QUESTION,
+                turn_index=2,
+                text=probe_question.text,
+                question=probe_question,
+            ),
+        ],
+        expected_lifecycle={
+            "probe_phase": "pending_probe",
+            "gold_candidate_id": candidate_id,
+            "forbidden_candidate_ids": [],
+            "should_not_promote_candidate_ids": [candidate_id],
+        },
+        template_id=template_id,
+        template_kind="clean",
+        template_split=template_split,
+    )
+
+
+def _build_useful_pending_dirty_refinement_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project: str,
+    base_time: datetime,
+    *,
+    template_id: str,
+    template_split: str,
+    tentative_command: str,
+    refined_command: str,
+    activity: str,
+    tentative_strength: float,
+    refined_strength: float,
+    refinement_reason: str,
+) -> Scenario:
+    project_scope = "project-" + project
+    tentative_candidate_id = scenario_id + "-candidate-tentative"
+    refined_candidate_id = scenario_id + "-candidate-refinement"
+    tentative_claim = "{} {} use {}".format(project, activity, tentative_command)
+    refined_claim = "{} {} use {}".format(project, activity, refined_command)
+    tentative_text = "A draft project note says {} in project {} use {}.".format(
+        activity,
+        project,
+        tentative_command,
+    )
+    refined_text = "A maintainer clarified that {} in project {} use {}; {}.".format(
+        activity,
+        project,
+        refined_command,
+        refinement_reason,
+    )
+
+    tentative_candidate = _make_scoped_candidate(
+        candidate_id=tentative_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=tentative_text,
+        canonical_claim=tentative_claim,
+        observed_at=base_time,
+        trust_score=tentative_strength,
+        verification_score=tentative_strength,
+        source_kind="draft_project_note",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+    )
+    refined_candidate = _make_scoped_candidate(
+        candidate_id=refined_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=refined_text,
+        canonical_claim=refined_claim,
+        observed_at=base_time + timedelta(minutes=1),
+        trust_score=refined_strength,
+        verification_score=refined_strength,
+        source_kind="maintainer_clarification",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+        contradicts=[tentative_candidate_id],
+    )
+    probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-pending-probe",
+        text="For project {}, which command should run {}?".format(project, activity),
+        canonical_id=canonical_id,
+        phase="pending_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+        gold_candidate_ids=[refined_candidate_id],
+        forbidden_candidate_ids=[tentative_candidate_id],
+        asked_at=base_time + timedelta(minutes=2),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.USEFUL_PENDING_MEMORY,
+        description=(
+            "A tentative project convention is refined before any candidate clears the durable-promotion threshold."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "pending_truth": {
+                project_scope: refined_claim,
+            },
+            "probe_scope_key": project_scope,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=tentative_text,
+                candidate=tentative_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.OBSERVATION,
+                turn_index=2,
+                text=refined_text,
+                candidate=refined_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.QUESTION,
+                turn_index=3,
+                text=probe_question.text,
+                question=probe_question,
+            ),
+        ],
+        expected_lifecycle={
+            "probe_phase": "pending_probe",
+            "gold_candidate_id": refined_candidate_id,
+            "forbidden_candidate_ids": [tentative_candidate_id],
+            "should_not_promote_candidate_ids": [tentative_candidate_id],
+        },
+        template_id=template_id,
+        template_kind="dirty",
+        template_split=template_split,
+    )
+
+
 def _build_preference_clean_stable_v1_scenario(
     scenario_id: str,
     canonical_id: str,
@@ -2258,6 +2481,80 @@ def generate_scope_contamination_scenarios(
                 project_a,
                 project_b,
                 base_time,
+            )
+        else:
+            raise ValueError("Unsupported template_id: {}".format(template_id))
+        scenarios.append(scenario)
+    return scenarios
+
+
+def generate_useful_pending_memory_scenarios(
+    count: int,
+    seed: int = 31,
+    template_mix: str = "mixed",
+) -> List[Scenario]:
+    rng = random.Random(seed)
+    scenarios = []
+    for index in range(count):
+        project_a, _project_b = rng.choice(PROJECT_SCOPE_PAIRS)
+        template_id = _useful_pending_template_id_for_index(index, template_mix)
+        scenario_id = "useful_pending_{:03d}".format(index + 1)
+        canonical_id = "useful-pending-project-command"
+        base_time = datetime(2026, 3, 1, 9, 0, 0) + timedelta(days=index)
+
+        if template_id == "useful_pending_clean_v1":
+            scenario = _build_useful_pending_clean_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                base_time,
+                template_id=template_id,
+                template_split="main",
+                command="pytest -q",
+                activity="local checks",
+                strength=0.62,
+            )
+        elif template_id == "useful_pending_dirty_refinement_v1":
+            scenario = _build_useful_pending_dirty_refinement_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                base_time,
+                template_id=template_id,
+                template_split="main",
+                tentative_command="npm test",
+                refined_command="pytest -q",
+                activity="local checks",
+                tentative_strength=0.66,
+                refined_strength=0.64,
+                refinement_reason="the npm test note was for CI only",
+            )
+        elif template_id == "useful_pending_clean_v2":
+            scenario = _build_useful_pending_clean_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                base_time,
+                template_id=template_id,
+                template_split="heldout",
+                command="./scripts/check",
+                activity="pre-merge checks",
+                strength=0.61,
+            )
+        elif template_id == "useful_pending_dirty_refinement_v2":
+            scenario = _build_useful_pending_dirty_refinement_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                base_time,
+                template_id=template_id,
+                template_split="heldout",
+                tentative_command="make verify",
+                refined_command="./scripts/check",
+                activity="pre-merge checks",
+                tentative_strength=0.65,
+                refined_strength=0.63,
+                refinement_reason="make verify was an old alias that is no longer used",
             )
         else:
             raise ValueError("Unsupported template_id: {}".format(template_id))

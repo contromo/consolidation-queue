@@ -54,6 +54,8 @@ def compute_policy_metrics(
         return compute_scope_contamination_metrics(policy_name, scenario, question_traces, store_snapshot)
     if scenario.task_family == TaskFamily.PREFERENCE_DRIFT:
         return compute_preference_drift_metrics(policy_name, scenario, question_traces, store_snapshot)
+    if scenario.task_family == TaskFamily.USEFUL_PENDING_MEMORY:
+        return compute_useful_pending_memory_metrics(policy_name, scenario, question_traces, store_snapshot)
     raise ValueError("Unsupported task family: {}".format(scenario.task_family))
 
 
@@ -61,6 +63,7 @@ DIAGNOSTIC_PHASE_BY_FAMILY = {
     TaskFamily.FORCED_CONTRADICTION: "after_contradiction",
     TaskFamily.SCOPE_CONTAMINATION: "off_scope_probe",
     TaskFamily.PREFERENCE_DRIFT: "after_drift",
+    TaskFamily.USEFUL_PENDING_MEMORY: "pending_probe",
 }
 
 
@@ -77,6 +80,10 @@ ASSERTION_FAILURE_BY_FAMILY = {
         "false_assertion",
         "forbidden_preference_candidate_asserted",
     ),
+    TaskFamily.USEFUL_PENDING_MEMORY: (
+        "false_assertion",
+        "forbidden_useful_pending_candidate_asserted",
+    ),
 }
 
 
@@ -84,6 +91,7 @@ PREMATURE_PROMOTION_REASON_BY_FAMILY = {
     TaskFamily.FORCED_CONTRADICTION: "should_not_promote_contradiction_candidate_promoted",
     TaskFamily.SCOPE_CONTAMINATION: "should_not_promote_scope_candidate_promoted",
     TaskFamily.PREFERENCE_DRIFT: "should_not_promote_preference_candidate_promoted",
+    TaskFamily.USEFUL_PENDING_MEMORY: "should_not_promote_useful_pending_candidate_promoted",
 }
 
 
@@ -337,6 +345,49 @@ def compute_scope_contamination_metrics(
         useful_recall=answer_correctness,
         used_pending=1.0 if probe_trace.used_pending else 0.0,
         durable_commit=0.0,
+    )
+
+
+def compute_useful_pending_memory_metrics(
+    policy_name: str,
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+) -> PolicyScenarioMetrics:
+    questions = {}
+    for event in scenario.sorted_events():
+        if event.question is not None:
+            questions[event.question.phase] = event.question
+    traces = {trace.question_id: trace for trace in question_traces}
+    probe_question = questions["pending_probe"]
+    probe_trace = traces[probe_question.question_id]
+
+    asserted_ids = _asserted_candidate_ids(probe_trace, store_snapshot)
+    answer_correctness = (
+        1.0 if _contains_any(probe_trace.resolved_candidate_ids, probe_question.gold_candidate_ids) else 0.0
+    )
+    false_assertion = 1.0 if _contains_any(asserted_ids, probe_question.forbidden_candidate_ids) else 0.0
+    premature_promotion = _premature_promotion_rate(store_snapshot, scenario)
+    used_pending = 1.0 if probe_trace.used_pending else 0.0
+    durable_commit = 1.0 if list(getattr(probe_trace, "used_memory_ids", [])) else 0.0
+
+    return PolicyScenarioMetrics(
+        scenario_id=scenario.scenario_id,
+        policy_name=policy_name,
+        useful_recall_before_contradiction=0.0,
+        used_pending_before_contradiction=0.0,
+        durable_commit_before_contradiction=0.0,
+        false_assertion_after_contradiction=0.0,
+        contradiction_recovery_rate=0.0,
+        answer_correctness_after_contradiction=0.0,
+        time_to_demotion=None,
+        answer_correctness=answer_correctness,
+        false_assertion_rate=false_assertion,
+        leakage_rate=0.0,
+        premature_promotion_rate=premature_promotion,
+        useful_recall=answer_correctness,
+        used_pending=used_pending,
+        durable_commit=durable_commit,
     )
 
 

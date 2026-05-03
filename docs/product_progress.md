@@ -1,5 +1,37 @@
 # Product Progress
 
+## 2026-05-03 — Useful-pending-memory oracle family added
+
+### What shipped
+
+- added the `useful_pending_memory` oracle family with clean, dirty-refinement, mixed, and held-out template splits
+- pinned the family contract to `PROJECT_CONVENTION` candidates with strength in `[0.35, 0.70)`, so every candidate is usable as pending memory but below durable-promotion threshold
+- added useful-pending metrics, failure-example reasons, CLI/runner wiring, CSV output, and dashboard/template summaries
+- included `ScopeBlindTranscriptRAGLite` as a recency baseline, but this family is not a retrieval probe because recency tracks truth in both clean and dirty templates
+
+### Why it matters
+
+- clean templates are calibration: pending utility does not cost CQ answer correctness, while Reflection and Naive incur premature durable commits
+- dirty refinement templates show the realized reversibility cost of those eager commits when no claim is durable-eligible
+- this factors a useful-pending mechanism out of the contradiction family, making the staged-promotion thesis easier to inspect without changing the shared substrate
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 92 tests
+- mixed useful-pending run (`python3 -m cq.eval.runner --family useful_pending_memory --scenarios 4 --template-mix mixed`) shows:
+  - `reflection_eager_write_lite`: `false_assertion=0.50`, `correctness=0.50`, `useful_recall=0.50`, `pending_use=0.00`, `premature_promotion=1.00`
+  - `consolidation_queue_lite`: `false_assertion=0.00`, `correctness=1.00`, `useful_recall=1.00`, `pending_use=1.00`, `premature_promotion=0.00`
+  - `naive_eager_write_lite`: `false_assertion=0.50`, `correctness=0.50`, `useful_recall=0.50`, `pending_use=0.00`, `premature_promotion=1.00`
+  - `no_memory_lite`: `false_assertion=0.00`, `correctness=0.00`, `useful_recall=0.00`, `pending_use=0.00`, `premature_promotion=0.00`
+  - `scope_blind_transcript_rag_lite`: `false_assertion=0.00`, `correctness=1.00`, `useful_recall=1.00`, `pending_use=0.00`, `premature_promotion=0.00`
+- held-out useful-pending run (`python3 -m cq.eval.runner --family useful_pending_memory --scenarios 4 --template-mix heldout`) shows the same aggregate pattern on `useful_pending_clean_v2` and `useful_pending_dirty_refinement_v2`
+
+### Open issues / next
+
+- non-broad-claim scope contamination remains the top scope-specific Phase 2 caveat
+- poisoning and false-corroboration families remain unimplemented
+- no noisy-mode or retrieval-quality claim should be made from this family
+
 ## 2026-05-03 — Scenario-level failure examples added
 
 ### What shipped

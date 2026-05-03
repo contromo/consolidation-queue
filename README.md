@@ -7,12 +7,13 @@ The first slice in this repository is intentionally narrow:
 - oracle-mode forced-contradiction scenarios
 - oracle-mode scope-contamination scenarios, framed as broad-claim premature promotion
 - oracle-mode preference-drift scenarios, framed as explicit update plus one-off/drift-back probes
+- oracle-mode useful-pending-memory scenarios, framed as reversible pending utility
 - shared in-memory substrate
 - `NoMemory-lite`
 - `ReflectionEagerWrite-lite`
 - `NaiveEagerWrite-lite`
 - `CQ-Agent-lite`
-- `ScopeBlindTranscriptRAG-lite` on the scope-contamination and preference-drift families
+- `ScopeBlindTranscriptRAG-lite` on the scope-contamination, preference-drift, and useful-pending-memory families
 - end-to-end metrics and run artifacts
 - a small local dashboard for inspecting traces
 - a running product progress log in `docs/product_progress.md`
@@ -76,6 +77,28 @@ This writes:
 - `data/runs/preference_drift_oracle_heldout.json`
 - `data/results/preference_drift_oracle_heldout_metrics.csv`
 
+Run the useful-pending-memory slice:
+
+```bash
+python3 -m cq.eval.runner --family useful_pending_memory --scenarios 4 --template-mix mixed
+```
+
+This writes:
+
+- `data/runs/useful_pending_memory_oracle.json`
+- `data/results/useful_pending_memory_oracle_metrics.csv`
+
+Run the held-out useful-pending-memory slice:
+
+```bash
+python3 -m cq.eval.runner --family useful_pending_memory --scenarios 4 --template-mix heldout --output-json data/runs/useful_pending_memory_oracle_heldout.json --output-csv data/results/useful_pending_memory_oracle_heldout_metrics.csv
+```
+
+This writes:
+
+- `data/runs/useful_pending_memory_oracle_heldout.json`
+- `data/results/useful_pending_memory_oracle_heldout_metrics.csv`
+
 Open the dashboard against the saved run:
 
 ```bash
@@ -108,3 +131,4 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - `answer_correctness_after_contradiction` is the policy-agnostic answer-quality view used alongside recovery.
 - Scope-contamination now includes main and held-out broad-claim probes. These show premature promotion and broad-first absorption under the current permissive `WORLD_GLOBAL` scope-match rule, not a general claim that CQ reasons about scope better than Reflection.
 - Preference-drift now includes main and held-out probes. The explicit-update template is contradiction-like, while the one-off and drift-back templates distinguish staged promotion from pure recency.
+- Useful-pending-memory includes main and held-out probes where every candidate is a `PROJECT_CONVENTION` in the `[0.35, 0.70)` strength band. Clean templates calibrate that pending utility does not cost answer correctness; dirty refinement templates show eager reversibility debt when no claim is durable-eligible. ScopeBlindTranscriptRAG follows truth by recency here, so this family is not evidence about retrieval quality.
