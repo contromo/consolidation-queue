@@ -121,6 +121,14 @@ PROJECT_SCOPE_PAIRS: Sequence[Tuple[str, str]] = (
     ("ivy", "juniper"),
 )
 
+USEFUL_PENDING_PROJECTS: Sequence[str] = (
+    "atlas",
+    "cedar",
+    "ember",
+    "granite",
+    "ivy",
+)
+
 
 PREFERENCE_DIMENSIONS: Sequence[Tuple[str, str, str, str, str]] = (
     (
@@ -1799,6 +1807,12 @@ def _build_useful_pending_dirty_refinement_scenario(
         asked_at=base_time + timedelta(minutes=2),
     )
 
+    # Calibration enforced by test_useful_pending_calibration_holds and
+    # test_dirty_template_pins_refinement_behavior:
+    # - both strengths stay in [0.35, 0.70), so neither candidate is durable-eligible for CQ.
+    # - refined_strength < tentative_strength + overwrite_margin (0.05), so Reflection contests it.
+    # - Naive's confidence-first answer selection picks the older, stronger tentative durable.
+    # - CQ excludes CONTESTED candidates and answers from the refined pending candidate.
     return Scenario(
         scenario_id=scenario_id,
         task_family=TaskFamily.USEFUL_PENDING_MEMORY,
@@ -2496,7 +2510,7 @@ def generate_useful_pending_memory_scenarios(
     rng = random.Random(seed)
     scenarios = []
     for index in range(count):
-        project_a, _project_b = rng.choice(PROJECT_SCOPE_PAIRS)
+        project_a = rng.choice(USEFUL_PENDING_PROJECTS)
         template_id = _useful_pending_template_id_for_index(index, template_mix)
         scenario_id = "useful_pending_{:03d}".format(index + 1)
         canonical_id = "useful-pending-project-command"

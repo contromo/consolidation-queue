@@ -14,6 +14,7 @@
 - clean templates are calibration: pending utility does not cost CQ answer correctness, while Reflection and Naive incur premature durable commits
 - dirty refinement templates show the realized reversibility cost of those eager commits when no claim is durable-eligible
 - this factors a useful-pending mechanism out of the contradiction family, making the staged-promotion thesis easier to inspect without changing the shared substrate
+- for this family, `useful_recall` and `answer_correctness` are identical by construction; they should diverge only in future families that define partial-recall states
 
 ### Evidence
 
@@ -30,6 +31,8 @@
 
 - non-broad-claim scope contamination remains the top scope-specific Phase 2 caveat
 - poisoning and false-corroboration families remain unimplemented
+- a Naive-recovers refinement template would round out useful-pending coverage beyond the current confidence-first Naive failure shape
+- `durable_commit` has family-specific semantics across current metric computers; a future cleanup should document or rename those fields before cross-family comparison
 - no noisy-mode or retrieval-quality claim should be made from this family
 
 ## 2026-05-03 — Scenario-level failure examples added
