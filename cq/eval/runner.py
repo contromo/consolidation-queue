@@ -43,6 +43,15 @@ def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, d
     }
 
 
+def _failure_example_sort_key(example: dict) -> tuple:
+    return (
+        str(example["scenario_id"]),
+        str(example["failure_type"]),
+        str(example["question_phase"]),
+        str(example["question_id"]),
+    )
+
+
 def _generate_scenarios(family: str, scenario_count: int, template_mix: str):
     _validate_template_mix(family, template_mix)
     if family == FORCED_CONTRADICTION:
@@ -91,6 +100,14 @@ def build_run_artifact(
     for policy_cls in policies:
         run_records = [execute_scenario(policy_cls, scenario) for scenario in scenarios]
         summary = summarize_runs(run_records)
+        failure_examples = sorted(
+            [
+                example
+                for record in run_records
+                for example in record.get("failure_examples", [])
+            ],
+            key=_failure_example_sort_key,
+        )
         policy_runs.append(
             {
                 "policy_name": policy_cls.policy_name,
@@ -98,6 +115,7 @@ def build_run_artifact(
                 "summary_by_template_kind": _summaries_by_field(run_records, "template_kind"),
                 "summary_by_template_split": _summaries_by_field(run_records, "template_split"),
                 "summary_by_template_id": _summaries_by_field(run_records, "template_id"),
+                "failure_examples": failure_examples,
                 "scenarios": [
                     {
                         "scenario_id": record["scenario_id"],
@@ -106,6 +124,7 @@ def build_run_artifact(
                         "question_traces": record["question_traces"],
                         "store_snapshot": record["store_snapshot"],
                         "metrics": record["metrics"],
+                        "failure_examples": record["failure_examples"],
                     }
                     for index, record in enumerate(run_records)
                 ],

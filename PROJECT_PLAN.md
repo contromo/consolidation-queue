@@ -66,7 +66,9 @@ Implemented:
 - generic answer correctness, leakage, false assertion, and premature-promotion metrics with contradiction aliases
 - per-template-kind and per-template-split oracle summaries
 - per-template-id oracle summaries
+- deterministic scenario-level failure example extraction in oracle artifacts
 - trace dashboard with per-kind summary views and static turn timelines
+- dashboard failure-example tables linked to full scenario traces
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -115,7 +117,7 @@ Immediate gap:
 - the contradiction family now has multiple dirty variants and four held-out templates
 - the held-out split now includes both a Naive-recovery case and a confidence-first Naive failure case
 - `NoMemoryLite` and `answer_correctness_after_contradiction` now make the contradiction slice easier to interpret
-- it still needs more held-out variants and richer failure extraction before conclusions mean much
+- it still needs more held-out variants before conclusions mean much
 
 ### Phase 2: Stronger Oracle Benchmark
 
@@ -138,6 +140,7 @@ Current caveat:
 
 - the scope-contamination split should still be described as broad-claim premature promotion under the current permissive `WORLD_GLOBAL` scope-match rule, not as evidence that CQ performs better semantic scope inference than Reflection
 - preference drift now includes an explicit-update calibration point plus one-off and drift-back probes that distinguish staged promotion from pure recency
+- scenario-level failure examples now expose assertion, leakage, premature-promotion, and no-memory floor failures in saved artifacts and the dashboard
 - Phase 2 is only partially addressed for scope: a non-broad-claim scope mechanism is still needed before making broader scope-inference claims
 
 ### Phase 3: Component Evaluation Harness
@@ -270,10 +273,9 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Add scenario-level failure example extraction for Phase 2 families.
-2. Add a non-broad-claim scope-contamination mechanism before making broader scope-inference claims.
-3. Add more held-out contradiction or preference-drift templates only when they introduce a genuinely new mechanism.
-4. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
+1. Add a non-broad-claim scope-contamination mechanism before making broader scope-inference claims.
+2. Add more held-out contradiction or preference-drift templates only when they introduce a genuinely new mechanism.
+3. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
 
 ## Working Rules
 

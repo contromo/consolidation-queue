@@ -16,19 +16,27 @@ def execute_scenario(policy_cls: Type[object], scenario: Scenario) -> Dict[str, 
             policy.observe_candidate(event.candidate)
         if event.kind == EventKind.QUESTION and event.question is not None:
             question_traces.append(policy.answer_question(event.question))
+    store_snapshot = policy.store.snapshot()
     metrics = compute_policy_metrics(
         policy.policy_name,
         scenario,
         question_traces,
-        policy.store.snapshot(),
+        store_snapshot,
+    )
+    failure_examples = extract_failure_examples(
+        policy.policy_name,
+        scenario,
+        question_traces,
+        store_snapshot,
     )
     return {
         "policy_name": policy.policy_name,
         "scenario_id": scenario.scenario_id,
         "scenario": jsonable(scenario),
         "question_traces": [jsonable(trace) for trace in question_traces],
-        "store_snapshot": policy.store.snapshot(),
+        "store_snapshot": store_snapshot,
         "metrics": jsonable(metrics),
+        "failure_examples": failure_examples,
         "store": policy.store,
     }
 
@@ -46,6 +54,180 @@ def compute_policy_metrics(
     if scenario.task_family == TaskFamily.PREFERENCE_DRIFT:
         return compute_preference_drift_metrics(policy_name, scenario, question_traces, store_snapshot)
     raise ValueError("Unsupported task family: {}".format(scenario.task_family))
+
+
+DIAGNOSTIC_PHASE_BY_FAMILY = {
+    TaskFamily.FORCED_CONTRADICTION: "after_contradiction",
+    TaskFamily.SCOPE_CONTAMINATION: "off_scope_probe",
+    TaskFamily.PREFERENCE_DRIFT: "after_drift",
+}
+
+
+ASSERTION_FAILURE_BY_FAMILY = {
+    TaskFamily.FORCED_CONTRADICTION: (
+        "false_assertion",
+        "forbidden_contradiction_candidate_asserted",
+    ),
+    TaskFamily.SCOPE_CONTAMINATION: (
+        "scope_leakage",
+        "forbidden_scope_candidate_asserted",
+    ),
+    TaskFamily.PREFERENCE_DRIFT: (
+        "false_assertion",
+        "forbidden_preference_candidate_asserted",
+    ),
+}
+
+
+PREMATURE_PROMOTION_REASON_BY_FAMILY = {
+    TaskFamily.SCOPE_CONTAMINATION: "should_not_promote_scope_candidate_promoted",
+    TaskFamily.PREFERENCE_DRIFT: "should_not_promote_preference_candidate_promoted",
+}
+
+
+def extract_failure_examples(
+    policy_name: str,
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+) -> List[Dict[str, object]]:
+    questions = {
+        event.question.phase: event.question
+        for event in scenario.sorted_events()
+        if event.question is not None
+    }
+    diagnostic_phase = DIAGNOSTIC_PHASE_BY_FAMILY.get(scenario.task_family)
+    if diagnostic_phase is None:
+        raise ValueError("Unsupported task family: {}".format(scenario.task_family))
+    diagnostic_question = questions[diagnostic_phase]
+    traces = {trace.question_id: trace for trace in question_traces}
+    diagnostic_trace = traces[diagnostic_question.question_id]
+
+    asserted_candidate_ids = _asserted_candidate_ids(diagnostic_trace, store_snapshot)
+    forbidden_asserted_ids = _ordered_intersection(
+        asserted_candidate_ids,
+        diagnostic_question.forbidden_candidate_ids,
+    )
+    promoted_should_not_promote_ids = _promoted_should_not_promote_candidate_ids(
+        store_snapshot,
+        scenario,
+    )
+    answer_correct = _contains_any(
+        diagnostic_trace.resolved_candidate_ids,
+        diagnostic_question.gold_candidate_ids,
+    )
+
+    examples = []
+    assertion_failure_emitted = False
+    if forbidden_asserted_ids:
+        failure_type, reason = ASSERTION_FAILURE_BY_FAMILY[scenario.task_family]
+        assertion_failure_emitted = failure_type in {"false_assertion", "scope_leakage"}
+        examples.append(
+            _build_failure_example(
+                policy_name=policy_name,
+                scenario=scenario,
+                question=diagnostic_question,
+                trace=diagnostic_trace,
+                store_snapshot=store_snapshot,
+                failure_type=failure_type,
+                failure_subtype="",
+                reason=reason,
+                asserted_candidate_ids=asserted_candidate_ids,
+                promoted_should_not_promote_candidate_ids=[],
+            )
+        )
+
+    if promoted_should_not_promote_ids:
+        reason = PREMATURE_PROMOTION_REASON_BY_FAMILY.get(scenario.task_family)
+        if reason is not None:
+            examples.append(
+                _build_failure_example(
+                    policy_name=policy_name,
+                    scenario=scenario,
+                    question=diagnostic_question,
+                    trace=diagnostic_trace,
+                    store_snapshot=store_snapshot,
+                    failure_type="premature_promotion",
+                    failure_subtype="",
+                    reason=reason,
+                    asserted_candidate_ids=asserted_candidate_ids,
+                    promoted_should_not_promote_candidate_ids=promoted_should_not_promote_ids,
+                )
+            )
+
+    if not answer_correct and not assertion_failure_emitted:
+        examples.append(
+            _build_failure_example(
+                policy_name=policy_name,
+                scenario=scenario,
+                question=diagnostic_question,
+                trace=diagnostic_trace,
+                store_snapshot=store_snapshot,
+                failure_type="incorrect_answer",
+                failure_subtype="no_memory_floor" if policy_name == "no_memory_lite" else "",
+                reason="gold_candidate_not_resolved",
+                asserted_candidate_ids=asserted_candidate_ids,
+                promoted_should_not_promote_candidate_ids=[],
+            )
+        )
+
+    return sorted(examples, key=_failure_example_sort_key)
+
+
+def _build_failure_example(
+    *,
+    policy_name: str,
+    scenario: Scenario,
+    question: QuestionSpec,
+    trace: object,
+    store_snapshot: Dict[str, object],
+    failure_type: str,
+    failure_subtype: str,
+    reason: str,
+    asserted_candidate_ids: List[str],
+    promoted_should_not_promote_candidate_ids: List[str],
+) -> Dict[str, object]:
+    resolved_candidate_ids = list(getattr(trace, "resolved_candidate_ids", []))
+    used_memory_ids = list(getattr(trace, "used_memory_ids", []))
+    involved_candidate_ids = _sorted_unique(
+        list(question.gold_candidate_ids)
+        + list(question.forbidden_candidate_ids)
+        + list(asserted_candidate_ids)
+        + list(promoted_should_not_promote_candidate_ids)
+        + resolved_candidate_ids
+    )
+    return {
+        "failure_type": failure_type,
+        "failure_subtype": failure_subtype,
+        "reason": reason,
+        "policy_name": policy_name,
+        "scenario_id": scenario.scenario_id,
+        "template_id": scenario.template_id,
+        "template_kind": scenario.template_kind,
+        "template_split": scenario.template_split,
+        "question_id": question.question_id,
+        "question_phase": question.phase,
+        "question_text": question.text,
+        "answer_text": getattr(trace, "answer_text", ""),
+        "gold_candidate_ids": list(question.gold_candidate_ids),
+        "forbidden_candidate_ids": list(question.forbidden_candidate_ids),
+        "asserted_candidate_ids": list(asserted_candidate_ids),
+        "promoted_should_not_promote_candidate_ids": list(promoted_should_not_promote_candidate_ids),
+        "used_pending": bool(getattr(trace, "used_pending", False)),
+        "used_memory_ids": used_memory_ids,
+        "resolved_candidate_ids": resolved_candidate_ids,
+        "candidate_claims": _candidate_claims(store_snapshot, involved_candidate_ids),
+        "durable_claims": _durable_claims(store_snapshot, involved_candidate_ids, used_memory_ids),
+    }
+
+
+def _failure_example_sort_key(example: Dict[str, object]) -> tuple:
+    return (
+        str(example["scenario_id"]),
+        str(example["failure_type"]),
+        str(example["question_phase"]),
+        str(example["question_id"]),
+    )
 
 
 def compute_forced_contradiction_metrics(
@@ -240,6 +422,63 @@ def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics
 
 def _contains_any(resolved_ids: List[str], gold_ids: List[str]) -> bool:
     return any(candidate_id in resolved_ids for candidate_id in gold_ids)
+
+
+def _ordered_intersection(source_ids: List[str], target_ids: List[str]) -> List[str]:
+    target_set = set(target_ids)
+    return [candidate_id for candidate_id in source_ids if candidate_id in target_set]
+
+
+def _sorted_unique(candidate_ids: List[str]) -> List[str]:
+    return sorted(set(candidate_ids))
+
+
+def _promoted_should_not_promote_candidate_ids(
+    store_snapshot: Dict[str, object],
+    scenario: Scenario,
+) -> List[str]:
+    should_not_promote_ids = scenario.expected_lifecycle.get("should_not_promote_candidate_ids", [])
+    return [
+        candidate_id
+        for candidate_id in should_not_promote_ids
+        if _candidate_became_durable(store_snapshot, candidate_id)
+    ]
+
+
+def _candidate_claims(store_snapshot: Dict[str, object], candidate_ids: List[str]) -> Dict[str, str]:
+    candidate_by_id = {
+        candidate["candidate_id"]: candidate
+        for candidate in store_snapshot.get("candidate_memories", [])
+    }
+    return {
+        candidate_id: str(candidate_by_id[candidate_id].get("canonical_claim", ""))
+        for candidate_id in sorted(candidate_ids)
+        if candidate_id in candidate_by_id
+    }
+
+
+def _durable_claims(
+    store_snapshot: Dict[str, object],
+    candidate_ids: List[str],
+    used_memory_ids: List[str],
+) -> Dict[str, Dict[str, object]]:
+    candidate_id_set = set(candidate_ids)
+    used_memory_id_set = set(used_memory_ids)
+    involved_durables = []
+    for durable in store_snapshot.get("durable_memories", []):
+        created_from_ids = durable.get("created_from_candidate_ids", [])
+        if durable["memory_id"] in used_memory_id_set or any(
+            candidate_id in candidate_id_set for candidate_id in created_from_ids
+        ):
+            involved_durables.append(durable)
+    return {
+        durable["memory_id"]: {
+            "claim": durable.get("claim", ""),
+            "created_from_candidate_ids": list(durable.get("created_from_candidate_ids", [])),
+            "active": bool(durable.get("active", False)),
+        }
+        for durable in sorted(involved_durables, key=lambda item: item["memory_id"])
+    }
 
 
 def _asserted_candidate_ids(trace: object, store_snapshot: Dict[str, object]) -> List[str]:

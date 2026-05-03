@@ -1,5 +1,30 @@
 # Product Progress
 
+## 2026-05-03 — Scenario-level failure examples added
+
+### What shipped
+
+- added deterministic `failure_examples` to per-scenario and per-policy oracle JSON artifacts
+- extracted `false_assertion`, `scope_leakage`, `premature_promotion`, and `incorrect_answer` examples from the same scenario inputs used by metrics
+- kept successful-but-premature cases visible, including Naive scope runs that answer correctly after promoting should-not-promote memory
+- added dashboard failure-example tables linked to full scenario traces
+
+### Why it matters
+
+- Phase 2 failures are now inspectable without reading every trace by hand
+- premature promotion is visible as a reversibility failure even when answer correctness stays high
+- NoMemory misses are marked as `no_memory_floor`, keeping the floor baseline present but distinguishable from governance failures
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 79 tests
+- regression coverage pins metric/example consistency, byte-stable JSON artifacts, dashboard anchors, and the successful-but-premature Naive scope case
+
+### Open issues / next
+
+- the next Phase 2 implementation task is a non-broad-claim scope-contamination mechanism
+- forced-contradiction failed recovery is still represented through `false_assertion` or `incorrect_answer`, not a dedicated `failed_recovery` example type
+
 ## 2026-05-03 — Preference-drift oracle family added
 
 ### What shipped
