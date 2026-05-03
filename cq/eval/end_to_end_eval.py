@@ -369,7 +369,7 @@ def compute_useful_pending_memory_metrics(
     false_assertion = 1.0 if _contains_any(asserted_ids, probe_question.forbidden_candidate_ids) else 0.0
     premature_promotion = _premature_promotion_rate(store_snapshot, scenario)
     used_pending = 1.0 if probe_trace.used_pending else 0.0
-    durable_commit = 1.0 if list(getattr(probe_trace, "used_memory_ids", [])) else 0.0
+    durable_commit = 1.0 if getattr(probe_trace, "used_memory_ids", []) else 0.0
 
     return PolicyScenarioMetrics(
         scenario_id=scenario.scenario_id,
