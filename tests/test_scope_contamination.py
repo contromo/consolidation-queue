@@ -251,6 +251,34 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
                 msg=policy["policy_name"],
             )
 
+    def test_existing_scope_template_metrics_remain_pinned(self) -> None:
+        mixed_artifact = build_run_artifact(2, template_mix="mixed", family="scope_contamination")
+        heldout_artifact = build_run_artifact(4, template_mix="heldout", family="scope_contamination")
+        mixed_policies = {policy["policy_name"]: policy for policy in mixed_artifact["policies"]}
+        heldout_policies = {policy["policy_name"]: policy for policy in heldout_artifact["policies"]}
+
+        reflection_dirty_v1 = mixed_policies["reflection_eager_write_lite"]["summary_by_template_id"][
+            "scope_contamination_dirty_broad_claim_v1"
+        ]
+        cq_dirty_v1 = mixed_policies["consolidation_queue_lite"]["summary_by_template_id"][
+            "scope_contamination_dirty_broad_claim_v1"
+        ]
+        naive_dirty_v3 = heldout_policies["naive_eager_write_lite"]["summary_by_template_id"][
+            "scope_contamination_dirty_broad_claim_v3"
+        ]
+        rag_clean_v2 = heldout_policies["scope_blind_transcript_rag_lite"]["summary_by_template_id"][
+            "scope_contamination_clean_v2"
+        ]
+
+        self.assertEqual(reflection_dirty_v1["leakage_rate"], 1.0)
+        self.assertEqual(reflection_dirty_v1["answer_correctness"], 0.0)
+        self.assertEqual(cq_dirty_v1["leakage_rate"], 0.0)
+        self.assertEqual(cq_dirty_v1["answer_correctness"], 1.0)
+        self.assertEqual(naive_dirty_v3["leakage_rate"], 1.0)
+        self.assertEqual(naive_dirty_v3["answer_correctness"], 0.0)
+        self.assertEqual(rag_clean_v2["leakage_rate"], 1.0)
+        self.assertEqual(rag_clean_v2["answer_correctness"], 0.0)
+
     def test_scope_family_rejects_unknown_template_mix_upfront(self) -> None:
         with self.assertRaises(ValueError):
             build_run_artifact(1, template_mix="nonexistent", family="scope_contamination")

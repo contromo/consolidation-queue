@@ -6,12 +6,13 @@ The first slice in this repository is intentionally narrow:
 
 - oracle-mode forced-contradiction scenarios
 - oracle-mode scope-contamination scenarios, framed as broad-claim premature promotion
+- oracle-mode preference-drift scenarios, framed as explicit update plus one-off/drift-back probes
 - shared in-memory substrate
 - `NoMemory-lite`
 - `ReflectionEagerWrite-lite`
 - `NaiveEagerWrite-lite`
 - `CQ-Agent-lite`
-- `ScopeBlindTranscriptRAG-lite` on the scope-contamination family
+- `ScopeBlindTranscriptRAG-lite` on the scope-contamination and preference-drift families
 - end-to-end metrics and run artifacts
 - a small local dashboard for inspecting traces
 - a running product progress log in `docs/product_progress.md`
@@ -53,6 +54,28 @@ This writes:
 - `data/runs/scope_contamination_oracle_heldout.json`
 - `data/results/scope_contamination_oracle_heldout_metrics.csv`
 
+Run the preference-drift slice:
+
+```bash
+python3 -m cq.eval.runner --family preference_drift --scenarios 6 --template-mix mixed
+```
+
+This writes:
+
+- `data/runs/preference_drift_oracle.json`
+- `data/results/preference_drift_oracle_metrics.csv`
+
+Run the held-out preference-drift slice:
+
+```bash
+python3 -m cq.eval.runner --family preference_drift --scenarios 4 --template-mix heldout --output-json data/runs/preference_drift_oracle_heldout.json --output-csv data/results/preference_drift_oracle_heldout_metrics.csv
+```
+
+This writes:
+
+- `data/runs/preference_drift_oracle_heldout.json`
+- `data/results/preference_drift_oracle_heldout_metrics.csv`
+
 Open the dashboard against the saved run:
 
 ```bash
@@ -84,3 +107,4 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - `contradiction_recovery_rate` remains the headline memory-governance metric.
 - `answer_correctness_after_contradiction` is the policy-agnostic answer-quality view used alongside recovery.
 - Scope-contamination now includes main and held-out broad-claim probes. These show premature promotion and broad-first absorption under the current permissive `WORLD_GLOBAL` scope-match rule, not a general claim that CQ reasons about scope better than Reflection.
+- Preference-drift now includes main and held-out probes. The explicit-update template is contradiction-like, while the one-off and drift-back templates distinguish staged promotion from pure recency.

@@ -1,5 +1,45 @@
 # Product Progress
 
+## 2026-05-03 — Preference-drift oracle family added
+
+### What shipped
+
+- added the `preference_drift` oracle family with clean, dirty, mixed, and held-out template splits
+- added explicit-update, low-strength one-off exception, and held-out drift-back probes for `USER_PREFERENCE` / `USER_GLOBAL` memories
+- included `ScopeBlindTranscriptRAGLite` in preference-drift runs so recency wins and failures remain visible
+- added asserted-answer candidate handling for false/stale checks without changing existing contradiction or scope template metrics
+
+### Why it matters
+
+- explicit-update drift is intentionally contradiction-like and should be treated as a calibration point
+- the one-off and drift-back templates are the distinct preference-drift mechanisms: CQ filters low-strength newest evidence, while recency follows it
+- the held-out drift-back case distinguishes CQ from both eager durable write and oracle-id recency in one scenario
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 71 tests
+- mixed preference run (`python3 -m cq.eval.runner --family preference_drift --scenarios 6 --template-mix mixed --output-json data/runs/preference_drift_oracle.json --output-csv data/results/preference_drift_oracle_metrics.csv`) shows:
+  - `reflection_eager_write_lite`: `false_assertion=0.33`, `correctness=0.67`, `premature_promotion=0.33`
+  - `consolidation_queue_lite`: `false_assertion=0.00`, `correctness=1.00`, `premature_promotion=0.00`
+  - `naive_eager_write_lite`: `false_assertion=0.33`, `correctness=0.67`, `premature_promotion=0.33`
+  - `no_memory_lite`: `false_assertion=0.00`, `correctness=0.00`, `premature_promotion=0.00`
+  - `scope_blind_transcript_rag_lite`: `false_assertion=0.33`, `correctness=0.67`, `premature_promotion=0.00`
+- held-out preference run (`python3 -m cq.eval.runner --family preference_drift --scenarios 4 --template-mix heldout --output-json data/runs/preference_drift_oracle_heldout.json --output-csv data/results/preference_drift_oracle_heldout_metrics.csv`) shows:
+  - `reflection_eager_write_lite`: `false_assertion=0.50`, `correctness=0.50`, `premature_promotion=0.50`
+  - `consolidation_queue_lite`: `false_assertion=0.00`, `correctness=1.00`, `premature_promotion=0.00`
+  - `naive_eager_write_lite`: `false_assertion=0.50`, `correctness=0.50`, `premature_promotion=0.50`
+  - `no_memory_lite`: `false_assertion=0.00`, `correctness=0.00`, `premature_promotion=0.00`
+  - `scope_blind_transcript_rag_lite`: `false_assertion=0.50`, `correctness=0.50`, `premature_promotion=0.00`
+- per-template held-out result:
+  - `preference_drift_clean_stable_v2`: Reflection/CQ/Naive/RAG are correct; NoMemory has no recall
+  - `preference_drift_dirty_drift_back_v2`: Reflection and Naive stale-assert and prematurely absorb the one-off; CQ answers from pending current preference; RAG follows the newest one-off and fails
+
+### Open issues / next
+
+- scenario-level failure example extraction is now the next Phase 2 implementation task
+- a future non-broad-claim scope mechanism is still needed before making broader scope-inference claims
+- additional drift templates should only be added when they introduce a genuinely new mechanism
+
 ## 2026-05-02 — Held-out scope-contamination split added
 
 ### What shipped

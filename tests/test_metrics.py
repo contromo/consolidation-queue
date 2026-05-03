@@ -2,10 +2,20 @@ from datetime import datetime
 import unittest
 from typing import get_type_hints
 
-from cq.eval.end_to_end_eval import _contains_any, compute_forced_contradiction_metrics, compute_scope_contamination_metrics
+from cq.eval.end_to_end_eval import (
+    _asserted_candidate_ids,
+    _contains_any,
+    compute_forced_contradiction_metrics,
+    compute_preference_drift_metrics,
+    compute_scope_contamination_metrics,
+)
 from cq.schemas.memory import AnswerTrace
 from cq.schemas.metrics import PolicyScenarioMetrics, PolicySummaryMetrics
-from cq.simulator.scenario_generator import generate_forced_contradiction_scenarios, generate_scope_contamination_scenarios
+from cq.simulator.scenario_generator import (
+    generate_forced_contradiction_scenarios,
+    generate_preference_drift_scenarios,
+    generate_scope_contamination_scenarios,
+)
 
 
 class PolicySummaryMetricsTests(unittest.TestCase):
@@ -243,6 +253,93 @@ class PolicySummaryMetricsTests(unittest.TestCase):
 
         self.assertEqual(metrics.leakage_rate, 1.0)
         self.assertEqual(metrics.answer_correctness, 0.0)
+        self.assertEqual(metrics.premature_promotion_rate, 1.0)
+
+    def test_asserted_candidate_ids_use_primary_durable_source(self) -> None:
+        trace = AnswerTrace(
+            answer_id="answer-1",
+            question_id="question-1",
+            query="query",
+            relevant_canonical_id="canonical",
+            scope_level=generate_preference_drift_scenarios(1)[0].oracle_events[0].candidate.scope_level,
+            scope_key="user",
+            resolved_candidate_ids=["old-candidate", "reinforcer-candidate"],
+            used_memory_ids=["memory-old-candidate"],
+            answer_text="answer",
+            used_pending=False,
+            created_at=datetime(2026, 1, 1, 9, 0, 0),
+        )
+
+        asserted_ids = _asserted_candidate_ids(
+            trace,
+            {
+                "durable_memories": [
+                    {
+                        "memory_id": "memory-old-candidate",
+                        "created_from_candidate_ids": ["old-candidate", "reinforcer-candidate"],
+                    }
+                ]
+            },
+        )
+
+        self.assertEqual(asserted_ids, ["old-candidate"])
+
+    def test_preference_metrics_do_not_treat_reinforcer_as_asserted_answer(self) -> None:
+        scenario = generate_preference_drift_scenarios(3, seed=23, template_mix="mixed")[2]
+        before_question = [
+            event.question for event in scenario.sorted_events() if event.question and event.question.phase == "before_drift"
+        ][0]
+        after_question = [
+            event.question for event in scenario.sorted_events() if event.question and event.question.phase == "after_drift"
+        ][0]
+        old_candidate_id = scenario.expected_lifecycle["old_candidate_id"]
+        one_off_candidate_id = scenario.expected_lifecycle["should_not_promote_candidate_ids"][0]
+
+        metrics = compute_preference_drift_metrics(
+            "test-policy",
+            scenario,
+            [
+                AnswerTrace(
+                    answer_id="answer-before",
+                    question_id=before_question.question_id,
+                    query=before_question.text,
+                    relevant_canonical_id=before_question.relevant_canonical_id,
+                    scope_level=before_question.scope_level,
+                    scope_key=before_question.scope_key,
+                    resolved_candidate_ids=[old_candidate_id],
+                    used_memory_ids=["memory-" + old_candidate_id],
+                    answer_text="before",
+                    used_pending=False,
+                    created_at=before_question.asked_at,
+                ),
+                AnswerTrace(
+                    answer_id="answer-after",
+                    question_id=after_question.question_id,
+                    query=after_question.text,
+                    relevant_canonical_id=after_question.relevant_canonical_id,
+                    scope_level=after_question.scope_level,
+                    scope_key=after_question.scope_key,
+                    resolved_candidate_ids=[old_candidate_id, one_off_candidate_id],
+                    used_memory_ids=["memory-" + old_candidate_id],
+                    answer_text="after",
+                    used_pending=False,
+                    created_at=after_question.asked_at,
+                ),
+            ],
+            {
+                "candidate_memories": [],
+                "durable_memories": [
+                    {
+                        "memory_id": "memory-" + old_candidate_id,
+                        "created_from_candidate_ids": [old_candidate_id, one_off_candidate_id],
+                    }
+                ],
+                "lifecycle_events": [],
+            },
+        )
+
+        self.assertEqual(metrics.answer_correctness, 1.0)
+        self.assertEqual(metrics.false_assertion_rate, 0.0)
         self.assertEqual(metrics.premature_promotion_rate, 1.0)
 
 

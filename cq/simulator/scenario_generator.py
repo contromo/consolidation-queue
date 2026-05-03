@@ -81,12 +81,55 @@ SCOPE_TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
 }
 
 
+PREFERENCE_TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
+    "clean": ["preference_drift_clean_stable_v1"],
+    "dirty": [
+        "preference_drift_dirty_explicit_update_v1",
+        "preference_drift_dirty_one_off_exception_v1",
+    ],
+    "mixed": [
+        "preference_drift_clean_stable_v1",
+        "preference_drift_dirty_explicit_update_v1",
+        "preference_drift_dirty_one_off_exception_v1",
+    ],
+    "heldout": [
+        "preference_drift_clean_stable_v2",
+        "preference_drift_dirty_drift_back_v2",
+    ],
+}
+
+
 PROJECT_SCOPE_PAIRS: Sequence[Tuple[str, str]] = (
     ("atlas", "beacon"),
     ("cedar", "delta"),
     ("ember", "forge"),
     ("granite", "harbor"),
     ("ivy", "juniper"),
+)
+
+
+PREFERENCE_DIMENSIONS: Sequence[Tuple[str, str, str, str, str]] = (
+    (
+        "summary-format",
+        "concise bullet summaries",
+        "short narrative summaries",
+        "concise bullet summaries for this one draft",
+        "How should summaries be formatted by default?",
+    ),
+    (
+        "review-style",
+        "direct risk-first review notes",
+        "explanation-first review notes",
+        "direct risk-first review notes for this one pull request",
+        "How should code review notes be written by default?",
+    ),
+    (
+        "status-update-style",
+        "brief status updates",
+        "detailed status updates",
+        "brief status updates for this one checkpoint",
+        "How should status updates be written by default?",
+    ),
 )
 
 
@@ -99,6 +142,13 @@ def _scope_template_id_for_index(index: int, template_mix: str) -> str:
     if template_mix not in SCOPE_TEMPLATE_IDS_BY_MIX:
         raise ValueError("Unsupported scope-contamination template mix: {}".format(template_mix))
     template_ids = SCOPE_TEMPLATE_IDS_BY_MIX[template_mix]
+    return template_ids[index % len(template_ids)]
+
+
+def _preference_template_id_for_index(index: int, template_mix: str) -> str:
+    if template_mix not in PREFERENCE_TEMPLATE_IDS_BY_MIX:
+        raise ValueError("Unsupported preference-drift template mix: {}".format(template_mix))
+    template_ids = PREFERENCE_TEMPLATE_IDS_BY_MIX[template_mix]
     return template_ids[index % len(template_ids)]
 
 
@@ -231,6 +281,65 @@ def _make_scoped_question(
         relevant_canonical_id=canonical_id,
         scope_level=scope_level,
         scope_key=scope_key,
+        phase=phase,
+        gold_candidate_ids=gold_candidate_ids,
+        forbidden_candidate_ids=forbidden_candidate_ids,
+        asked_at=asked_at,
+    )
+
+
+def _make_preference_candidate(
+    candidate_id: str,
+    canonical_id: str,
+    raw_text: str,
+    canonical_claim: str,
+    observed_at: datetime,
+    strength: float,
+    source_kind: str,
+    *,
+    contradicts: List[str] = None,
+    supports: List[str] = None,
+) -> CandidateUpdate:
+    return CandidateUpdate(
+        candidate_id=candidate_id,
+        canonical_id=canonical_id,
+        raw_text=raw_text,
+        raw_claim=raw_text,
+        canonical_claim=canonical_claim,
+        claim_type=ClaimType.USER_PREFERENCE,
+        scope_level=ScopeLevel.USER_GLOBAL,
+        scope_key="user",
+        provenance=[
+            ProvenanceRecord(
+                source_kind=source_kind,
+                source_id="source-" + candidate_id,
+                trust_score=strength,
+                observed_at=observed_at,
+            )
+        ],
+        verification_score=strength,
+        created_at=observed_at,
+        updated_at=observed_at,
+        contradicts=contradicts or [],
+        supports=supports or [],
+    )
+
+
+def _make_preference_question(
+    question_id: str,
+    text: str,
+    canonical_id: str,
+    phase: str,
+    gold_candidate_ids: List[str],
+    forbidden_candidate_ids: List[str],
+    asked_at: datetime,
+) -> QuestionSpec:
+    return QuestionSpec(
+        question_id=question_id,
+        text=text,
+        relevant_canonical_id=canonical_id,
+        scope_level=ScopeLevel.USER_GLOBAL,
+        scope_key="user",
         phase=phase,
         gold_candidate_ids=gold_candidate_ids,
         forbidden_candidate_ids=forbidden_candidate_ids,
@@ -1513,6 +1622,595 @@ def _build_scope_dirty_broad_claim_v3_scenario(
         template_kind="dirty",
         template_split="heldout",
     )
+
+
+def _build_preference_clean_stable_v1_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    option_a: str,
+    option_b: str,
+    one_off_option: str,
+    question_text: str,
+    base_time: datetime,
+) -> Scenario:
+    del option_b, one_off_option
+    stable_candidate_id = scenario_id + "-candidate-stable"
+    stable_claim = "User prefers {} by default".format(option_a)
+    stable_text = "I prefer {} by default.".format(option_a)
+
+    stable_candidate = _make_preference_candidate(
+        candidate_id=stable_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=stable_text,
+        canonical_claim=stable_claim,
+        observed_at=base_time,
+        strength=0.76,
+        source_kind="user",
+    )
+    before_question = _make_preference_question(
+        question_id=scenario_id + "-question-before",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="before_drift",
+        gold_candidate_ids=[stable_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=1),
+    )
+    after_question = _make_preference_question(
+        question_id=scenario_id + "-question-after",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="after_drift",
+        gold_candidate_ids=[stable_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=2),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.PREFERENCE_DRIFT,
+        description="Stable user preference with no drift pressure.",
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "standing_preference_sequence": [
+                {"turn": 1, "truth": stable_claim},
+                {"turn": 3, "truth": stable_claim},
+            ],
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=stable_text,
+                candidate=stable_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.QUESTION,
+                turn_index=2,
+                text=question_text,
+                question=before_question,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.QUESTION,
+                turn_index=3,
+                text=question_text,
+                question=after_question,
+            ),
+        ],
+        expected_lifecycle={
+            "old_candidate_id": stable_candidate_id,
+            "new_candidate_id": stable_candidate_id,
+            "should_not_promote_candidate_ids": [],
+        },
+        template_id="preference_drift_clean_stable_v1",
+        template_kind="clean",
+        template_split="main",
+    )
+
+
+def _build_preference_dirty_explicit_update_v1_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    option_a: str,
+    option_b: str,
+    one_off_option: str,
+    question_text: str,
+    base_time: datetime,
+) -> Scenario:
+    del one_off_option
+    old_candidate_id = scenario_id + "-candidate-old-preference"
+    new_candidate_id = scenario_id + "-candidate-updated-preference"
+    old_claim = "User prefers {} by default".format(option_a)
+    new_claim = "User prefers {} by default".format(option_b)
+    old_text = "I prefer {} by default.".format(option_a)
+    new_text = "Actually, update that: I prefer {} by default now.".format(option_b)
+
+    old_candidate = _make_preference_candidate(
+        candidate_id=old_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=old_text,
+        canonical_claim=old_claim,
+        observed_at=base_time,
+        strength=0.86,
+        source_kind="user",
+    )
+    new_candidate = _make_preference_candidate(
+        candidate_id=new_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=new_text,
+        canonical_claim=new_claim,
+        observed_at=base_time + timedelta(minutes=2),
+        strength=0.64,
+        source_kind="user_update",
+        contradicts=[old_candidate_id],
+    )
+    before_question = _make_preference_question(
+        question_id=scenario_id + "-question-before",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="before_drift",
+        gold_candidate_ids=[old_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=1),
+    )
+    after_question = _make_preference_question(
+        question_id=scenario_id + "-question-after",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="after_drift",
+        gold_candidate_ids=[new_candidate_id],
+        forbidden_candidate_ids=[old_candidate_id],
+        asked_at=base_time + timedelta(minutes=3),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.PREFERENCE_DRIFT,
+        description="A strong standing preference is explicitly updated by weaker but usable current evidence.",
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "standing_preference_sequence": [
+                {"turn": 1, "truth": old_claim},
+                {"turn": 3, "truth": new_claim},
+            ],
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=old_text,
+                candidate=old_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.QUESTION,
+                turn_index=2,
+                text=question_text,
+                question=before_question,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.OBSERVATION,
+                turn_index=3,
+                text=new_text,
+                candidate=new_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-4",
+                kind=EventKind.QUESTION,
+                turn_index=4,
+                text=question_text,
+                question=after_question,
+            ),
+        ],
+        expected_lifecycle={
+            "old_candidate_id": old_candidate_id,
+            "new_candidate_id": new_candidate_id,
+            "contradiction_timestamp": (base_time + timedelta(minutes=2)).isoformat(),
+            "should_not_promote_candidate_ids": [],
+        },
+        template_id="preference_drift_dirty_explicit_update_v1",
+        template_kind="dirty",
+        template_split="main",
+    )
+
+
+def _build_preference_dirty_one_off_exception_v1_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    option_a: str,
+    option_b: str,
+    one_off_option: str,
+    question_text: str,
+    base_time: datetime,
+) -> Scenario:
+    del option_b
+    old_candidate_id = scenario_id + "-candidate-standing-preference"
+    one_off_candidate_id = scenario_id + "-candidate-one-off"
+    old_claim = "User prefers {} by default".format(option_a)
+    one_off_claim = "User wants {} only for the current one-off request".format(one_off_option)
+    old_text = "I prefer {} by default.".format(option_a)
+    one_off_text = "For this one request, use {}.".format(one_off_option)
+
+    old_candidate = _make_preference_candidate(
+        candidate_id=old_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=old_text,
+        canonical_claim=old_claim,
+        observed_at=base_time,
+        strength=0.86,
+        source_kind="user",
+    )
+    one_off_candidate = _make_preference_candidate(
+        candidate_id=one_off_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=one_off_text,
+        canonical_claim=one_off_claim,
+        observed_at=base_time + timedelta(minutes=2),
+        strength=0.30,
+        source_kind="user_one_off",
+    )
+    before_question = _make_preference_question(
+        question_id=scenario_id + "-question-before",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="before_drift",
+        gold_candidate_ids=[old_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=1),
+    )
+    after_question = _make_preference_question(
+        question_id=scenario_id + "-question-after",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="after_drift",
+        gold_candidate_ids=[old_candidate_id],
+        forbidden_candidate_ids=[one_off_candidate_id],
+        asked_at=base_time + timedelta(minutes=3),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.PREFERENCE_DRIFT,
+        description="A low-strength one-off request should not replace the standing user preference.",
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "standing_preference_sequence": [
+                {"turn": 1, "truth": old_claim},
+                {"turn": 3, "truth": old_claim},
+            ],
+            "one_off_candidate_id": one_off_candidate_id,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=old_text,
+                candidate=old_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.QUESTION,
+                turn_index=2,
+                text=question_text,
+                question=before_question,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.OBSERVATION,
+                turn_index=3,
+                text=one_off_text,
+                candidate=one_off_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-4",
+                kind=EventKind.QUESTION,
+                turn_index=4,
+                text=question_text,
+                question=after_question,
+            ),
+        ],
+        expected_lifecycle={
+            "old_candidate_id": old_candidate_id,
+            "new_candidate_id": one_off_candidate_id,
+            "should_not_promote_candidate_ids": [one_off_candidate_id],
+        },
+        template_id="preference_drift_dirty_one_off_exception_v1",
+        template_kind="dirty",
+        template_split="main",
+    )
+
+
+def _build_preference_clean_stable_v2_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    option_a: str,
+    option_b: str,
+    one_off_option: str,
+    question_text: str,
+    base_time: datetime,
+) -> Scenario:
+    del option_b, one_off_option
+    stable_candidate_id = scenario_id + "-candidate-stable-heldout"
+    stable_claim = "User prefers {} as the standing default".format(option_a)
+    stable_text = "As a standing default, use {}.".format(option_a)
+
+    stable_candidate = _make_preference_candidate(
+        candidate_id=stable_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=stable_text,
+        canonical_claim=stable_claim,
+        observed_at=base_time,
+        strength=0.76,
+        source_kind="user",
+    )
+    before_question = _make_preference_question(
+        question_id=scenario_id + "-question-before",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="before_drift",
+        gold_candidate_ids=[stable_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=1),
+    )
+    after_question = _make_preference_question(
+        question_id=scenario_id + "-question-after",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="after_drift",
+        gold_candidate_ids=[stable_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=2),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.PREFERENCE_DRIFT,
+        description="Held-out stable user preference with no drift pressure.",
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "standing_preference_sequence": [
+                {"turn": 1, "truth": stable_claim},
+                {"turn": 3, "truth": stable_claim},
+            ],
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=stable_text,
+                candidate=stable_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.QUESTION,
+                turn_index=2,
+                text=question_text,
+                question=before_question,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.QUESTION,
+                turn_index=3,
+                text=question_text,
+                question=after_question,
+            ),
+        ],
+        expected_lifecycle={
+            "old_candidate_id": stable_candidate_id,
+            "new_candidate_id": stable_candidate_id,
+            "should_not_promote_candidate_ids": [],
+        },
+        template_id="preference_drift_clean_stable_v2",
+        template_kind="clean",
+        template_split="heldout",
+    )
+
+
+def _build_preference_dirty_drift_back_v2_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    option_a: str,
+    option_b: str,
+    one_off_option: str,
+    question_text: str,
+    base_time: datetime,
+) -> Scenario:
+    old_candidate_id = scenario_id + "-candidate-old-heldout"
+    new_candidate_id = scenario_id + "-candidate-updated-heldout"
+    one_off_candidate_id = scenario_id + "-candidate-one-off-back-heldout"
+    old_claim = "User prefers {} by default".format(option_a)
+    new_claim = "User prefers {} by default".format(option_b)
+    one_off_claim = "User wants {} only for the current one-off request".format(one_off_option)
+    old_text = "I prefer {} by default.".format(option_a)
+    new_text = "Change the default: use {} from now on.".format(option_b)
+    one_off_text = "For this one checkpoint, use {}.".format(one_off_option)
+
+    old_candidate = _make_preference_candidate(
+        candidate_id=old_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=old_text,
+        canonical_claim=old_claim,
+        observed_at=base_time,
+        strength=0.86,
+        source_kind="user",
+    )
+    new_candidate = _make_preference_candidate(
+        candidate_id=new_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=new_text,
+        canonical_claim=new_claim,
+        observed_at=base_time + timedelta(minutes=2),
+        strength=0.64,
+        source_kind="user_update",
+        contradicts=[old_candidate_id],
+    )
+    one_off_candidate = _make_preference_candidate(
+        candidate_id=one_off_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=one_off_text,
+        canonical_claim=one_off_claim,
+        observed_at=base_time + timedelta(minutes=3),
+        strength=0.30,
+        source_kind="user_one_off",
+    )
+    before_question = _make_preference_question(
+        question_id=scenario_id + "-question-before",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="before_drift",
+        gold_candidate_ids=[old_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=1),
+    )
+    after_question = _make_preference_question(
+        question_id=scenario_id + "-question-after",
+        text=question_text,
+        canonical_id=canonical_id,
+        phase="after_drift",
+        gold_candidate_ids=[new_candidate_id],
+        forbidden_candidate_ids=[old_candidate_id, one_off_candidate_id],
+        asked_at=base_time + timedelta(minutes=4),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.PREFERENCE_DRIFT,
+        description=(
+            "Held-out drift-back probe where an explicit update is followed by a low-strength one-off return to the old style."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "standing_preference_sequence": [
+                {"turn": 1, "truth": old_claim},
+                {"turn": 3, "truth": new_claim},
+                {"turn": 5, "truth": new_claim},
+            ],
+            "one_off_candidate_id": one_off_candidate_id,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=old_text,
+                candidate=old_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.QUESTION,
+                turn_index=2,
+                text=question_text,
+                question=before_question,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.OBSERVATION,
+                turn_index=3,
+                text=new_text,
+                candidate=new_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-4",
+                kind=EventKind.OBSERVATION,
+                turn_index=4,
+                text=one_off_text,
+                candidate=one_off_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-5",
+                kind=EventKind.QUESTION,
+                turn_index=5,
+                text=question_text,
+                question=after_question,
+            ),
+        ],
+        expected_lifecycle={
+            "old_candidate_id": old_candidate_id,
+            "new_candidate_id": new_candidate_id,
+            "contradiction_timestamp": (base_time + timedelta(minutes=2)).isoformat(),
+            "should_not_promote_candidate_ids": [one_off_candidate_id],
+        },
+        template_id="preference_drift_dirty_drift_back_v2",
+        template_kind="dirty",
+        template_split="heldout",
+    )
+
+
+def generate_preference_drift_scenarios(
+    count: int,
+    seed: int = 23,
+    template_mix: str = "mixed",
+) -> List[Scenario]:
+    rng = random.Random(seed)
+    scenarios = []
+    for index in range(count):
+        dimension, option_a, option_b, one_off_option, question_text = rng.choice(PREFERENCE_DIMENSIONS)
+        template_id = _preference_template_id_for_index(index, template_mix)
+        scenario_id = "preference_drift_{:03d}".format(index + 1)
+        canonical_id = "user-preference-" + dimension
+        base_time = datetime(2026, 3, 1, 9, 0, 0) + timedelta(days=index)
+
+        if template_id == "preference_drift_clean_stable_v1":
+            scenario = _build_preference_clean_stable_v1_scenario(
+                scenario_id,
+                canonical_id,
+                option_a,
+                option_b,
+                one_off_option,
+                question_text,
+                base_time,
+            )
+        elif template_id == "preference_drift_dirty_explicit_update_v1":
+            scenario = _build_preference_dirty_explicit_update_v1_scenario(
+                scenario_id,
+                canonical_id,
+                option_a,
+                option_b,
+                one_off_option,
+                question_text,
+                base_time,
+            )
+        elif template_id == "preference_drift_dirty_one_off_exception_v1":
+            scenario = _build_preference_dirty_one_off_exception_v1_scenario(
+                scenario_id,
+                canonical_id,
+                option_a,
+                option_b,
+                one_off_option,
+                question_text,
+                base_time,
+            )
+        elif template_id == "preference_drift_clean_stable_v2":
+            scenario = _build_preference_clean_stable_v2_scenario(
+                scenario_id,
+                canonical_id,
+                option_a,
+                option_b,
+                one_off_option,
+                question_text,
+                base_time,
+            )
+        elif template_id == "preference_drift_dirty_drift_back_v2":
+            scenario = _build_preference_dirty_drift_back_v2_scenario(
+                scenario_id,
+                canonical_id,
+                option_a,
+                option_b,
+                one_off_option,
+                question_text,
+                base_time,
+            )
+        else:
+            raise ValueError("Unsupported template_id: {}".format(template_id))
+        scenarios.append(scenario)
+    return scenarios
 
 
 def generate_scope_contamination_scenarios(

@@ -239,6 +239,28 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
             },
         )
 
+    def test_existing_forced_contradiction_template_metrics_remain_pinned(self) -> None:
+        artifact = build_run_artifact(6, template_mix="mixed")
+        policies = {policy["policy_name"]: policy for policy in artifact["policies"]}
+
+        reflection_dirty_v2 = policies["reflection_eager_write_lite"]["summary_by_template_id"][
+            "forced_contradiction_dirty_v2"
+        ]
+        cq_dirty_v2 = policies["consolidation_queue_lite"]["summary_by_template_id"][
+            "forced_contradiction_dirty_v2"
+        ]
+        naive_dirty_v2 = policies["naive_eager_write_lite"]["summary_by_template_id"][
+            "forced_contradiction_dirty_v2"
+        ]
+
+        self.assertEqual(reflection_dirty_v2["useful_recall"], 1.0)
+        self.assertEqual(reflection_dirty_v2["false_assertion_rate"], 1.0)
+        self.assertEqual(reflection_dirty_v2["answer_correctness"], 0.0)
+        self.assertEqual(cq_dirty_v2["false_assertion_rate"], 0.0)
+        self.assertEqual(cq_dirty_v2["answer_correctness"], 1.0)
+        self.assertEqual(naive_dirty_v2["false_assertion_rate"], 0.0)
+        self.assertEqual(naive_dirty_v2["answer_correctness"], 1.0)
+
     def test_csv_emits_template_id_rows_and_correctness_column(self) -> None:
         artifact = build_run_artifact(4, template_mix="heldout")
         with tempfile.TemporaryDirectory() as tmpdir:
