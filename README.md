@@ -5,7 +5,7 @@ Local prototype for staged memory governance experiments.
 The first slice in this repository is intentionally narrow:
 
 - oracle-mode forced-contradiction scenarios
-- oracle-mode scope-contamination scenarios, framed as broad-claim premature promotion
+- oracle-mode scope-contamination scenarios, framed as broad-claim premature promotion plus workspace-parent/project-override shadowing
 - oracle-mode preference-drift scenarios, framed as explicit update plus one-off/drift-back probes
 - oracle-mode useful-pending-memory scenarios, framed as reversible pending utility
 - shared in-memory substrate
@@ -129,6 +129,6 @@ python3 -m unittest discover -s tests -p 'test_*.py'
   - scope-blind transcript RAG is an oracle-id recency baseline that intentionally ignores scope
 - `contradiction_recovery_rate` remains the headline memory-governance metric.
 - `answer_correctness_after_contradiction` is the policy-agnostic answer-quality view used alongside recovery.
-- Scope-contamination now includes main and held-out broad-claim probes. These show premature promotion and broad-first absorption under the current permissive `WORLD_GLOBAL` scope-match rule, not a general claim that CQ reasons about scope better than Reflection.
+- Scope-contamination now includes main and held-out broad-claim probes plus workspace-parent/project-override probes. These show oracle scope-key behavior, premature promotion, and active wider-scope shadowing, not a general claim that CQ reasons semantically about scope better than Reflection.
 - Preference-drift now includes main and held-out probes. The explicit-update template is contradiction-like, while the one-off and drift-back templates distinguish staged promotion from pure recency.
 - Useful-pending-memory includes main and held-out probes where every candidate is a `PROJECT_CONVENTION` in the `[0.35, 0.70)` strength band. Clean templates calibrate that pending utility does not cost answer correctness; dirty refinement templates show eager reversibility debt when no claim is durable-eligible. ScopeBlindTranscriptRAG follows truth by recency here, so this family is not evidence about retrieval quality.
