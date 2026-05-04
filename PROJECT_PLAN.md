@@ -202,6 +202,7 @@ Required CQ ablations:
 
 Ablation rules:
 
+- Ablations modify policy decision logic only. The shared substrate's corroboration counting, lifecycle logging, and scope matching remain unchanged.
 - Run each ablation with the same thresholds unless a preregistered sensitivity run explicitly changes them.
 - Label ablation artifacts separately from full CQ artifacts.
 - Do not add new CQ features after seeing frozen held-out or ablation results without marking the run as post-hoc.
@@ -216,6 +217,7 @@ Held-out rules:
 
 - These are not relabeled v2 surface-form templates.
 - Freeze scenario contracts, expected lifecycle, and metrics before CQ tuning or threshold changes.
+- Predictions for this mechanism-diverse held-out set must be in `docs/preregistration.md` before these scenarios are executed against any policy, including baselines and ablations.
 - Use this set as the only basis for mechanism-generalization claims.
 - Continue reporting existing v2 held-outs as surface-form robustness checks, not mechanism-diversity evidence.
 
@@ -223,8 +225,11 @@ Preregistration requirements:
 
 - `docs/preregistration.md` must contain predictions, not only task lists.
 - Predictions must include numeric deltas for CQ vs `Mem0Lite`, CQ vs ReflectionEagerWrite, and full CQ vs each named CQ ablation.
+- Predictions must be specified per scenario family per primary metric: `false_assertion_rate`, `answer_correctness`, `poison_promotion_rate`, `premature_promotion_rate`, `clean_durable_displacement_rate`, and `scope_leakage_rate`.
+- Aggregate deltas may be reported, but they cannot replace per-family commitments.
 - Predictions must include oracle-mode and noisy-mode expectations, including expected oracle-vs-noisy gaps by policy.
 - If results contradict the predictions, report the contradiction directly in the final writeup.
+- If `Mem0Lite` matches or exceeds CQ within 5 percentage points on the primary metrics across the mechanism-diverse held-out set, CQ is not supported as a policy contribution. In that case, reframe the writeup as a benchmark and failure-taxonomy contribution rather than a CQ policy contribution.
 
 Required outcome:
 
@@ -297,6 +302,7 @@ Add:
 - LongMemEval transfer check
 - latency and cost analysis
 - failure-case appendix
+- `docs/predictions_vs_results.md`, with every committed numeric prediction next to the observed value and interpretation
 - final paper/report structure
 
 LongMemEval positioning:
@@ -329,12 +335,14 @@ For each family:
 Primary metrics:
 
 - useful recall
+- answer correctness
 - false assertion rate
 - contradiction recovery rate
 - time to demotion
 - scope leakage rate
 - poison promotion rate
 - premature promotion rate
+- clean durable displacement rate
 - memory precision
 - memory recall
 - pending utility gain

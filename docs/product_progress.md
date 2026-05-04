@@ -1,5 +1,29 @@
 # Product Progress
 
+## 2026-05-04 — Preregistration and disconfirmation rules sharpened
+
+### What changed
+
+- required predictions to be per scenario family and per primary metric rather than aggregate-only
+- set a 5 percentage point disconfirmation threshold for the CQ policy contribution against `Mem0Lite` on mechanism-diverse held-outs
+- required `docs/predictions_vs_results.md` in Phase 6 so every committed prediction is auditable against observed results
+- clarified that CQ ablations only change policy decision logic; shared substrate counting, logging, and scope matching remain unchanged
+- required mechanism-diverse held-out predictions before those scenarios are executed against any policy, including baselines and ablations
+
+### Why it matters
+
+- aggregate wins can hide family-specific failures, so the preregistration now has to expose where each policy does and does not work
+- the contribution now has an explicit fail condition: if `Mem0Lite` matches or beats CQ within tolerance on the frozen held-outs, the paper becomes a benchmark and taxonomy contribution rather than a CQ-policy claim
+- locking predictions before first held-out execution reduces the chance of accidental tuning through scenario authoring
+
+### Evidence
+
+- documentation-only planning change; no tests were run
+
+### Open issues / next
+
+- implement Phase 2.5 and draft `docs/preregistration.md` before running mechanism-diverse held-out scenarios
+
 ## 2026-05-04 — Research roadmap revised for publishability
 
 ### What changed
