@@ -470,7 +470,7 @@ def compute_false_corroboration_metrics(
         answer_correctness=values["answer_correctness"],
         false_assertion_rate=values["false_assertion"],
         leakage_rate=0.0,
-        premature_promotion_rate=_premature_promotion_rate(store_snapshot, scenario),
+        premature_promotion_rate=values["premature_promotion"],
         useful_recall=values["answer_correctness"],
         used_pending=values["used_pending"],
         durable_commit=values["durable_commit"],

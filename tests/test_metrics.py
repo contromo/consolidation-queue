@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import datetime
 import unittest
 from typing import get_type_hints
@@ -306,8 +307,15 @@ class PolicySummaryMetricsTests(unittest.TestCase):
 
     def test_useful_pending_metrics_requires_pending_probe_question(self) -> None:
         scenario = generate_useful_pending_memory_scenarios(1, seed=31, template_mix="clean")[0]
-        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
-        probe_question.phase = "renamed_probe"
+        scenario = replace(
+            scenario,
+            oracle_events=[
+                replace(event, question=replace(event.question, phase="renamed_probe"))
+                if event.question is not None
+                else event
+                for event in scenario.oracle_events
+            ],
+        )
 
         with self.assertRaisesRegex(ValueError, "missing pending_probe question"):
             compute_useful_pending_memory_metrics(
@@ -403,8 +411,15 @@ class PolicySummaryMetricsTests(unittest.TestCase):
 
     def test_memory_poisoning_metrics_requires_poison_probe_question(self) -> None:
         scenario = generate_memory_poisoning_scenarios(1, seed=41, template_mix="clean")[0]
-        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
-        probe_question.phase = "renamed_probe"
+        scenario = replace(
+            scenario,
+            oracle_events=[
+                replace(event, question=replace(event.question, phase="renamed_probe"))
+                if event.question is not None
+                else event
+                for event in scenario.oracle_events
+            ],
+        )
 
         with self.assertRaisesRegex(ValueError, "missing poison_probe question"):
             compute_memory_poisoning_metrics(
