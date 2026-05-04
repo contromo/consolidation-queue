@@ -3,6 +3,7 @@ import io
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from cq.dashboard.app import render_dashboard
@@ -24,10 +25,11 @@ from cq.memory.scope_blind_transcript_rag import ScopeBlindTranscriptRAGLite
 from cq.memory.substrate import (
     SCOPE_MATCH_EXACT,
     SCOPE_MATCH_WORKSPACE_PARENT,
+    MemoryStore,
     scope_match_relation,
     scope_matches,
 )
-from cq.schemas.memory import ClaimType, MemoryState, ScopeLevel
+from cq.schemas.memory import ClaimType, DurableMemory, MemoryState, ProvenanceRecord, ScopeLevel
 from cq.simulator.scenario_generator import generate_scope_contamination_scenarios
 
 
@@ -69,6 +71,22 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
             ),
             SCOPE_MATCH_WORKSPACE_PARENT,
         )
+        self.assertIsNone(
+            scope_match_relation(
+                ScopeLevel.WORKSPACE,
+                workspace_key,
+                ScopeLevel.PROJECT,
+                "workspace-atlas-beacon-2/project-atlas",
+            )
+        )
+        self.assertIsNone(
+            scope_match_relation(
+                ScopeLevel.PROJECT,
+                direct_project_key,
+                ScopeLevel.WORKSPACE,
+                workspace_key,
+            )
+        )
         self.assertFalse(
             scope_matches(
                 ScopeLevel.WORKSPACE,
@@ -77,14 +95,7 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
                 "workspace-atlas-beacon-2/project-atlas",
             )
         )
-        self.assertFalse(
-            scope_matches(
-                ScopeLevel.PROJECT,
-                direct_project_key,
-                ScopeLevel.WORKSPACE,
-                workspace_key,
-            )
-        )
+        self.assertFalse(scope_matches(ScopeLevel.PROJECT, direct_project_key, ScopeLevel.WORKSPACE, workspace_key))
         self.assertEqual(
             scope_match_relation(
                 ScopeLevel.PROJECT,
@@ -102,6 +113,84 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
                 direct_project_key,
             )
         )
+
+    def test_active_durable_keeps_recency_first_for_exact_and_parent_matches(self) -> None:
+        store = MemoryStore("test-policy")
+        base_time = datetime(2026, 2, 1, 9, 0, 0)
+        workspace_key = "workspace-atlas-beacon"
+        project_key = workspace_key + "/project-atlas"
+        provenance = [
+            ProvenanceRecord(
+                source_kind="test",
+                source_id="source",
+                trust_score=0.9,
+                observed_at=base_time,
+            )
+        ]
+        store.durable_memories["memory-project"] = DurableMemory(
+            memory_id="memory-project",
+            canonical_id="project-convention-test-command",
+            claim="project exact",
+            claim_type=ClaimType.PROJECT_CONVENTION,
+            scope_level=ScopeLevel.PROJECT,
+            scope_key=project_key,
+            created_from_candidate_ids=["candidate-project"],
+            provenance=provenance,
+            confidence=0.95,
+            promotion_reason="test",
+            created_at=base_time,
+            updated_at=base_time,
+        )
+        store.durable_memories["memory-workspace"] = DurableMemory(
+            memory_id="memory-workspace",
+            canonical_id="project-convention-test-command",
+            claim="workspace parent",
+            claim_type=ClaimType.PROJECT_CONVENTION,
+            scope_level=ScopeLevel.WORKSPACE,
+            scope_key=workspace_key,
+            created_from_candidate_ids=["candidate-workspace"],
+            provenance=provenance,
+            confidence=0.80,
+            promotion_reason="test",
+            created_at=base_time + timedelta(minutes=1),
+            updated_at=base_time + timedelta(minutes=1),
+        )
+
+        durable = store.active_durable(
+            "project-convention-test-command",
+            ScopeLevel.PROJECT,
+            project_key,
+        )
+
+        self.assertEqual(durable.memory_id, "memory-workspace")
+
+    def test_clean_generation_rotates_clean_scope_templates(self) -> None:
+        scenarios = generate_scope_contamination_scenarios(4, seed=17, template_mix="clean")
+
+        self.assertEqual(
+            [scenario.template_id for scenario in scenarios],
+            [
+                "scope_contamination_clean_v1",
+                "scope_contamination_clean_workspace_parent_v1",
+                "scope_contamination_clean_v1",
+                "scope_contamination_clean_workspace_parent_v1",
+            ],
+        )
+        self.assertEqual({scenario.template_kind for scenario in scenarios}, {"clean"})
+
+    def test_dirty_generation_rotates_dirty_scope_templates(self) -> None:
+        scenarios = generate_scope_contamination_scenarios(4, seed=17, template_mix="dirty")
+
+        self.assertEqual(
+            [scenario.template_id for scenario in scenarios],
+            [
+                "scope_contamination_dirty_broad_claim_v1",
+                "scope_contamination_dirty_workspace_parent_v1",
+                "scope_contamination_dirty_broad_claim_v1",
+                "scope_contamination_dirty_workspace_parent_v1",
+            ],
+        )
+        self.assertEqual({scenario.template_kind for scenario in scenarios}, {"dirty"})
 
     def test_mixed_generation_rotates_clean_and_dirty_templates(self) -> None:
         scenarios = generate_scope_contamination_scenarios(4, seed=17, template_mix="mixed")
@@ -425,6 +514,55 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
         self.assertEqual(cq_workspace_trace["used_memory_ids"], ["memory-" + workspace_candidate_id])
         self.assertFalse(cq_workspace_trace["used_pending"])
 
+        naive_workspace_trace = self._trace_by_question_id(naive_result, workspace_question_id)
+        self.assertEqual(naive_workspace_trace["resolved_candidate_ids"], [workspace_candidate_id])
+        self.assertEqual(naive_workspace_trace["used_memory_ids"], ["memory-" + workspace_candidate_id])
+
+    def test_cq_promotes_durable_eligible_exact_override_without_demoting_workspace(self) -> None:
+        scenario = self._scenario_by_template_id(
+            "scope_contamination_dirty_workspace_parent_v1",
+            template_mix="mixed",
+            count=4,
+        )
+        workspace_candidate_id = scenario.expected_lifecycle["workspace_candidate_id"]
+        project_candidate_id = scenario.expected_lifecycle["project_candidate_id"]
+        project_candidate = self._candidate_by_id(scenario, project_candidate_id)
+        project_candidate.verification_score = 0.85
+        project_candidate.provenance[0].trust_score = 0.85
+        project_candidate.refresh_scores()
+
+        cq_result = execute_scenario(ConsolidationQueueLite, scenario)
+
+        cq_workspace_memory = cq_result["store"].durable_memories["memory-" + workspace_candidate_id]
+        cq_project_memory = cq_result["store"].durable_memories["memory-" + project_candidate_id]
+        cq_project_candidate = cq_result["store"].candidate_memories[project_candidate_id]
+        self.assertTrue(cq_workspace_memory.active)
+        self.assertTrue(cq_project_memory.active)
+        self.assertEqual(cq_project_candidate.state, MemoryState.PROMOTED)
+        self.assertEqual(cq_result["question_traces"][0]["resolved_candidate_ids"], [project_candidate_id])
+        self.assertEqual(cq_result["question_traces"][0]["used_memory_ids"], ["memory-" + project_candidate_id])
+        self.assertFalse(cq_result["question_traces"][0]["used_pending"])
+
+    def test_workspace_parent_templates_avoid_non_contradictory_narrower_reinforcement_path(self) -> None:
+        scenarios = (
+            generate_scope_contamination_scenarios(4, seed=17, template_mix="mixed")
+            + generate_scope_contamination_scenarios(4, seed=17, template_mix="heldout")
+        )
+        workspace_parent_scenarios = [
+            scenario for scenario in scenarios if "workspace_parent" in scenario.template_id
+        ]
+
+        self.assertTrue(workspace_parent_scenarios)
+        for scenario in workspace_parent_scenarios:
+            workspace_candidate_id = scenario.expected_lifecycle["workspace_candidate_id"]
+            workspace_scope_key = scenario.expected_lifecycle["workspace_scope_key"]
+            for event in scenario.oracle_events:
+                candidate = event.candidate
+                if candidate is None or candidate.scope_level != ScopeLevel.PROJECT:
+                    continue
+                if candidate.scope_key.startswith(workspace_scope_key + "/"):
+                    self.assertIn(workspace_candidate_id, candidate.contradicts)
+
     def test_scope_family_artifact_includes_transcript_baseline(self) -> None:
         artifact = build_run_artifact(2, template_mix="mixed", family="scope_contamination")
         policy_names = {policy["policy_name"] for policy in artifact["policies"]}
@@ -578,7 +716,7 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
     def test_dashboard_renders_scope_and_forced_contradiction_metrics(self) -> None:
         scope_html = render_dashboard(build_run_artifact(2, template_mix="mixed", family="scope_contamination"))
         heldout_scope_html = render_dashboard(
-            build_run_artifact(2, template_mix="heldout", family="scope_contamination")
+            build_run_artifact(4, template_mix="heldout", family="scope_contamination")
         )
         forced_html = render_dashboard(build_run_artifact(2, template_mix="mixed"))
 
@@ -586,6 +724,8 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
         self.assertIn("Premature promotion rate", scope_html)
         self.assertIn("<strong>Template mix:</strong> heldout", heldout_scope_html)
         self.assertIn("scope_contamination_dirty_broad_claim_v3", heldout_scope_html)
+        self.assertIn("scope_contamination_clean_workspace_parent_v2", heldout_scope_html)
+        self.assertIn("scope_contamination_dirty_workspace_parent_v2", heldout_scope_html)
         self.assertIn("Recovery", forced_html)
         self.assertIn("Correctness", forced_html)
 

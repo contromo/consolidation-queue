@@ -18,7 +18,7 @@ class ConsolidationQueueLite:
     def observe_candidate(self, candidate: CandidateUpdate) -> None:
         stored = self.store.add_candidate(candidate)
         active = self.store.active_durable(stored.canonical_id, stored.scope_level, stored.scope_key)
-        force_pending_due_to_scope_override = False
+        wider_scope_override = False
 
         for target_candidate_id in stored.contradicts:
             if target_candidate_id in self.store.candidate_memories:
@@ -40,16 +40,16 @@ class ConsolidationQueueLite:
                 )
 
         if active is not None:
-            active_relation = scope_match_relation(
-                active.scope_level,
-                active.scope_key,
-                stored.scope_level,
-                stored.scope_key,
-            )
             contradicts_active = any(
                 candidate_id in stored.contradicts for candidate_id in active.created_from_candidate_ids
             )
             if contradicts_active:
+                active_relation = scope_match_relation(
+                    active.scope_level,
+                    active.scope_key,
+                    stored.scope_level,
+                    stored.scope_key,
+                )
                 self.store.add_contradiction(
                     stored.candidate_id,
                     active.memory_id,
@@ -58,7 +58,8 @@ class ConsolidationQueueLite:
                     stored.updated_at,
                 )
                 if active_relation == SCOPE_MATCH_WORKSPACE_PARENT:
-                    force_pending_due_to_scope_override = True
+                    # A project override should not erase a still-valid workspace default globally.
+                    wider_scope_override = True
                 else:
                     self.store.demote_memory(
                         active.memory_id,
@@ -66,7 +67,7 @@ class ConsolidationQueueLite:
                         stored.updated_at,
                     )
 
-        if not force_pending_due_to_scope_override and should_promote_candidate(stored, self.thresholds):
+        if should_promote_candidate(stored, self.thresholds):
             self.store.promote_candidate(
                 stored.candidate_id,
                 stored.strength,
@@ -74,9 +75,11 @@ class ConsolidationQueueLite:
                 stored.updated_at,
             )
         else:
-            reason = "retained as exact-scope override for wider durable"
-            if not force_pending_due_to_scope_override:
-                reason = "retained in queue pending more evidence"
+            reason = (
+                "retained as exact-scope override for wider durable"
+                if wider_scope_override
+                else "retained in queue pending more evidence"
+            )
             self.store.update_candidate_state(
                 stored.candidate_id,
                 MemoryState.PENDING,
@@ -162,6 +165,7 @@ class ConsolidationQueueLite:
         question: QuestionSpec,
         durable: DurableMemory,
     ) -> Optional[CandidateUpdate]:
+        # Below-threshold exact overrides can shadow wider durables without inventing a new durable state.
         durable_candidate_ids = set(durable.created_from_candidate_ids)
         candidates = []
         for candidate_id in self.store.canonical_clusters.get(question.relevant_canonical_id, []):
