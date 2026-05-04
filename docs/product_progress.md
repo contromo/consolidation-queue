@@ -1,5 +1,32 @@
 # Product Progress
 
+## 2026-05-04 — Research roadmap revised for publishability
+
+### What changed
+
+- inserted Phase 2.5 before component evaluation
+- made `Mem0Lite` the first external published-family baseline, framed as rule-based ADD/UPDATE/DELETE/NOOP over the shared candidate stream rather than a faithful LLM-classifier reproduction
+- named the four required CQ ablations: contestation/demotion, wider-scope pending override, pending lookup use, and source-independence gating
+- defined three mechanism-diverse held-out mechanisms: adversarial mixed-source corroboration, scope-laundered poison, and long-horizon corrective drift
+- made preregistration prediction-bearing, with numeric deltas required before result sweeps
+- demoted 32B/70B routing to optional engineering work and added LongMemEval as the external transfer check after noisy mode
+
+### Why it matters
+
+- the roadmap now commits to disconfirmation tests before noisy-mode work can tune around them
+- existing v2 held-outs remain surface-form robustness checks; only the new frozen mechanisms can support mechanism-generalization claims
+- `Mem0Lite` gives reviewers an external-policy comparison while preserving the repo invariant that policies receive the same upstream candidates and storage substrate
+- Phase 4 is capped so local extraction quality is measured and reported rather than becoming a separate open-ended extractor project
+
+### Evidence
+
+- documentation-only planning change; no tests were run
+
+### Open issues / next
+
+- implement Phase 2.5 before starting Phase 3
+- write `docs/preregistration.md` with concrete prediction deltas before Phase 2.5 result sweeps or noisy-mode evaluations
+
 ## 2026-05-04 — Memory-poisoning override-attack probes added
 
 ### What shipped
