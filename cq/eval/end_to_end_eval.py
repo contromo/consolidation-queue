@@ -58,6 +58,8 @@ def compute_policy_metrics(
         return compute_useful_pending_memory_metrics(policy_name, scenario, question_traces, store_snapshot)
     if scenario.task_family == TaskFamily.FALSE_CORROBORATION:
         return compute_false_corroboration_metrics(policy_name, scenario, question_traces, store_snapshot)
+    if scenario.task_family == TaskFamily.MEMORY_POISONING:
+        return compute_memory_poisoning_metrics(policy_name, scenario, question_traces, store_snapshot)
     raise ValueError("Unsupported task family: {}".format(scenario.task_family))
 
 
@@ -67,6 +69,7 @@ DIAGNOSTIC_PHASE_BY_FAMILY = {
     TaskFamily.PREFERENCE_DRIFT: "after_drift",
     TaskFamily.USEFUL_PENDING_MEMORY: "pending_probe",
     TaskFamily.FALSE_CORROBORATION: "corroboration_probe",
+    TaskFamily.MEMORY_POISONING: "poison_probe",
 }
 
 
@@ -91,6 +94,10 @@ ASSERTION_FAILURE_BY_FAMILY = {
         "false_assertion",
         "forbidden_false_corroboration_candidate_asserted",
     ),
+    TaskFamily.MEMORY_POISONING: (
+        "false_assertion",
+        "forbidden_poison_candidate_asserted",
+    ),
 }
 
 
@@ -100,6 +107,7 @@ PREMATURE_PROMOTION_REASON_BY_FAMILY = {
     TaskFamily.PREFERENCE_DRIFT: "should_not_promote_preference_candidate_promoted",
     TaskFamily.USEFUL_PENDING_MEMORY: "should_not_promote_useful_pending_candidate_promoted",
     TaskFamily.FALSE_CORROBORATION: "false_corroboration_stack_promoted",
+    TaskFamily.MEMORY_POISONING: "poison_candidate_promoted",
 }
 
 
@@ -362,31 +370,12 @@ def compute_useful_pending_memory_metrics(
     question_traces: List[object],
     store_snapshot: Dict[str, object],
 ) -> PolicyScenarioMetrics:
-    questions = {}
-    for event in scenario.sorted_events():
-        if event.question is not None:
-            questions[event.question.phase] = event.question
-    traces = {trace.question_id: trace for trace in question_traces}
-    probe_question = questions.get("pending_probe")
-    if probe_question is None:
-        raise ValueError("Scenario {} is missing pending_probe question".format(scenario.scenario_id))
-    probe_trace = traces.get(probe_question.question_id)
-    if probe_trace is None:
-        raise ValueError(
-            "Scenario {} is missing trace for pending_probe question {}".format(
-                scenario.scenario_id,
-                probe_question.question_id,
-            )
-        )
-
-    asserted_ids = _asserted_candidate_ids(probe_trace, store_snapshot)
-    answer_correctness = (
-        1.0 if _contains_any(probe_trace.resolved_candidate_ids, probe_question.gold_candidate_ids) else 0.0
+    values = _compute_single_probe_values(
+        scenario,
+        question_traces,
+        store_snapshot,
+        "pending_probe",
     )
-    false_assertion = 1.0 if _contains_any(asserted_ids, probe_question.forbidden_candidate_ids) else 0.0
-    premature_promotion = _premature_promotion_rate(store_snapshot, scenario)
-    used_pending = 1.0 if probe_trace.used_pending else 0.0
-    durable_commit = 1.0 if getattr(probe_trace, "used_memory_ids", []) else 0.0
 
     return PolicyScenarioMetrics(
         scenario_id=scenario.scenario_id,
@@ -398,13 +387,13 @@ def compute_useful_pending_memory_metrics(
         contradiction_recovery_rate=0.0,
         answer_correctness_after_contradiction=0.0,
         time_to_demotion=None,
-        answer_correctness=answer_correctness,
-        false_assertion_rate=false_assertion,
+        answer_correctness=values["answer_correctness"],
+        false_assertion_rate=values["false_assertion"],
         leakage_rate=0.0,
-        premature_promotion_rate=premature_promotion,
-        useful_recall=answer_correctness,
-        used_pending=used_pending,
-        durable_commit=durable_commit,
+        premature_promotion_rate=values["premature_promotion"],
+        useful_recall=values["answer_correctness"],
+        used_pending=values["used_pending"],
+        durable_commit=values["durable_commit"],
     )
 
 
@@ -461,30 +450,12 @@ def compute_false_corroboration_metrics(
     question_traces: List[object],
     store_snapshot: Dict[str, object],
 ) -> PolicyScenarioMetrics:
-    questions = {}
-    for event in scenario.sorted_events():
-        if event.question is not None:
-            questions[event.question.phase] = event.question
-    traces = {trace.question_id: trace for trace in question_traces}
-    probe_question = questions.get("corroboration_probe")
-    if probe_question is None:
-        raise ValueError("Scenario {} is missing corroboration_probe question".format(scenario.scenario_id))
-    probe_trace = traces.get(probe_question.question_id)
-    if probe_trace is None:
-        raise ValueError(
-            "Scenario {} is missing trace for corroboration_probe question {}".format(
-                scenario.scenario_id,
-                probe_question.question_id,
-            )
-        )
-
-    asserted_ids = _asserted_candidate_ids(probe_trace, store_snapshot)
-    answer_correctness = (
-        1.0 if _contains_any(probe_trace.resolved_candidate_ids, probe_question.gold_candidate_ids) else 0.0
+    values = _compute_single_probe_values(
+        scenario,
+        question_traces,
+        store_snapshot,
+        "corroboration_probe",
     )
-    false_assertion = 1.0 if _contains_any(asserted_ids, probe_question.forbidden_candidate_ids) else 0.0
-    used_pending = 1.0 if probe_trace.used_pending else 0.0
-    durable_commit = 1.0 if getattr(probe_trace, "used_memory_ids", []) else 0.0
 
     return PolicyScenarioMetrics(
         scenario_id=scenario.scenario_id,
@@ -496,13 +467,51 @@ def compute_false_corroboration_metrics(
         contradiction_recovery_rate=0.0,
         answer_correctness_after_contradiction=0.0,
         time_to_demotion=None,
-        answer_correctness=answer_correctness,
-        false_assertion_rate=false_assertion,
+        answer_correctness=values["answer_correctness"],
+        false_assertion_rate=values["false_assertion"],
         leakage_rate=0.0,
         premature_promotion_rate=_premature_promotion_rate(store_snapshot, scenario),
-        useful_recall=answer_correctness,
-        used_pending=used_pending,
-        durable_commit=durable_commit,
+        useful_recall=values["answer_correctness"],
+        used_pending=values["used_pending"],
+        durable_commit=values["durable_commit"],
+    )
+
+
+def compute_memory_poisoning_metrics(
+    policy_name: str,
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+) -> PolicyScenarioMetrics:
+    values = _compute_single_probe_values(
+        scenario,
+        question_traces,
+        store_snapshot,
+        "poison_probe",
+    )
+    poison_promotion = _candidate_promotion_rate(
+        store_snapshot,
+        scenario.expected_lifecycle.get("poison_candidate_ids", []),
+    )
+
+    return PolicyScenarioMetrics(
+        scenario_id=scenario.scenario_id,
+        policy_name=policy_name,
+        useful_recall_before_contradiction=0.0,
+        used_pending_before_contradiction=0.0,
+        durable_commit_before_contradiction=0.0,
+        false_assertion_after_contradiction=0.0,
+        contradiction_recovery_rate=0.0,
+        answer_correctness_after_contradiction=0.0,
+        time_to_demotion=None,
+        answer_correctness=values["answer_correctness"],
+        false_assertion_rate=values["false_assertion"],
+        leakage_rate=0.0,
+        premature_promotion_rate=values["premature_promotion"],
+        poison_promotion_rate=poison_promotion,
+        useful_recall=values["answer_correctness"],
+        used_pending=values["used_pending"],
+        durable_commit=values["durable_commit"],
     )
 
 
@@ -530,6 +539,7 @@ def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics
                 ),
                 leakage_rate=metric.get("leakage_rate", 0.0),
                 premature_promotion_rate=metric.get("premature_promotion_rate", 0.0),
+                poison_promotion_rate=metric.get("poison_promotion_rate", 0.0),
                 useful_recall=metric.get(
                     "useful_recall",
                     metric["useful_recall_before_contradiction"],
@@ -549,6 +559,44 @@ def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics
 
 def _contains_any(resolved_ids: List[str], gold_ids: List[str]) -> bool:
     return any(candidate_id in resolved_ids for candidate_id in gold_ids)
+
+
+def _compute_single_probe_values(
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+    probe_phase: str,
+) -> Dict[str, float]:
+    questions = {}
+    for event in scenario.sorted_events():
+        if event.question is not None:
+            questions[event.question.phase] = event.question
+    traces = {trace.question_id: trace for trace in question_traces}
+    probe_question = questions.get(probe_phase)
+    if probe_question is None:
+        raise ValueError("Scenario {} is missing {} question".format(scenario.scenario_id, probe_phase))
+    probe_trace = traces.get(probe_question.question_id)
+    if probe_trace is None:
+        raise ValueError(
+            "Scenario {} is missing trace for {} question {}".format(
+                scenario.scenario_id,
+                probe_phase,
+                probe_question.question_id,
+            )
+        )
+
+    asserted_ids = _asserted_candidate_ids(probe_trace, store_snapshot)
+    answer_correctness = (
+        1.0 if _contains_any(probe_trace.resolved_candidate_ids, probe_question.gold_candidate_ids) else 0.0
+    )
+    false_assertion = 1.0 if _contains_any(asserted_ids, probe_question.forbidden_candidate_ids) else 0.0
+    return {
+        "answer_correctness": answer_correctness,
+        "false_assertion": false_assertion,
+        "premature_promotion": _premature_promotion_rate(store_snapshot, scenario),
+        "used_pending": 1.0 if probe_trace.used_pending else 0.0,
+        "durable_commit": 1.0 if getattr(probe_trace, "used_memory_ids", []) else 0.0,
+    }
 
 
 def _ordered_intersection(source_ids: List[str], target_ids: List[str]) -> List[str]:
@@ -658,13 +706,17 @@ def _candidate_became_durable(store_snapshot: Dict[str, object], candidate_id: s
 
 def _premature_promotion_rate(store_snapshot: Dict[str, object], scenario: Scenario) -> float:
     should_not_promote = scenario.expected_lifecycle.get("should_not_promote_candidate_ids", [])
-    if not should_not_promote:
+    return _candidate_promotion_rate(store_snapshot, should_not_promote)
+
+
+def _candidate_promotion_rate(store_snapshot: Dict[str, object], candidate_ids: List[str]) -> float:
+    if not candidate_ids:
         return 0.0
     promoted = 0
-    for candidate_id in should_not_promote:
+    for candidate_id in candidate_ids:
         if _candidate_became_durable(store_snapshot, candidate_id):
             promoted += 1
-    return promoted / len(should_not_promote)
+    return promoted / len(candidate_ids)
 
 
 def _time_to_invalidation(

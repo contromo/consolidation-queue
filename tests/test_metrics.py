@@ -6,6 +6,8 @@ from cq.eval.end_to_end_eval import (
     _asserted_candidate_ids,
     _contains_any,
     compute_forced_contradiction_metrics,
+    compute_false_corroboration_metrics,
+    compute_memory_poisoning_metrics,
     compute_preference_drift_metrics,
     compute_scope_contamination_metrics,
     compute_useful_pending_memory_metrics,
@@ -14,6 +16,8 @@ from cq.schemas.memory import AnswerTrace
 from cq.schemas.metrics import PolicyScenarioMetrics, PolicySummaryMetrics
 from cq.simulator.scenario_generator import (
     generate_forced_contradiction_scenarios,
+    generate_false_corroboration_scenarios,
+    generate_memory_poisoning_scenarios,
     generate_preference_drift_scenarios,
     generate_scope_contamination_scenarios,
     generate_useful_pending_memory_scenarios,
@@ -92,6 +96,7 @@ class PolicySummaryMetricsTests(unittest.TestCase):
 
         self.assertIs(hints["answer_correctness"], float)
         self.assertIs(hints["false_assertion_rate"], float)
+        self.assertIs(hints["poison_promotion_rate"], float)
         self.assertIs(hints["useful_recall"], float)
         self.assertIs(hints["used_pending"], float)
         self.assertIs(hints["durable_commit"], float)
@@ -317,6 +322,103 @@ class PolicySummaryMetricsTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "missing trace for pending_probe question"):
             compute_useful_pending_memory_metrics(
+                "test-policy",
+                scenario,
+                [],
+                {"candidate_memories": [], "durable_memories": [], "lifecycle_events": []},
+            )
+
+    def test_false_corroboration_metrics_still_use_single_probe_sets(self) -> None:
+        scenario = generate_false_corroboration_scenarios(2, seed=37, template_mix="mixed")[1]
+        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
+        poison_like_id = scenario.expected_lifecycle["should_not_promote_candidate_ids"][0]
+
+        metrics = compute_false_corroboration_metrics(
+            "test-policy",
+            scenario,
+            [
+                AnswerTrace(
+                    answer_id="answer-probe",
+                    question_id=probe_question.question_id,
+                    query=probe_question.text,
+                    relevant_canonical_id=probe_question.relevant_canonical_id,
+                    scope_level=probe_question.scope_level,
+                    scope_key=probe_question.scope_key,
+                    resolved_candidate_ids=[poison_like_id],
+                    used_memory_ids=[],
+                    answer_text="false corroboration answer",
+                    used_pending=True,
+                    created_at=probe_question.asked_at,
+                )
+            ],
+            {"candidate_memories": [], "durable_memories": [], "lifecycle_events": []},
+        )
+
+        self.assertEqual(metrics.answer_correctness, 0.0)
+        self.assertEqual(metrics.false_assertion_rate, 1.0)
+        self.assertEqual(metrics.used_pending, 1.0)
+        self.assertEqual(metrics.durable_commit, 0.0)
+
+    def test_memory_poisoning_metrics_use_poison_probe_sets(self) -> None:
+        scenario = generate_memory_poisoning_scenarios(3, seed=41, template_mix="mixed")[2]
+        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
+        poison_id = scenario.expected_lifecycle["poison_candidate_ids"][0]
+
+        metrics = compute_memory_poisoning_metrics(
+            "test-policy",
+            scenario,
+            [
+                AnswerTrace(
+                    answer_id="answer-probe",
+                    question_id=probe_question.question_id,
+                    query=probe_question.text,
+                    relevant_canonical_id=probe_question.relevant_canonical_id,
+                    scope_level=probe_question.scope_level,
+                    scope_key=probe_question.scope_key,
+                    resolved_candidate_ids=[poison_id],
+                    used_memory_ids=["memory-" + poison_id],
+                    answer_text="poison durable answer",
+                    used_pending=False,
+                    created_at=probe_question.asked_at,
+                )
+            ],
+            {
+                "candidate_memories": [],
+                "durable_memories": [
+                    {
+                        "memory_id": "memory-" + poison_id,
+                        "created_from_candidate_ids": [poison_id],
+                    }
+                ],
+                "lifecycle_events": [],
+            },
+        )
+
+        self.assertEqual(metrics.answer_correctness, 0.0)
+        self.assertEqual(metrics.false_assertion_rate, 1.0)
+        self.assertEqual(metrics.premature_promotion_rate, 1.0)
+        self.assertEqual(metrics.poison_promotion_rate, 1.0)
+        self.assertEqual(metrics.used_pending, 0.0)
+        self.assertEqual(metrics.durable_commit, 1.0)
+
+    def test_memory_poisoning_metrics_requires_poison_probe_question(self) -> None:
+        scenario = generate_memory_poisoning_scenarios(1, seed=41, template_mix="clean")[0]
+        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
+        probe_question.phase = "renamed_probe"
+
+        with self.assertRaisesRegex(ValueError, "missing poison_probe question"):
+            compute_memory_poisoning_metrics(
+                "test-policy",
+                scenario,
+                [],
+                {"candidate_memories": [], "durable_memories": [], "lifecycle_events": []},
+            )
+
+    def test_memory_poisoning_metrics_requires_poison_probe_trace(self) -> None:
+        scenario = generate_memory_poisoning_scenarios(1, seed=41, template_mix="clean")[0]
+
+        with self.assertRaisesRegex(ValueError, "missing trace for poison_probe question"):
+            compute_memory_poisoning_metrics(
                 "test-policy",
                 scenario,
                 [],

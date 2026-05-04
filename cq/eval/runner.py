@@ -16,6 +16,7 @@ from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import (
     generate_false_corroboration_scenarios,
     generate_forced_contradiction_scenarios,
+    generate_memory_poisoning_scenarios,
     generate_preference_drift_scenarios,
     generate_scope_contamination_scenarios,
     generate_useful_pending_memory_scenarios,
@@ -28,12 +29,14 @@ SCOPE_CONTAMINATION = "scope_contamination"
 PREFERENCE_DRIFT = "preference_drift"
 USEFUL_PENDING_MEMORY = "useful_pending_memory"
 FALSE_CORROBORATION = "false_corroboration"
+MEMORY_POISONING = "memory_poisoning"
 TEMPLATE_MIXES_BY_FAMILY = {
     FORCED_CONTRADICTION: ("mixed", "clean", "dirty", "heldout"),
     SCOPE_CONTAMINATION: ("mixed", "clean", "dirty", "heldout"),
     PREFERENCE_DRIFT: ("mixed", "clean", "dirty", "heldout"),
     USEFUL_PENDING_MEMORY: ("mixed", "clean", "dirty", "heldout"),
     FALSE_CORROBORATION: ("mixed", "clean", "dirty", "heldout"),
+    MEMORY_POISONING: ("mixed", "clean", "dirty", "heldout"),
 }
 
 
@@ -61,6 +64,8 @@ def _generate_scenarios(family: str, scenario_count: int, template_mix: str):
         return generate_useful_pending_memory_scenarios(scenario_count, template_mix=template_mix)
     if family == FALSE_CORROBORATION:
         return generate_false_corroboration_scenarios(scenario_count, template_mix=template_mix)
+    if family == MEMORY_POISONING:
+        return generate_memory_poisoning_scenarios(scenario_count, template_mix=template_mix)
     raise ValueError("Unsupported family: {}".format(family))
 
 
@@ -85,7 +90,13 @@ def _policies_for_family(family: str):
         NaiveEagerWriteLite,
         NoMemoryLite,
     ]
-    if family in {SCOPE_CONTAMINATION, PREFERENCE_DRIFT, USEFUL_PENDING_MEMORY, FALSE_CORROBORATION}:
+    if family in {
+        SCOPE_CONTAMINATION,
+        PREFERENCE_DRIFT,
+        USEFUL_PENDING_MEMORY,
+        FALSE_CORROBORATION,
+        MEMORY_POISONING,
+    }:
         policies.append(ScopeBlindTranscriptRAGLite)
     return policies
 
@@ -159,6 +170,7 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                 "false_assertion_rate",
                 "leakage_rate",
                 "premature_promotion_rate",
+                "poison_promotion_rate",
                 "useful_recall",
                 "used_pending",
                 "durable_commit",
@@ -228,6 +240,7 @@ def main(argv: List[str] = None) -> int:
             PREFERENCE_DRIFT,
             USEFUL_PENDING_MEMORY,
             FALSE_CORROBORATION,
+            MEMORY_POISONING,
         ],
         default=FORCED_CONTRADICTION,
         help="Oracle benchmark family to run.",
@@ -266,7 +279,8 @@ def main(argv: List[str] = None) -> int:
             "{policy_name}: useful_recall={useful:.2f} pending_use={pending:.2f} "
             "early_durable_commit={durable:.2f} false_assertion={false:.2f} "
             "recovery={recovery:.2f} correctness={correctness:.2f} leakage={leakage:.2f} "
-            "premature_promotion={premature:.2f} avg_time_to_demotion={demotion:.2f}".format(
+            "premature_promotion={premature:.2f} poison_promotion={poison:.2f} "
+            "avg_time_to_demotion={demotion:.2f}".format(
                 policy_name=summary["policy_name"],
                 useful=summary["useful_recall"],
                 pending=summary["used_pending"],
@@ -276,42 +290,46 @@ def main(argv: List[str] = None) -> int:
                 correctness=summary["answer_correctness"],
                 leakage=summary["leakage_rate"],
                 premature=summary["premature_promotion_rate"],
+                poison=summary["poison_promotion_rate"],
                 demotion=summary["average_time_to_demotion"],
             )
         )
         for template_kind, kind_summary in policy.get("summary_by_template_kind", {}).items():
             print(
-                "  kind={template_kind}: false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} leakage={leakage:.2f} premature_promotion={premature:.2f} count={count}".format(
+                "  kind={template_kind}: false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} leakage={leakage:.2f} premature_promotion={premature:.2f} poison_promotion={poison:.2f} count={count}".format(
                     template_kind=template_kind,
                     false=kind_summary["false_assertion_rate"],
                     recovery=kind_summary["contradiction_recovery_rate"],
                     correctness=kind_summary["answer_correctness"],
                     leakage=kind_summary["leakage_rate"],
                     premature=kind_summary["premature_promotion_rate"],
+                    poison=kind_summary["poison_promotion_rate"],
                     count=kind_summary["scenario_count"],
                 )
             )
         for template_split, split_summary in policy.get("summary_by_template_split", {}).items():
             print(
-                "  split={template_split}: false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} leakage={leakage:.2f} premature_promotion={premature:.2f} count={count}".format(
+                "  split={template_split}: false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} leakage={leakage:.2f} premature_promotion={premature:.2f} poison_promotion={poison:.2f} count={count}".format(
                     template_split=template_split,
                     false=split_summary["false_assertion_rate"],
                     recovery=split_summary["contradiction_recovery_rate"],
                     correctness=split_summary["answer_correctness"],
                     leakage=split_summary["leakage_rate"],
                     premature=split_summary["premature_promotion_rate"],
+                    poison=split_summary["poison_promotion_rate"],
                     count=split_summary["scenario_count"],
                 )
             )
         for template_id, template_summary in policy.get("summary_by_template_id", {}).items():
             print(
-                "  template={template_id}: false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} leakage={leakage:.2f} premature_promotion={premature:.2f} count={count}".format(
+                "  template={template_id}: false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} leakage={leakage:.2f} premature_promotion={premature:.2f} poison_promotion={poison:.2f} count={count}".format(
                     template_id=template_id,
                     false=template_summary["false_assertion_rate"],
                     recovery=template_summary["contradiction_recovery_rate"],
                     correctness=template_summary["answer_correctness"],
                     leakage=template_summary["leakage_rate"],
                     premature=template_summary["premature_promotion_rate"],
+                    poison=template_summary["poison_promotion_rate"],
                     count=template_summary["scenario_count"],
                 )
             )

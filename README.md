@@ -9,6 +9,7 @@ The first slice in this repository is intentionally narrow:
 - oracle-mode preference-drift scenarios, framed as explicit update plus one-off/drift-back probes
 - oracle-mode useful-pending-memory scenarios, framed as reversible pending utility
 - oracle-mode false-corroboration scenarios, framed as explicit source-independence handling
+- oracle-mode memory-poisoning scenarios, framed as below-floor and pending-eligible untrusted injection
 - shared in-memory substrate
 - `NoMemory-lite`
 - `ReflectionEagerWrite-lite`
@@ -122,6 +123,28 @@ This writes:
 - `data/runs/false_corroboration_oracle_heldout.json`
 - `data/results/false_corroboration_oracle_heldout_metrics.csv`
 
+Run the memory-poisoning slice:
+
+```bash
+python3 -m cq.eval.runner --family memory_poisoning --scenarios 6 --template-mix mixed
+```
+
+This writes:
+
+- `data/runs/memory_poisoning_oracle.json`
+- `data/results/memory_poisoning_oracle_metrics.csv`
+
+Run the held-out memory-poisoning slice:
+
+```bash
+python3 -m cq.eval.runner --family memory_poisoning --scenarios 6 --template-mix heldout --output-json data/runs/memory_poisoning_oracle_heldout.json --output-csv data/results/memory_poisoning_oracle_heldout_metrics.csv
+```
+
+This writes:
+
+- `data/runs/memory_poisoning_oracle_heldout.json`
+- `data/results/memory_poisoning_oracle_heldout_metrics.csv`
+
 Open the dashboard against the saved run:
 
 ```bash
@@ -156,3 +179,4 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - Preference-drift now includes main and held-out probes. The explicit-update template is contradiction-like, while the one-off and drift-back templates distinguish staged promotion from pure recency.
 - Useful-pending-memory includes main and held-out probes where every candidate is a `PROJECT_CONVENTION` in the `[0.35, 0.70)` strength band. Clean templates calibrate that pending utility does not cost answer correctness; dirty refinement templates show eager reversibility debt when no claim is durable-eligible. ScopeBlindTranscriptRAG follows truth by recency here, so this family is not evidence about retrieval quality.
 - False-corroboration includes main and held-out source-independence probes where weak `PROJECT_CONVENTION` candidates only corroborate through explicit `supports` edges and distinct provenance source ids. Dirty mirrored-source templates test the shared oracle independence gate, not learned semantic independence; ScopeBlindTranscriptRAG fails dirty probes by recency rather than durable promotion.
+- Memory-poisoning includes main and held-out untrusted-injection probes. Below-floor dirty templates show eager durable poison promotion from immediate writes; pending-eligible dirty templates intentionally expose CQ false assertion from pending memory while still avoiding durable poison promotion. This v1 family does not test adversarial corroboration, scope-laundered poison, or override attacks against an existing clean durable.

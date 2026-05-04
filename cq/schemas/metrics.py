@@ -22,6 +22,7 @@ class PolicyScenarioMetrics:
     false_assertion_rate: float = _UNSET_FLOAT
     leakage_rate: float = 0.0
     premature_promotion_rate: float = 0.0
+    poison_promotion_rate: float = 0.0
     useful_recall: float = _UNSET_FLOAT
     used_pending: float = _UNSET_FLOAT
     durable_commit: float = _UNSET_FLOAT
@@ -54,6 +55,7 @@ class PolicySummaryMetrics:
     false_assertion_rate: float = 0.0
     leakage_rate: float = 0.0
     premature_promotion_rate: float = 0.0
+    poison_promotion_rate: float = 0.0
     useful_recall: float = 0.0
     used_pending: float = 0.0
     durable_commit: float = 0.0
@@ -76,6 +78,7 @@ class PolicySummaryMetrics:
                 false_assertion_rate=0.0,
                 leakage_rate=0.0,
                 premature_promotion_rate=0.0,
+                poison_promotion_rate=0.0,
                 useful_recall=0.0,
                 used_pending=0.0,
                 durable_commit=0.0,
@@ -109,6 +112,7 @@ class PolicySummaryMetrics:
             false_assertion_rate=sum(metric.false_assertion_rate for metric in metrics) / count,
             leakage_rate=sum(metric.leakage_rate for metric in metrics) / count,
             premature_promotion_rate=sum(metric.premature_promotion_rate for metric in metrics) / count,
+            poison_promotion_rate=sum(metric.poison_promotion_rate for metric in metrics) / count,
             useful_recall=sum(metric.useful_recall for metric in metrics) / count,
             used_pending=sum(metric.used_pending for metric in metrics) / count,
             durable_commit=sum(metric.durable_commit for metric in metrics) / count,
