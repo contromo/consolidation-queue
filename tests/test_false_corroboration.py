@@ -109,6 +109,9 @@ class SourceIndependenceSubstrateTests(unittest.TestCase):
             if item.event_type == "candidate_corroboration_counted"
         ][0]
         self.assertEqual(event.details["ignored_source_ids"], ["mirror"])
+        self.assertEqual(event.details["duplicate_source_ids"], ["mirror"])
+        self.assertEqual(event.details["capped_source_ids"], [])
+        self.assertEqual(event.details["ignored_candidate_ids"], ["c1"])
 
     def test_own_source_does_not_create_support_by_itself(self) -> None:
         store = MemoryStore("test-policy")
@@ -130,6 +133,8 @@ class SourceIndependenceSubstrateTests(unittest.TestCase):
             if item.event_type == "candidate_corroboration_counted"
         ][0]
         self.assertEqual(event.details["counted_source_ids"], ["s1"])
+        self.assertEqual(event.details["duplicate_source_ids"], [])
+        self.assertEqual(event.details["capped_source_ids"], ["s2"])
         self.assertEqual(event.details["ignored_source_ids"], ["s2"])
 
     def test_mismatched_support_candidates_do_not_count(self) -> None:
@@ -260,6 +265,9 @@ class FalseCorroborationScenarioTests(unittest.TestCase):
             ]
 
             self.assertEqual(len(events), 4, msg=scenario.template_id)
+            if scenario.template_kind == "dirty":
+                expected_ignored_ids = scenario.expected_lifecycle["should_not_promote_candidate_ids"][:-1]
+                self.assertEqual(events[-1].details["ignored_candidate_ids"], expected_ignored_ids)
 
     def test_calibration_uses_computed_independent_corroboration(self) -> None:
         clean = self._scenario_by_template_id("false_corroboration_clean_independent_v1")
@@ -399,6 +407,8 @@ class FalseCorroborationScenarioTests(unittest.TestCase):
         self.assertIn("false_corroboration_stack_promoted", html)
         self.assertIn("candidate_corroboration_counted", html)
         self.assertIn("counted_source_ids", html)
+        self.assertIn("duplicate_source_ids", html)
+        self.assertIn("capped_source_ids", html)
         self.assertIn("ignored_source_ids", html)
         self.assertIn("mirrored-", html)
 

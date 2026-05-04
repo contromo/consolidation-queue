@@ -355,8 +355,13 @@ def _timeline_event_text(event: Dict[str, object]) -> str:
     details = event.get("details", {})
     if event["event_type"] == "candidate_corroboration_counted":
         counted = ", ".join(str(source_id) for source_id in details.get("counted_source_ids", []))
+        duplicate = ", ".join(str(source_id) for source_id in details.get("duplicate_source_ids", []))
+        capped = ", ".join(str(source_id) for source_id in details.get("capped_source_ids", []))
         ignored = ", ".join(str(source_id) for source_id in details.get("ignored_source_ids", []))
-        return "counted_source_ids=[{}] ignored_source_ids=[{}]".format(counted, ignored)
+        return (
+            "counted_source_ids=[{}] duplicate_source_ids=[{}] "
+            "capped_source_ids=[{}] ignored_source_ids=[{}]"
+        ).format(counted, duplicate, capped, ignored)
     return (
         details.get("claim")
         or details.get("reason")

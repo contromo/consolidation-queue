@@ -124,6 +124,8 @@ class MemoryStore:
         own_source_ids = _source_ids(candidate)
         distinct_source_ids = set(own_source_ids)
         counted_source_ids = set()
+        duplicate_source_ids = set()
+        capped_source_ids = set()
         ignored_source_ids = set()
         ignored_candidate_ids = []
         counted_candidate_ids = []
@@ -143,22 +145,29 @@ class MemoryStore:
                 if source_id not in distinct_source_ids
             ]
             if not novel_source_ids:
+                duplicate_source_ids.update(support_sources)
                 ignored_source_ids.update(support_sources)
+                ignored_candidate_ids.append(support_id)
                 continue
             counted_source_id = novel_source_ids[0]
             distinct_source_ids.add(counted_source_id)
             counted_source_ids.add(counted_source_id)
-            ignored_source_ids.update(
+            duplicate_source_ids.update(
                 source_id
                 for source_id in support_sources
-                if source_id != counted_source_id
+                if source_id in distinct_source_ids and source_id != counted_source_id
             )
+            capped_source_ids.update(novel_source_ids[1:])
+            ignored_source_ids.update(duplicate_source_ids)
+            ignored_source_ids.update(capped_source_ids)
             counted_candidate_ids.append(support_id)
 
         return {
             "corroboration_count": max(0, len(distinct_source_ids) - 1),
             "distinct_source_ids": sorted(distinct_source_ids),
             "counted_source_ids": sorted(counted_source_ids),
+            "duplicate_source_ids": sorted(duplicate_source_ids),
+            "capped_source_ids": sorted(capped_source_ids),
             "ignored_source_ids": sorted(ignored_source_ids),
             "new_source_ids": sorted(own_source_ids),
             "counted_candidate_ids": counted_candidate_ids,

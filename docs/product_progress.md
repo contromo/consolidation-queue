@@ -7,7 +7,7 @@
 - added shared source-independence corroboration counting for supported candidate observations
 - added the `false_corroboration` oracle family with clean independent-source and dirty mirrored-source templates
 - added main and held-out false-corroboration splits, runner/CSV/dashboard wiring, and failure examples for false-corroboration assertions and promoted false stacks
-- added regression coverage for source-id independence rules, mirrored-source discounting, no-gold dirty probes, and dashboard timeline rendering of counted/ignored source ids
+- added regression coverage for source-id independence rules, mirrored-source discounting, no-gold dirty probes, and dashboard timeline rendering of counted/duplicate/capped source ids
 
 ### Why it matters
 
