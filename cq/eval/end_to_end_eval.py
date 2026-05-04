@@ -741,14 +741,14 @@ def _displaced_clean_durable_candidate_ids(
     clean_candidate_ids = scenario.expected_lifecycle.get("clean_durable_candidate_ids", [])
     displaced = []
     for candidate_id in clean_candidate_ids:
-        if _clean_candidate_durable_displaced(store_snapshot, candidate_id):
+        if _durable_for_candidate_was_demoted(store_snapshot, candidate_id):
             displaced.append(candidate_id)
     return displaced
 
 
-def _clean_candidate_durable_displaced(store_snapshot: Dict[str, object], candidate_id: str) -> bool:
+def _durable_for_candidate_was_demoted(store_snapshot: Dict[str, object], candidate_id: str) -> bool:
     for durable in store_snapshot["durable_memories"]:
-        if candidate_id in durable["created_from_candidate_ids"] and not durable.get("active", False):
+        if candidate_id in durable["created_from_candidate_ids"] and not durable["active"]:
             return True
     return False
 

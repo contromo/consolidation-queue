@@ -327,6 +327,7 @@ class MemoryPoisoningScenarioTests(unittest.TestCase):
         self.assertEqual(naive_result["metrics"]["poison_promotion_rate"], 1.0)
         self.assertEqual(naive_result["metrics"]["premature_promotion_rate"], 1.0)
         self.assertEqual(naive_result["metrics"]["clean_durable_displacement_rate"], 0.0)
+        # Naive answer selection is confidence-first: clean 0.72 should outrank borderline poison 0.70.
         self.assertEqual(naive_result["question_traces"][0]["resolved_candidate_ids"], [clean_id])
         self.assertNotIn(poison_id, naive_result["question_traces"][0]["resolved_candidate_ids"])
         self.assertEqual(_failure_types(naive_result), {"premature_promotion"})
