@@ -137,9 +137,6 @@ def _validate_template_mix(family: str, template_mix: str) -> None:
         )
 
 
-MEM0_LITE_PARTIAL_BASELINE_CAVEAT = Mem0Lite.partial_baseline_caveat
-
-
 def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
     if policy_set not in POLICY_SET_CHOICES:
         raise ValueError(
@@ -216,7 +213,7 @@ def build_run_artifact(
         "template_mix": template_mix,
         "policy_set": policy_set,
         "baseline_notes": {
-            Mem0Lite.policy_name: MEM0_LITE_PARTIAL_BASELINE_CAVEAT,
+            Mem0Lite.policy_name: Mem0Lite.partial_baseline_caveat,
         }
         if policy_set == POLICY_SET_PHASE_2_5
         else {},
@@ -369,6 +366,8 @@ def main(argv: List[str] = None) -> int:
             print(_format_scoped_summary("template", template_id, template_summary))
     print("Template mix: {}".format(args.template_mix))
     print("Policy set: {}".format(args.policy_set))
+    for policy_name, note in run_artifact.get("baseline_notes", {}).items():
+        print("Baseline note ({}): {}".format(policy_name, note))
     print("Wrote {}".format(output_json))
     print("Wrote {}".format(output_csv))
     return 0

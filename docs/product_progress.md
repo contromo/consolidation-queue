@@ -13,11 +13,14 @@
 
 - Phase 2.5 now has its first external published-family comparison target without changing default benchmark behavior
 - oracle-mode `Mem0Lite` is interpretable: it differs from Reflection by thresholded ADD, no pending lookup, and no overwrite-margin check on contradictory UPDATE
+- Mem0Lite follows Reflection's durable-update bookkeeping surface rather than CQ's candidate-vs-candidate contestation path, so lifecycle differences are attributable to the write policy instead of extra candidate-state transitions
+- the memory-poisoning override result is the load-bearing Mem0-vs-Reflection divergence in this slice: Mem0Lite displaces clean durables when a qualifying contradictory poison arrives, while Reflection's overwrite margin can preserve them
+- useful-pending-memory shows the expected eager-write-with-dedup pattern here: `Mem0Lite` answers correctly but pays `premature_promotion=1.00`, so this is not evidence of staged pending utility
 - existing-family calibration numbers can inform preregistration, while frozen mechanism-diverse scenarios remain unimplemented and unexecuted
 
 ### Evidence
 
-- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 156 tests
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 157 tests
 - existing-family mixed calibration with `--policy-set phase2_5`, writing artifacts to `/tmp`, shows `mem0_lite`:
   - forced contradiction, 6 scenarios: `false_assertion=0.00`, `recovery=1.00`, `correctness=1.00`
   - scope contamination, 8 scenarios: `false_assertion=0.25`, `correctness=0.75`, `leakage=0.25`, `premature_promotion=0.25`

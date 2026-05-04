@@ -148,6 +148,42 @@ class Mem0LiteTests(unittest.TestCase):
         self.assertTrue(new_durable.active)
         self.assertEqual(new_durable.created_from_candidate_ids, ["candidate-new"])
 
+    def test_low_confidence_contradiction_is_contested_without_demoting_durable(self) -> None:
+        policy = Mem0Lite()
+        canonical_id = "brightline-redwood-status"
+        old = make_world_fact_candidate(
+            candidate_id="candidate-old",
+            canonical_id=canonical_id,
+            claim="Brightline acquired Redwood",
+            minute_offset=0,
+            trust_score=0.90,
+            verification_score=0.90,
+        )
+        new = make_world_fact_candidate(
+            candidate_id="candidate-new",
+            canonical_id=canonical_id,
+            claim="Brightline did not acquire Redwood",
+            minute_offset=1,
+            trust_score=0.54,
+            verification_score=0.54,
+            contradicts=["candidate-old"],
+        )
+
+        policy.observe_candidate(old)
+        policy.observe_candidate(new)
+
+        durable = policy.store.active_durable(canonical_id, ScopeLevel.WORLD_GLOBAL, "global")
+        self.assertIsNotNone(durable)
+        self.assertEqual(durable.created_from_candidate_ids, ["candidate-old"])
+        self.assertEqual(
+            policy.store.candidate_memories["candidate-old"].state,
+            MemoryState.PROMOTED,
+        )
+        self.assertEqual(
+            policy.store.candidate_memories["candidate-new"].state,
+            MemoryState.CONTESTED,
+        )
+
     def test_matching_update_reinforces_existing_durable(self) -> None:
         policy = Mem0Lite()
         canonical_id = "vertex-harbor-status"

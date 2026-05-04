@@ -14,20 +14,21 @@ from cq.eval.runner import (
 
 class RunnerPolicySetTests(unittest.TestCase):
     def test_default_policy_membership_is_unchanged(self) -> None:
-        artifact = build_run_artifact(1, template_mix="mixed", family=FORCED_CONTRADICTION)
-        policy_names = [policy["policy_name"] for policy in artifact["policies"]]
+        for family in [
+            FORCED_CONTRADICTION,
+            SCOPE_CONTAMINATION,
+            PREFERENCE_DRIFT,
+            USEFUL_PENDING_MEMORY,
+            FALSE_CORROBORATION,
+            MEMORY_POISONING,
+        ]:
+            with self.subTest(family=family):
+                artifact = build_run_artifact(1, template_mix="mixed", family=family)
+                policy_names = [policy["policy_name"] for policy in artifact["policies"]]
 
-        self.assertEqual(
-            policy_names,
-            [
-                "reflection_eager_write_lite",
-                "consolidation_queue_lite",
-                "naive_eager_write_lite",
-                "no_memory_lite",
-            ],
-        )
-        self.assertEqual(artifact["policy_set"], "default")
-        self.assertEqual(artifact["baseline_notes"], {})
+                self.assertNotIn("mem0_lite", policy_names)
+                self.assertEqual(artifact["policy_set"], "default")
+                self.assertEqual(artifact["baseline_notes"], {})
 
     def test_phase2_5_policy_set_includes_mem0_on_all_existing_families(self) -> None:
         for family in [

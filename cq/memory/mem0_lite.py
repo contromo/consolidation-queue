@@ -33,30 +33,11 @@ class Mem0Lite:
         stored = self.store.add_candidate(candidate)
         active = self.store.active_durable(stored.canonical_id, stored.scope_level, stored.scope_key)
 
-        for target_candidate_id in stored.contradicts:
-            if target_candidate_id in self.store.candidate_memories:
-                target = self.store.candidate_memories[target_candidate_id]
-                target.contradiction_count += 1
-                target.refresh_scores()
-                self.store.add_contradiction(
-                    stored.candidate_id,
-                    target_candidate_id,
-                    "candidate",
-                    "candidate contradicts earlier candidate",
-                    stored.updated_at,
-                )
-                self.store.update_candidate_state(
-                    target_candidate_id,
-                    MemoryState.CONTESTED,
-                    "newer evidence contradicts earlier candidate",
-                    stored.updated_at,
-                )
-
         if active is None:
             if self._clears_write_confidence(stored):
                 self.store.promote_candidate(
                     stored.candidate_id,
-                    max(stored.strength, self.thresholds["minimum_write_confidence"]),
+                    stored.strength,
                     "mem0_lite ADD",
                     stored.updated_at,
                 )
@@ -88,7 +69,7 @@ class Mem0Lite:
                 )
                 self.store.promote_candidate(
                     stored.candidate_id,
-                    max(stored.strength, self.thresholds["minimum_write_confidence"]),
+                    stored.strength,
                     "mem0_lite UPDATE after contradiction",
                     stored.updated_at,
                 )
