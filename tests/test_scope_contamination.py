@@ -518,6 +518,51 @@ class ScopeContaminationScenarioTests(unittest.TestCase):
         self.assertEqual(naive_workspace_trace["resolved_candidate_ids"], [workspace_candidate_id])
         self.assertEqual(naive_workspace_trace["used_memory_ids"], ["memory-" + workspace_candidate_id])
 
+    def test_cq_exact_pending_override_shadows_world_global_durable(self) -> None:
+        scenario = self._scenario_by_template_id(
+            "scope_contamination_dirty_workspace_parent_v1",
+            template_mix="mixed",
+            count=4,
+        )
+        global_candidate_id = scenario.expected_lifecycle["workspace_candidate_id"]
+        project_candidate_id = scenario.expected_lifecycle["project_candidate_id"]
+        global_candidate = self._candidate_by_id(scenario, global_candidate_id)
+        global_candidate.scope_level = ScopeLevel.WORLD_GLOBAL
+        global_candidate.scope_key = "global"
+        global_candidate.canonical_claim = "Global default tests use npm test"
+        global_candidate.raw_claim = global_candidate.canonical_claim
+        global_candidate.raw_text = global_candidate.canonical_claim
+
+        cq_result = execute_scenario(ConsolidationQueueLite, scenario)
+
+        global_memory = cq_result["store"].durable_memories["memory-" + global_candidate_id]
+        project_candidate = cq_result["store"].candidate_memories[project_candidate_id]
+        self.assertTrue(global_memory.active)
+        self.assertEqual(project_candidate.state, MemoryState.PENDING)
+        self.assertEqual(cq_result["question_traces"][0]["resolved_candidate_ids"], [project_candidate_id])
+        self.assertTrue(cq_result["question_traces"][0]["used_pending"])
+        self.assertEqual(cq_result["metrics"]["leakage_rate"], 0.0)
+
+    def test_cq_still_demotes_same_level_world_global_contradiction(self) -> None:
+        scenario = self._scenario_by_template_id(
+            "scope_contamination_dirty_workspace_parent_v1",
+            template_mix="mixed",
+            count=4,
+        )
+        global_candidate_id = scenario.expected_lifecycle["workspace_candidate_id"]
+        new_global_candidate_id = scenario.expected_lifecycle["project_candidate_id"]
+        global_candidate = self._candidate_by_id(scenario, global_candidate_id)
+        new_global_candidate = self._candidate_by_id(scenario, new_global_candidate_id)
+        for candidate in (global_candidate, new_global_candidate):
+            candidate.scope_level = ScopeLevel.WORLD_GLOBAL
+            candidate.scope_key = "global"
+
+        cq_result = execute_scenario(ConsolidationQueueLite, scenario)
+
+        global_memory = cq_result["store"].durable_memories["memory-" + global_candidate_id]
+        self.assertFalse(global_memory.active)
+        self.assertEqual(cq_result["store"].candidate_memories[new_global_candidate_id].state, MemoryState.PENDING)
+
     def test_cq_promotes_durable_eligible_exact_override_without_demoting_workspace(self) -> None:
         scenario = self._scenario_by_template_id(
             "scope_contamination_dirty_workspace_parent_v1",

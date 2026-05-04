@@ -18,7 +18,7 @@
 
 ### Evidence
 
-- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 105 tests
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 107 tests
 - mixed scope run (`python3 -m cq.eval.runner --family scope_contamination --scenarios 8 --template-mix mixed`) shows `scope_contamination_dirty_workspace_parent_v1`:
   - `reflection_eager_write_lite`: `leakage=1.00`, `correctness=0.00`, `premature_promotion=0.00`
   - `consolidation_queue_lite`: `leakage=0.00`, `correctness=1.00`, `premature_promotion=0.00`

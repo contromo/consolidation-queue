@@ -3,9 +3,20 @@ from __future__ import annotations
 from typing import Dict, Optional
 
 from cq.memory.lifecycle import merge_thresholds, pending_use_allowed, should_promote_candidate
-from cq.memory.substrate import SCOPE_MATCH_WORKSPACE_PARENT, MemoryStore, scope_match_relation
+from cq.memory.substrate import (
+    SCOPE_MATCH_WORLD_GLOBAL,
+    SCOPE_MATCH_WORKSPACE_PARENT,
+    MemoryStore,
+    scope_match_relation,
+)
 from cq.schemas.memory import AnswerTrace, CandidateUpdate, DurableMemory, MemoryState
 from cq.schemas.scenario import QuestionSpec
+
+
+WIDER_SCOPE_MATCHES = {
+    SCOPE_MATCH_WORLD_GLOBAL,
+    SCOPE_MATCH_WORKSPACE_PARENT,
+}
 
 
 class ConsolidationQueueLite:
@@ -57,8 +68,8 @@ class ConsolidationQueueLite:
                     "candidate contradicts active durable memory",
                     stored.updated_at,
                 )
-                if active_relation == SCOPE_MATCH_WORKSPACE_PARENT:
-                    # A project override should not erase a still-valid workspace default globally.
+                if active_relation in WIDER_SCOPE_MATCHES and active.scope_level != stored.scope_level:
+                    # A narrower override should not erase a still-valid wider default globally.
                     wider_scope_override = True
                 else:
                     self.store.demote_memory(
@@ -102,7 +113,8 @@ class ConsolidationQueueLite:
                     question.scope_level,
                     question.scope_key,
                 )
-                == SCOPE_MATCH_WORKSPACE_PARENT
+                in WIDER_SCOPE_MATCHES
+                and durable.scope_level != question.scope_level
             ):
                 pending_override = self._pending_override_for_wider_durable(question, durable)
             if pending_override is not None:
