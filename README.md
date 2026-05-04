@@ -8,12 +8,13 @@ The first slice in this repository is intentionally narrow:
 - oracle-mode scope-contamination scenarios, framed as broad-claim premature promotion plus workspace-parent/project-override shadowing
 - oracle-mode preference-drift scenarios, framed as explicit update plus one-off/drift-back probes
 - oracle-mode useful-pending-memory scenarios, framed as reversible pending utility
+- oracle-mode false-corroboration scenarios, framed as explicit source-independence handling
 - shared in-memory substrate
 - `NoMemory-lite`
 - `ReflectionEagerWrite-lite`
 - `NaiveEagerWrite-lite`
 - `CQ-Agent-lite`
-- `ScopeBlindTranscriptRAG-lite` on the scope-contamination, preference-drift, and useful-pending-memory families
+- `ScopeBlindTranscriptRAG-lite` on the scope-contamination, preference-drift, useful-pending-memory, and false-corroboration families
 - end-to-end metrics and run artifacts
 - a small local dashboard for inspecting traces
 - a running product progress log in `docs/product_progress.md`
@@ -99,6 +100,28 @@ This writes:
 - `data/runs/useful_pending_memory_oracle_heldout.json`
 - `data/results/useful_pending_memory_oracle_heldout_metrics.csv`
 
+Run the false-corroboration slice:
+
+```bash
+python3 -m cq.eval.runner --family false_corroboration --scenarios 4 --template-mix mixed
+```
+
+This writes:
+
+- `data/runs/false_corroboration_oracle.json`
+- `data/results/false_corroboration_oracle_metrics.csv`
+
+Run the held-out false-corroboration slice:
+
+```bash
+python3 -m cq.eval.runner --family false_corroboration --scenarios 4 --template-mix heldout --output-json data/runs/false_corroboration_oracle_heldout.json --output-csv data/results/false_corroboration_oracle_heldout_metrics.csv
+```
+
+This writes:
+
+- `data/runs/false_corroboration_oracle_heldout.json`
+- `data/results/false_corroboration_oracle_heldout_metrics.csv`
+
 Open the dashboard against the saved run:
 
 ```bash
@@ -132,3 +155,4 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - Scope-contamination now includes main and held-out broad-claim probes plus workspace-parent/project-override probes. These show oracle scope-key behavior, premature promotion, and active wider-scope shadowing, not a general claim that CQ reasons semantically about scope better than Reflection.
 - Preference-drift now includes main and held-out probes. The explicit-update template is contradiction-like, while the one-off and drift-back templates distinguish staged promotion from pure recency.
 - Useful-pending-memory includes main and held-out probes where every candidate is a `PROJECT_CONVENTION` in the `[0.35, 0.70)` strength band. Clean templates calibrate that pending utility does not cost answer correctness; dirty refinement templates show eager reversibility debt when no claim is durable-eligible. ScopeBlindTranscriptRAG follows truth by recency here, so this family is not evidence about retrieval quality.
+- False-corroboration includes main and held-out source-independence probes where weak `PROJECT_CONVENTION` candidates only corroborate through explicit `supports` edges and distinct provenance source ids. Dirty mirrored-source templates test the shared oracle independence gate, not learned semantic independence; ScopeBlindTranscriptRAG fails dirty probes by recency rather than durable promotion.

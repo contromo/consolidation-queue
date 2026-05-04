@@ -330,6 +330,8 @@ def _timeline_row_from_lifecycle(event: Dict[str, object]) -> Dict[str, object]:
         new_state = details.get("new_state")
         if new_state:
             markers.append(str(new_state))
+    if event["event_type"] == "candidate_corroboration_counted":
+        markers.append("corroboration")
     if event["event_type"] == "contradiction_registered":
         markers.append("contradiction")
     if event["event_type"] == "memory_promoted":
@@ -339,12 +341,7 @@ def _timeline_row_from_lifecycle(event: Dict[str, object]) -> Dict[str, object]:
     if event["event_type"] == "memory_demoted":
         markers.append("demoted")
 
-    text = (
-        details.get("claim")
-        or details.get("reason")
-        or details.get("source_candidate_id")
-        or ""
-    )
+    text = _timeline_event_text(event)
     return {
         "timestamp": event["timestamp"],
         "event_type": event["event_type"],
@@ -352,6 +349,25 @@ def _timeline_row_from_lifecycle(event: Dict[str, object]) -> Dict[str, object]:
         "text": text,
         "markers": markers,
     }
+
+
+def _timeline_event_text(event: Dict[str, object]) -> str:
+    details = event.get("details", {})
+    if event["event_type"] == "candidate_corroboration_counted":
+        counted = ", ".join(str(source_id) for source_id in details.get("counted_source_ids", []))
+        duplicate = ", ".join(str(source_id) for source_id in details.get("duplicate_source_ids", []))
+        capped = ", ".join(str(source_id) for source_id in details.get("capped_source_ids", []))
+        ignored = ", ".join(str(source_id) for source_id in details.get("ignored_source_ids", []))
+        return (
+            "counted_source_ids=[{}] duplicate_source_ids=[{}] "
+            "capped_source_ids=[{}] ignored_source_ids=[{}]"
+        ).format(counted, duplicate, capped, ignored)
+    return (
+        details.get("claim")
+        or details.get("reason")
+        or details.get("source_candidate_id")
+        or ""
+    )
 
 
 def _timeline_row_from_answer(trace: Dict[str, object]) -> Dict[str, object]:

@@ -45,16 +45,18 @@ Does staged memory promotion improve long-horizon personalization and factual co
 Implemented:
 
 - shared in-memory substrate with lifecycle logging
+- shared explicit source-independence corroboration counting for supported candidate observations
 - shared candidate and durable memory schemas
 - `ReflectionEagerWriteLite`
 - `NaiveEagerWriteLite`
 - `NoMemoryLite`
 - `ConsolidationQueueLite`
-- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination, preference-drift, and useful-pending probes
+- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination, preference-drift, useful-pending, and false-corroboration probes
 - oracle forced-contradiction scenario generation
 - oracle scope-contamination scenario generation, framed as broad-claim premature promotion plus workspace-parent/project-override shadowing
 - oracle preference-drift scenario generation with explicit-update, one-off exception, and drift-back probes
 - oracle useful-pending-memory scenario generation with clean calibration and dirty refinement probes
+- oracle false-corroboration scenario generation with clean independent-source and dirty mirrored-source probes
 - multiple clean and dirty forced-contradiction templates with scenario metadata
 - clean and dirty main-split scope-contamination templates, including workspace-parent override probes
 - held-out scope-contamination templates for clean recency, broad-first premature-promotion, and workspace-parent override probes
@@ -62,6 +64,8 @@ Implemented:
 - held-out preference-drift templates for stable preference and drift-back probes
 - clean and dirty main-split useful-pending-memory templates
 - held-out useful-pending-memory templates for clean calibration and dirty refinement probes
+- clean and dirty main-split false-corroboration templates
+- held-out false-corroboration templates for source-independence surface-form variants
 - four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
 - family-selectable oracle runner
@@ -78,7 +82,6 @@ Implemented:
 Not implemented yet:
 
 - poisoning scenarios
-- false corroboration scenarios
 - lexical or embedding-based `TranscriptRAG`
 - component evaluation harness
 - local-model noisy pipeline
@@ -122,7 +125,7 @@ Immediate gap:
 
 ### Phase 2: Stronger Oracle Benchmark
 
-Status: in progress, broad-claim premature-promotion scope, workspace-parent override scope, preference-drift v1, and useful-pending-memory v1 slices now have main and held-out variants
+Status: in progress, broad-claim premature-promotion scope, workspace-parent override scope, preference-drift v1, useful-pending-memory v1, and false-corroboration v1 slices now have main and held-out variants
 
 Add:
 
@@ -130,6 +133,7 @@ Add:
 - `TranscriptRAG`
 - preference drift family
 - useful pending memory family
+- false corroboration family
 - scenario-level failure example extraction
 
 Required outcome:
@@ -147,6 +151,9 @@ Current caveat:
 - scenario-level failure examples now expose assertion, leakage, premature-promotion, and no-memory floor failures in saved artifacts and the dashboard
 - Phase 2 scope coverage now includes a non-`WORLD_GLOBAL` mechanism, but broader scope-inference claims still require noisy scope-inference evaluation
 - ScopeBlindTranscriptRAG follows truth by recency on useful-pending-memory probes, so that family should be read as CQ-vs-eager policy evidence, not retrieval-baseline evidence
+- false-corroboration probes test explicit oracle source-id independence, not learned semantic source independence
+- false-corroboration held-out templates are surface-form variants of the same mirrored-source mechanism, not mechanism-diversity evidence
+- ScopeBlindTranscriptRAG fails dirty false-corroboration probes by recency, not by durable promotion
 
 ### Phase 3: Component Evaluation Harness
 
@@ -279,8 +286,8 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Add poisoning or false-corroboration scenarios only when their oracle mechanisms are explicit and diagnosable.
-2. Add more independent scope mechanisms only when they test a distinct failure mode rather than another calibrated broader-claim override.
+1. Add poisoning scenarios only when their oracle mechanisms are explicit and diagnosable.
+2. Add more independent false-corroboration or scope mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 3. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
 
 ## Working Rules

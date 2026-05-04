@@ -131,6 +131,7 @@ class FailureExampleTest(unittest.TestCase):
             build_run_artifact(2, template_mix="mixed", family="scope_contamination"),
             build_run_artifact(3, template_mix="mixed", family="preference_drift"),
             build_run_artifact(2, template_mix="mixed", family="useful_pending_memory"),
+            build_run_artifact(2, template_mix="mixed", family="false_corroboration"),
         ]
         for artifact in artifacts:
             for policy in artifact["policies"]:

@@ -88,6 +88,10 @@ class MemoryStore:
 
     def add_candidate(self, candidate: CandidateUpdate) -> CandidateUpdate:
         stored = deepcopy(candidate)
+        corroboration_details = self._compute_independent_corroboration(stored)
+        if corroboration_details is not None:
+            stored.corroboration_count = corroboration_details["corroboration_count"]
+            stored.refresh_scores()
         self.candidate_memories[stored.candidate_id] = stored
         if stored.candidate_id not in self.canonical_clusters[stored.canonical_id]:
             self.canonical_clusters[stored.canonical_id].append(stored.candidate_id)
@@ -103,7 +107,72 @@ class MemoryStore:
             },
             stored.created_at,
         )
+        if corroboration_details is not None:
+            self.log_event(
+                "candidate_corroboration_counted",
+                "candidate",
+                stored.candidate_id,
+                corroboration_details,
+                stored.created_at,
+            )
         return stored
+
+    def _compute_independent_corroboration(self, candidate: CandidateUpdate) -> Optional[Dict[str, object]]:
+        if not candidate.supports or candidate.corroboration_count != 0:
+            return None
+
+        own_source_ids = _source_ids(candidate)
+        distinct_source_ids = set(own_source_ids)
+        counted_source_ids = set()
+        duplicate_source_ids = set()
+        capped_source_ids = set()
+        ignored_source_ids = set()
+        ignored_candidate_ids = []
+        counted_candidate_ids = []
+
+        for support_id in sorted(set(candidate.supports)):
+            support = self.candidate_memories.get(support_id)
+            if support is None:
+                ignored_candidate_ids.append(support_id)
+                continue
+            if not _same_corroboration_cluster(candidate, support):
+                ignored_candidate_ids.append(support_id)
+                continue
+            support_sources = sorted(_source_ids(support))
+            novel_source_ids = [
+                source_id
+                for source_id in support_sources
+                if source_id not in distinct_source_ids
+            ]
+            if not novel_source_ids:
+                duplicate_source_ids.update(support_sources)
+                ignored_source_ids.update(support_sources)
+                ignored_candidate_ids.append(support_id)
+                continue
+            counted_source_id = novel_source_ids[0]
+            distinct_source_ids.add(counted_source_id)
+            counted_source_ids.add(counted_source_id)
+            duplicate_source_ids.update(
+                source_id
+                for source_id in support_sources
+                if source_id in distinct_source_ids and source_id != counted_source_id
+            )
+            capped_source_ids.update(novel_source_ids[1:])
+            ignored_source_ids.update(duplicate_source_ids)
+            ignored_source_ids.update(capped_source_ids)
+            counted_candidate_ids.append(support_id)
+
+        return {
+            "corroboration_count": max(0, len(distinct_source_ids) - 1),
+            "distinct_source_ids": sorted(distinct_source_ids),
+            "counted_source_ids": sorted(counted_source_ids),
+            "duplicate_source_ids": sorted(duplicate_source_ids),
+            "capped_source_ids": sorted(capped_source_ids),
+            "ignored_source_ids": sorted(ignored_source_ids),
+            "new_source_ids": sorted(own_source_ids),
+            "counted_candidate_ids": counted_candidate_ids,
+            "ignored_candidate_ids": ignored_candidate_ids,
+        }
 
     def add_contradiction(
         self,
@@ -314,3 +383,17 @@ class MemoryStore:
             "contradiction_edges": [jsonable(edge) for edge in self.contradiction_edges],
             "lifecycle_events": [jsonable(event) for event in self.lifecycle_events],
         }
+
+
+def _source_ids(candidate: CandidateUpdate) -> set:
+    return {record.source_id for record in candidate.provenance}
+
+
+def _same_corroboration_cluster(candidate: CandidateUpdate, support: CandidateUpdate) -> bool:
+    return (
+        candidate.canonical_id == support.canonical_id
+        and candidate.canonical_claim == support.canonical_claim
+        and candidate.claim_type == support.claim_type
+        and candidate.scope_level == support.scope_level
+        and candidate.scope_key == support.scope_key
+    )

@@ -1,5 +1,41 @@
 # Product Progress
 
+## 2026-05-04 — False-corroboration source-independence probes added
+
+### What shipped
+
+- added shared source-independence corroboration counting for supported candidate observations
+- added the `false_corroboration` oracle family with clean independent-source and dirty mirrored-source templates
+- added main and held-out false-corroboration splits, runner/CSV/dashboard wiring, and failure examples for false-corroboration assertions and promoted false stacks
+- added regression coverage for source-id independence rules, mirrored-source discounting, no-gold dirty probes, and dashboard timeline rendering of counted/duplicate/capped source ids
+
+### Why it matters
+
+- this tests a distinct Phase 2 mechanism: whether weak supported observations become durable only when their provenance source ids are independent
+- the shared substrate computes corroboration for every policy, so CQ does not receive a richer private memory representation
+- dirty mirrored-source templates show staged promotion using the shared independence gate before durable write, while Reflection and Naive still commit the first weak false observation eagerly and reinforce the mirrored copies
+- ScopeBlindTranscriptRAG fails dirty probes by recency over the newest false candidate, not by durable promotion
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 127 tests
+- mixed false-corroboration run (`python3 -m cq.eval.runner --family false_corroboration --scenarios 4 --template-mix mixed`) shows:
+  - `reflection_eager_write_lite`: `false_assertion=0.50`, `correctness=0.50`, `premature_promotion=0.50`
+  - `consolidation_queue_lite`: `false_assertion=0.00`, `correctness=0.50`, `premature_promotion=0.00`
+  - `naive_eager_write_lite`: `false_assertion=0.50`, `correctness=0.50`, `premature_promotion=0.50`
+  - `no_memory_lite`: `false_assertion=0.00`, `correctness=0.00`, `premature_promotion=0.00`
+  - `scope_blind_transcript_rag_lite`: `false_assertion=0.50`, `correctness=0.50`, `premature_promotion=0.00`
+- held-out false-corroboration run (`python3 -m cq.eval.runner --family false_corroboration --scenarios 4 --template-mix heldout`) shows the same aggregate pattern on `false_corroboration_clean_independent_v2` and `false_corroboration_dirty_mirrored_sources_v2`
+- dirty template-kind rows show Reflection/Naive at `false_assertion=1.00` and `premature_promotion=1.00`, CQ at `0.00`/`0.00`, and RAG at `false_assertion=1.00` with `premature_promotion=0.00`
+
+### Open issues / next
+
+- this is explicit oracle source-id independence, not learned semantic source independence
+- the held-out v2 templates are surface-form variants of the same mechanism, not mechanism-diversity evidence
+- memory poisoning remains unimplemented
+- a future false-corroboration variant should test a distinct mechanism, such as mirrored sources interleaved with one legitimate independent source
+- when memory poisoning adds another single-probe metric computer, factor the repeated single-probe metric shape shared by useful-pending and false-corroboration
+
 ## 2026-05-04 — Workspace-parent scope override probes added
 
 ### What shipped
