@@ -118,6 +118,7 @@ def _render_summary_metrics(summary: Dict[str, object]) -> str:
         ("Leakage rate", "leakage_rate"),
         ("Premature promotion rate", "premature_promotion_rate"),
         ("Poison promotion rate", "poison_promotion_rate"),
+        ("Clean durable displacement rate", "clean_durable_displacement_rate"),
         ("Useful recall", "useful_recall"),
         ("Pending use", "used_pending"),
         ("Durable commit", "durable_commit"),

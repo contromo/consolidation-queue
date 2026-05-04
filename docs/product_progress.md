@@ -1,5 +1,90 @@
 # Product Progress
 
+## 2026-05-04 — Preregistration and disconfirmation rules sharpened
+
+### What changed
+
+- required predictions to be per scenario family and per primary metric rather than aggregate-only
+- set a 5 percentage point disconfirmation threshold for the CQ policy contribution against `Mem0Lite` on mechanism-diverse held-outs
+- required `docs/predictions_vs_results.md` in Phase 6 so every committed prediction is auditable against observed results
+- clarified that CQ ablations only change policy decision logic; shared substrate counting, logging, and scope matching remain unchanged
+- required mechanism-diverse held-out predictions before those scenarios are executed against any policy, including baselines and ablations
+
+### Why it matters
+
+- aggregate wins can hide family-specific failures, so the preregistration now has to expose where each policy does and does not work
+- the contribution now has an explicit fail condition: if `Mem0Lite` matches or beats CQ within tolerance on the frozen held-outs, the paper becomes a benchmark and taxonomy contribution rather than a CQ-policy claim
+- locking predictions before first held-out execution reduces the chance of accidental tuning through scenario authoring
+
+### Evidence
+
+- documentation-only planning change; no tests were run
+
+### Open issues / next
+
+- implement Phase 2.5 and draft `docs/preregistration.md` before running mechanism-diverse held-out scenarios
+
+## 2026-05-04 — Research roadmap revised for publishability
+
+### What changed
+
+- inserted Phase 2.5 before component evaluation
+- made `Mem0Lite` the first external published-family baseline, framed as rule-based ADD/UPDATE/DELETE/NOOP over the shared candidate stream rather than a faithful LLM-classifier reproduction
+- named the four required CQ ablations: contestation/demotion, wider-scope pending override, pending lookup use, and source-independence gating
+- defined three mechanism-diverse held-out mechanisms: adversarial mixed-source corroboration, scope-laundered poison, and long-horizon corrective drift
+- made preregistration prediction-bearing, with numeric deltas required before result sweeps
+- demoted 32B/70B routing to optional engineering work and added LongMemEval as the external transfer check after noisy mode
+
+### Why it matters
+
+- the roadmap now commits to disconfirmation tests before noisy-mode work can tune around them
+- existing v2 held-outs remain surface-form robustness checks; only the new frozen mechanisms can support mechanism-generalization claims
+- `Mem0Lite` gives reviewers an external-policy comparison while preserving the repo invariant that policies receive the same upstream candidates and storage substrate
+- Phase 4 is capped so local extraction quality is measured and reported rather than becoming a separate open-ended extractor project
+
+### Evidence
+
+- documentation-only planning change; no tests were run
+
+### Open issues / next
+
+- implement Phase 2.5 before starting Phase 3
+- write `docs/preregistration.md` with concrete prediction deltas before Phase 2.5 result sweeps or noisy-mode evaluations
+
+## 2026-05-04 — Memory-poisoning override-attack probes added
+
+### What shipped
+
+- added same-scope override-attack templates to the `memory_poisoning` oracle family, with shadow (`0.58`) and borderline (`0.70`) strength regimes in main and held-out splits
+- added `clean_durable_displacement_rate` to scenario/summary metrics, CSV output, runner summaries, dashboard summaries, and failure examples
+- added `clean_durable_candidate_ids` lifecycle expectations so durable-survival diagnostics stay separate from answer-gold labels
+- added regression coverage for template rotation, exact two-observation/one-probe shape, threshold calibration, Naive confidence-first selection, displacement examples, CSV output, and dashboard rendering
+
+### Why it matters
+
+- existing poisoning probes attacked from a clean slate; override attacks now test whether a clean durable survives later contradictory poisoned evidence
+- CQ exposes a distinct failure mode: exact-scope contradiction demotes the clean durable, then CQ answers from pending poison in the shadow regime or durable poison in the borderline regime
+- Reflection keeps the clean durable because the poison does not clear its overwrite margin; Naive promotes poison but keeps answering from the stronger clean durable
+- held-out v2 templates are surface-form variants of the same override mechanism and strength regimes, not mechanism-diversity evidence
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 148 tests
+- mixed memory-poisoning run (`python3 -m cq.eval.runner --family memory_poisoning --scenarios 10 --template-mix mixed`) shows:
+  - `reflection_eager_write_lite`: `false_assertion=0.40`, `correctness=0.60`, `premature_promotion=0.40`, `poison_promotion=0.40`, `clean_displacement=0.00`
+  - `consolidation_queue_lite`: `false_assertion=0.60`, `correctness=0.20`, `premature_promotion=0.20`, `poison_promotion=0.20`, `clean_displacement=0.40`
+  - `naive_eager_write_lite`: `false_assertion=0.40`, `correctness=0.60`, `premature_promotion=0.80`, `poison_promotion=0.80`, `clean_displacement=0.00`
+  - `no_memory_lite`: `false_assertion=0.00`, `correctness=0.00`, `premature_promotion=0.00`, `poison_promotion=0.00`, `clean_displacement=0.00`
+  - `scope_blind_transcript_rag_lite`: `false_assertion=0.80`, `correctness=0.20`, `premature_promotion=0.00`, `poison_promotion=0.00`, `clean_displacement=0.00`
+- held-out memory-poisoning run (`python3 -m cq.eval.runner --family memory_poisoning --scenarios 10 --template-mix heldout`) shows the same aggregate pattern on `memory_poisoning_dirty_override_shadow_v2` and `memory_poisoning_dirty_override_borderline_v2`
+- override template rows show CQ at `clean_displacement=1.00` for both shadow and borderline regimes; Reflection, Naive, NoMemory, and RAG stay at `clean_displacement=0.00`
+
+### Open issues / next
+
+- shadow and borderline are strength regimes of one same-scope override mechanism, not independent poisoning mechanisms
+- adversarial corroboration and scope-laundered poison remain untested
+- the next highest-leverage project step is likely `docs/preregistration.md` before adding more mechanism variants
+
 ## 2026-05-04 — Memory-poisoning untrusted-injection probes added
 
 ### What shipped

@@ -9,13 +9,13 @@ The first slice in this repository is intentionally narrow:
 - oracle-mode preference-drift scenarios, framed as explicit update plus one-off/drift-back probes
 - oracle-mode useful-pending-memory scenarios, framed as reversible pending utility
 - oracle-mode false-corroboration scenarios, framed as explicit source-independence handling
-- oracle-mode memory-poisoning scenarios, framed as below-floor and pending-eligible untrusted injection
+- oracle-mode memory-poisoning scenarios, framed as below-floor and pending-eligible untrusted injection plus same-scope override attacks
 - shared in-memory substrate
 - `NoMemory-lite`
 - `ReflectionEagerWrite-lite`
 - `NaiveEagerWrite-lite`
 - `CQ-Agent-lite`
-- `ScopeBlindTranscriptRAG-lite` on the scope-contamination, preference-drift, useful-pending-memory, and false-corroboration families
+- `ScopeBlindTranscriptRAG-lite` on the scope-contamination, preference-drift, useful-pending-memory, false-corroboration, and memory-poisoning families
 - end-to-end metrics and run artifacts
 - a small local dashboard for inspecting traces
 - a running product progress log in `docs/product_progress.md`
@@ -126,7 +126,7 @@ This writes:
 Run the memory-poisoning slice:
 
 ```bash
-python3 -m cq.eval.runner --family memory_poisoning --scenarios 6 --template-mix mixed
+python3 -m cq.eval.runner --family memory_poisoning --scenarios 10 --template-mix mixed
 ```
 
 This writes:
@@ -137,7 +137,7 @@ This writes:
 Run the held-out memory-poisoning slice:
 
 ```bash
-python3 -m cq.eval.runner --family memory_poisoning --scenarios 6 --template-mix heldout --output-json data/runs/memory_poisoning_oracle_heldout.json --output-csv data/results/memory_poisoning_oracle_heldout_metrics.csv
+python3 -m cq.eval.runner --family memory_poisoning --scenarios 10 --template-mix heldout --output-json data/runs/memory_poisoning_oracle_heldout.json --output-csv data/results/memory_poisoning_oracle_heldout_metrics.csv
 ```
 
 This writes:
@@ -179,4 +179,4 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - Preference-drift now includes main and held-out probes. The explicit-update template is contradiction-like, while the one-off and drift-back templates distinguish staged promotion from pure recency.
 - Useful-pending-memory includes main and held-out probes where every candidate is a `PROJECT_CONVENTION` in the `[0.35, 0.70)` strength band. Clean templates calibrate that pending utility does not cost answer correctness; dirty refinement templates show eager reversibility debt when no claim is durable-eligible. ScopeBlindTranscriptRAG follows truth by recency here, so this family is not evidence about retrieval quality.
 - False-corroboration includes main and held-out source-independence probes where weak `PROJECT_CONVENTION` candidates only corroborate through explicit `supports` edges and distinct provenance source ids. Dirty mirrored-source templates test the shared oracle independence gate, not learned semantic independence; ScopeBlindTranscriptRAG fails dirty probes by recency rather than durable promotion.
-- Memory-poisoning includes main and held-out untrusted-injection probes. Below-floor dirty templates show eager durable poison promotion from immediate writes; pending-eligible dirty templates intentionally expose CQ false assertion from pending memory while still avoiding durable poison promotion. This v1 family does not test adversarial corroboration, scope-laundered poison, or override attacks against an existing clean durable.
+- Memory-poisoning includes main and held-out untrusted-injection probes plus same-scope override attacks against an existing clean durable. Below-floor dirty templates show eager durable poison promotion from immediate writes; pending-eligible dirty templates intentionally expose CQ false assertion from pending memory while still avoiding durable poison promotion. Override shadow and borderline templates expose CQ's exact-scope durable demotion path and are measured with `clean_durable_displacement_rate`. This v1 family does not test adversarial corroboration or scope-laundered poison.

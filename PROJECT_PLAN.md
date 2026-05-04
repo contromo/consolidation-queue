@@ -17,6 +17,10 @@ Secondary comparisons:
 - `TranscriptRAG`
 - `NaiveEagerWrite`
 
+External/published-family comparison:
+
+- `Mem0Lite`, a rule-based ADD/UPDATE/DELETE/NOOP write-time policy over the same CQ oracle/noisy candidates
+
 ## Core Research Invariants
 
 These are load-bearing. Do not violate them casually.
@@ -28,6 +32,7 @@ These are load-bearing. Do not violate them casually.
 5. Measure component quality before claiming end-to-end noisy-mode wins.
 6. Prefer reversible memory behavior over raw recall when tradeoffs are exposed.
 7. Keep v1 local-first and API-free by default.
+8. When adapting a published system into a `Lite` baseline, document what is and is not faithful.
 
 ## Research Question
 
@@ -51,13 +56,13 @@ Implemented:
 - `NaiveEagerWriteLite`
 - `NoMemoryLite`
 - `ConsolidationQueueLite`
-- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination, preference-drift, useful-pending, and false-corroboration probes
+- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination, preference-drift, useful-pending, false-corroboration, and memory-poisoning probes
 - oracle forced-contradiction scenario generation
 - oracle scope-contamination scenario generation, framed as broad-claim premature promotion plus workspace-parent/project-override shadowing
 - oracle preference-drift scenario generation with explicit-update, one-off exception, and drift-back probes
 - oracle useful-pending-memory scenario generation with clean calibration and dirty refinement probes
 - oracle false-corroboration scenario generation with clean independent-source and dirty mirrored-source probes
-- oracle memory-poisoning scenario generation with clean trusted, dirty below-floor injection, and dirty pending-eligible injection probes
+- oracle memory-poisoning scenario generation with clean trusted, dirty below-floor injection, dirty pending-eligible injection, and same-scope override-attack probes
 - multiple clean and dirty forced-contradiction templates with scenario metadata
 - clean and dirty main-split scope-contamination templates, including workspace-parent override probes
 - held-out scope-contamination templates for clean recency, broad-first premature-promotion, and workspace-parent override probes
@@ -67,13 +72,14 @@ Implemented:
 - held-out useful-pending-memory templates for clean calibration and dirty refinement probes
 - clean and dirty main-split false-corroboration templates
 - held-out false-corroboration templates for source-independence surface-form variants
-- clean and dirty main-split memory-poisoning templates
-- held-out memory-poisoning templates for untrusted-injection surface-form variants
+- clean and dirty main-split memory-poisoning templates, including override shadow and borderline regimes
+- held-out memory-poisoning templates for untrusted-injection and override surface-form variants
 - four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
 - family-selectable oracle runner
 - strict contradiction recovery metric plus `answer_correctness_after_contradiction`
 - generic answer correctness, leakage, false assertion, and premature-promotion metrics with contradiction aliases
+- clean durable displacement metric for poisoning override diagnostics
 - per-template-kind and per-template-split oracle summaries
 - per-template-id oracle summaries
 - deterministic scenario-level failure example extraction in oracle artifacts
@@ -84,11 +90,14 @@ Implemented:
 
 Not implemented yet:
 
-- override-attack poisoning against an existing clean durable
 - lexical or embedding-based `TranscriptRAG`
+- `Mem0Lite` external published-family baseline
+- CQ ablation policy variants
+- mechanism-diverse frozen held-out scenarios
 - component evaluation harness
 - local-model noisy pipeline
-- 32B/70B routing
+- optional 32B/70B routing
+- LongMemEval transfer check
 - preregistration and final writeup docs
 
 ## Repository Map
@@ -158,10 +167,74 @@ Current caveat:
 - false-corroboration probes test explicit oracle source-id independence, not learned semantic source independence
 - false-corroboration held-out templates are surface-form variants of the same mirrored-source mechanism, not mechanism-diversity evidence
 - ScopeBlindTranscriptRAG fails dirty false-corroboration probes by recency, not by durable promotion
-- memory-poisoning v1 only tests untrusted injection, split between below-floor and pending-eligible strength bands
+- memory-poisoning v1 tests untrusted injection plus same-scope override attacks against existing clean durables
 - pending-eligible memory-poisoning probes intentionally expose CQ false assertion from pending memory while preserving zero durable poison promotion
+- override-attack probes expose CQ's exact-scope durable demotion path; shadow and borderline are strength regimes of the same mechanism, not distinct mechanisms
 - memory-poisoning held-out templates are surface-form variants, not evidence of mechanism diversity
-- adversarial corroboration, scope-laundered poison, and override attacks against existing clean durables remain untested
+- adversarial corroboration and scope-laundered poison remain untested
+
+### Phase 2.5: External Baseline, Ablations, and Frozen Generalization Set
+
+Status: not started
+
+This phase must happen before Phase 3 component evaluation and before preregistering noisy-mode predictions. The point is to commit to comparison targets and disconfirmation tests before more pipeline work can tune around them.
+
+Add:
+
+- `Mem0Lite`, implemented as a rule-based ADD/UPDATE/DELETE/NOOP policy over the shared candidate and storage substrate
+- four named CQ ablation variants
+- a mechanism-diverse held-out set with net-new mechanisms
+- `docs/preregistration.md` with prediction-bearing quantitative commitments
+
+`Mem0Lite` design call:
+
+- Do not put a Mem0-style LLM operation classifier into the oracle comparison.
+- Do not claim this is a faithful reproduction of Mem0's full system.
+- Frame it as testing whether the ADD/UPDATE/DELETE/NOOP write discipline beats staged promotion when both policies receive the same oracle candidates, scopes, strengths, and contradiction/support metadata.
+- Treat oracle-mode `Mem0Lite` as a partial baseline result because it is likely close to eager write with deduplication. The headline `Mem0Lite` comparison belongs after Phase 4, where noisy extraction and update decisions can matter.
+
+Required CQ ablations:
+
+- `cq_no_contestation_demotion`: disables the contestation/demotion path for contradictory candidates and active durables.
+- `cq_no_wider_scope_pending_override`: disables the narrower pending override exception for active wider-scope durables.
+- `cq_no_pending_lookup_use`: disables answering from pending candidates on lookup.
+- `cq_no_source_independence_gate`: disables source-independence corroboration gating for CQ promotion decisions while keeping the candidate stream and substrate fields visible.
+
+Ablation rules:
+
+- Ablations modify policy decision logic only. The shared substrate's corroboration counting, lifecycle logging, and scope matching remain unchanged.
+- Run each ablation with the same thresholds unless a preregistered sensitivity run explicitly changes them.
+- Label ablation artifacts separately from full CQ artifacts.
+- Do not add new CQ features after seeing frozen held-out or ablation results without marking the run as post-hoc.
+
+Mechanism-diverse held-out set:
+
+- `false_corroboration_adversarial_mixed_source`: mirrored false reports interleaved with one legitimate independent source.
+- `memory_poisoning_scope_laundered`: poison enters through a legitimate wider scope before a narrower query exposes contamination.
+- `preference_drift_long_horizon_corrections`: multiple drift and correction episodes rather than one-off update or drift-back.
+
+Held-out rules:
+
+- These are not relabeled v2 surface-form templates.
+- Freeze scenario contracts, expected lifecycle, and metrics before CQ tuning or threshold changes.
+- Predictions for this mechanism-diverse held-out set must be in `docs/preregistration.md` before these scenarios are executed against any policy, including baselines and ablations.
+- Use this set as the only basis for mechanism-generalization claims.
+- Continue reporting existing v2 held-outs as surface-form robustness checks, not mechanism-diversity evidence.
+
+Preregistration requirements:
+
+- `docs/preregistration.md` must contain predictions, not only task lists.
+- Predictions must include numeric deltas for CQ vs `Mem0Lite`, CQ vs ReflectionEagerWrite, and full CQ vs each named CQ ablation.
+- Predictions must be specified per scenario family per primary metric: `false_assertion_rate`, `answer_correctness`, `poison_promotion_rate`, `premature_promotion_rate`, `clean_durable_displacement_rate`, and `scope_leakage_rate`.
+- Aggregate deltas may be reported, but they cannot replace per-family commitments.
+- Predictions must include oracle-mode and noisy-mode expectations, including expected oracle-vs-noisy gaps by policy.
+- If results contradict the predictions, report the contradiction directly in the final writeup.
+- If `Mem0Lite` matches or exceeds CQ within 5 percentage points on the primary metrics across the mechanism-diverse held-out set, CQ is not supported as a policy contribution. In that case, reframe the writeup as a benchmark and failure-taxonomy contribution rather than a CQ policy contribution.
+
+Required outcome:
+
+- reviewers can see that external comparison, ablation, and mechanism-generalization tests were specified before noisy-mode work
+- the project can produce negative, mixed, or CQ-favorable results without changing the evaluation contract
 
 ### Phase 3: Component Evaluation Harness
 
@@ -183,16 +256,24 @@ Required outcome:
 Add:
 
 - natural-language transcript mode
-- local extraction and canonicalization pipeline
-- local contradiction detection
+- off-the-shelf local extractor using a model such as Llama 3.1 8B or Qwen 2.5 7B
+- local extraction, canonicalization, and contradiction detection without model fine-tuning
 - structured artifact logging for component outputs
+
+Scope cap:
+
+- cap Phase 4 extractor work at four weeks
+- run the existing benchmark with extracted candidates instead of oracle candidates
+- measure component F1 against Phase 3 gold labels
+- compare oracle-vs-noisy gaps per policy
+- if component quality misses the gates below, report the failure and stop rather than turning extractor tuning into a separate research project
 
 Required outcome:
 
 - oracle vs noisy gap is measurable
 - bottlenecks are attributable instead of vague
 
-### Phase 5: Local Adjudication Routing
+### Phase 5: Optional Local Adjudication Routing
 
 Add:
 
@@ -204,15 +285,32 @@ Required outcome:
 
 - better contradiction handling without indiscriminate 70B usage
 
+Priority note:
+
+- this is engineering optimization, not the core research contribution
+- do not start Phase 5 before Phase 2.5, Phase 3, Phase 4, and the preregistered evaluation pass are complete unless the user explicitly reprioritizes it
+
 ### Phase 6: Final Evaluation and Writeup
 
 Add:
 
 - held-out template split
+- mechanism-diverse held-out analysis
+- CQ ablation analysis
+- `Mem0Lite` comparison, clearly separated into oracle-mode and noisy-mode claims
 - threshold sensitivity curves
+- LongMemEval transfer check
 - latency and cost analysis
 - failure-case appendix
+- `docs/predictions_vs_results.md`, with every committed numeric prediction next to the observed value and interpretation
 - final paper/report structure
+
+LongMemEval positioning:
+
+- Use LongMemEval as an external task-design transfer check after Phase 4.
+- Do not frame the claim as "beating LongMemEval".
+- Frame the claim as whether the CQ-vs-baseline policy comparison transfers to a benchmark the project did not design.
+- Keep real-user, weeks-long helpfulness as an explicit limitation and future-work item.
 
 ## Scenario Families
 
@@ -237,12 +335,14 @@ For each family:
 Primary metrics:
 
 - useful recall
+- answer correctness
 - false assertion rate
 - contradiction recovery rate
 - time to demotion
 - scope leakage rate
 - poison promotion rate
 - premature promotion rate
+- clean durable displacement rate
 - memory precision
 - memory recall
 - pending utility gain
@@ -294,9 +394,10 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Add override-attack poisoning against an existing clean durable as an explicit, diagnosable Phase 2 mechanism.
-2. Add more independent false-corroboration, poisoning, or scope mechanisms only when they test a distinct failure mode rather than another surface-form variant.
-3. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
+1. Implement Phase 2.5 specs before Phase 3: `Mem0Lite`, named CQ ablations, and mechanism-diverse held-out scenarios.
+2. Write `docs/preregistration.md` with numeric predictions before running Phase 2.5 result sweeps or noisy-mode evaluations.
+3. Start the component evaluation harness only after the Phase 2.5 comparison contract is frozen.
+4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
 
