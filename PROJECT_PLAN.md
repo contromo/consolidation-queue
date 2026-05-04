@@ -57,6 +57,7 @@ Implemented:
 - oracle preference-drift scenario generation with explicit-update, one-off exception, and drift-back probes
 - oracle useful-pending-memory scenario generation with clean calibration and dirty refinement probes
 - oracle false-corroboration scenario generation with clean independent-source and dirty mirrored-source probes
+- oracle memory-poisoning scenario generation with clean trusted, dirty below-floor injection, and dirty pending-eligible injection probes
 - multiple clean and dirty forced-contradiction templates with scenario metadata
 - clean and dirty main-split scope-contamination templates, including workspace-parent override probes
 - held-out scope-contamination templates for clean recency, broad-first premature-promotion, and workspace-parent override probes
@@ -66,6 +67,8 @@ Implemented:
 - held-out useful-pending-memory templates for clean calibration and dirty refinement probes
 - clean and dirty main-split false-corroboration templates
 - held-out false-corroboration templates for source-independence surface-form variants
+- clean and dirty main-split memory-poisoning templates
+- held-out memory-poisoning templates for untrusted-injection surface-form variants
 - four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
 - family-selectable oracle runner
@@ -81,7 +84,7 @@ Implemented:
 
 Not implemented yet:
 
-- poisoning scenarios
+- override-attack poisoning against an existing clean durable
 - lexical or embedding-based `TranscriptRAG`
 - component evaluation harness
 - local-model noisy pipeline
@@ -125,7 +128,7 @@ Immediate gap:
 
 ### Phase 2: Stronger Oracle Benchmark
 
-Status: in progress, broad-claim premature-promotion scope, workspace-parent override scope, preference-drift v1, useful-pending-memory v1, and false-corroboration v1 slices now have main and held-out variants
+Status: in progress, broad-claim premature-promotion scope, workspace-parent override scope, preference-drift v1, useful-pending-memory v1, false-corroboration v1, and memory-poisoning v1 slices now have main and held-out variants
 
 Add:
 
@@ -134,6 +137,7 @@ Add:
 - preference drift family
 - useful pending memory family
 - false corroboration family
+- memory poisoning family
 - scenario-level failure example extraction
 
 Required outcome:
@@ -154,6 +158,10 @@ Current caveat:
 - false-corroboration probes test explicit oracle source-id independence, not learned semantic source independence
 - false-corroboration held-out templates are surface-form variants of the same mirrored-source mechanism, not mechanism-diversity evidence
 - ScopeBlindTranscriptRAG fails dirty false-corroboration probes by recency, not by durable promotion
+- memory-poisoning v1 only tests untrusted injection, split between below-floor and pending-eligible strength bands
+- pending-eligible memory-poisoning probes intentionally expose CQ false assertion from pending memory while preserving zero durable poison promotion
+- memory-poisoning held-out templates are surface-form variants, not evidence of mechanism diversity
+- adversarial corroboration, scope-laundered poison, and override attacks against existing clean durables remain untested
 
 ### Phase 3: Component Evaluation Harness
 
@@ -286,8 +294,8 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Add poisoning scenarios only when their oracle mechanisms are explicit and diagnosable.
-2. Add more independent false-corroboration or scope mechanisms only when they test a distinct failure mode rather than another surface-form variant.
+1. Add override-attack poisoning against an existing clean durable as an explicit, diagnosable Phase 2 mechanism.
+2. Add more independent false-corroboration, poisoning, or scope mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 3. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
 
 ## Working Rules

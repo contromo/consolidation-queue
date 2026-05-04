@@ -14,6 +14,7 @@ class TaskFamily(str, Enum):
     PREFERENCE_DRIFT = "preference_drift"
     USEFUL_PENDING_MEMORY = "useful_pending_memory"
     FALSE_CORROBORATION = "false_corroboration"
+    MEMORY_POISONING = "memory_poisoning"
 
 
 class EventKind(str, Enum):

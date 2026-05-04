@@ -1,5 +1,40 @@
 # Product Progress
 
+## 2026-05-04 — Memory-poisoning untrusted-injection probes added
+
+### What shipped
+
+- added the `memory_poisoning` oracle family with clean trusted, dirty below-floor injection, and dirty pending-eligible injection templates
+- added main and held-out memory-poisoning splits, runner/CSV/dashboard wiring, and `poison_promotion_rate`
+- factored the repeated single-probe metric shape used by useful-pending, false-corroboration, and memory-poisoning metrics
+- added regression coverage for threshold calibration, CQ pending false assertion, eager durable poison promotion, NoMemory floor behavior, and dashboard/CSV output
+
+### Why it matters
+
+- below-floor dirty probes isolate immediate-write durable poison promotion from low-quality untrusted input
+- pending-eligible dirty probes expose the important CQ failure mode: CQ can still false-assert a poisoned pending candidate while avoiding durable poison promotion
+- Reflection and Naive receive the same candidate stream and shared storage substrate; the divergence is policy behavior, not richer CQ inputs
+- ScopeBlindTranscriptRAG fails dirty probes by recency over the newest poisoned transcript candidate, not by durable promotion
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 145 tests
+- mixed memory-poisoning run (`python3 -m cq.eval.runner --family memory_poisoning --scenarios 6 --template-mix mixed`) shows:
+  - `reflection_eager_write_lite`: `false_assertion=0.67`, `correctness=0.33`, `premature_promotion=0.67`, `poison_promotion=0.67`
+  - `consolidation_queue_lite`: `false_assertion=0.33`, `correctness=0.33`, `premature_promotion=0.00`, `poison_promotion=0.00`
+  - `naive_eager_write_lite`: `false_assertion=0.67`, `correctness=0.33`, `premature_promotion=0.67`, `poison_promotion=0.67`
+  - `no_memory_lite`: `false_assertion=0.00`, `correctness=0.00`, `premature_promotion=0.00`, `poison_promotion=0.00`
+  - `scope_blind_transcript_rag_lite`: `false_assertion=0.67`, `correctness=0.33`, `premature_promotion=0.00`, `poison_promotion=0.00`
+- held-out memory-poisoning run (`python3 -m cq.eval.runner --family memory_poisoning --scenarios 6 --template-mix heldout`) shows the same aggregate pattern on `memory_poisoning_clean_trusted_v2`, `memory_poisoning_dirty_below_floor_injection_v2`, and `memory_poisoning_dirty_pending_eligible_injection_v2`
+- dirty template-kind rows show Reflection/Naive at `false_assertion=1.00`, `premature_promotion=1.00`, and `poison_promotion=1.00`; CQ at `false_assertion=0.50`, `premature_promotion=0.00`, and `poison_promotion=0.00`; RAG at `false_assertion=1.00` with no poison promotion
+
+### Open issues / next
+
+- v1 only probes untrusted injection in below-floor and pending-eligible strength bands
+- v1 does not show resistance to adversarial corroboration, scope-laundered poison, or override of an existing clean durable
+- held-out v2 templates are surface-form variants of the same mechanisms, not mechanism-diversity evidence
+- override-attack poisoning against an existing clean durable remains the next poisoning-specific Phase 2 mechanism
+
 ## 2026-05-04 — False-corroboration source-independence probes added
 
 ### What shipped
@@ -32,9 +67,8 @@
 
 - this is explicit oracle source-id independence, not learned semantic source independence
 - the held-out v2 templates are surface-form variants of the same mechanism, not mechanism-diversity evidence
-- memory poisoning remains unimplemented
 - a future false-corroboration variant should test a distinct mechanism, such as mirrored sources interleaved with one legitimate independent source
-- when memory poisoning adds another single-probe metric computer, factor the repeated single-probe metric shape shared by useful-pending and false-corroboration
+- memory-poisoning override attacks remain separate from false-corroboration source-independence probes
 
 ## 2026-05-04 — Workspace-parent scope override probes added
 
