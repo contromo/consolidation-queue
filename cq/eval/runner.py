@@ -41,7 +41,7 @@ TEMPLATE_MIXES_BY_FAMILY = {
 SUMMARY_METRIC_FORMAT = (
     "false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} "
     "leakage={leakage:.2f} premature_promotion={premature:.2f} "
-    "poison_promotion={poison:.2f}"
+    "poison_promotion={poison:.2f} clean_displacement={clean_displacement:.2f}"
 )
 OVERALL_SUMMARY_FORMAT = (
     "{policy_name}: useful_recall={useful:.2f} pending_use={pending:.2f} "
@@ -60,6 +60,7 @@ def _summary_metric_values(summary: dict) -> Dict[str, float]:
         "leakage": summary["leakage_rate"],
         "premature": summary["premature_promotion_rate"],
         "poison": summary["poison_promotion_rate"],
+        "clean_displacement": summary["clean_durable_displacement_rate"],
     }
 
 
@@ -220,6 +221,7 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                 "leakage_rate",
                 "premature_promotion_rate",
                 "poison_promotion_rate",
+                "clean_durable_displacement_rate",
                 "useful_recall",
                 "used_pending",
                 "durable_commit",

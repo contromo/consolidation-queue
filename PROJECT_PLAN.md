@@ -51,13 +51,13 @@ Implemented:
 - `NaiveEagerWriteLite`
 - `NoMemoryLite`
 - `ConsolidationQueueLite`
-- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination, preference-drift, useful-pending, and false-corroboration probes
+- `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination, preference-drift, useful-pending, false-corroboration, and memory-poisoning probes
 - oracle forced-contradiction scenario generation
 - oracle scope-contamination scenario generation, framed as broad-claim premature promotion plus workspace-parent/project-override shadowing
 - oracle preference-drift scenario generation with explicit-update, one-off exception, and drift-back probes
 - oracle useful-pending-memory scenario generation with clean calibration and dirty refinement probes
 - oracle false-corroboration scenario generation with clean independent-source and dirty mirrored-source probes
-- oracle memory-poisoning scenario generation with clean trusted, dirty below-floor injection, and dirty pending-eligible injection probes
+- oracle memory-poisoning scenario generation with clean trusted, dirty below-floor injection, dirty pending-eligible injection, and same-scope override-attack probes
 - multiple clean and dirty forced-contradiction templates with scenario metadata
 - clean and dirty main-split scope-contamination templates, including workspace-parent override probes
 - held-out scope-contamination templates for clean recency, broad-first premature-promotion, and workspace-parent override probes
@@ -67,13 +67,14 @@ Implemented:
 - held-out useful-pending-memory templates for clean calibration and dirty refinement probes
 - clean and dirty main-split false-corroboration templates
 - held-out false-corroboration templates for source-independence surface-form variants
-- clean and dirty main-split memory-poisoning templates
-- held-out memory-poisoning templates for untrusted-injection surface-form variants
+- clean and dirty main-split memory-poisoning templates, including override shadow and borderline regimes
+- held-out memory-poisoning templates for untrusted-injection and override surface-form variants
 - four reserved held-out dirty contradiction templates
 - end-to-end oracle runner
 - family-selectable oracle runner
 - strict contradiction recovery metric plus `answer_correctness_after_contradiction`
 - generic answer correctness, leakage, false assertion, and premature-promotion metrics with contradiction aliases
+- clean durable displacement metric for poisoning override diagnostics
 - per-template-kind and per-template-split oracle summaries
 - per-template-id oracle summaries
 - deterministic scenario-level failure example extraction in oracle artifacts
@@ -84,7 +85,6 @@ Implemented:
 
 Not implemented yet:
 
-- override-attack poisoning against an existing clean durable
 - lexical or embedding-based `TranscriptRAG`
 - component evaluation harness
 - local-model noisy pipeline
@@ -158,10 +158,11 @@ Current caveat:
 - false-corroboration probes test explicit oracle source-id independence, not learned semantic source independence
 - false-corroboration held-out templates are surface-form variants of the same mirrored-source mechanism, not mechanism-diversity evidence
 - ScopeBlindTranscriptRAG fails dirty false-corroboration probes by recency, not by durable promotion
-- memory-poisoning v1 only tests untrusted injection, split between below-floor and pending-eligible strength bands
+- memory-poisoning v1 tests untrusted injection plus same-scope override attacks against existing clean durables
 - pending-eligible memory-poisoning probes intentionally expose CQ false assertion from pending memory while preserving zero durable poison promotion
+- override-attack probes expose CQ's exact-scope durable demotion path; shadow and borderline are strength regimes of the same mechanism, not distinct mechanisms
 - memory-poisoning held-out templates are surface-form variants, not evidence of mechanism diversity
-- adversarial corroboration, scope-laundered poison, and override attacks against existing clean durables remain untested
+- adversarial corroboration and scope-laundered poison remain untested
 
 ### Phase 3: Component Evaluation Harness
 
@@ -294,9 +295,9 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Add override-attack poisoning against an existing clean durable as an explicit, diagnosable Phase 2 mechanism.
+1. Write `docs/preregistration.md` once the oracle benchmark shape is stable enough to freeze.
 2. Add more independent false-corroboration, poisoning, or scope mechanisms only when they test a distinct failure mode rather than another surface-form variant.
-3. Write `docs/preregistration.md` once the oracle benchmark shape is stable.
+3. Start the component evaluation harness when moving from oracle-mode architecture evaluation toward noisy-mode claims.
 
 ## Working Rules
 
