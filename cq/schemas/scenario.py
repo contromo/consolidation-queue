@@ -13,6 +13,7 @@ class TaskFamily(str, Enum):
     SCOPE_CONTAMINATION = "scope_contamination"
     PREFERENCE_DRIFT = "preference_drift"
     USEFUL_PENDING_MEMORY = "useful_pending_memory"
+    FALSE_CORROBORATION = "false_corroboration"
 
 
 class EventKind(str, Enum):

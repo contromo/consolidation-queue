@@ -14,6 +14,7 @@ from cq.memory.reflection_eager_write import ReflectionEagerWriteLite
 from cq.memory.scope_blind_transcript_rag import ScopeBlindTranscriptRAGLite
 from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import (
+    generate_false_corroboration_scenarios,
     generate_forced_contradiction_scenarios,
     generate_preference_drift_scenarios,
     generate_scope_contamination_scenarios,
@@ -26,11 +27,13 @@ FORCED_CONTRADICTION = "forced_contradiction"
 SCOPE_CONTAMINATION = "scope_contamination"
 PREFERENCE_DRIFT = "preference_drift"
 USEFUL_PENDING_MEMORY = "useful_pending_memory"
+FALSE_CORROBORATION = "false_corroboration"
 TEMPLATE_MIXES_BY_FAMILY = {
     FORCED_CONTRADICTION: ("mixed", "clean", "dirty", "heldout"),
     SCOPE_CONTAMINATION: ("mixed", "clean", "dirty", "heldout"),
     PREFERENCE_DRIFT: ("mixed", "clean", "dirty", "heldout"),
     USEFUL_PENDING_MEMORY: ("mixed", "clean", "dirty", "heldout"),
+    FALSE_CORROBORATION: ("mixed", "clean", "dirty", "heldout"),
 }
 
 
@@ -56,6 +59,8 @@ def _generate_scenarios(family: str, scenario_count: int, template_mix: str):
         return generate_preference_drift_scenarios(scenario_count, template_mix=template_mix)
     if family == USEFUL_PENDING_MEMORY:
         return generate_useful_pending_memory_scenarios(scenario_count, template_mix=template_mix)
+    if family == FALSE_CORROBORATION:
+        return generate_false_corroboration_scenarios(scenario_count, template_mix=template_mix)
     raise ValueError("Unsupported family: {}".format(family))
 
 
@@ -80,7 +85,7 @@ def _policies_for_family(family: str):
         NaiveEagerWriteLite,
         NoMemoryLite,
     ]
-    if family in {SCOPE_CONTAMINATION, PREFERENCE_DRIFT, USEFUL_PENDING_MEMORY}:
+    if family in {SCOPE_CONTAMINATION, PREFERENCE_DRIFT, USEFUL_PENDING_MEMORY, FALSE_CORROBORATION}:
         policies.append(ScopeBlindTranscriptRAGLite)
     return policies
 
@@ -217,7 +222,13 @@ def main(argv: List[str] = None) -> int:
     parser = argparse.ArgumentParser(description="Run oracle memory-governance experiments.")
     parser.add_argument(
         "--family",
-        choices=[FORCED_CONTRADICTION, SCOPE_CONTAMINATION, PREFERENCE_DRIFT, USEFUL_PENDING_MEMORY],
+        choices=[
+            FORCED_CONTRADICTION,
+            SCOPE_CONTAMINATION,
+            PREFERENCE_DRIFT,
+            USEFUL_PENDING_MEMORY,
+            FALSE_CORROBORATION,
+        ],
         default=FORCED_CONTRADICTION,
         help="Oracle benchmark family to run.",
     )

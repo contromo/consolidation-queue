@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from datetime import datetime, timedelta
-from typing import Dict, List, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from cq.schemas.memory import CandidateUpdate, ClaimType, ProvenanceRecord, ScopeLevel
 from cq.schemas.scenario import EventKind, QuestionSpec, Scenario, ScenarioEvent, TaskFamily
@@ -123,6 +123,20 @@ USEFUL_PENDING_TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
 }
 
 
+FALSE_CORROBORATION_TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
+    "clean": ["false_corroboration_clean_independent_v1"],
+    "dirty": ["false_corroboration_dirty_mirrored_sources_v1"],
+    "mixed": [
+        "false_corroboration_clean_independent_v1",
+        "false_corroboration_dirty_mirrored_sources_v1",
+    ],
+    "heldout": [
+        "false_corroboration_clean_independent_v2",
+        "false_corroboration_dirty_mirrored_sources_v2",
+    ],
+}
+
+
 PROJECT_SCOPE_PAIRS: Sequence[Tuple[str, str]] = (
     ("atlas", "beacon"),
     ("cedar", "delta"),
@@ -188,6 +202,13 @@ def _useful_pending_template_id_for_index(index: int, template_mix: str) -> str:
     if template_mix not in USEFUL_PENDING_TEMPLATE_IDS_BY_MIX:
         raise ValueError("Unsupported useful-pending-memory template mix: {}".format(template_mix))
     template_ids = USEFUL_PENDING_TEMPLATE_IDS_BY_MIX[template_mix]
+    return template_ids[index % len(template_ids)]
+
+
+def _false_corroboration_template_id_for_index(index: int, template_mix: str) -> str:
+    if template_mix not in FALSE_CORROBORATION_TEMPLATE_IDS_BY_MIX:
+        raise ValueError("Unsupported false-corroboration template mix: {}".format(template_mix))
+    template_ids = FALSE_CORROBORATION_TEMPLATE_IDS_BY_MIX[template_mix]
     return template_ids[index % len(template_ids)]
 
 
@@ -273,6 +294,7 @@ def _make_scoped_candidate(
     *,
     semantic_uncertainty: float = 0.0,
     staleness_score: float = 0.0,
+    source_id: Optional[str] = None,
     contradicts: List[str] = None,
     supports: List[str] = None,
 ) -> CandidateUpdate:
@@ -288,7 +310,7 @@ def _make_scoped_candidate(
         provenance=[
             ProvenanceRecord(
                 source_kind=source_kind,
-                source_id="source-" + candidate_id,
+                source_id=source_id or "source-" + candidate_id,
                 trust_score=trust_score,
                 observed_at=observed_at,
             )
@@ -2121,6 +2143,203 @@ def _build_useful_pending_dirty_refinement_scenario(
     )
 
 
+def _false_corroboration_supports(candidate_ids: List[str], index: int) -> List[str]:
+    return candidate_ids[:index]
+
+
+def _build_false_corroboration_clean_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project: str,
+    base_time: datetime,
+    *,
+    template_id: str,
+    template_split: str,
+    command: str,
+    activity: str,
+) -> Scenario:
+    project_scope = "project-" + project
+    candidate_ids = [
+        "{}-candidate-independent-{}".format(scenario_id, index + 1)
+        for index in range(5)
+    ]
+    claim = "{} {} use {}".format(project, activity, command)
+    events = []
+    for index, candidate_id in enumerate(candidate_ids):
+        text = "Independent source {} says {} in project {} use {}.".format(
+            index + 1,
+            activity,
+            project,
+            command,
+        )
+        candidate = _make_scoped_candidate(
+            candidate_id=candidate_id,
+            canonical_id=canonical_id,
+            raw_text=text,
+            canonical_claim=claim,
+            observed_at=base_time + timedelta(minutes=index),
+            trust_score=0.32,
+            verification_score=0.32,
+            source_kind="independent_project_note",
+            source_id="independent-{}-{}".format(project, index + 1),
+            scope_level=ScopeLevel.PROJECT,
+            scope_key=project_scope,
+            supports=_false_corroboration_supports(candidate_ids, index),
+        )
+        events.append(
+            ScenarioEvent(
+                event_id="{}-event-{}".format(scenario_id, index + 1),
+                kind=EventKind.OBSERVATION,
+                turn_index=index + 1,
+                text=text,
+                candidate=candidate,
+            )
+        )
+
+    probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-corroboration-probe",
+        text="For project {}, which command should run {}?".format(project, activity),
+        canonical_id=canonical_id,
+        phase="corroboration_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+        gold_candidate_ids=[candidate_ids[-1]],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=5),
+    )
+    events.append(
+        ScenarioEvent(
+            event_id=scenario_id + "-event-6",
+            kind=EventKind.QUESTION,
+            turn_index=6,
+            text=probe_question.text,
+            question=probe_question,
+        )
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.FALSE_CORROBORATION,
+        description=(
+            "Independent weak project-convention sources should count as corroboration and become durable."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "source_independence": "distinct",
+            "scope_truth": {project_scope: claim},
+            "probe_scope_key": project_scope,
+            "final_candidate_id": candidate_ids[-1],
+        },
+        oracle_events=events,
+        expected_lifecycle={
+            "probe_phase": "corroboration_probe",
+            "gold_candidate_id": candidate_ids[-1],
+            "source_candidate_ids": candidate_ids,
+            "should_not_promote_candidate_ids": [],
+        },
+        template_id=template_id,
+        template_kind="clean",
+        template_split=template_split,
+    )
+
+
+def _build_false_corroboration_dirty_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project: str,
+    base_time: datetime,
+    *,
+    template_id: str,
+    template_split: str,
+    command: str,
+    activity: str,
+) -> Scenario:
+    project_scope = "project-" + project
+    candidate_ids = [
+        "{}-candidate-mirrored-{}".format(scenario_id, index + 1)
+        for index in range(5)
+    ]
+    claim = "{} {} use {}".format(project, activity, command)
+    mirror_source_id = "mirrored-{}-source".format(project)
+    events = []
+    for index, candidate_id in enumerate(candidate_ids):
+        text = "Mirrored source variant {} repeats that {} in project {} use {}.".format(
+            index + 1,
+            activity,
+            project,
+            command,
+        )
+        candidate = _make_scoped_candidate(
+            candidate_id=candidate_id,
+            canonical_id=canonical_id,
+            raw_text=text,
+            canonical_claim=claim,
+            observed_at=base_time + timedelta(minutes=index),
+            trust_score=0.32,
+            verification_score=0.32,
+            source_kind="mirrored_project_note",
+            source_id=mirror_source_id,
+            scope_level=ScopeLevel.PROJECT,
+            scope_key=project_scope,
+            supports=_false_corroboration_supports(candidate_ids, index),
+        )
+        events.append(
+            ScenarioEvent(
+                event_id="{}-event-{}".format(scenario_id, index + 1),
+                kind=EventKind.OBSERVATION,
+                turn_index=index + 1,
+                text=text,
+                candidate=candidate,
+            )
+        )
+
+    probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-corroboration-probe",
+        text="For project {}, which command should run {}?".format(project, activity),
+        canonical_id=canonical_id,
+        phase="corroboration_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+        gold_candidate_ids=[],
+        forbidden_candidate_ids=candidate_ids,
+        asked_at=base_time + timedelta(minutes=5),
+    )
+    events.append(
+        ScenarioEvent(
+            event_id=scenario_id + "-event-6",
+            kind=EventKind.QUESTION,
+            turn_index=6,
+            text=probe_question.text,
+            question=probe_question,
+        )
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.FALSE_CORROBORATION,
+        description=(
+            "Mirrored weak project-convention sources should not count as independent corroboration."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "source_independence": "mirrored",
+            "scope_truth": {project_scope: "no durable convention established by mirrored sources"},
+            "probe_scope_key": project_scope,
+            "mirror_source_id": mirror_source_id,
+            "false_candidate_ids": candidate_ids,
+        },
+        oracle_events=events,
+        expected_lifecycle={
+            "probe_phase": "corroboration_probe",
+            "false_corroboration_candidate_ids": candidate_ids,
+            "should_not_promote_candidate_ids": candidate_ids,
+        },
+        template_id=template_id,
+        template_kind="dirty",
+        template_split=template_split,
+    )
+
+
 def _build_preference_clean_stable_v1_scenario(
     scenario_id: str,
     canonical_id: str,
@@ -2879,6 +3098,70 @@ def generate_useful_pending_memory_scenarios(
                 tentative_strength=0.65,
                 refined_strength=0.63,
                 refinement_reason="make verify was an old alias that is no longer used",
+            )
+        else:
+            raise ValueError("Unsupported template_id: {}".format(template_id))
+        scenarios.append(scenario)
+    return scenarios
+
+
+def generate_false_corroboration_scenarios(
+    count: int,
+    seed: int = 37,
+    template_mix: str = "mixed",
+) -> List[Scenario]:
+    rng = random.Random(seed)
+    scenarios = []
+    for index in range(count):
+        project = rng.choice(USEFUL_PENDING_PROJECTS)
+        template_id = _false_corroboration_template_id_for_index(index, template_mix)
+        scenario_id = "false_corroboration_{:03d}".format(index + 1)
+        canonical_id = "false-corroboration-project-command"
+        base_time = datetime(2026, 4, 1, 9, 0, 0) + timedelta(days=index)
+
+        if template_id == "false_corroboration_clean_independent_v1":
+            scenario = _build_false_corroboration_clean_scenario(
+                scenario_id,
+                canonical_id,
+                project,
+                base_time,
+                template_id=template_id,
+                template_split="main",
+                command="./scripts/verify",
+                activity="deployment checks",
+            )
+        elif template_id == "false_corroboration_dirty_mirrored_sources_v1":
+            scenario = _build_false_corroboration_dirty_scenario(
+                scenario_id,
+                canonical_id,
+                project,
+                base_time,
+                template_id=template_id,
+                template_split="main",
+                command="npm run verify",
+                activity="deployment checks",
+            )
+        elif template_id == "false_corroboration_clean_independent_v2":
+            scenario = _build_false_corroboration_clean_scenario(
+                scenario_id,
+                canonical_id,
+                project,
+                base_time,
+                template_id=template_id,
+                template_split="heldout",
+                command="make audit",
+                activity="release audit",
+            )
+        elif template_id == "false_corroboration_dirty_mirrored_sources_v2":
+            scenario = _build_false_corroboration_dirty_scenario(
+                scenario_id,
+                canonical_id,
+                project,
+                base_time,
+                template_id=template_id,
+                template_split="heldout",
+                command="bash ci.sh",
+                activity="release audit",
             )
         else:
             raise ValueError("Unsupported template_id: {}".format(template_id))
