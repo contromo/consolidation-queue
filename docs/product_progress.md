@@ -7,7 +7,7 @@
 - added shared source-independence corroboration counting for supported candidate observations
 - added the `false_corroboration` oracle family with clean independent-source and dirty mirrored-source templates
 - added main and held-out false-corroboration splits, runner/CSV/dashboard wiring, and failure examples for false-corroboration assertions and promoted false stacks
-- added regression coverage for source-id union rules, mirrored-source discounting, no-gold dirty probes, and dashboard timeline rendering of counted/ignored source ids
+- added regression coverage for source-id independence rules, mirrored-source discounting, no-gold dirty probes, and dashboard timeline rendering of counted/ignored source ids
 
 ### Why it matters
 
@@ -34,6 +34,7 @@
 - the held-out v2 templates are surface-form variants of the same mechanism, not mechanism-diversity evidence
 - memory poisoning remains unimplemented
 - a future false-corroboration variant should test a distinct mechanism, such as mirrored sources interleaved with one legitimate independent source
+- when memory poisoning adds another single-probe metric computer, factor the repeated single-probe metric shape shared by useful-pending and false-corroboration
 
 ## 2026-05-04 — Workspace-parent scope override probes added
 

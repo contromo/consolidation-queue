@@ -136,17 +136,24 @@ class MemoryStore:
             if not _same_corroboration_cluster(candidate, support):
                 ignored_candidate_ids.append(support_id)
                 continue
-            support_sources = _source_ids(support)
-            support_counted = False
-            for source_id in support_sources:
-                if source_id in distinct_source_ids:
-                    ignored_source_ids.add(source_id)
-                    continue
-                distinct_source_ids.add(source_id)
-                counted_source_ids.add(source_id)
-                support_counted = True
-            if support_counted:
-                counted_candidate_ids.append(support_id)
+            support_sources = sorted(_source_ids(support))
+            novel_source_ids = [
+                source_id
+                for source_id in support_sources
+                if source_id not in distinct_source_ids
+            ]
+            if not novel_source_ids:
+                ignored_source_ids.update(support_sources)
+                continue
+            counted_source_id = novel_source_ids[0]
+            distinct_source_ids.add(counted_source_id)
+            counted_source_ids.add(counted_source_id)
+            ignored_source_ids.update(
+                source_id
+                for source_id in support_sources
+                if source_id != counted_source_id
+            )
+            counted_candidate_ids.append(support_id)
 
         return {
             "corroboration_count": max(0, len(distinct_source_ids) - 1),

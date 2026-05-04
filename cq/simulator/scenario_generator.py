@@ -2226,7 +2226,12 @@ def _build_false_corroboration_clean_scenario(
         latent_truth_graph={
             "canonical_id": canonical_id,
             "source_independence": "distinct",
-            "scope_truth": {project_scope: claim},
+            "scope_truth": {
+                project_scope: {
+                    "kind": "claim",
+                    "claim": claim,
+                },
+            },
             "probe_scope_key": project_scope,
             "final_candidate_id": candidate_ids[-1],
         },
@@ -2323,7 +2328,12 @@ def _build_false_corroboration_dirty_scenario(
         latent_truth_graph={
             "canonical_id": canonical_id,
             "source_independence": "mirrored",
-            "scope_truth": {project_scope: "no durable convention established by mirrored sources"},
+            "scope_truth": {
+                project_scope: {
+                    "kind": "no_durable_claim",
+                    "reason": "mirrored sources do not establish an independent convention",
+                },
+            },
             "probe_scope_key": project_scope,
             "mirror_source_id": mirror_source_id,
             "false_candidate_ids": candidate_ids,

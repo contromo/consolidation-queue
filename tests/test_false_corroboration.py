@@ -117,19 +117,27 @@ class SourceIndependenceSubstrateTests(unittest.TestCase):
         self.assertEqual(candidate.corroboration_count, 0)
         self.assertEqual(candidate.promotion_score, 0.32)
 
-    def test_multi_provenance_prior_candidate_uses_source_id_union(self) -> None:
+    def test_multi_provenance_prior_candidate_contributes_at_most_one_source(self) -> None:
         store = MemoryStore("test-policy")
         store.add_candidate(_candidate("c1", source_ids=["s1", "s2"]))
         second = store.add_candidate(_candidate("c2", source_ids=["s3"], supports=["c1"]))
 
-        self.assertEqual(second.corroboration_count, 2)
-        self.assertEqual(second.promotion_score, 0.52)
+        self.assertEqual(second.corroboration_count, 1)
+        self.assertEqual(second.promotion_score, 0.42)
+        event = [
+            item
+            for item in store.lifecycle_events
+            if item.event_type == "candidate_corroboration_counted"
+        ][0]
+        self.assertEqual(event.details["counted_source_ids"], ["s1"])
+        self.assertEqual(event.details["ignored_source_ids"], ["s2"])
 
     def test_mismatched_support_candidates_do_not_count(self) -> None:
         cases = [
             ("claim_type", {"claim_type": ClaimType.USER_PREFERENCE}),
             ("scope_level", {"scope_level": ScopeLevel.WORKSPACE}),
             ("scope_key", {"scope_key": "project-beacon"}),
+            ("canonical_id", {"canonical_id": "different-canonical"}),
             ("canonical_claim", {"canonical_claim": "project checks use npm test"}),
         ]
         for name, overrides in cases:
@@ -238,6 +246,20 @@ class FalseCorroborationScenarioTests(unittest.TestCase):
         self.assertEqual(dirty_candidates[-1].supports, [candidate.candidate_id for candidate in dirty_candidates[:-1]])
         self.assertEqual(len({candidate.provenance[0].source_id for candidate in clean_candidates}), 5)
         self.assertEqual(len({candidate.provenance[0].source_id for candidate in dirty_candidates}), 1)
+
+    def test_corroboration_lifecycle_events_cover_follow_up_observations(self) -> None:
+        clean = self._scenario_by_template_id("false_corroboration_clean_independent_v1")
+        dirty = self._scenario_by_template_id("false_corroboration_dirty_mirrored_sources_v1")
+
+        for scenario in (clean, dirty):
+            result = execute_scenario(ConsolidationQueueLite, scenario)
+            events = [
+                event
+                for event in result["store"].lifecycle_events
+                if event.event_type == "candidate_corroboration_counted"
+            ]
+
+            self.assertEqual(len(events), 4, msg=scenario.template_id)
 
     def test_calibration_uses_computed_independent_corroboration(self) -> None:
         clean = self._scenario_by_template_id("false_corroboration_clean_independent_v1")
