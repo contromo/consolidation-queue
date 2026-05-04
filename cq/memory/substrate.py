@@ -130,7 +130,7 @@ class MemoryStore:
         ignored_candidate_ids = []
         counted_candidate_ids = []
 
-        for support_id in candidate.supports:
+        for support_id in sorted(set(candidate.supports)):
             support = self.candidate_memories.get(support_id)
             if support is None:
                 ignored_candidate_ids.append(support_id)

@@ -137,6 +137,22 @@ class SourceIndependenceSubstrateTests(unittest.TestCase):
         self.assertEqual(event.details["capped_source_ids"], ["s2"])
         self.assertEqual(event.details["ignored_source_ids"], ["s2"])
 
+    def test_repeated_support_ids_are_deduplicated_before_counting(self) -> None:
+        store = MemoryStore("test-policy")
+        store.add_candidate(_candidate("c1", source_ids=["s1", "s2"]))
+        second = store.add_candidate(_candidate("c2", source_ids=["s3"], supports=["c1", "c1"]))
+
+        self.assertEqual(second.corroboration_count, 1)
+        event = [
+            item
+            for item in store.lifecycle_events
+            if item.event_type == "candidate_corroboration_counted"
+        ][0]
+        self.assertEqual(event.details["counted_candidate_ids"], ["c1"])
+        self.assertEqual(event.details["ignored_candidate_ids"], [])
+        self.assertEqual(event.details["counted_source_ids"], ["s1"])
+        self.assertEqual(event.details["capped_source_ids"], ["s2"])
+
     def test_mismatched_support_candidates_do_not_count(self) -> None:
         cases = [
             ("claim_type", {"claim_type": ClaimType.USER_PREFERENCE}),
