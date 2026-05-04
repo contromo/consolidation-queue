@@ -19,7 +19,7 @@ Secondary comparisons:
 
 External/published-family comparison:
 
-- `Mem0Lite`, a rule-based ADD/UPDATE/DELETE/NOOP write-time policy over the same CQ oracle/noisy candidates
+- `Mem0Lite`, a rule-based ADD/UPDATE/NOOP write-time policy over the same CQ oracle/noisy candidates; DELETE is reserved until the schema has explicit delete/retraction events
 
 ## Core Research Invariants
 
@@ -56,6 +56,7 @@ Implemented:
 - `NaiveEagerWriteLite`
 - `NoMemoryLite`
 - `ConsolidationQueueLite`
+- `Mem0Lite` as an opt-in Phase 2.5 external published-family baseline over the shared substrate
 - `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination, preference-drift, useful-pending, false-corroboration, and memory-poisoning probes
 - oracle forced-contradiction scenario generation
 - oracle scope-contamination scenario generation, framed as broad-claim premature promotion plus workspace-parent/project-override shadowing
@@ -91,7 +92,6 @@ Implemented:
 Not implemented yet:
 
 - lexical or embedding-based `TranscriptRAG`
-- `Mem0Lite` external published-family baseline
 - CQ ablation policy variants
 - mechanism-diverse frozen held-out scenarios
 - component evaluation harness
@@ -175,22 +175,31 @@ Current caveat:
 
 ### Phase 2.5: External Baseline, Ablations, and Frozen Generalization Set
 
-Status: not started
+Status: in progress; the opt-in `Mem0Lite` slice exists, while ablations, frozen contracts, and preregistration remain undone
 
 This phase must happen before Phase 3 component evaluation and before preregistering noisy-mode predictions. The point is to commit to comparison targets and disconfirmation tests before more pipeline work can tune around them.
 
 Add:
 
-- `Mem0Lite`, implemented as a rule-based ADD/UPDATE/DELETE/NOOP policy over the shared candidate and storage substrate
+- `Mem0Lite`, implemented as a rule-based ADD/UPDATE/NOOP policy over the shared candidate and storage substrate
 - four named CQ ablation variants
 - a mechanism-diverse held-out set with net-new mechanisms
 - `docs/preregistration.md` with prediction-bearing quantitative commitments
+
+Slice order:
+
+1. Implement `Mem0Lite`, wire it through an opt-in policy set, test it on existing families, and record calibration numbers.
+2. Implement the named CQ ablations with targeted tests.
+3. Add frozen mechanism-diverse scenario contracts and contract tests, but do not execute them against any policy.
+4. Write `docs/preregistration.md` with numeric predictions, including the 5 percentage point disconfirmation mode, before frozen sweeps run.
 
 `Mem0Lite` design call:
 
 - Do not put a Mem0-style LLM operation classifier into the oracle comparison.
 - Do not claim this is a faithful reproduction of Mem0's full system.
-- Frame it as testing whether the ADD/UPDATE/DELETE/NOOP write discipline beats staged promotion when both policies receive the same oracle candidates, scopes, strengths, and contradiction/support metadata.
+- Frame it as testing whether the ADD/UPDATE/NOOP write discipline beats staged promotion when both policies receive the same oracle candidates, scopes, strengths, and contradiction/support metadata.
+- In oracle mode, ADD promotes candidates that clear `minimum_write_confidence`, UPDATE demotes and overwrites contradictory active durables without Reflection's overwrite margin, matching/supporting observations reinforce through the shared substrate, and NOOP leaves below-threshold candidates non-durable without pending lookup.
+- DELETE is reserved because the current oracle schema has no explicit negation, deletion, or retraction primitive; revisit it for noisy mode or future deletion scenarios.
 - Treat oracle-mode `Mem0Lite` as a partial baseline result because it is likely close to eager write with deduplication. The headline `Mem0Lite` comparison belongs after Phase 4, where noisy extraction and update decisions can matter.
 
 Required CQ ablations:
@@ -218,6 +227,7 @@ Held-out rules:
 - These are not relabeled v2 surface-form templates.
 - Freeze scenario contracts, expected lifecycle, and metrics before CQ tuning or threshold changes.
 - Predictions for this mechanism-diverse held-out set must be in `docs/preregistration.md` before these scenarios are executed against any policy, including baselines and ablations.
+- Existing-family `Mem0Lite` and ablation observations may inform preregistration because those families are already in-repo; frozen mechanism-diverse scenarios must not be executed against any policy before predictions are committed.
 - Use this set as the only basis for mechanism-generalization claims.
 - Continue reporting existing v2 held-outs as surface-form robustness checks, not mechanism-diversity evidence.
 
@@ -394,10 +404,11 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Implement Phase 2.5 specs before Phase 3: `Mem0Lite`, named CQ ablations, and mechanism-diverse held-out scenarios.
-2. Write `docs/preregistration.md` with numeric predictions before running Phase 2.5 result sweeps or noisy-mode evaluations.
-3. Start the component evaluation harness only after the Phase 2.5 comparison contract is frozen.
-4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
+1. Continue Phase 2.5 with the named CQ ablation variants and targeted tests.
+2. Add mechanism-diverse frozen held-out scenario contracts and contract tests, but do not execute them against any policy yet.
+3. Write `docs/preregistration.md` with numeric predictions before running frozen held-out sweeps or noisy-mode evaluations.
+4. Start the component evaluation harness only after the Phase 2.5 comparison contract is frozen.
+5. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
 

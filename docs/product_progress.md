@@ -1,5 +1,37 @@
 # Product Progress
 
+## 2026-05-04 — Mem0Lite opt-in Phase 2.5 baseline added
+
+### What shipped
+
+- added `Mem0Lite`, a rule-based partial Mem0-family baseline over the shared oracle candidate and storage substrate
+- wired `--policy-set phase2_5` through the runner and `build_run_artifact`, preserving the default policy set unchanged
+- included runner artifact metadata documenting that `Mem0Lite` is not a faithful full Mem0 reproduction and that DELETE is reserved until the schema has explicit delete/retraction events
+- added focused tests for ADD, low-confidence NOOP, contradiction UPDATE without overwrite margin, matching reinforcement, no pending answers, and runner policy-set membership
+
+### Why it matters
+
+- Phase 2.5 now has its first external published-family comparison target without changing default benchmark behavior
+- oracle-mode `Mem0Lite` is interpretable: it differs from Reflection by thresholded ADD, no pending lookup, and no overwrite-margin check on contradictory UPDATE
+- existing-family calibration numbers can inform preregistration, while frozen mechanism-diverse scenarios remain unimplemented and unexecuted
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 156 tests
+- existing-family mixed calibration with `--policy-set phase2_5`, writing artifacts to `/tmp`, shows `mem0_lite`:
+  - forced contradiction, 6 scenarios: `false_assertion=0.00`, `recovery=1.00`, `correctness=1.00`
+  - scope contamination, 8 scenarios: `false_assertion=0.25`, `correctness=0.75`, `leakage=0.25`, `premature_promotion=0.25`
+  - preference drift, 6 scenarios: `false_assertion=0.00`, `correctness=1.00`, `premature_promotion=0.33`
+  - useful pending memory, 4 scenarios: `false_assertion=0.00`, `correctness=1.00`, `premature_promotion=1.00`
+  - false corroboration, 4 scenarios: `false_assertion=0.00`, `correctness=0.00`, `premature_promotion=0.00`
+  - memory poisoning, 10 scenarios: `false_assertion=0.60`, `correctness=0.20`, `premature_promotion=0.60`, `poison_promotion=0.60`, `clean_displacement=0.40`
+
+### Open issues / next
+
+- implement the four named CQ ablations as the next Phase 2.5 slice
+- add frozen mechanism-diverse scenario contracts only after ablations, and do not execute them before preregistration predictions are committed
+- the 5 percentage point disconfirmation rule still needs an explicit oracle/noisy-mode qualifier in `docs/preregistration.md`
+
 ## 2026-05-04 — Preregistration and disconfirmation rules sharpened
 
 ### What changed

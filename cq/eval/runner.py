@@ -8,6 +8,7 @@ from typing import Dict, List
 
 from cq.eval.end_to_end_eval import execute_scenario, failure_example_sort_key, summarize_runs
 from cq.memory.consolidation_queue import ConsolidationQueueLite
+from cq.memory.mem0_lite import Mem0Lite
 from cq.memory.naive_eager_write import NaiveEagerWriteLite
 from cq.memory.no_memory import NoMemoryLite
 from cq.memory.reflection_eager_write import ReflectionEagerWriteLite
@@ -30,6 +31,9 @@ PREFERENCE_DRIFT = "preference_drift"
 USEFUL_PENDING_MEMORY = "useful_pending_memory"
 FALSE_CORROBORATION = "false_corroboration"
 MEMORY_POISONING = "memory_poisoning"
+POLICY_SET_DEFAULT = "default"
+POLICY_SET_PHASE_2_5 = "phase2_5"
+POLICY_SET_CHOICES = (POLICY_SET_DEFAULT, POLICY_SET_PHASE_2_5)
 TEMPLATE_MIXES_BY_FAMILY = {
     FORCED_CONTRADICTION: ("mixed", "clean", "dirty", "heldout"),
     SCOPE_CONTAMINATION: ("mixed", "clean", "dirty", "heldout"),
@@ -133,7 +137,17 @@ def _validate_template_mix(family: str, template_mix: str) -> None:
         )
 
 
-def _policies_for_family(family: str):
+MEM0_LITE_PARTIAL_BASELINE_CAVEAT = Mem0Lite.partial_baseline_caveat
+
+
+def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
+    if policy_set not in POLICY_SET_CHOICES:
+        raise ValueError(
+            "Policy set '{}' is not supported. Allowed: {}".format(
+                policy_set,
+                ", ".join(POLICY_SET_CHOICES),
+            )
+        )
     policies = [
         ReflectionEagerWriteLite,
         ConsolidationQueueLite,
@@ -148,6 +162,8 @@ def _policies_for_family(family: str):
         MEMORY_POISONING,
     }:
         policies.append(ScopeBlindTranscriptRAGLite)
+    if policy_set == POLICY_SET_PHASE_2_5:
+        policies.append(Mem0Lite)
     return policies
 
 
@@ -155,9 +171,10 @@ def build_run_artifact(
     scenario_count: int,
     template_mix: str = "mixed",
     family: str = FORCED_CONTRADICTION,
+    policy_set: str = POLICY_SET_DEFAULT,
 ) -> dict:
     scenarios = _generate_scenarios(family, scenario_count, template_mix)
-    policies = _policies_for_family(family)
+    policies = _policies_for_family(family, policy_set=policy_set)
     policy_runs = []
     for policy_cls in policies:
         run_records = [execute_scenario(policy_cls, scenario) for scenario in scenarios]
@@ -197,6 +214,12 @@ def build_run_artifact(
         "family": family,
         "scenario_count": scenario_count,
         "template_mix": template_mix,
+        "policy_set": policy_set,
+        "baseline_notes": {
+            Mem0Lite.policy_name: MEM0_LITE_PARTIAL_BASELINE_CAVEAT,
+        }
+        if policy_set == POLICY_SET_PHASE_2_5
+        else {},
         "policies": policy_runs,
     }
 
@@ -313,6 +336,12 @@ def main(argv: List[str] = None) -> int:
         default=None,
         help="Path to the summary metrics CSV.",
     )
+    parser.add_argument(
+        "--policy-set",
+        choices=POLICY_SET_CHOICES,
+        default=POLICY_SET_DEFAULT,
+        help="Policy set to run. Use phase2_5 to include Mem0Lite.",
+    )
     args = parser.parse_args(argv)
     try:
         _validate_template_mix(args.family, args.template_mix)
@@ -321,7 +350,12 @@ def main(argv: List[str] = None) -> int:
 
     output_json = args.output_json or "data/runs/{}_oracle.json".format(args.family)
     output_csv = args.output_csv or "data/results/{}_oracle_metrics.csv".format(args.family)
-    run_artifact = build_run_artifact(args.scenarios, template_mix=args.template_mix, family=args.family)
+    run_artifact = build_run_artifact(
+        args.scenarios,
+        template_mix=args.template_mix,
+        family=args.family,
+        policy_set=args.policy_set,
+    )
     write_outputs(run_artifact, Path(output_json), Path(output_csv))
 
     for policy in run_artifact["policies"]:
@@ -334,6 +368,7 @@ def main(argv: List[str] = None) -> int:
         for template_id, template_summary in policy.get("summary_by_template_id", {}).items():
             print(_format_scoped_summary("template", template_id, template_summary))
     print("Template mix: {}".format(args.template_mix))
+    print("Policy set: {}".format(args.policy_set))
     print("Wrote {}".format(output_json))
     print("Wrote {}".format(output_csv))
     return 0
