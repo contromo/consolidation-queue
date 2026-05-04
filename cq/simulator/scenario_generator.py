@@ -68,15 +68,25 @@ TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
 
 
 SCOPE_TEMPLATE_IDS_BY_MIX: Dict[str, List[str]] = {
-    "clean": ["scope_contamination_clean_v1"],
-    "dirty": ["scope_contamination_dirty_broad_claim_v1"],
+    "clean": [
+        "scope_contamination_clean_v1",
+        "scope_contamination_clean_workspace_parent_v1",
+    ],
+    "dirty": [
+        "scope_contamination_dirty_broad_claim_v1",
+        "scope_contamination_dirty_workspace_parent_v1",
+    ],
     "mixed": [
         "scope_contamination_clean_v1",
         "scope_contamination_dirty_broad_claim_v1",
+        "scope_contamination_clean_workspace_parent_v1",
+        "scope_contamination_dirty_workspace_parent_v1",
     ],
     "heldout": [
         "scope_contamination_clean_v2",
         "scope_contamination_dirty_broad_claim_v3",
+        "scope_contamination_clean_workspace_parent_v2",
+        "scope_contamination_dirty_workspace_parent_v2",
     ],
 }
 
@@ -1653,6 +1663,256 @@ def _build_scope_dirty_broad_claim_v3_scenario(
     )
 
 
+def _workspace_parent_scope_keys(
+    project_a: str,
+    project_b: str,
+    *,
+    multi_level: bool,
+) -> Tuple[str, str]:
+    workspace_scope = "workspace-{}-{}".format(project_a, project_b)
+    if multi_level:
+        return workspace_scope, "{}/group-core/project-{}".format(workspace_scope, project_a)
+    return workspace_scope, "{}/project-{}".format(workspace_scope, project_a)
+
+
+def _build_scope_clean_workspace_parent_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project_a: str,
+    project_b: str,
+    base_time: datetime,
+    *,
+    template_id: str,
+    template_split: str,
+    workspace_strength: float,
+    multi_level: bool,
+) -> Scenario:
+    workspace_scope, project_scope = _workspace_parent_scope_keys(
+        project_a,
+        project_b,
+        multi_level=multi_level,
+    )
+    workspace_candidate_id = scenario_id + "-candidate-workspace-default"
+    workspace_claim = "{} default tests use npm test".format(workspace_scope)
+    workspace_text = "Workspace {} defines npm test as the default test command.".format(workspace_scope)
+
+    workspace_candidate = _make_scoped_candidate(
+        candidate_id=workspace_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=workspace_text,
+        canonical_claim=workspace_claim,
+        observed_at=base_time,
+        trust_score=workspace_strength,
+        verification_score=workspace_strength,
+        source_kind="workspace_readme",
+        scope_level=ScopeLevel.WORKSPACE,
+        scope_key=workspace_scope,
+    )
+    probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-off-scope-probe",
+        text="For project {} in workspace {}, which command should run tests?".format(
+            project_a,
+            workspace_scope,
+        ),
+        canonical_id=canonical_id,
+        phase="off_scope_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+        gold_candidate_ids=[workspace_candidate_id],
+        forbidden_candidate_ids=[],
+        asked_at=base_time + timedelta(minutes=1),
+    )
+
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.SCOPE_CONTAMINATION,
+        description=(
+            "A clean workspace default should answer a project query through shared parent-scope matching."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "scope_truth": {
+                workspace_scope: workspace_claim,
+                project_scope: "inherits {}".format(workspace_claim),
+            },
+            "probe_scope_key": project_scope,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=workspace_text,
+                candidate=workspace_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.QUESTION,
+                turn_index=2,
+                text=probe_question.text,
+                question=probe_question,
+            ),
+        ],
+        expected_lifecycle={
+            "probe_phase": "off_scope_probe",
+            "gold_candidate_id": workspace_candidate_id,
+            "forbidden_candidate_ids": [],
+            "should_not_promote_candidate_ids": [],
+            "workspace_candidate_id": workspace_candidate_id,
+            "workspace_scope_key": workspace_scope,
+            "project_scope_key": project_scope,
+        },
+        template_id=template_id,
+        template_kind="clean",
+        template_split=template_split,
+    )
+
+
+def _build_scope_dirty_workspace_parent_scenario(
+    scenario_id: str,
+    canonical_id: str,
+    project_a: str,
+    project_b: str,
+    base_time: datetime,
+    *,
+    template_id: str,
+    template_split: str,
+    workspace_strength: float,
+    project_strength: float,
+    multi_level: bool,
+) -> Scenario:
+    workspace_scope, project_scope = _workspace_parent_scope_keys(
+        project_a,
+        project_b,
+        multi_level=multi_level,
+    )
+    workspace_candidate_id = scenario_id + "-candidate-workspace-default"
+    project_candidate_id = scenario_id + "-candidate-project-override"
+    workspace_claim = "{} default tests use npm test".format(workspace_scope)
+    project_claim = "{} tests use pytest -q".format(project_a)
+    workspace_text = "Workspace {} defines npm test as the default test command.".format(workspace_scope)
+    project_text = (
+        "Project {} overrides the workspace default and runs tests with pytest -q.".format(project_a)
+    )
+
+    workspace_candidate = _make_scoped_candidate(
+        candidate_id=workspace_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=workspace_text,
+        canonical_claim=workspace_claim,
+        observed_at=base_time,
+        trust_score=workspace_strength,
+        verification_score=workspace_strength,
+        source_kind="workspace_readme",
+        scope_level=ScopeLevel.WORKSPACE,
+        scope_key=workspace_scope,
+    )
+    project_candidate = _make_scoped_candidate(
+        candidate_id=project_candidate_id,
+        canonical_id=canonical_id,
+        raw_text=project_text,
+        canonical_claim=project_claim,
+        observed_at=base_time + timedelta(minutes=1),
+        trust_score=project_strength,
+        verification_score=project_strength,
+        source_kind="project_override",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+        contradicts=[workspace_candidate_id],
+    )
+    project_probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-off-scope-probe",
+        text="For project {} in workspace {}, which command should run tests?".format(
+            project_a,
+            workspace_scope,
+        ),
+        canonical_id=canonical_id,
+        phase="off_scope_probe",
+        scope_level=ScopeLevel.PROJECT,
+        scope_key=project_scope,
+        gold_candidate_ids=[project_candidate_id],
+        forbidden_candidate_ids=[workspace_candidate_id],
+        asked_at=base_time + timedelta(minutes=2),
+    )
+    workspace_probe_question = _make_scoped_question(
+        question_id=scenario_id + "-question-workspace-probe",
+        text="For workspace {}, what is the default test command?".format(workspace_scope),
+        canonical_id=canonical_id,
+        phase="workspace_probe",
+        scope_level=ScopeLevel.WORKSPACE,
+        scope_key=workspace_scope,
+        gold_candidate_ids=[workspace_candidate_id],
+        forbidden_candidate_ids=[project_candidate_id],
+        asked_at=base_time + timedelta(minutes=3),
+    )
+
+    # Calibration enforced by workspace-parent scope tests:
+    # workspace.strength is durable-eligible and remains a legitimate workspace default.
+    # project.strength is pending-eligible but below the project-convention promotion threshold.
+    # project.strength < workspace.confidence + overwrite_margin, so Reflection refuses overwrite.
+    # project.contradicts carries the load-bearing edge CQ uses for exact-scope pending override lookup.
+    # Naive still selects the workspace durable confidence-first when both workspace and project durables match.
+    return Scenario(
+        scenario_id=scenario_id,
+        task_family=TaskFamily.SCOPE_CONTAMINATION,
+        description=(
+            "A durable workspace default remains valid generally, but a project override should shadow it for that project only."
+        ),
+        latent_truth_graph={
+            "canonical_id": canonical_id,
+            "scope_truth": {
+                workspace_scope: workspace_claim,
+                project_scope: project_claim,
+            },
+            "probe_scope_key": project_scope,
+        },
+        oracle_events=[
+            ScenarioEvent(
+                event_id=scenario_id + "-event-1",
+                kind=EventKind.OBSERVATION,
+                turn_index=1,
+                text=workspace_text,
+                candidate=workspace_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-2",
+                kind=EventKind.OBSERVATION,
+                turn_index=2,
+                text=project_text,
+                candidate=project_candidate,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-3",
+                kind=EventKind.QUESTION,
+                turn_index=3,
+                text=project_probe_question.text,
+                question=project_probe_question,
+            ),
+            ScenarioEvent(
+                event_id=scenario_id + "-event-4",
+                kind=EventKind.QUESTION,
+                turn_index=4,
+                text=workspace_probe_question.text,
+                question=workspace_probe_question,
+            ),
+        ],
+        expected_lifecycle={
+            "probe_phase": "off_scope_probe",
+            "workspace_probe_phase": "workspace_probe",
+            "gold_candidate_id": project_candidate_id,
+            "forbidden_candidate_ids": [workspace_candidate_id],
+            "should_not_promote_candidate_ids": [],
+            "workspace_candidate_id": workspace_candidate_id,
+            "project_candidate_id": project_candidate_id,
+            "workspace_scope_key": workspace_scope,
+            "project_scope_key": project_scope,
+        },
+        template_id=template_id,
+        template_kind="dirty",
+        template_split=template_split,
+    )
+
+
 def _build_useful_pending_clean_scenario(
     scenario_id: str,
     canonical_id: str,
@@ -2495,6 +2755,56 @@ def generate_scope_contamination_scenarios(
                 project_a,
                 project_b,
                 base_time,
+            )
+        elif template_id == "scope_contamination_clean_workspace_parent_v1":
+            scenario = _build_scope_clean_workspace_parent_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                project_b,
+                base_time,
+                template_id=template_id,
+                template_split="main",
+                workspace_strength=0.80,
+                multi_level=False,
+            )
+        elif template_id == "scope_contamination_dirty_workspace_parent_v1":
+            scenario = _build_scope_dirty_workspace_parent_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                project_b,
+                base_time,
+                template_id=template_id,
+                template_split="main",
+                workspace_strength=0.80,
+                project_strength=0.64,
+                multi_level=False,
+            )
+        elif template_id == "scope_contamination_clean_workspace_parent_v2":
+            scenario = _build_scope_clean_workspace_parent_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                project_b,
+                base_time,
+                template_id=template_id,
+                template_split="heldout",
+                workspace_strength=0.71,
+                multi_level=True,
+            )
+        elif template_id == "scope_contamination_dirty_workspace_parent_v2":
+            scenario = _build_scope_dirty_workspace_parent_scenario(
+                scenario_id,
+                canonical_id,
+                project_a,
+                project_b,
+                base_time,
+                template_id=template_id,
+                template_split="heldout",
+                workspace_strength=0.71,
+                project_strength=0.66,
+                multi_level=True,
             )
         else:
             raise ValueError("Unsupported template_id: {}".format(template_id))

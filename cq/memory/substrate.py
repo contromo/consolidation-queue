@@ -18,15 +18,45 @@ from cq.schemas.memory import (
 )
 
 
+SCOPE_MATCH_EXACT = "exact"
+SCOPE_MATCH_WORLD_GLOBAL = "world_global"
+SCOPE_MATCH_WORKSPACE_PARENT = "workspace_parent"
+
+
+def scope_match_relation(
+    stored_scope_level: ScopeLevel,
+    stored_scope_key: str,
+    query_scope_level: ScopeLevel,
+    query_scope_key: str,
+) -> Optional[str]:
+    if stored_scope_level == query_scope_level and stored_scope_key == query_scope_key:
+        return SCOPE_MATCH_EXACT
+    if stored_scope_level == ScopeLevel.WORLD_GLOBAL:
+        return SCOPE_MATCH_WORLD_GLOBAL
+    if (
+        stored_scope_level == ScopeLevel.WORKSPACE
+        and query_scope_level == ScopeLevel.PROJECT
+        and query_scope_key.startswith(stored_scope_key + "/")
+    ):
+        return SCOPE_MATCH_WORKSPACE_PARENT
+    return None
+
+
 def scope_matches(
     stored_scope_level: ScopeLevel,
     stored_scope_key: str,
     query_scope_level: ScopeLevel,
     query_scope_key: str,
 ) -> bool:
-    if stored_scope_level == ScopeLevel.WORLD_GLOBAL:
-        return True
-    return stored_scope_level == query_scope_level and stored_scope_key == query_scope_key
+    return (
+        scope_match_relation(
+            stored_scope_level,
+            stored_scope_key,
+            query_scope_level,
+            query_scope_key,
+        )
+        is not None
+    )
 
 
 class MemoryStore:

@@ -1,5 +1,37 @@
 # Product Progress
 
+## 2026-05-04 — Workspace-parent scope override probes added
+
+### What shipped
+
+- added shared `WORKSPACE -> PROJECT` parent-scope matching with explicit match-relation diagnostics
+- added main and held-out workspace-parent scope-contamination templates
+- updated CQ so exact-scope pending overrides can shadow a wider workspace durable without globally demoting it
+- added regression coverage for adversarial scope keys, workspace-query preservation, cross-family summaries, and per-policy workspace-parent behavior
+
+### Why it matters
+
+- this adds a non-`WORLD_GLOBAL` scope probe while keeping CQ and eager baselines on the same storage substrate
+- the dirty workspace-parent templates test active wider-scope shadowing: the workspace default is legitimate durable memory, but it should not answer a project query after an explicit project override
+- the result should be described as oracle scope-key behavior plus CQ override-on-lookup, not learned semantic scope inference
+- Reflection receives the same shared parent matching and keeps eager-write baseline behavior; CQ's pending override lookup is the policy feature under test
+
+### Evidence
+
+- `python3 -m unittest discover -s tests -p 'test_*.py'` passes with 100 tests
+- mixed scope run (`python3 -m cq.eval.runner --family scope_contamination --scenarios 8 --template-mix mixed`) shows `scope_contamination_dirty_workspace_parent_v1`:
+  - `reflection_eager_write_lite`: `leakage=1.00`, `correctness=0.00`, `premature_promotion=0.00`
+  - `consolidation_queue_lite`: `leakage=0.00`, `correctness=1.00`, `premature_promotion=0.00`
+  - `naive_eager_write_lite`: `leakage=1.00`, `correctness=0.00`, `premature_promotion=0.00`
+  - `scope_blind_transcript_rag_lite`: `leakage=0.00`, `correctness=1.00`, `premature_promotion=0.00`
+- held-out scope run (`python3 -m cq.eval.runner --family scope_contamination --scenarios 8 --template-mix heldout`) shows the same aggregate pattern on `scope_contamination_dirty_workspace_parent_v2`
+
+### Open issues / next
+
+- poisoning and false-corroboration families remain unimplemented
+- broader scope-inference claims still require noisy scope-inference component evaluation
+- Reflection's parent-match reinforcement behavior can still reinforce wider durables from non-contradictory narrower evidence; the new templates intentionally avoid that path
+
 ## 2026-05-03 — Useful-pending-memory oracle family added
 
 ### What shipped
