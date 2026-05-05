@@ -166,6 +166,18 @@ python3 -m cq.eval.preregistration_lock --check
 python3 -m cq.eval.preregistration_lock --recompute
 ```
 
+Run the Phase 3 component-evaluation oracle upper bound:
+
+```bash
+python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 4 --template-mix dirty
+```
+
+Score saved component predictions from a noisy extractor:
+
+```bash
+python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 4 --template-mix dirty --predictions-json data/results/component_predictions.json
+```
+
 Open the dashboard against the saved run:
 
 ```bash
