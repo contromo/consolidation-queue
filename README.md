@@ -178,6 +178,8 @@ Score saved component predictions from a noisy extractor:
 python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 4 --template-mix dirty --predictions-json data/results/component_predictions.json
 ```
 
+Prediction JSON must use a top-level `scenario_predictions` object keyed by `scenario_id`.
+
 Open the dashboard against the saved run:
 
 ```bash

@@ -11,7 +11,7 @@ from cq.eval.preregistration_lock import (
     main,
     validate_frozen_eval_lock,
 )
-from cq.eval.runner import MECHANISM_DIVERSE_HELDOUT, _generate_scenarios, build_run_artifact
+from cq.eval.runner import MECHANISM_DIVERSE_HELDOUT, build_run_artifact, generate_scenarios
 from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import generate_frozen_mechanism_diverse_scenarios
 
@@ -74,7 +74,7 @@ class FrozenPreregistrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             prereg_path = Path(tmpdir) / "preregistration.md"
             prereg_path.write_text(_preregistration_text(actual, predictions), encoding="utf-8")
-            scenarios = _generate_scenarios(
+            scenarios = generate_scenarios(
                 MECHANISM_DIVERSE_HELDOUT,
                 25,
                 "frozen",

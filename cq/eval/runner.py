@@ -125,7 +125,7 @@ def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, d
     }
 
 
-def _generate_scenarios(
+def generate_scenarios(
     family: str,
     scenario_count: int,
     template_mix: str,
@@ -148,6 +148,20 @@ def _generate_scenarios(
     if family == MEMORY_POISONING:
         return generate_memory_poisoning_scenarios(scenario_count, template_mix=template_mix)
     raise ValueError("Unsupported family: {}".format(family))
+
+
+def _generate_scenarios(
+    family: str,
+    scenario_count: int,
+    template_mix: str,
+    preregistration_path: Path = PREREGISTRATION_PATH,
+):
+    return generate_scenarios(
+        family,
+        scenario_count,
+        template_mix,
+        preregistration_path=preregistration_path,
+    )
 
 
 def _validate_template_mix(family: str, template_mix: str) -> None:
@@ -205,7 +219,7 @@ def build_run_artifact(
     policy_set: str = POLICY_SET_DEFAULT,
     preregistration_path: Path = PREREGISTRATION_PATH,
 ) -> dict:
-    scenarios = _generate_scenarios(
+    scenarios = generate_scenarios(
         family,
         scenario_count,
         template_mix,

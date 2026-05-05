@@ -10,6 +10,7 @@
 - added `docs/predictions_vs_results.md` with every preregistered frozen oracle delta next to the observed delta
 - added the Phase 3 component-evaluation harness with candidate detection, claim type, scope level/key, canonicalization B-cubed, contradiction precision/recall/F1, and quality-gate reporting
 - added a saved-prediction JSON input path for later noisy extractor outputs and an oracle upper-bound CLI mode
+- hardened component quality gates so no-data metrics are reported as undefined and fail instead of passing on empty extractor output
 
 ### Why it matters
 
@@ -28,8 +29,9 @@
   - `mem0_lite`: `false_assertion=0.33`, `correctness=0.67`, `premature_promotion=0.67`, `poison_promotion=0.33`
   - `reflection_eager_write_lite`: `false_assertion=1.00`, `correctness=0.00`, `premature_promotion=0.67`, `poison_promotion=0.33`
 - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.component_eval --family mechanism_diverse_heldout --scenarios 3 --template-mix frozen --output-json data/results/mechanism_diverse_heldout_component_eval_oracle_upper_bound.json` reports all component upper-bound quality metrics at `1.00`
-- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_eval -q` passes with 7 tests
-- final `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 175 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_eval -q` passes with 12 tests
+- final `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 180 tests
+- follow-up component-evaluation coverage exercises zero predictions, hand-computed B-cubed, duplicate event IDs, strict prediction JSON shape, and frozen-family lock validation
 
 ### Open issues / next
 

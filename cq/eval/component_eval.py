@@ -9,7 +9,7 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 from cq.eval.runner import (
     FORCED_CONTRADICTION,
     TEMPLATE_MIXES_BY_FAMILY,
-    _generate_scenarios,
+    generate_scenarios,
 )
 from cq.schemas.memory import CandidateUpdate, jsonable
 from cq.schemas.scenario import EventKind, Scenario
@@ -165,15 +165,16 @@ def evaluate_component_predictions(
     }
 
 
-def evaluate_quality_gates(metrics: Dict[str, float]) -> Dict[str, Dict[str, object]]:
-    return {
-        metric_name: {
-            "value": metrics.get(metric_name, 0.0),
+def evaluate_quality_gates(metrics: Dict[str, object]) -> Dict[str, Dict[str, object]]:
+    gates = {}
+    for metric_name, threshold in QUALITY_GATES.items():
+        value = metrics.get(metric_name)
+        gates[metric_name] = {
+            "value": value,
             "threshold": threshold,
-            "passed": metrics.get(metric_name, 0.0) >= threshold,
+            "passed": isinstance(value, (int, float)) and value >= threshold,
         }
-        for metric_name, threshold in QUALITY_GATES.items()
-    }
+    return gates
 
 
 def build_oracle_component_eval_artifact(
@@ -199,7 +200,7 @@ def build_component_eval_artifact(
     predictions_by_scenario: Optional[Dict[str, List[CandidateComponentPrediction]]] = None,
     mode: str = "component_predictions",
 ) -> Dict[str, object]:
-    scenarios = _generate_scenarios(family, scenario_count, template_mix)
+    scenarios = generate_scenarios(family, scenario_count, template_mix)
     if predictions_by_scenario is None:
         predictions_by_scenario = oracle_predictions_by_scenario(scenarios)
     evaluation = evaluate_component_predictions(scenarios, predictions_by_scenario)
@@ -219,7 +220,14 @@ def load_predictions_by_scenario(
     predictions_path: Path,
 ) -> Dict[str, List[CandidateComponentPrediction]]:
     payload = json.loads(predictions_path.read_text(encoding="utf-8"))
-    scenario_predictions = payload.get("scenario_predictions", payload)
+    if not isinstance(payload, dict) or "scenario_predictions" not in payload:
+        raise ValueError("Prediction JSON must contain a top-level scenario_predictions object")
+    scenario_predictions = payload["scenario_predictions"]
+    if not isinstance(scenario_predictions, dict):
+        raise ValueError("scenario_predictions must be an object keyed by scenario_id")
+    for scenario_id, predictions in scenario_predictions.items():
+        if not isinstance(predictions, list):
+            raise ValueError("Predictions for scenario '{}' must be a list".format(scenario_id))
     return {
         scenario_id: [_prediction_from_mapping(prediction) for prediction in predictions]
         for scenario_id, predictions in scenario_predictions.items()
@@ -251,15 +259,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
     metrics = artifact["metrics"]
     print(
-        "component_eval: candidate_f1={candidate:.2f} claim_type={claim:.2f} "
-        "scope_level={scope_level:.2f} scope_key={scope_key:.2f} "
-        "canonicalization_f1={canonicalization:.2f} contradiction_f1={contradiction:.2f}".format(
-            candidate=metrics["candidate_detection_f1"],
-            claim=metrics["claim_type_accuracy"],
-            scope_level=metrics["scope_level_accuracy"],
-            scope_key=metrics["scope_key_accuracy"],
+        "component_eval: candidate_f1={candidate} claim_type={claim} "
+        "scope_level={scope_level} scope_key={scope_key} "
+        "canonicalization_f1={canonicalization:.2f} contradiction_f1={contradiction}".format(
+            candidate=_format_metric(metrics["candidate_detection_f1"]),
+            claim=_format_metric(metrics["claim_type_accuracy"]),
+            scope_level=_format_metric(metrics["scope_level_accuracy"]),
+            scope_key=_format_metric(metrics["scope_key_accuracy"]),
             canonicalization=metrics["canonicalization_b_cubed_f1"],
-            contradiction=metrics["contradiction_f1"],
+            contradiction=_format_metric(metrics["contradiction_f1"]),
         )
     )
     if args.output_json:
@@ -289,6 +297,8 @@ def _prediction_from_candidate(
 
 
 def _prediction_from_mapping(mapping: Dict[str, object]) -> CandidateComponentPrediction:
+    if not isinstance(mapping, dict):
+        raise ValueError("Each component prediction must be an object")
     return CandidateComponentPrediction(
         event_id=str(mapping.get("event_id", "")),
         candidate_id=str(mapping.get("candidate_id", "")),
@@ -361,8 +371,8 @@ def _b_cubed(gold_labels: Dict[str, str], predicted_labels: Dict[str, str]) -> D
             if predicted_labels[other_id] == predicted_labels[item_id]
         }
         overlap_count = len(gold_cluster.intersection(predicted_cluster))
-        precisions.append(_safe_divide(overlap_count, len(predicted_cluster)))
-        recalls.append(_safe_divide(overlap_count, len(gold_cluster)))
+        precisions.append(overlap_count / len(predicted_cluster))
+        recalls.append(overlap_count / len(gold_cluster))
     precision = sum(precisions) / len(precisions)
     recall = sum(recalls) / len(recalls)
     return {
@@ -372,22 +382,32 @@ def _b_cubed(gold_labels: Dict[str, str], predicted_labels: Dict[str, str]) -> D
     }
 
 
-def _accuracy(correct: int, total: int) -> float:
+def _accuracy(correct: int, total: int) -> Optional[float]:
     if total == 0:
-        return 1.0
+        return None
     return correct / total
 
 
-def _safe_divide(numerator: int, denominator: int) -> float:
+def _safe_divide(numerator: int, denominator: int) -> Optional[float]:
     if denominator == 0:
-        return 1.0
+        return None
     return numerator / denominator
 
 
-def _f1(precision: float, recall: float) -> float:
+def _f1(precision: Optional[float], recall: Optional[float]) -> Optional[float]:
+    if precision is None or recall is None:
+        if precision == 0.0 or recall == 0.0:
+            return 0.0
+        return None
     if precision + recall == 0:
         return 0.0
     return 2 * precision * recall / (precision + recall)
+
+
+def _format_metric(value: object) -> str:
+    if isinstance(value, (int, float)):
+        return "{:.2f}".format(value)
+    return "NA"
 
 
 if __name__ == "__main__":
