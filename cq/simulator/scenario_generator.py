@@ -2719,8 +2719,8 @@ def _build_false_corroboration_adversarial_mixed_source_scenario() -> Scenario:
             raw_text=text,
             canonical_claim=claim,
             observed_at=base_time + timedelta(minutes=index),
-            trust_score=0.32,
-            verification_score=0.32,
+            trust_score=0.58,
+            verification_score=0.58,
             source_kind=(
                 "independent_project_note"
                 if "legitimate" in source_ids[index]
@@ -2772,6 +2772,7 @@ def _build_false_corroboration_adversarial_mixed_source_scenario() -> Scenario:
         latent_truth_graph={
             "canonical_id": canonical_id,
             "source_independence": "adversarial_mixed_source",
+            "strength_regime": "above_mem0_write_threshold_below_cq_independent_promotion",
             "scope_truth": {
                 project_scope: {
                     "kind": "no_durable_claim",

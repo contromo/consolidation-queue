@@ -156,7 +156,14 @@ python3 -m cq.eval.runner --family false_corroboration --scenarios 4 --template-
 Run the locked mechanism-diverse held-out set after preregistration:
 
 ```bash
-python3 -m cq.eval.runner --family mechanism_diverse_heldout --template-mix frozen --scenarios 3 --policy-set phase2_5
+python3 -m cq.eval.runner --family mechanism_diverse_heldout --template-mix frozen --policy-set phase2_5
+```
+
+Check or recompute the frozen preregistration lock:
+
+```bash
+python3 -m cq.eval.preregistration_lock --check
+python3 -m cq.eval.preregistration_lock --recompute
 ```
 
 Open the dashboard against the saved run:

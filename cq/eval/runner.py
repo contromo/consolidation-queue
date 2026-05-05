@@ -134,15 +134,7 @@ def _generate_scenarios(
     _validate_template_mix(family, template_mix)
     if family == MECHANISM_DIVERSE_HELDOUT:
         validate_frozen_eval_lock(preregistration_path)
-        scenarios = frozen_scenario_contracts()
-        if scenario_count != len(scenarios):
-            raise ValueError(
-                "Frozen mechanism-diverse held-out set has fixed scenario count {}; got {}".format(
-                    len(scenarios),
-                    scenario_count,
-                )
-            )
-        return scenarios
+        return frozen_scenario_contracts()
     if family == FORCED_CONTRADICTION:
         return generate_forced_contradiction_scenarios(scenario_count, template_mix=template_mix)
     if family == SCOPE_CONTAMINATION:

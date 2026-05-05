@@ -70,3 +70,40 @@ def validate_frozen_eval_lock(preregistration_path: Path = PREREGISTRATION_PATH)
         raise FrozenEvalLockError(
             "Frozen eval lock mismatch: declared {}, computed {}".format(declared, actual)
         )
+
+
+def main(argv: List[str] = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Inspect the frozen mechanism-diverse preregistration lock.")
+    parser.add_argument(
+        "--preregistration",
+        default=str(PREREGISTRATION_PATH),
+        help="Path to preregistration markdown file.",
+    )
+    parser.add_argument(
+        "--recompute",
+        action="store_true",
+        help="Print the SHA-256 lock for the current contracts and predictions block.",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Validate that the declared lock matches the current contracts and predictions block.",
+    )
+    args = parser.parse_args(argv)
+    preregistration_path = Path(args.preregistration)
+    if args.recompute:
+        text = preregistration_path.read_text(encoding="utf-8")
+        print(compute_frozen_eval_lock_sha256(text))
+        return 0
+    if args.check:
+        validate_frozen_eval_lock(preregistration_path)
+        print("frozen eval lock OK")
+        return 0
+    parser.error("Choose --recompute or --check")
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

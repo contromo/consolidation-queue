@@ -407,7 +407,7 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Run the locked mechanism-diverse held-out oracle sweep with `--family mechanism_diverse_heldout --template-mix frozen --scenarios 3 --policy-set phase2_5`.
+1. Run the locked mechanism-diverse held-out oracle sweep with `--family mechanism_diverse_heldout --template-mix frozen --policy-set phase2_5`.
 2. Compare the frozen results against `docs/preregistration.md` and record the outcome before any Phase 3 work.
 3. Start the component evaluation harness only after the frozen Phase 2.5 oracle sweep is recorded.
 4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.

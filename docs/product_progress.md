@@ -10,6 +10,7 @@
 - added frozen mechanism-diverse contracts for adversarial mixed-source corroboration, scope-laundered poisoning, and long-horizon preference corrections
 - added `docs/preregistration.md` with numeric predictions and a verified `frozen_eval_lock_sha256`
 - added a runner guard so `mechanism_diverse_heldout` execution fails unless the preregistration lock matches the current frozen contracts and predictions block
+- added a `python3 -m cq.eval.preregistration_lock --recompute` helper for lock maintenance
 
 ### Why it matters
 
@@ -32,8 +33,14 @@
 ### Open issues / next
 
 - the frozen mechanism-diverse contracts have not been executed against any policy yet
-- next step is the locked frozen oracle sweep with `--family mechanism_diverse_heldout --template-mix frozen --scenarios 3 --policy-set phase2_5`
+- next step is the locked frozen oracle sweep with `--family mechanism_diverse_heldout --template-mix frozen --policy-set phase2_5`
 - record frozen results against preregistered predictions before starting Phase 3 component evaluation
+
+### 2026-05-05 relock note
+
+- before any frozen sweep, recalibrated `false_corroboration_adversarial_mixed_source` above the `Mem0Lite` write threshold so it tests durable false-stack promotion instead of low-confidence NOOP behavior
+- corrected the `memory_poisoning_scope_laundered` CQ-vs-`Mem0Lite` prediction to zero delta because `Mem0Lite` is expected to recover via no-margin UPDATE while CQ recovers via wider-scope pending override
+- changed frozen-family generation to ignore the requested scenario count and always use the fixed frozen contract set
 
 ## 2026-05-04 — Mem0Lite opt-in Phase 2.5 baseline added
 

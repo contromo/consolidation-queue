@@ -1,14 +1,17 @@
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 
 from cq.eval.preregistration_lock import (
     PREDICTIONS_BLOCK_END,
     PREDICTIONS_BLOCK_START,
     compute_frozen_eval_lock_sha256,
+    main,
     validate_frozen_eval_lock,
 )
-from cq.eval.runner import MECHANISM_DIVERSE_HELDOUT, build_run_artifact
+from cq.eval.runner import MECHANISM_DIVERSE_HELDOUT, _generate_scenarios, build_run_artifact
 from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import generate_frozen_mechanism_diverse_scenarios
 
@@ -62,6 +65,37 @@ class FrozenPreregistrationTests(unittest.TestCase):
             actual = compute_frozen_eval_lock_sha256(mismatched)
             prereg_path.write_text(_preregistration_text(actual, predictions), encoding="utf-8")
             validate_frozen_eval_lock(prereg_path)
+
+    def test_frozen_generation_ignores_requested_scenario_count_after_lock(self) -> None:
+        predictions = "## Predictions\n\n- test prediction\n"
+        text = _preregistration_text("0" * 64, predictions)
+        actual = compute_frozen_eval_lock_sha256(text)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prereg_path = Path(tmpdir) / "preregistration.md"
+            prereg_path.write_text(_preregistration_text(actual, predictions), encoding="utf-8")
+            scenarios = _generate_scenarios(
+                MECHANISM_DIVERSE_HELDOUT,
+                25,
+                "frozen",
+                preregistration_path=prereg_path,
+            )
+
+        self.assertEqual(len(scenarios), 3)
+
+    def test_cli_can_recompute_and_check_lock(self) -> None:
+        predictions = "## Predictions\n\n- test prediction\n"
+        text = _preregistration_text("0" * 64, predictions)
+        actual = compute_frozen_eval_lock_sha256(text)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prereg_path = Path(tmpdir) / "preregistration.md"
+            prereg_path.write_text(_preregistration_text(actual, predictions), encoding="utf-8")
+
+            with redirect_stdout(StringIO()):
+                self.assertEqual(main(["--preregistration", str(prereg_path), "--check"]), 0)
+            with redirect_stdout(StringIO()):
+                self.assertEqual(main(["--preregistration", str(prereg_path), "--recompute"]), 0)
 
     def test_repo_preregistration_lock_is_current(self) -> None:
         validate_frozen_eval_lock(Path("docs/preregistration.md"))

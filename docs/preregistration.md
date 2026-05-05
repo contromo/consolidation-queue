@@ -1,6 +1,6 @@
 # Phase 2.5 Preregistration
 
-frozen_eval_lock_sha256: 7e506d540745d7409e2569b7bc5483aba566112e8077a8b709c1ed4e8a04569a
+frozen_eval_lock_sha256: 35b8cae39d081fa11bca9e84acff166194735f2bae6a363cb2df36faa6fbbb33
 
 This file locks the Phase 2.5 mechanism-diverse held-out evaluation before any policy is run on that frozen set.
 
@@ -10,6 +10,8 @@ The lock hash covers:
 - the exact predictions block delimited below
 
 Existing-family `phase2_5` calibration may inform these commitments. Those are calibrated commitments, not blind predictions. Only the frozen mechanism-diverse held-out predictions below carry the disconfirmation weight for the CQ policy contribution.
+
+Relock note, 2026-05-05: before any frozen policy execution, the `false_corroboration_adversarial_mixed_source` contract was recalibrated above the `Mem0Lite` write threshold so it tests durable false-stack promotion rather than low-confidence NOOP behavior. The `memory_poisoning_scope_laundered` prediction for CQ vs `Mem0Lite` was also corrected because `Mem0Lite`'s no-margin UPDATE is expected to recover through a different mechanism than CQ.
 
 <!-- FROZEN_EVAL_PREDICTIONS_START -->
 ## Frozen Set
@@ -31,14 +33,14 @@ Metric deltas are expressed as `CQ - comparator`. Positive `answer_correctness` 
 
 | Frozen family | Comparator | false_assertion_rate | answer_correctness | poison_promotion_rate | premature_promotion_rate | clean_durable_displacement_rate | scope_leakage_rate |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| false_corroboration_adversarial_mixed_source | ReflectionEagerWriteLite | -1.00 | 0.00 | 0.00 | -1.00 | 0.00 | 0.00 |
-| false_corroboration_adversarial_mixed_source | Mem0Lite | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| false_corroboration_adversarial_mixed_source | ReflectionEagerWriteLite | 0.00 | 0.00 | 0.00 | -1.00 | 0.00 | 0.00 |
+| false_corroboration_adversarial_mixed_source | Mem0Lite | 0.00 | 0.00 | 0.00 | -1.00 | 0.00 | 0.00 |
 | false_corroboration_adversarial_mixed_source | cq_no_contestation_demotion | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
 | false_corroboration_adversarial_mixed_source | cq_no_wider_scope_pending_override | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
-| false_corroboration_adversarial_mixed_source | cq_no_pending_lookup_use | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
-| false_corroboration_adversarial_mixed_source | cq_no_source_independence_gate | -1.00 | 0.00 | 0.00 | -0.20 | 0.00 | 0.00 |
+| false_corroboration_adversarial_mixed_source | cq_no_pending_lookup_use | +1.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| false_corroboration_adversarial_mixed_source | cq_no_source_independence_gate | 0.00 | 0.00 | 0.00 | -0.60 | 0.00 | 0.00 |
 | memory_poisoning_scope_laundered | ReflectionEagerWriteLite | -1.00 | +1.00 | 0.00 | 0.00 | 0.00 | 0.00 |
-| memory_poisoning_scope_laundered | Mem0Lite | -1.00 | +1.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| memory_poisoning_scope_laundered | Mem0Lite | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
 | memory_poisoning_scope_laundered | cq_no_contestation_demotion | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
 | memory_poisoning_scope_laundered | cq_no_wider_scope_pending_override | -1.00 | +1.00 | 0.00 | 0.00 | 0.00 | 0.00 |
 | memory_poisoning_scope_laundered | cq_no_pending_lookup_use | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
@@ -52,7 +54,7 @@ Metric deltas are expressed as `CQ - comparator`. Positive `answer_correctness` 
 
 ## Source-Independence Ablation Interpretation
 
-`cq_no_source_independence_gate` is intentionally more permissive than full CQ because `len(candidate.supports)` is always greater than or equal to independent-source `corroboration_count`. This is a small baseline shift on normal supported cases and a large shift on mirrored-source cases. Mirrored-source gaps are interpreted as the cost of removing the independence gate, not as a neutral baseline comparison.
+`cq_no_source_independence_gate` is intentionally more permissive than full CQ because `len(candidate.supports)` is always greater than or equal to independent-source `corroboration_count`. This is a small baseline shift on normal supported cases and a large shift on mirrored-source cases. Mirrored-source gaps are interpreted as the cost of removing the independence gate, not as a neutral baseline comparison. The adversarial mixed-source contract is calibrated above `Mem0Lite`'s write threshold, so the expected CQ-vs-Mem0 distinction is durable false-stack promotion rather than immediate answer correctness; CQ may still false-assert from pending memory in oracle mode.
 
 ## Noisy-Mode Expectations
 
