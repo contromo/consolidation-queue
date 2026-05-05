@@ -7,6 +7,7 @@ from cq.schemas.memory import CandidateUpdate, ClaimType
 
 DEFAULT_THRESHOLDS = {
     "world_fact_promotion": 0.85,
+    "non_world_promotion": 0.70,
     "world_fact_pending_use": 0.40,
     "overwrite_margin": 0.05,
     "minimum_write_confidence": 0.55,
@@ -23,7 +24,7 @@ def merge_thresholds(overrides: Optional[Dict[str, float]] = None) -> Dict[str, 
 def should_promote_candidate(candidate: CandidateUpdate, thresholds: Dict[str, float]) -> bool:
     if candidate.claim_type == ClaimType.WORLD_FACT:
         return candidate.promotion_score >= thresholds["world_fact_promotion"]
-    return candidate.promotion_score >= 0.70
+    return candidate.promotion_score >= thresholds["non_world_promotion"]
 
 
 def pending_use_allowed(candidate: CandidateUpdate, thresholds: Dict[str, float]) -> bool:

@@ -1,6 +1,7 @@
 import unittest
 
 from cq.eval.runner import (
+    CQ_ABLATION_POLICIES,
     FALSE_CORROBORATION,
     FORCED_CONTRADICTION,
     MEMORY_POISONING,
@@ -29,6 +30,7 @@ class RunnerPolicySetTests(unittest.TestCase):
                 self.assertNotIn("mem0_lite", policy_names)
                 self.assertEqual(artifact["policy_set"], "default")
                 self.assertEqual(artifact["baseline_notes"], {})
+                self.assertEqual(artifact["ablation_notes"], {})
 
     def test_phase2_5_policy_set_includes_mem0_on_all_existing_families(self) -> None:
         for family in [
@@ -49,8 +51,12 @@ class RunnerPolicySetTests(unittest.TestCase):
                 policy_names = [policy["policy_name"] for policy in artifact["policies"]]
 
                 self.assertIn("mem0_lite", policy_names)
+                for ablation in CQ_ABLATION_POLICIES:
+                    self.assertIn(ablation.policy_name, policy_names)
                 self.assertEqual(artifact["policy_set"], POLICY_SET_PHASE_2_5)
                 self.assertIn("mem0_lite", artifact["baseline_notes"])
+                for ablation in CQ_ABLATION_POLICIES:
+                    self.assertIn(ablation.policy_name, artifact["ablation_notes"])
 
     def test_phase2_5_preserves_scope_blind_rag_family_gating(self) -> None:
         forced = build_run_artifact(

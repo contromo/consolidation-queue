@@ -15,7 +15,9 @@ The first slice in this repository is intentionally narrow:
 - `ReflectionEagerWrite-lite`
 - `NaiveEagerWrite-lite`
 - `CQ-Agent-lite`
+- four Phase 2.5 CQ ablations
 - `ScopeBlindTranscriptRAG-lite` on the scope-contamination, preference-drift, useful-pending-memory, false-corroboration, and memory-poisoning families
+- locked mechanism-diverse held-out contracts with preregistered predictions
 - end-to-end metrics and run artifacts
 - a small local dashboard for inspecting traces
 - a running product progress log in `docs/product_progress.md`
@@ -144,6 +146,25 @@ This writes:
 
 - `data/runs/memory_poisoning_oracle_heldout.json`
 - `data/results/memory_poisoning_oracle_heldout_metrics.csv`
+
+Run the Phase 2.5 policy set on an existing family:
+
+```bash
+python3 -m cq.eval.runner --family false_corroboration --scenarios 4 --template-mix mixed --policy-set phase2_5
+```
+
+Run the locked mechanism-diverse held-out set after preregistration:
+
+```bash
+python3 -m cq.eval.runner --family mechanism_diverse_heldout --template-mix frozen --policy-set phase2_5
+```
+
+Check or recompute the frozen preregistration lock:
+
+```bash
+python3 -m cq.eval.preregistration_lock --check
+python3 -m cq.eval.preregistration_lock --recompute
+```
 
 Open the dashboard against the saved run:
 
