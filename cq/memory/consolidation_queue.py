@@ -9,7 +9,7 @@ from cq.memory.substrate import (
     MemoryStore,
     scope_match_relation,
 )
-from cq.schemas.memory import AnswerTrace, CandidateUpdate, DurableMemory, MemoryState
+from cq.schemas.memory import AnswerTrace, CandidateUpdate, ClaimType, DurableMemory, MemoryState
 from cq.schemas.scenario import QuestionSpec
 
 
@@ -21,6 +21,11 @@ WIDER_SCOPE_MATCHES = {
 
 class ConsolidationQueueLite:
     policy_name = "consolidation_queue_lite"
+    ablation_note = ""
+    enable_contestation_demotion = True
+    enable_wider_scope_pending_override = True
+    enable_pending_lookup_use = True
+    enable_source_independence_gate = True
 
     def __init__(self, thresholds: Optional[Dict[str, float]] = None) -> None:
         self.thresholds = merge_thresholds(thresholds)
@@ -31,26 +36,27 @@ class ConsolidationQueueLite:
         active = self.store.active_durable(stored.canonical_id, stored.scope_level, stored.scope_key)
         wider_scope_override = False
 
-        for target_candidate_id in stored.contradicts:
-            if target_candidate_id in self.store.candidate_memories:
-                target = self.store.candidate_memories[target_candidate_id]
-                target.contradiction_count += 1
-                target.refresh_scores()
-                self.store.add_contradiction(
-                    stored.candidate_id,
-                    target_candidate_id,
-                    "candidate",
-                    "candidate contradicts earlier candidate",
-                    stored.updated_at,
-                )
-                self.store.update_candidate_state(
-                    target_candidate_id,
-                    MemoryState.CONTESTED,
-                    "newer evidence contradicts earlier candidate",
-                    stored.updated_at,
-                )
+        if self.enable_contestation_demotion:
+            for target_candidate_id in stored.contradicts:
+                if target_candidate_id in self.store.candidate_memories:
+                    target = self.store.candidate_memories[target_candidate_id]
+                    target.contradiction_count += 1
+                    target.refresh_scores()
+                    self.store.add_contradiction(
+                        stored.candidate_id,
+                        target_candidate_id,
+                        "candidate",
+                        "candidate contradicts earlier candidate",
+                        stored.updated_at,
+                    )
+                    self.store.update_candidate_state(
+                        target_candidate_id,
+                        MemoryState.CONTESTED,
+                        "newer evidence contradicts earlier candidate",
+                        stored.updated_at,
+                    )
 
-        if active is not None:
+        if active is not None and self.enable_contestation_demotion:
             contradicts_active = any(
                 candidate_id in stored.contradicts for candidate_id in active.created_from_candidate_ids
             )
@@ -78,7 +84,7 @@ class ConsolidationQueueLite:
                         stored.updated_at,
                     )
 
-        if should_promote_candidate(stored, self.thresholds):
+        if self._should_promote_candidate(stored):
             self.store.promote_candidate(
                 stored.candidate_id,
                 stored.strength,
@@ -107,7 +113,8 @@ class ConsolidationQueueLite:
         if durable is not None:
             pending_override = None
             if (
-                scope_match_relation(
+                self.enable_wider_scope_pending_override
+                and scope_match_relation(
                     durable.scope_level,
                     durable.scope_key,
                     question.scope_level,
@@ -131,11 +138,13 @@ class ConsolidationQueueLite:
                 answer_text = "[durable] {} (confidence {:.2f})".format(durable.claim, durable.confidence)
                 used_pending = False
         else:
-            candidate = self.store.strongest_pending_candidate(
-                question.relevant_canonical_id,
-                question.scope_level,
-                question.scope_key,
-            )
+            candidate = None
+            if self.enable_pending_lookup_use:
+                candidate = self.store.strongest_pending_candidate(
+                    question.relevant_canonical_id,
+                    question.scope_level,
+                    question.scope_key,
+                )
             if candidate is not None and pending_use_allowed(candidate, self.thresholds):
                 resolved_candidate_ids = [candidate.candidate_id]
                 used_memory_ids = []
@@ -172,6 +181,25 @@ class ConsolidationQueueLite:
         )
         return trace
 
+    def _should_promote_candidate(self, candidate: CandidateUpdate) -> bool:
+        if self.enable_source_independence_gate:
+            return should_promote_candidate(candidate, self.thresholds)
+        return self._raw_support_promotion_score(candidate) >= self._promotion_threshold(candidate)
+
+    def _promotion_threshold(self, candidate: CandidateUpdate) -> float:
+        if candidate.claim_type == ClaimType.WORLD_FACT:
+            return self.thresholds["world_fact_promotion"]
+        return 0.70
+
+    def _raw_support_promotion_score(self, candidate: CandidateUpdate) -> float:
+        # This ablation deliberately ignores source independence but does not mutate substrate fields.
+        raw_support_bonus = len(candidate.supports) * 0.10
+        contradiction_penalty = candidate.contradiction_count * 0.25
+        return round(
+            max(0.0, min(1.0, candidate.strength + raw_support_bonus - contradiction_penalty)),
+            4,
+        )
+
     def _pending_override_for_wider_durable(
         self,
         question: QuestionSpec,
@@ -195,3 +223,30 @@ class ConsolidationQueueLite:
             return None
         candidates.sort(key=lambda candidate: (candidate.strength, candidate.updated_at), reverse=True)
         return candidates[0]
+
+
+class CQNoContestationDemotion(ConsolidationQueueLite):
+    policy_name = "cq_no_contestation_demotion"
+    ablation_note = "Disables CQ candidate contestation and active durable demotion on contradictions."
+    enable_contestation_demotion = False
+
+
+class CQNoWiderScopePendingOverride(ConsolidationQueueLite):
+    policy_name = "cq_no_wider_scope_pending_override"
+    ablation_note = "Disables exact-scope pending override when a wider-scope durable is active."
+    enable_wider_scope_pending_override = False
+
+
+class CQNoPendingLookupUse(ConsolidationQueueLite):
+    policy_name = "cq_no_pending_lookup_use"
+    ablation_note = "Disables pending fallback lookup when no durable memory is available."
+    enable_pending_lookup_use = False
+
+
+class CQNoSourceIndependenceGate(ConsolidationQueueLite):
+    policy_name = "cq_no_source_independence_gate"
+    ablation_note = (
+        "Uses raw support edge count for CQ promotion instead of independent-source corroboration; "
+        "this is intentionally more permissive, especially on mirrored-source observations."
+    )
+    enable_source_independence_gate = False

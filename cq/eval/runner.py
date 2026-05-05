@@ -7,7 +7,18 @@ from pathlib import Path
 from typing import Dict, List
 
 from cq.eval.end_to_end_eval import execute_scenario, failure_example_sort_key, summarize_runs
-from cq.memory.consolidation_queue import ConsolidationQueueLite
+from cq.eval.preregistration_lock import (
+    PREREGISTRATION_PATH,
+    frozen_scenario_contracts,
+    validate_frozen_eval_lock,
+)
+from cq.memory.consolidation_queue import (
+    CQNoContestationDemotion,
+    CQNoPendingLookupUse,
+    CQNoSourceIndependenceGate,
+    CQNoWiderScopePendingOverride,
+    ConsolidationQueueLite,
+)
 from cq.memory.mem0_lite import Mem0Lite
 from cq.memory.naive_eager_write import NaiveEagerWriteLite
 from cq.memory.no_memory import NoMemoryLite
@@ -31,9 +42,16 @@ PREFERENCE_DRIFT = "preference_drift"
 USEFUL_PENDING_MEMORY = "useful_pending_memory"
 FALSE_CORROBORATION = "false_corroboration"
 MEMORY_POISONING = "memory_poisoning"
+MECHANISM_DIVERSE_HELDOUT = "mechanism_diverse_heldout"
 POLICY_SET_DEFAULT = "default"
 POLICY_SET_PHASE_2_5 = "phase2_5"
 POLICY_SET_CHOICES = (POLICY_SET_DEFAULT, POLICY_SET_PHASE_2_5)
+CQ_ABLATION_POLICIES = (
+    CQNoContestationDemotion,
+    CQNoWiderScopePendingOverride,
+    CQNoPendingLookupUse,
+    CQNoSourceIndependenceGate,
+)
 TEMPLATE_MIXES_BY_FAMILY = {
     FORCED_CONTRADICTION: ("mixed", "clean", "dirty", "heldout"),
     SCOPE_CONTAMINATION: ("mixed", "clean", "dirty", "heldout"),
@@ -41,6 +59,7 @@ TEMPLATE_MIXES_BY_FAMILY = {
     USEFUL_PENDING_MEMORY: ("mixed", "clean", "dirty", "heldout"),
     FALSE_CORROBORATION: ("mixed", "clean", "dirty", "heldout"),
     MEMORY_POISONING: ("mixed", "clean", "dirty", "heldout"),
+    MECHANISM_DIVERSE_HELDOUT: ("frozen",),
 }
 SUMMARY_METRIC_FORMAT = (
     "false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} "
@@ -106,8 +125,24 @@ def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, d
     }
 
 
-def _generate_scenarios(family: str, scenario_count: int, template_mix: str):
+def _generate_scenarios(
+    family: str,
+    scenario_count: int,
+    template_mix: str,
+    preregistration_path: Path = PREREGISTRATION_PATH,
+):
     _validate_template_mix(family, template_mix)
+    if family == MECHANISM_DIVERSE_HELDOUT:
+        validate_frozen_eval_lock(preregistration_path)
+        scenarios = frozen_scenario_contracts()
+        if scenario_count != len(scenarios):
+            raise ValueError(
+                "Frozen mechanism-diverse held-out set has fixed scenario count {}; got {}".format(
+                    len(scenarios),
+                    scenario_count,
+                )
+            )
+        return scenarios
     if family == FORCED_CONTRADICTION:
         return generate_forced_contradiction_scenarios(scenario_count, template_mix=template_mix)
     if family == SCOPE_CONTAMINATION:
@@ -148,15 +183,22 @@ def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
     policies = [
         ReflectionEagerWriteLite,
         ConsolidationQueueLite,
-        NaiveEagerWriteLite,
-        NoMemoryLite,
     ]
+    if policy_set == POLICY_SET_PHASE_2_5:
+        policies.extend(CQ_ABLATION_POLICIES)
+    policies.extend(
+        [
+            NaiveEagerWriteLite,
+            NoMemoryLite,
+        ]
+    )
     if family in {
         SCOPE_CONTAMINATION,
         PREFERENCE_DRIFT,
         USEFUL_PENDING_MEMORY,
         FALSE_CORROBORATION,
         MEMORY_POISONING,
+        MECHANISM_DIVERSE_HELDOUT,
     }:
         policies.append(ScopeBlindTranscriptRAGLite)
     if policy_set == POLICY_SET_PHASE_2_5:
@@ -169,8 +211,14 @@ def build_run_artifact(
     template_mix: str = "mixed",
     family: str = FORCED_CONTRADICTION,
     policy_set: str = POLICY_SET_DEFAULT,
+    preregistration_path: Path = PREREGISTRATION_PATH,
 ) -> dict:
-    scenarios = _generate_scenarios(family, scenario_count, template_mix)
+    scenarios = _generate_scenarios(
+        family,
+        scenario_count,
+        template_mix,
+        preregistration_path=preregistration_path,
+    )
     policies = _policies_for_family(family, policy_set=policy_set)
     policy_runs = []
     for policy_cls in policies:
@@ -209,11 +257,17 @@ def build_run_artifact(
     return {
         "experiment": "{}_oracle".format(family),
         "family": family,
-        "scenario_count": scenario_count,
+        "scenario_count": len(scenarios),
         "template_mix": template_mix,
         "policy_set": policy_set,
         "baseline_notes": {
             Mem0Lite.policy_name: Mem0Lite.partial_baseline_caveat,
+        }
+        if policy_set == POLICY_SET_PHASE_2_5
+        else {},
+        "ablation_notes": {
+            policy.policy_name: policy.ablation_note
+            for policy in CQ_ABLATION_POLICIES
         }
         if policy_set == POLICY_SET_PHASE_2_5
         else {},
@@ -312,6 +366,7 @@ def main(argv: List[str] = None) -> int:
             USEFUL_PENDING_MEMORY,
             FALSE_CORROBORATION,
             MEMORY_POISONING,
+            MECHANISM_DIVERSE_HELDOUT,
         ],
         default=FORCED_CONTRADICTION,
         help="Oracle benchmark family to run.",
@@ -319,7 +374,7 @@ def main(argv: List[str] = None) -> int:
     parser.add_argument("--scenarios", type=int, default=25, help="Number of oracle scenarios to generate.")
     parser.add_argument(
         "--template-mix",
-        choices=["mixed", "clean", "dirty", "heldout"],
+        choices=["mixed", "clean", "dirty", "heldout", "frozen"],
         default="mixed",
         help="Scenario template mix for the selected family.",
     )
@@ -347,12 +402,15 @@ def main(argv: List[str] = None) -> int:
 
     output_json = args.output_json or "data/runs/{}_oracle.json".format(args.family)
     output_csv = args.output_csv or "data/results/{}_oracle_metrics.csv".format(args.family)
-    run_artifact = build_run_artifact(
-        args.scenarios,
-        template_mix=args.template_mix,
-        family=args.family,
-        policy_set=args.policy_set,
-    )
+    try:
+        run_artifact = build_run_artifact(
+            args.scenarios,
+            template_mix=args.template_mix,
+            family=args.family,
+            policy_set=args.policy_set,
+        )
+    except ValueError as error:
+        parser.error(str(error))
     write_outputs(run_artifact, Path(output_json), Path(output_csv))
 
     for policy in run_artifact["policies"]:

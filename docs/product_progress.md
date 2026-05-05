@@ -1,5 +1,40 @@
 # Product Progress
 
+## 2026-05-05 — Phase 2.5 ablations and frozen preregistration lock added
+
+### What shipped
+
+- added the four named CQ ablation policies: `cq_no_contestation_demotion`, `cq_no_wider_scope_pending_override`, `cq_no_pending_lookup_use`, and `cq_no_source_independence_gate`
+- wired the ablations into `--policy-set phase2_5` alongside `Mem0Lite`, while preserving the default policy set
+- added ablation metadata to runner artifacts so Phase 2.5 outputs label disabled CQ behavior explicitly
+- added frozen mechanism-diverse contracts for adversarial mixed-source corroboration, scope-laundered poisoning, and long-horizon preference corrections
+- added `docs/preregistration.md` with numeric predictions and a verified `frozen_eval_lock_sha256`
+- added a runner guard so `mechanism_diverse_heldout` execution fails unless the preregistration lock matches the current frozen contracts and predictions block
+
+### Why it matters
+
+- CQ ablations are now policy-only contrasts over the same candidate stream, storage substrate, source counting, lifecycle logging, and scope matching
+- `cq_no_source_independence_gate` is a real ablation rather than a no-op: it leaves substrate source counts untouched but uses raw support edges for CQ promotion
+- pending use is split into two interpretable ablations: wider-scope override lookup and no-durable pending fallback
+- the frozen mechanism-diverse set is now protected by a mechanical lock instead of a convention, so first execution is tied to preregistered predictions
+- existing-family ablation observations remain calibrated commitments; only the frozen mechanism-diverse sweep carries blind disconfirmation weight
+
+### Evidence
+
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 166 tests
+- existing-family mixed calibration with `--policy-set phase2_5`, writing artifacts to `/tmp`, shows:
+  - forced contradiction: full CQ remains at `false_assertion=0.00`, `correctness=1.00`; `cq_no_contestation_demotion` falls to `false_assertion=0.67`, `correctness=0.33`; `cq_no_pending_lookup_use` falls to `correctness=0.33`
+  - scope contamination: full CQ remains at `leakage=0.00`, `correctness=1.00`; `cq_no_wider_scope_pending_override` exposes the workspace-parent failure with overall `leakage=0.25`, `correctness=0.75`
+  - useful pending memory: full CQ remains at `correctness=1.00`, `pending_use=1.00`; `cq_no_pending_lookup_use` drops to `correctness=0.00`, `pending_use=0.00`
+  - false corroboration: full CQ remains at `false_assertion=0.00`; `cq_no_source_independence_gate` reaches dirty-template `false_assertion=1.00` and `premature_promotion=0.20`
+  - memory poisoning: full CQ remains at `false_assertion=0.60`, `clean_displacement=0.40`; `cq_no_contestation_demotion` removes clean displacement but still has `false_assertion=0.40`; `cq_no_pending_lookup_use` reduces false assertion to `0.20` while preserving the displacement failure
+
+### Open issues / next
+
+- the frozen mechanism-diverse contracts have not been executed against any policy yet
+- next step is the locked frozen oracle sweep with `--family mechanism_diverse_heldout --template-mix frozen --scenarios 3 --policy-set phase2_5`
+- record frozen results against preregistered predictions before starting Phase 3 component evaluation
+
 ## 2026-05-04 — Mem0Lite opt-in Phase 2.5 baseline added
 
 ### What shipped
