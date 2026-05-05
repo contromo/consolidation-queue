@@ -41,6 +41,8 @@
 - before any frozen sweep, recalibrated `false_corroboration_adversarial_mixed_source` above the `Mem0Lite` write threshold so it tests durable false-stack promotion instead of low-confidence NOOP behavior
 - corrected the `memory_poisoning_scope_laundered` CQ-vs-`Mem0Lite` prediction to zero delta because `Mem0Lite` is expected to recover via no-margin UPDATE while CQ recovers via wider-scope pending override
 - changed frozen-family generation to ignore the requested scenario count and always use the fixed frozen contract set
+- corrected the `preference_drift_long_horizon_corrections` `cq_no_pending_lookup_use` false-assertion prediction to zero delta because the ablation abstains rather than asserting a forbidden stale preference
+- clarified that the 5 percentage point `Mem0Lite` disconfirmation rule is evaluated per primary metric, not by averaging the metric bundle
 
 ## 2026-05-04 — Mem0Lite opt-in Phase 2.5 baseline added
 

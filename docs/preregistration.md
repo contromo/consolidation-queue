@@ -1,6 +1,6 @@
 # Phase 2.5 Preregistration
 
-frozen_eval_lock_sha256: 35b8cae39d081fa11bca9e84acff166194735f2bae6a363cb2df36faa6fbbb33
+frozen_eval_lock_sha256: 45a1943c6522ba71469b0671e4c727e4ef2fed2eb7317122a232d74e0d13139a
 
 This file locks the Phase 2.5 mechanism-diverse held-out evaluation before any policy is run on that frozen set.
 
@@ -11,7 +11,7 @@ The lock hash covers:
 
 Existing-family `phase2_5` calibration may inform these commitments. Those are calibrated commitments, not blind predictions. Only the frozen mechanism-diverse held-out predictions below carry the disconfirmation weight for the CQ policy contribution.
 
-Relock note, 2026-05-05: before any frozen policy execution, the `false_corroboration_adversarial_mixed_source` contract was recalibrated above the `Mem0Lite` write threshold so it tests durable false-stack promotion rather than low-confidence NOOP behavior. The `memory_poisoning_scope_laundered` prediction for CQ vs `Mem0Lite` was also corrected because `Mem0Lite`'s no-margin UPDATE is expected to recover through a different mechanism than CQ.
+Relock note, 2026-05-05: before any frozen policy execution, the `false_corroboration_adversarial_mixed_source` contract was recalibrated above the `Mem0Lite` write threshold so it tests durable false-stack promotion rather than low-confidence NOOP behavior. The `memory_poisoning_scope_laundered` prediction for CQ vs `Mem0Lite` was also corrected because `Mem0Lite`'s no-margin UPDATE is expected to recover through a different mechanism than CQ. A final pre-sweep relock corrected the `cq_no_pending_lookup_use` false-assertion prediction on `preference_drift_long_horizon_corrections`; that ablation abstains rather than asserting stale forbidden memory.
 
 <!-- FROZEN_EVAL_PREDICTIONS_START -->
 ## Frozen Set
@@ -25,6 +25,7 @@ Frozen scenario contracts:
 Primary disconfirmation rule:
 
 - If `Mem0Lite` is within 5 percentage points of CQ or exceeds CQ on the primary metric bundle across the frozen mechanism-diverse held-out set, CQ is not supported as a policy contribution.
+- Interpret the bundle per primary metric, not as an averaged score: CQ must beat `Mem0Lite` by more than 5 percentage points on at least one primary metric without being worse by more than 5 percentage points on any primary metric in the frozen aggregate.
 - If that happens, the writeup will be reframed as a benchmark and failure-taxonomy contribution.
 
 ## Oracle-Mode Predictions
@@ -49,7 +50,7 @@ Metric deltas are expressed as `CQ - comparator`. Positive `answer_correctness` 
 | preference_drift_long_horizon_corrections | Mem0Lite | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
 | preference_drift_long_horizon_corrections | cq_no_contestation_demotion | -1.00 | +1.00 | 0.00 | 0.00 | 0.00 | 0.00 |
 | preference_drift_long_horizon_corrections | cq_no_wider_scope_pending_override | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
-| preference_drift_long_horizon_corrections | cq_no_pending_lookup_use | -1.00 | +1.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| preference_drift_long_horizon_corrections | cq_no_pending_lookup_use | 0.00 | +1.00 | 0.00 | 0.00 | 0.00 | 0.00 |
 | preference_drift_long_horizon_corrections | cq_no_source_independence_gate | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
 
 ## Source-Independence Ablation Interpretation
