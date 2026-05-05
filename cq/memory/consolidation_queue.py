@@ -189,7 +189,7 @@ class ConsolidationQueueLite:
     def _promotion_threshold(self, candidate: CandidateUpdate) -> float:
         if candidate.claim_type == ClaimType.WORLD_FACT:
             return self.thresholds["world_fact_promotion"]
-        return 0.70
+        return self.thresholds["non_world_promotion"]
 
     def _raw_support_promotion_score(self, candidate: CandidateUpdate) -> float:
         # This ablation deliberately ignores source independence but does not mutate substrate fields.
