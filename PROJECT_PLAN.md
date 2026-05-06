@@ -60,6 +60,7 @@ Implemented:
 - four named CQ ablation policy variants over the same shared substrate
 - mechanism-diverse frozen held-out scenario contracts behind a verified preregistration lock
 - `docs/preregistration.md` with numeric Phase 2.5 predictions and a frozen contract hash
+- `docs/predictions_vs_results.md` with the Phase 2.5 frozen oracle predictions and observed results
 - `ScopeBlindTranscriptRAGLite` as an oracle-id recency baseline for scope-contamination, preference-drift, useful-pending, false-corroboration, and memory-poisoning probes
 - oracle forced-contradiction scenario generation
 - oracle scope-contamination scenario generation, framed as broad-claim premature promotion plus workspace-parent/project-override shadowing
@@ -89,17 +90,17 @@ Implemented:
 - deterministic scenario-level failure example extraction in oracle artifacts
 - trace dashboard with per-kind summary views and static turn timelines
 - dashboard failure-example tables linked to full scenario traces
+- Phase 3 component-evaluation harness for candidate detection, claim type, scope level/key, canonicalization, and contradiction detection, including oracle upper-bound mode and quality-gate reporting
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
 Not implemented yet:
 
 - lexical or embedding-based `TranscriptRAG`
-- component evaluation harness
 - local-model noisy pipeline
 - optional 32B/70B routing
 - LongMemEval transfer check
-- preregistration and final writeup docs
+- final writeup docs
 
 ## Repository Map
 
@@ -176,7 +177,7 @@ Current caveat:
 
 ### Phase 2.5: External Baseline, Ablations, and Frozen Generalization Set
 
-Status: in progress; `Mem0Lite`, CQ ablations, frozen mechanism-diverse contracts, and preregistration lock exist. The locked frozen policy sweep has not been run yet.
+Status: frozen oracle sweep recorded; `Mem0Lite`, CQ ablations, frozen mechanism-diverse contracts, preregistration lock, dashboard artifact, and prediction-vs-result comparison now exist.
 
 This phase must happen before Phase 3 component evaluation and before preregistering noisy-mode predictions. The point is to commit to comparison targets and disconfirmation tests before more pipeline work can tune around them.
 
@@ -193,7 +194,7 @@ Slice order:
 2. Implement the named CQ ablations with targeted tests. Done.
 3. Add frozen mechanism-diverse scenario contracts and contract tests, but do not execute them against any policy. Done.
 4. Write `docs/preregistration.md` with numeric predictions, including the 5 percentage point disconfirmation mode, before frozen sweeps run. Done.
-5. Run the locked frozen mechanism-diverse oracle sweep and compare results against preregistered predictions.
+5. Run the locked frozen mechanism-diverse oracle sweep and compare results against preregistered predictions. Done.
 
 `Mem0Lite` design call:
 
@@ -248,16 +249,25 @@ Required outcome:
 - reviewers can see that external comparison, ablation, and mechanism-generalization tests were specified before noisy-mode work
 - the project can produce negative, mixed, or CQ-favorable results without changing the evaluation contract
 - the frozen mechanism-diverse set cannot be executed through the runner unless `docs/preregistration.md` matches the verified lock
+- observed frozen oracle deltas matched preregistered predictions; CQ tied `Mem0Lite` on answer correctness and false assertions while improving premature promotion, so oracle-mode support over `Mem0Lite` is narrow and should not be framed as broad answer-quality superiority
 
 ### Phase 3: Component Evaluation Harness
 
-Add:
+Status: started; an oracle upper-bound component harness and saved-prediction scoring entrypoint exist.
+
+Implemented:
 
 - candidate extraction eval
 - claim type eval
 - scope inference eval
 - canonicalization eval
 - contradiction detection eval
+
+Remaining:
+
+- run and record component-evaluation artifacts across the existing benchmark families
+- connect Phase 4 extractor outputs to the saved `scenario_predictions` JSON input
+- add per-component failure examples once non-oracle predictions exist
 
 Required outcome:
 
@@ -407,9 +417,9 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Run the locked mechanism-diverse held-out oracle sweep with `--family mechanism_diverse_heldout --template-mix frozen --policy-set phase2_5`.
-2. Compare the frozen results against `docs/preregistration.md` and record the outcome before any Phase 3 work.
-3. Start the component evaluation harness only after the frozen Phase 2.5 oracle sweep is recorded.
+1. Run and save Phase 3 component-evaluation oracle upper-bound artifacts across the existing benchmark families.
+2. Define the first local extractor output path that writes `scenario_predictions` JSON for the component harness.
+3. Start Phase 4 noisy local-model extraction only after component outputs can be scored and inspected separately from policy outcomes.
 4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules

@@ -125,7 +125,7 @@ def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, d
     }
 
 
-def _generate_scenarios(
+def generate_scenarios(
     family: str,
     scenario_count: int,
     template_mix: str,
@@ -205,7 +205,7 @@ def build_run_artifact(
     policy_set: str = POLICY_SET_DEFAULT,
     preregistration_path: Path = PREREGISTRATION_PATH,
 ) -> dict:
-    scenarios = _generate_scenarios(
+    scenarios = generate_scenarios(
         family,
         scenario_count,
         template_mix,

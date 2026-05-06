@@ -1,5 +1,44 @@
 # Product Progress
 
+## 2026-05-05 — Frozen Phase 2.5 oracle sweep recorded and Phase 3 harness started
+
+### What shipped
+
+- ran the locked `mechanism_diverse_heldout` frozen oracle sweep with `--policy-set phase2_5`
+- wrote frozen sweep artifacts to `data/runs/mechanism_diverse_heldout_oracle_frozen_phase2_5.json` and `data/results/mechanism_diverse_heldout_oracle_frozen_phase2_5_metrics.csv`
+- rendered the static trace dashboard at `data/results/mechanism_diverse_heldout_oracle_frozen_phase2_5_dashboard.html`
+- added `docs/predictions_vs_results.md` with every preregistered frozen oracle delta next to the observed delta
+- added the Phase 3 component-evaluation harness with candidate detection, claim type, scope level/key, canonicalization B-cubed, contradiction precision/recall/F1, and quality-gate reporting
+- added a saved-prediction JSON input path for later noisy extractor outputs and an oracle upper-bound CLI mode
+- hardened component quality gates so no-data metrics are reported as undefined and fail instead of passing on empty extractor output
+
+### Why it matters
+
+- Phase 2.5 is now recorded before any noisy-pipeline work, preserving the preregistered evaluation contract
+- all 108 preregistered oracle-mode deltas matched observed deltas
+- CQ ties `Mem0Lite` on frozen aggregate false assertion, answer correctness, poison promotion, clean durable displacement, and scope leakage, while improving premature promotion by 33 percentage points
+- under the preregistered 5 percentage point rule, CQ is not disconfirmed against `Mem0Lite` in oracle mode, but the support is narrow: reduced premature durable promotion, not broad answer-quality superiority
+- Phase 3 can now measure component quality separately from policy quality before any noisy-mode claims
+
+### Evidence
+
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.preregistration_lock --check` passes
+- pre-sweep `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passed with 168 tests
+- frozen aggregate:
+  - `consolidation_queue_lite`: `false_assertion=0.33`, `correctness=0.67`, `premature_promotion=0.33`, `poison_promotion=0.33`
+  - `mem0_lite`: `false_assertion=0.33`, `correctness=0.67`, `premature_promotion=0.67`, `poison_promotion=0.33`
+  - `reflection_eager_write_lite`: `false_assertion=1.00`, `correctness=0.00`, `premature_promotion=0.67`, `poison_promotion=0.33`
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.component_eval --family mechanism_diverse_heldout --scenarios 3 --template-mix frozen --output-json data/results/mechanism_diverse_heldout_component_eval_oracle_upper_bound.json` reports all component upper-bound quality metrics at `1.00`
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_eval -q` passes with 14 tests
+- final `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 182 tests
+- follow-up component-evaluation coverage exercises zero predictions, canonicalization coverage below threshold, hand-computed B-cubed, duplicate event IDs, strict prediction JSON shape, artifact mode labeling, and frozen-family lock validation
+
+### Open issues / next
+
+- run and record component-evaluation oracle upper-bound artifacts across the remaining benchmark families
+- wire the first local extractor to write `scenario_predictions` JSON for the component harness
+- start Phase 4 only after noisy component outputs are scored separately from policy outcomes
+
 ## 2026-05-05 — Phase 2.5 ablations and frozen preregistration lock added
 
 ### What shipped
