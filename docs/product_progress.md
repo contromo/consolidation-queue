@@ -1,5 +1,44 @@
 # Product Progress
 
+## 2026-05-06 — Phase 3 reference matrix and transcript-only bridge added
+
+### What shipped
+
+- saved the Phase 3 oracle upper-bound component-evaluation reference matrix across the current calibrated family/split set
+- added event-aligned `contradicts_event_ids` scoring so extractor outputs no longer need oracle candidate ids for contradiction edges
+- kept legacy `candidate_id` / `contradicts` scoring for oracle and backcompat prediction JSON
+- added contradiction-gate applicability metadata: no-edge scenario sets are `not_applicable`, while missed gold edges and false-positive predicted edges still fail measured gates
+- added a transcript-only local extractor bridge under `cq/pipeline/` with sanitized input, weak negative-control mode, and forced-contradiction positive-control mode
+- added regression coverage for event-edge direction normalization, self/unknown/question event false positives, generator candidate-to-event invariants, input isolation, weak extractor failure, and positive-control extractor pass
+
+### Why it matters
+
+- Phase 4 extractor outputs can now be scored without leaking oracle candidate ids, gold labels, lifecycle expectations, metrics, or policy traces into the extractor input
+- the positive-control extractor proves the bridge can round-trip valid transcript-derived predictions, while the weak extractor proves failures are surfaced as measured component failures
+- oracle upper-bound artifacts are reference artifacts only; they validate labels, scorer wiring, and saved output shape by construction, not noisy pipeline quality
+- false-corroboration and any future no-contradiction clean-only sweep no longer get fake red contradiction gates when there are no gold or predicted contradiction edges
+
+### Evidence
+
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_eval -q` passes with 24 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_local_extractor -q` passes with 6 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 198 tests
+- oracle upper-bound artifacts were written to `data/results/*_component_eval_oracle_upper_bound_*.json` plus `data/results/mechanism_diverse_heldout_component_eval_oracle_upper_bound.json`
+- weak extractor smoke:
+  - `data/results/forced_contradiction_local_extractor_weak_predictions.json`
+  - `data/results/forced_contradiction_local_extractor_weak_component_eval.json`
+  - reports `candidate_detection_f1=0.00`, `claim_type_accuracy=NA`, `contradiction_applicability=measured`, and `contradiction_f1=0.00`
+- positive-control extractor smoke:
+  - `data/results/forced_contradiction_local_extractor_positive_control_predictions.json`
+  - `data/results/forced_contradiction_local_extractor_positive_control_component_eval.json`
+  - reports all applicable forced-contradiction gates at `1.00`
+
+### Open issues / next
+
+- wire the first real local-model extractor behind the transcript-only bridge
+- score noisy component outputs before any extracted-candidate policy run
+- add per-component failure examples once non-oracle predictions exist
+
 ## 2026-05-05 — Frozen Phase 2.5 oracle sweep recorded and Phase 3 harness started
 
 ### What shipped

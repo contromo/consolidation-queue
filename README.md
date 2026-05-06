@@ -18,6 +18,8 @@ The first slice in this repository is intentionally narrow:
 - four Phase 2.5 CQ ablations
 - `ScopeBlindTranscriptRAG-lite` on the scope-contamination, preference-drift, useful-pending-memory, false-corroboration, and memory-poisoning families
 - locked mechanism-diverse held-out contracts with preregistered predictions
+- Phase 3 component-evaluation reference artifacts
+- transcript-only extractor bridge for Phase 4 smoke tests
 - end-to-end metrics and run artifacts
 - a small local dashboard for inspecting traces
 - a running product progress log in `docs/product_progress.md`
@@ -172,13 +174,30 @@ Run the Phase 3 component-evaluation oracle upper bound:
 python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 4 --template-mix dirty
 ```
 
+Save the Phase 3 forced-contradiction reference artifact:
+
+```bash
+python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 6 --template-mix mixed --output-json data/results/forced_contradiction_component_eval_oracle_upper_bound_mixed.json
+```
+
 Score saved component predictions from a noisy extractor:
 
 ```bash
 python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 4 --template-mix dirty --predictions-json data/results/component_predictions.json
 ```
 
-Prediction JSON must use a top-level `scenario_predictions` object keyed by `scenario_id`.
+Prediction JSON must use a top-level `scenario_predictions` object keyed by `scenario_id`. Extractor predictions should use event-aligned contradiction edges with `contradicts_event_ids`; legacy oracle/backcompat predictions may still use `candidate_id` and `contradicts`. Optional `confidence` values must be numeric or `null`.
+
+Run the transcript-only local extractor bridge smoke tests:
+
+```bash
+python3 -m cq.pipeline.local_extractor --family forced_contradiction --scenarios 6 --template-mix mixed --mode weak --output-json data/results/forced_contradiction_local_extractor_weak_predictions.json
+python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 6 --template-mix mixed --predictions-json data/results/forced_contradiction_local_extractor_weak_predictions.json --output-json data/results/forced_contradiction_local_extractor_weak_component_eval.json
+python3 -m cq.pipeline.local_extractor --family forced_contradiction --scenarios 6 --template-mix mixed --mode positive_control --output-json data/results/forced_contradiction_local_extractor_positive_control_predictions.json
+python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 6 --template-mix mixed --predictions-json data/results/forced_contradiction_local_extractor_positive_control_predictions.json --output-json data/results/forced_contradiction_local_extractor_positive_control_component_eval.json
+```
+
+The weak mode is a negative control that should fail measured gates on forced contradiction. The positive-control mode is a deterministic text matcher that validates the bridge; it is not extractor-quality evidence.
 
 Open the dashboard against the saved run:
 
@@ -201,6 +220,7 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 ## Design Notes
 
 - The first implementation is stdlib-only so it runs on the default macOS Python.
+- Oracle upper-bound component artifacts are reference artifacts only. They validate labels, scorer wiring, and saved output shape by construction; they do not show that a noisy pipeline works.
 - Schema fields mirror the standalone write-up, but use dataclasses instead of Pydantic for now.
 - All policies share the same substrate. The main difference is policy:
   - no memory is the zero-history floor baseline
@@ -215,3 +235,5 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - Useful-pending-memory includes main and held-out probes where every candidate is a `PROJECT_CONVENTION` in the `[0.35, 0.70)` strength band. Clean templates calibrate that pending utility does not cost answer correctness; dirty refinement templates show eager reversibility debt when no claim is durable-eligible. ScopeBlindTranscriptRAG follows truth by recency here, so this family is not evidence about retrieval quality.
 - False-corroboration includes main and held-out source-independence probes where weak `PROJECT_CONVENTION` candidates only corroborate through explicit `supports` edges and distinct provenance source ids. Dirty mirrored-source templates test the shared oracle independence gate, not learned semantic independence; ScopeBlindTranscriptRAG fails dirty probes by recency rather than durable promotion.
 - Memory-poisoning includes main and held-out untrusted-injection probes plus same-scope override attacks against an existing clean durable. Below-floor dirty templates show eager durable poison promotion from immediate writes; pending-eligible dirty templates intentionally expose CQ false assertion from pending memory while still avoiding durable poison promotion. Override shadow and borderline templates expose CQ's exact-scope durable demotion path and are measured with `clean_durable_displacement_rate`. This v1 family does not test adversarial corroboration or scope-laundered poison.
+- Component contradiction scoring now supports extractor-safe `contradicts_event_ids` and treats edges as undirected within a scenario. If a scenario set has no gold or predicted contradiction edges, contradiction gates are marked not applicable instead of failed; false-positive predicted edges still fail the measured gates.
+- The transcript-only extractor bridge exposes only `scenario_id`, event order, `event_id`, event kind, and text. It excludes oracle candidates, gold ids, lifecycle expectations, metrics, and policy traces.
