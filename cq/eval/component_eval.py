@@ -307,13 +307,17 @@ def _prediction_from_mapping(mapping: Dict[str, object]) -> CandidateComponentPr
     if not isinstance(mapping, dict):
         raise ValueError("Each component prediction must be an object")
     return CandidateComponentPrediction(
-        event_id=str(mapping.get("event_id", "")),
-        candidate_id=str(mapping.get("candidate_id", "")),
-        canonical_id=str(mapping.get("canonical_id", "")),
-        claim_type=str(mapping.get("claim_type", "")),
-        scope_level=str(mapping.get("scope_level", "")),
-        scope_key=str(mapping.get("scope_key", "")),
-        contradicts=[str(value) for value in (mapping.get("contradicts", []) or [])],
+        event_id=str(mapping.get("event_id") or ""),
+        candidate_id=str(mapping.get("candidate_id") or ""),
+        canonical_id=str(mapping.get("canonical_id") or ""),
+        claim_type=str(mapping.get("claim_type") or ""),
+        scope_level=str(mapping.get("scope_level") or ""),
+        scope_key=str(mapping.get("scope_key") or ""),
+        contradicts=[
+            str(value)
+            for value in (mapping.get("contradicts") or [])
+            if value is not None
+        ],
     )
 
 

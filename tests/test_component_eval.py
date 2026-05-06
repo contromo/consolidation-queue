@@ -254,6 +254,40 @@ class ComponentEvalTests(unittest.TestCase):
 
             self.assertEqual(predictions["scenario-1"][0].contradicts, [])
 
+    def test_load_predictions_by_scenario_normalizes_null_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            predictions_path = Path(tmpdir) / "predictions.json"
+            predictions_path.write_text(
+                json.dumps(
+                    {
+                        "scenario_predictions": {
+                            "scenario-1": [
+                                {
+                                    "event_id": None,
+                                    "candidate_id": None,
+                                    "canonical_id": None,
+                                    "claim_type": None,
+                                    "scope_level": None,
+                                    "scope_key": None,
+                                    "contradicts": [None, "candidate-1"],
+                                }
+                            ]
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            prediction = load_predictions_by_scenario(predictions_path)["scenario-1"][0]
+
+            self.assertEqual(prediction.event_id, "")
+            self.assertEqual(prediction.candidate_id, "")
+            self.assertEqual(prediction.canonical_id, "")
+            self.assertEqual(prediction.claim_type, "")
+            self.assertEqual(prediction.scope_level, "")
+            self.assertEqual(prediction.scope_key, "")
+            self.assertEqual(prediction.contradicts, ["candidate-1"])
+
     def test_load_predictions_by_scenario_requires_wrapper_key(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             predictions_path = Path(tmpdir) / "predictions.json"
