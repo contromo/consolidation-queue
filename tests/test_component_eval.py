@@ -8,6 +8,7 @@ from pathlib import Path
 from cq.eval.component_eval import (
     CandidateComponentPrediction,
     _b_cubed,
+    build_component_eval_artifact,
     build_oracle_component_eval_artifact,
     evaluate_component_predictions,
     load_predictions_by_scenario,
@@ -273,6 +274,15 @@ class ComponentEvalTests(unittest.TestCase):
 
         self.assertIn("candidate_detection_f1", artifact["quality_gate_thresholds"])
         self.assertTrue(artifact["quality_gates"]["candidate_detection_f1"]["passed"])
+
+    def test_component_artifact_without_predictions_is_labeled_oracle_upper_bound(self) -> None:
+        artifact = build_component_eval_artifact(
+            family="forced_contradiction",
+            scenario_count=1,
+            template_mix="dirty",
+        )
+
+        self.assertEqual(artifact["mode"], "oracle_component_upper_bound")
 
     def test_mechanism_diverse_heldout_oracle_artifact_uses_frozen_lock(self) -> None:
         artifact = build_oracle_component_eval_artifact(

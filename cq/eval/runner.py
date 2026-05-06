@@ -150,20 +150,6 @@ def generate_scenarios(
     raise ValueError("Unsupported family: {}".format(family))
 
 
-def _generate_scenarios(
-    family: str,
-    scenario_count: int,
-    template_mix: str,
-    preregistration_path: Path = PREREGISTRATION_PATH,
-):
-    return generate_scenarios(
-        family,
-        scenario_count,
-        template_mix,
-        preregistration_path=preregistration_path,
-    )
-
-
 def _validate_template_mix(family: str, template_mix: str) -> None:
     allowed = TEMPLATE_MIXES_BY_FAMILY.get(family)
     if allowed is None:

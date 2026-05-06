@@ -105,6 +105,8 @@ def evaluate_component_predictions(
 
         for predicted in predictions:
             for target_id in predicted.contradicts:
+                # Phase 4 extractors must emit candidate ids aligned to scenario gold ids;
+                # otherwise contradiction metrics should be replaced with a mapped-id scorer.
                 predicted_contradictions.add(
                     (scenario.scenario_id, predicted.candidate_id, target_id)
                 )
@@ -201,14 +203,17 @@ def build_component_eval_artifact(
     scenario_count: int,
     template_mix: str,
     predictions_by_scenario: Optional[Dict[str, List[CandidateComponentPrediction]]] = None,
-    mode: str = "component_predictions",
+    mode: Optional[str] = None,
 ) -> Dict[str, object]:
     scenarios = generate_scenarios(family, scenario_count, template_mix)
     if predictions_by_scenario is None:
         predictions_by_scenario = oracle_predictions_by_scenario(scenarios)
+        artifact_mode = mode or "oracle_component_upper_bound"
+    else:
+        artifact_mode = mode or "component_predictions"
     evaluation = evaluate_component_predictions(scenarios, predictions_by_scenario)
     return {
-        "mode": mode,
+        "mode": artifact_mode,
         "family": family,
         "template_mix": template_mix,
         "requested_scenario_count": scenario_count,
@@ -258,7 +263,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         scenario_count=args.scenarios,
         template_mix=args.template_mix,
         predictions_by_scenario=predictions_by_scenario,
-        mode="component_predictions" if args.predictions_json else "oracle_component_upper_bound",
     )
     metrics = artifact["metrics"]
     print(
@@ -407,9 +411,9 @@ def _safe_divide(numerator: int, denominator: int) -> Optional[float]:
 
 
 def _f1(precision: Optional[float], recall: Optional[float]) -> Optional[float]:
+    if precision == 0.0 or recall == 0.0:
+        return 0.0
     if precision is None or recall is None:
-        if precision == 0.0 or recall == 0.0:
-            return 0.0
         return None
     if precision + recall == 0:
         return 0.0
