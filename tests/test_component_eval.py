@@ -15,6 +15,8 @@ from cq.eval.component_eval import (
     main,
     oracle_component_predictions,
 )
+from cq.eval.runner import TEMPLATE_MIXES_BY_FAMILY, generate_scenarios
+from cq.schemas.scenario import EventKind
 from cq.simulator.scenario_generator import generate_forced_contradiction_scenarios
 
 
@@ -123,6 +125,142 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertEqual(metrics["contradiction_fn"], 0)
         self.assertEqual(metrics["contradiction_precision"], 1.0)
         self.assertEqual(metrics["contradiction_recall"], 1.0)
+
+    def test_event_id_contradiction_edges_match_when_prediction_direction_is_reversed(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        observations = [
+            event
+            for event in scenario.sorted_events()
+            if event.kind == EventKind.OBSERVATION and event.candidate is not None
+        ]
+        first_event = observations[0]
+        second_event = observations[1]
+        predictions = [
+            CandidateComponentPrediction(
+                event_id=first_event.event_id,
+                candidate_id="",
+                canonical_id=first_event.candidate.canonical_id,
+                claim_type=first_event.candidate.claim_type.value,
+                scope_level=first_event.candidate.scope_level.value,
+                scope_key=first_event.candidate.scope_key,
+                contradicts_event_ids=[second_event.event_id],
+            ),
+            CandidateComponentPrediction(
+                event_id=second_event.event_id,
+                candidate_id="",
+                canonical_id=second_event.candidate.canonical_id,
+                claim_type=second_event.candidate.claim_type.value,
+                scope_level=second_event.candidate.scope_level.value,
+                scope_key=second_event.candidate.scope_key,
+            ),
+        ]
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: predictions},
+        )
+        metrics = result["metrics"]
+
+        self.assertEqual(metrics["contradiction_tp"], 1)
+        self.assertEqual(metrics["contradiction_fp"], 0)
+        self.assertEqual(metrics["contradiction_fn"], 0)
+        self.assertEqual(metrics["contradiction_f1"], 1.0)
+
+    def test_event_id_contradiction_self_edge_counts_as_false_positive(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        predictions = oracle_component_predictions(scenario)
+        for prediction in predictions:
+            prediction.contradicts = []
+        predictions[0].contradicts_event_ids = [predictions[0].event_id]
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: predictions},
+        )
+        metrics = result["metrics"]
+
+        self.assertEqual(metrics["contradiction_tp"], 0)
+        self.assertEqual(metrics["contradiction_fp"], 1)
+        self.assertEqual(metrics["contradiction_fn"], 1)
+        self.assertFalse(result["quality_gates"]["contradiction_f1"]["passed"])
+
+    def test_event_id_contradiction_unknown_event_counts_as_false_positive(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        predictions = oracle_component_predictions(scenario)
+        for prediction in predictions:
+            prediction.contradicts = []
+        predictions[0].contradicts_event_ids = ["missing-event"]
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: predictions},
+        )
+        metrics = result["metrics"]
+
+        self.assertEqual(metrics["contradiction_tp"], 0)
+        self.assertEqual(metrics["contradiction_fp"], 1)
+        self.assertEqual(metrics["contradiction_fn"], 1)
+
+    def test_event_id_contradiction_question_event_counts_as_false_positive(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        question_event = next(
+            event for event in scenario.sorted_events() if event.kind == EventKind.QUESTION
+        )
+        predictions = oracle_component_predictions(scenario)
+        for prediction in predictions:
+            prediction.contradicts = []
+        predictions[0].contradicts_event_ids = [question_event.event_id]
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: predictions},
+        )
+        metrics = result["metrics"]
+
+        self.assertEqual(metrics["contradiction_tp"], 0)
+        self.assertEqual(metrics["contradiction_fp"], 1)
+        self.assertEqual(metrics["contradiction_fn"], 1)
+
+    def test_contradiction_gates_are_not_applicable_without_gold_or_predicted_edges(self) -> None:
+        scenario = generate_scenarios("useful_pending_memory", 1, "clean")[0]
+        predictions = {scenario.scenario_id: oracle_component_predictions(scenario)}
+
+        result = evaluate_component_predictions([scenario], predictions)
+        metrics = result["metrics"]
+        gates = result["quality_gates"]
+
+        self.assertEqual(metrics["contradiction_applicability"], "not_applicable")
+        self.assertIsNone(metrics["contradiction_f1"])
+        self.assertTrue(gates["contradiction_f1"]["passed"])
+        self.assertEqual(gates["contradiction_f1"]["status"], "not_applicable")
+
+    def test_contradiction_gates_fail_false_positive_edges_without_gold_edges(self) -> None:
+        scenario = generate_scenarios("useful_pending_memory", 1, "clean")[0]
+        observation = next(
+            event
+            for event in scenario.sorted_events()
+            if event.kind == EventKind.OBSERVATION and event.candidate is not None
+        )
+        prediction = CandidateComponentPrediction(
+            event_id=observation.event_id,
+            candidate_id="",
+            canonical_id=observation.candidate.canonical_id,
+            claim_type=observation.candidate.claim_type.value,
+            scope_level=observation.candidate.scope_level.value,
+            scope_key=observation.candidate.scope_key,
+            contradicts_event_ids=["missing-event"],
+        )
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: [prediction]},
+        )
+        metrics = result["metrics"]
+        gates = result["quality_gates"]
+
+        self.assertEqual(metrics["contradiction_applicability"], "measured")
+        self.assertEqual(metrics["contradiction_fp"], 1)
+        self.assertFalse(gates["contradiction_f1"]["passed"])
 
     def test_symmetric_gold_contradiction_edges_are_not_double_counted(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
@@ -313,6 +451,9 @@ class ComponentEvalTests(unittest.TestCase):
                                     "scope_level": None,
                                     "scope_key": None,
                                     "contradicts": [None, "candidate-1"],
+                                    "contradicts_event_ids": [None, "event-1"],
+                                    "raw_claim": None,
+                                    "confidence": None,
                                 }
                             ]
                         }
@@ -330,6 +471,9 @@ class ComponentEvalTests(unittest.TestCase):
             self.assertEqual(prediction.scope_level, "")
             self.assertEqual(prediction.scope_key, "")
             self.assertEqual(prediction.contradicts, ["candidate-1"])
+            self.assertEqual(prediction.contradicts_event_ids, ["event-1"])
+            self.assertEqual(prediction.raw_claim, "")
+            self.assertIsNone(prediction.confidence)
 
     def test_load_predictions_by_scenario_requires_wrapper_key(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -371,6 +515,25 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertEqual(artifact["scenario_count"], 3)
         for gate in artifact["quality_gates"].values():
             self.assertTrue(gate["passed"])
+
+    def test_generated_gold_contradiction_targets_resolve_to_unique_observation_events(self) -> None:
+        for family, template_mixes in TEMPLATE_MIXES_BY_FAMILY.items():
+            scenario_count = 3 if family == "mechanism_diverse_heldout" else 12
+            for template_mix in template_mixes:
+                scenarios = generate_scenarios(family, scenario_count, template_mix)
+                for scenario in scenarios:
+                    candidate_id_to_event_id = {}
+                    for event in scenario.sorted_events():
+                        if event.kind != EventKind.OBSERVATION or event.candidate is None:
+                            continue
+                        candidate_id = event.candidate.candidate_id
+                        self.assertNotIn(candidate_id, candidate_id_to_event_id)
+                        candidate_id_to_event_id[candidate_id] = event.event_id
+                    for event in scenario.sorted_events():
+                        if event.kind != EventKind.OBSERVATION or event.candidate is None:
+                            continue
+                        for target_candidate_id in event.candidate.contradicts:
+                            self.assertIn(target_candidate_id, candidate_id_to_event_id)
 
 
 if __name__ == "__main__":

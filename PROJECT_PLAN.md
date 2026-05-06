@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-05
+Last updated: 2026-05-06
 
 ## Goal
 
@@ -91,6 +91,10 @@ Implemented:
 - trace dashboard with per-kind summary views and static turn timelines
 - dashboard failure-example tables linked to full scenario traces
 - Phase 3 component-evaluation harness for candidate detection, claim type, scope level/key, canonicalization, and contradiction detection, including oracle upper-bound mode and quality-gate reporting
+- Phase 3 oracle upper-bound reference artifact matrix across current benchmark families and calibrated splits
+- event-aligned `contradicts_event_ids` component scoring for extractor outputs, with legacy candidate-id contradiction scoring preserved for oracle/backcompat paths
+- contradiction-gate applicability metadata so no-edge families are marked not applicable rather than failed
+- transcript-only local extractor bridge with hard input isolation, weak negative-control mode, and forced-contradiction positive-control mode
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -98,6 +102,7 @@ Not implemented yet:
 
 - lexical or embedding-based `TranscriptRAG`
 - local-model noisy pipeline
+- real local-model extractor behind the transcript-only bridge
 - optional 32B/70B routing
 - LongMemEval transfer check
 - final writeup docs
@@ -253,7 +258,7 @@ Required outcome:
 
 ### Phase 3: Component Evaluation Harness
 
-Status: started; an oracle upper-bound component harness and saved-prediction scoring entrypoint exist.
+Status: in progress; oracle upper-bound reference artifacts, event-aligned contradiction scoring, gate applicability metadata, and a transcript-only extractor bridge now exist.
 
 Implemented:
 
@@ -262,17 +267,22 @@ Implemented:
 - scope inference eval
 - canonicalization eval
 - contradiction detection eval
+- oracle upper-bound reference artifact matrix across current families and splits
+- event-id contradiction edge scoring for extractor outputs, with undirected edge normalization
+- generator invariant coverage for one observation event per gold candidate id and resolvable contradiction targets
+- transcript-only extractor input contract and local extractor smoke CLI
+- weak negative-control and forced-contradiction positive-control extractor modes
 
 Remaining:
 
-- run and record component-evaluation artifacts across the existing benchmark families
-- connect Phase 4 extractor outputs to the saved `scenario_predictions` JSON input
+- connect a real Phase 4 local-model extractor to the transcript-only bridge
 - add per-component failure examples once non-oracle predictions exist
 
 Required outcome:
 
 - explicit quality gates before noisy-mode claims
 - gold labels attached to scenarios
+- no noisy-mode claim unless component outputs are scored through the transcript-only bridge
 
 ### Phase 4: Noisy Local-Model Pipeline
 
@@ -417,10 +427,11 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Run and save Phase 3 component-evaluation oracle upper-bound artifacts across the existing benchmark families.
-2. Define the first local extractor output path that writes `scenario_predictions` JSON for the component harness.
-3. Start Phase 4 noisy local-model extraction only after component outputs can be scored and inspected separately from policy outcomes.
-4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
+1. Wire the first real local-model extractor behind the transcript-only bridge and write `scenario_predictions` JSON without oracle candidate ids, gold labels, lifecycle expectations, metrics, or policy traces.
+2. Score the first noisy extractor outputs with `cq.eval.component_eval` before any policy run; if gates fail, record the failure as component quality evidence rather than policy evidence.
+3. Add per-component failure examples for non-oracle predictions once the first noisy outputs exist.
+4. Run policy comparisons with extracted candidates only after component outputs are saved, scored, and inspectable separately from policy outcomes.
+5. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
 

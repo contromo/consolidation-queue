@@ -37,6 +37,9 @@ class CandidateComponentPrediction:
     scope_level: str
     scope_key: str
     contradicts: List[str] = field(default_factory=list)
+    contradicts_event_ids: List[str] = field(default_factory=list)
+    raw_claim: str = ""
+    confidence: Optional[float] = None
 
 
 def oracle_component_predictions(scenario: Scenario) -> List[CandidateComponentPrediction]:
@@ -72,6 +75,7 @@ def evaluate_component_predictions(
         scenario_count += 1
         predictions = predictions_by_scenario.get(scenario.scenario_id, [])
         gold_by_event = _gold_candidates_by_event(scenario)
+        candidate_id_to_event_id = _candidate_id_to_event_id(scenario)
         prediction_by_event, duplicate_count = _first_predictions_by_event(predictions)
         gold_event_ids = set(gold_by_event)
         predicted_event_ids = set(prediction_by_event)
@@ -102,16 +106,21 @@ def evaluate_component_predictions(
                 )
             for target_id in gold.contradicts:
                 gold_contradictions.add(
-                    _contradiction_edge(scenario.scenario_id, gold.candidate_id, target_id)
+                    _contradiction_edge(
+                        scenario.scenario_id,
+                        event_id,
+                        candidate_id_to_event_id[target_id],
+                    )
                 )
 
         for predicted in predictions:
-            for target_id in predicted.contradicts:
-                # Phase 4 extractors must emit candidate ids aligned to scenario gold ids;
-                # otherwise contradiction metrics should be replaced with a mapped-id scorer.
-                predicted_contradictions.add(
-                    _contradiction_edge(scenario.scenario_id, predicted.candidate_id, target_id)
+            predicted_contradictions.update(
+                _predicted_contradiction_edges(
+                    scenario.scenario_id,
+                    predicted,
+                    candidate_id_to_event_id,
                 )
+            )
 
     contradiction_tp = len(gold_contradictions.intersection(predicted_contradictions))
     contradiction_fp = len(predicted_contradictions - gold_contradictions)
@@ -132,6 +141,16 @@ def evaluate_component_predictions(
         contradiction_tp,
         contradiction_tp + contradiction_fn,
     )
+    contradiction_applicability = _contradiction_applicability(
+        gold_contradictions,
+        predicted_contradictions,
+    )
+    if contradiction_applicability == "not_applicable":
+        contradiction_precision = None
+        contradiction_recall = None
+        contradiction_f1 = None
+    else:
+        contradiction_f1 = _f1(contradiction_precision, contradiction_recall)
     b_cubed = _b_cubed(canonical_gold, canonical_predicted)
 
     metrics = {
@@ -162,9 +181,10 @@ def evaluate_component_predictions(
         "contradiction_tp": contradiction_tp,
         "contradiction_fp": contradiction_fp,
         "contradiction_fn": contradiction_fn,
+        "contradiction_applicability": contradiction_applicability,
         "contradiction_precision": contradiction_precision,
         "contradiction_recall": contradiction_recall,
-        "contradiction_f1": _f1(contradiction_precision, contradiction_recall),
+        "contradiction_f1": contradiction_f1,
     }
     return {
         "metrics": metrics,
@@ -176,10 +196,22 @@ def evaluate_quality_gates(metrics: Dict[str, object]) -> Dict[str, Dict[str, ob
     gates = {}
     for metric_name, threshold in QUALITY_GATES.items():
         value = metrics.get(metric_name)
+        if (
+            metric_name.startswith("contradiction_")
+            and metrics.get("contradiction_applicability") == "not_applicable"
+        ):
+            gates[metric_name] = {
+                "value": value,
+                "threshold": threshold,
+                "passed": True,
+                "status": "not_applicable",
+            }
+            continue
         gates[metric_name] = {
             "value": value,
             "threshold": threshold,
             "passed": isinstance(value, (int, float)) and value >= threshold,
+            "status": "measured",
         }
     return gates
 
@@ -302,6 +334,8 @@ def _prediction_from_candidate(
         scope_level=candidate.scope_level.value,
         scope_key=candidate.scope_key,
         contradicts=list(candidate.contradicts),
+        raw_claim=candidate.raw_claim,
+        confidence=candidate.strength,
     )
 
 
@@ -320,7 +354,25 @@ def _prediction_from_mapping(mapping: Dict[str, object]) -> CandidateComponentPr
             for value in (mapping.get("contradicts") or [])
             if value is not None
         ],
+        contradicts_event_ids=[
+            str(value)
+            for value in (mapping.get("contradicts_event_ids") or [])
+            if value is not None
+        ],
+        raw_claim=str(mapping.get("raw_claim") or ""),
+        confidence=_optional_float(mapping.get("confidence")),
     )
+
+
+def _optional_float(value: object) -> Optional[float]:
+    if value is None or value == "":
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        return float(str(value))
+    except ValueError:
+        return None
 
 
 def _gold_candidates_by_event(scenario: Scenario) -> Dict[str, CandidateUpdate]:
@@ -329,6 +381,34 @@ def _gold_candidates_by_event(scenario: Scenario) -> Dict[str, CandidateUpdate]:
         for event in scenario.sorted_events()
         if event.kind == EventKind.OBSERVATION and event.candidate is not None
     }
+
+
+def _candidate_id_to_event_id(scenario: Scenario) -> Dict[str, str]:
+    candidate_id_to_event_id: Dict[str, str] = {}
+    for event in scenario.sorted_events():
+        if event.kind != EventKind.OBSERVATION or event.candidate is None:
+            continue
+        candidate_id = event.candidate.candidate_id
+        if candidate_id in candidate_id_to_event_id:
+            raise ValueError(
+                "Candidate '{}' appears in multiple observation events in scenario '{}'".format(
+                    candidate_id,
+                    scenario.scenario_id,
+                )
+            )
+        candidate_id_to_event_id[candidate_id] = event.event_id
+    for event in scenario.sorted_events():
+        if event.kind != EventKind.OBSERVATION or event.candidate is None:
+            continue
+        for target_candidate_id in event.candidate.contradicts:
+            if target_candidate_id not in candidate_id_to_event_id:
+                raise ValueError(
+                    "Contradiction target '{}' in scenario '{}' does not resolve to an observation event".format(
+                        target_candidate_id,
+                        scenario.scenario_id,
+                    )
+                )
+    return candidate_id_to_event_id
 
 
 def _first_predictions_by_event(
@@ -368,10 +448,45 @@ def _scoped_canonical_label(scenario_id: str, canonical_id: Optional[str]) -> st
 
 def _contradiction_edge(
     scenario_id: str,
-    source_candidate_id: str,
-    target_candidate_id: str,
+    source_event_id: str,
+    target_event_id: str,
 ) -> Tuple[str, Tuple[str, str]]:
-    return (scenario_id, tuple(sorted((source_candidate_id, target_candidate_id))))
+    return (scenario_id, tuple(sorted((source_event_id, target_event_id))))
+
+
+def _predicted_contradiction_edges(
+    scenario_id: str,
+    predicted: CandidateComponentPrediction,
+    candidate_id_to_event_id: Dict[str, str],
+) -> Set[Tuple[str, Tuple[str, str]]]:
+    if predicted.contradicts_event_ids:
+        return {
+            _contradiction_edge(scenario_id, predicted.event_id, target_event_id)
+            for target_event_id in predicted.contradicts_event_ids
+        }
+    return {
+        _contradiction_edge(
+            scenario_id,
+            candidate_id_to_event_id.get(
+                predicted.candidate_id,
+                "candidate:{}".format(predicted.candidate_id),
+            ),
+            candidate_id_to_event_id.get(
+                target_candidate_id,
+                "candidate:{}".format(target_candidate_id),
+            ),
+        )
+        for target_candidate_id in predicted.contradicts
+    }
+
+
+def _contradiction_applicability(
+    gold_contradictions: Set[Tuple[str, Tuple[str, str]]],
+    predicted_contradictions: Set[Tuple[str, Tuple[str, str]]],
+) -> str:
+    if not gold_contradictions and not predicted_contradictions:
+        return "not_applicable"
+    return "measured"
 
 
 def _b_cubed(gold_labels: Dict[str, str], predicted_labels: Dict[str, str]) -> Dict[str, Optional[float]]:
