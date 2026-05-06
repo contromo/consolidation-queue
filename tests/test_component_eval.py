@@ -106,6 +106,49 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertLess(metrics["canonicalization_b_cubed_f1"], 1.0)
         self.assertLess(metrics["contradiction_recall"], 1.0)
 
+    def test_contradiction_edges_match_when_prediction_direction_is_reversed(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        predictions = oracle_component_predictions(scenario)
+        predictions[0].contradicts = [predictions[1].candidate_id]
+        predictions[1].contradicts = []
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: predictions},
+        )
+        metrics = result["metrics"]
+
+        self.assertEqual(metrics["contradiction_tp"], 1)
+        self.assertEqual(metrics["contradiction_fp"], 0)
+        self.assertEqual(metrics["contradiction_fn"], 0)
+        self.assertEqual(metrics["contradiction_precision"], 1.0)
+        self.assertEqual(metrics["contradiction_recall"], 1.0)
+
+    def test_symmetric_gold_contradiction_edges_are_not_double_counted(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        predictions = oracle_component_predictions(scenario)
+        predictions[0].contradicts = []
+        predictions[1].contradicts = [predictions[0].candidate_id]
+        candidates = [
+            event.candidate
+            for event in scenario.sorted_events()
+            if event.candidate is not None
+        ]
+        first_candidate = candidates[0]
+        second_candidate = candidates[1]
+        first_candidate.contradicts = [second_candidate.candidate_id]
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: predictions},
+        )
+        metrics = result["metrics"]
+
+        self.assertEqual(metrics["contradiction_tp"], 1)
+        self.assertEqual(metrics["contradiction_fp"], 0)
+        self.assertEqual(metrics["contradiction_fn"], 0)
+        self.assertEqual(metrics["contradiction_recall"], 1.0)
+
     def test_duplicate_event_predictions_count_as_false_positives(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
         predictions = oracle_component_predictions(scenario)

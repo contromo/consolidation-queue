@@ -101,14 +101,16 @@ def evaluate_component_predictions(
                     predicted.canonical_id,
                 )
             for target_id in gold.contradicts:
-                gold_contradictions.add((scenario.scenario_id, gold.candidate_id, target_id))
+                gold_contradictions.add(
+                    _contradiction_edge(scenario.scenario_id, gold.candidate_id, target_id)
+                )
 
         for predicted in predictions:
             for target_id in predicted.contradicts:
                 # Phase 4 extractors must emit candidate ids aligned to scenario gold ids;
                 # otherwise contradiction metrics should be replaced with a mapped-id scorer.
                 predicted_contradictions.add(
-                    (scenario.scenario_id, predicted.candidate_id, target_id)
+                    _contradiction_edge(scenario.scenario_id, predicted.candidate_id, target_id)
                 )
 
     contradiction_tp = len(gold_contradictions.intersection(predicted_contradictions))
@@ -362,6 +364,14 @@ def _component_item_id(scenario_id: str, event_id: str) -> str:
 
 def _scoped_canonical_label(scenario_id: str, canonical_id: Optional[str]) -> str:
     return "{}::{}".format(scenario_id, canonical_id or "")
+
+
+def _contradiction_edge(
+    scenario_id: str,
+    source_candidate_id: str,
+    target_candidate_id: str,
+) -> Tuple[str, Tuple[str, str]]:
+    return (scenario_id, tuple(sorted((source_candidate_id, target_candidate_id))))
 
 
 def _b_cubed(gold_labels: Dict[str, str], predicted_labels: Dict[str, str]) -> Dict[str, Optional[float]]:
