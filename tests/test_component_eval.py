@@ -475,6 +475,33 @@ class ComponentEvalTests(unittest.TestCase):
             self.assertEqual(prediction.raw_claim, "")
             self.assertIsNone(prediction.confidence)
 
+    def test_load_predictions_by_scenario_rejects_malformed_confidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            predictions_path = Path(tmpdir) / "predictions.json"
+            predictions_path.write_text(
+                json.dumps(
+                    {
+                        "scenario_predictions": {
+                            "scenario-1": [
+                                {
+                                    "event_id": "event-1",
+                                    "candidate_id": "candidate-1",
+                                    "canonical_id": "canonical-1",
+                                    "claim_type": "world_fact",
+                                    "scope_level": "world_global",
+                                    "scope_key": "global",
+                                    "confidence": "high",
+                                }
+                            ]
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "confidence must be numeric or null"):
+                load_predictions_by_scenario(predictions_path)
+
     def test_load_predictions_by_scenario_requires_wrapper_key(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             predictions_path = Path(tmpdir) / "predictions.json"

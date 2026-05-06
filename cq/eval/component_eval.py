@@ -372,7 +372,7 @@ def _optional_float(value: object) -> Optional[float]:
     try:
         return float(str(value))
     except ValueError:
-        return None
+        raise ValueError("confidence must be numeric or null")
 
 
 def _gold_candidates_by_event(scenario: Scenario) -> Dict[str, CandidateUpdate]:
@@ -464,6 +464,9 @@ def _predicted_contradiction_edges(
             _contradiction_edge(scenario_id, predicted.event_id, target_event_id)
             for target_event_id in predicted.contradicts_event_ids
         }
+    # Legacy candidate-id predictions that do not resolve to observation events
+    # use a private sentinel namespace, so they cannot match gold event-id edges
+    # and are counted as false positives.
     return {
         _contradiction_edge(
             scenario_id,

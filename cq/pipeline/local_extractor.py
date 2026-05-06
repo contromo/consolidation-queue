@@ -37,6 +37,9 @@ class TranscriptScenarioInput:
 
 
 _COMPANY = r"[A-Z][A-Za-z]+"
+# Positive-control patterns mirror the forced-contradiction observation
+# templates in cq/simulator/scenario_generator.py; update both when template
+# wording changes.
 _FORCED_CONTRADICTION_PATTERNS: Sequence[Tuple[str, re.Pattern[str]]] = (
     ("positive", re.compile(r"^(?P<buyer>{c}) acquired (?P<target>{c})\.$".format(c=_COMPANY))),
     (
