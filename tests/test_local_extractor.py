@@ -1,12 +1,19 @@
 import json
+import shlex
+import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 
-from cq.eval.component_eval import evaluate_component_predictions, load_predictions_by_scenario
+from cq.eval.component_eval import (
+    evaluate_component_predictions,
+    load_predictions_by_scenario,
+    load_scenario_errors,
+)
 from cq.pipeline.local_extractor import (
+    MODEL_MODE,
     POSITIVE_CONTROL_MODE,
     WEAK_MODE,
     build_extractor_output,
@@ -123,6 +130,245 @@ class LocalExtractorTests(unittest.TestCase):
 
         self.assertEqual(output["input_contract"], "transcript_only")
         self.assertIn("scenario_predictions", output)
+
+    def test_model_command_writes_valid_output_with_reproducibility_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            output = build_extractor_output(
+                family="forced_contradiction",
+                scenario_count=1,
+                template_mix="dirty",
+                mode=MODEL_MODE,
+                model_command=_fake_model_command(script_path, "valid"),
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                decoding_json='{"seed": 7, "temperature": 0}',
+                per_scenario_timeout_seconds=5,
+            )
+
+            self.assertEqual(output["model_command"], _fake_model_command(script_path, "valid"))
+            self.assertEqual(output["model_id"], "fake-local-model:q4")
+            self.assertEqual(output["prompt_template_path"], str(prompt_path))
+            self.assertEqual(output["prompt_template_text"], "Extract transcript claims.\n")
+            self.assertEqual(output["decoding_params"]["temperature"], 0)
+            self.assertEqual(output["attempted_scenario_count"], 1)
+            self.assertEqual(output["successful_scenario_count"], 1)
+            self.assertEqual(output["scenario_errors"], {})
+            predictions = next(iter(output["scenario_predictions"].values()))
+            self.assertEqual(len(predictions), 1)
+            self.assertEqual(predictions[0]["candidate_id"], "")
+
+    def test_cli_model_mode_writes_predictions_that_component_eval_can_load(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            output_path = Path(tmpdir) / "model_predictions.json"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            with redirect_stdout(StringIO()):
+                exit_code = main(
+                    [
+                        "--family",
+                        "forced_contradiction",
+                        "--scenarios",
+                        "1",
+                        "--template-mix",
+                        "dirty",
+                        "--mode",
+                        "model",
+                        "--model-command",
+                        _fake_model_command(script_path, "valid"),
+                        "--model-id",
+                        "fake-local-model:q4",
+                        "--prompt-template-path",
+                        str(prompt_path),
+                        "--decoding-json",
+                        '{"temperature": 0}',
+                        "--output-json",
+                        str(output_path),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            predictions = load_predictions_by_scenario(output_path)
+            self.assertEqual(len(predictions), 1)
+            self.assertEqual(load_scenario_errors(output_path), {})
+
+    def test_model_command_records_timeout_as_per_scenario_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            output = build_extractor_output(
+                family="forced_contradiction",
+                scenario_count=2,
+                template_mix="dirty",
+                mode=MODEL_MODE,
+                model_command=_fake_model_command(script_path, "sleep"),
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                per_scenario_timeout_seconds=0.01,
+            )
+
+            self.assertEqual(output["attempted_scenario_count"], 2)
+            self.assertEqual(output["successful_scenario_count"], 0)
+            self.assertEqual(len(output["scenario_errors"]), 2)
+            for error in output["scenario_errors"].values():
+                self.assertEqual(error["error_type"], "timeout")
+
+    def test_model_command_records_command_and_json_failures_per_scenario(self) -> None:
+        cases = (
+            ("exit", "nonzero_exit", "exited with status"),
+            ("nonjson", "malformed_json", "strict JSON"),
+            ("bad_shape", "validation_error", "predictions list"),
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            for behavior, error_type, message in cases:
+                with self.subTest(behavior=behavior):
+                    output = build_extractor_output(
+                        family="forced_contradiction",
+                        scenario_count=1,
+                        template_mix="dirty",
+                        mode=MODEL_MODE,
+                        model_command=_fake_model_command(script_path, behavior),
+                        model_id="fake-local-model:q4",
+                        prompt_template_path=str(prompt_path),
+                        per_scenario_timeout_seconds=5,
+                    )
+                    error = next(iter(output["scenario_errors"].values()))
+                    self.assertEqual(error["error_type"], error_type)
+                    self.assertIn(message, error["message"])
+                    self.assertEqual(output["successful_scenario_count"], 0)
+
+    def test_model_validation_errors_are_per_scenario_errors(self) -> None:
+        cases = (
+            ("candidate_id", "candidate_id"),
+            ("unknown_event", "unknown event_id"),
+            ("bad_claim_type", "invalid claim_type"),
+            ("bad_scope_level", "invalid scope_level"),
+            ("duplicate_pair", "duplicates event_id/canonical_id"),
+            ("bad_edge", "unknown contradicts_event_id"),
+            ("bad_confidence", "confidence must be numeric"),
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            for behavior, message in cases:
+                with self.subTest(behavior=behavior):
+                    output = build_extractor_output(
+                        family="forced_contradiction",
+                        scenario_count=1,
+                        template_mix="dirty",
+                        mode=MODEL_MODE,
+                        model_command=_fake_model_command(script_path, behavior),
+                        model_id="fake-local-model:q4",
+                        prompt_template_path=str(prompt_path),
+                        per_scenario_timeout_seconds=5,
+                    )
+                    error = next(iter(output["scenario_errors"].values()))
+                    self.assertEqual(error["error_type"], "validation_error")
+                    self.assertIn(message, error["message"])
+                    self.assertEqual(output["successful_scenario_count"], 0)
+
+
+def _fake_model_command(script_path: Path, behavior: str) -> str:
+    return "{} {} {}".format(
+        shlex.quote(sys.executable),
+        shlex.quote(str(script_path)),
+        shlex.quote(behavior),
+    )
+
+
+def _write_fake_model_script(tmpdir: Path) -> Path:
+    script_path = tmpdir / "fake_model.py"
+    script_path.write_text(
+        """
+import json
+import sys
+import time
+
+behavior = sys.argv[1]
+if behavior == "sleep":
+    time.sleep(5)
+if behavior == "exit":
+    print("failed", file=sys.stderr)
+    sys.exit(7)
+if behavior == "nonjson":
+    print("not json")
+    sys.exit(0)
+
+payload = json.load(sys.stdin)
+scenario = payload["scenario"]
+scenario_text = json.dumps(scenario, sort_keys=True)
+for forbidden in (
+    "gold_candidate_ids",
+    "forbidden_candidate_ids",
+    "expected_lifecycle",
+    "latent_truth_graph",
+    "question_traces",
+    "store_snapshot",
+):
+    if forbidden in scenario_text:
+        print("forbidden field leaked: " + forbidden, file=sys.stderr)
+        sys.exit(9)
+if payload["prompt"] != "Extract transcript claims.\\n":
+    print("prompt did not round trip", file=sys.stderr)
+    sys.exit(10)
+
+events = scenario["events"]
+observation = next(event for event in events if event["event_kind"] == "observation")
+prediction = {
+    "event_id": observation["event_id"],
+    "candidate_id": "",
+    "canonical_id": "fake-canonical",
+    "claim_type": "world_fact",
+    "scope_level": "world_global",
+    "scope_key": "global",
+    "contradicts_event_ids": [],
+    "raw_claim": observation["text"],
+    "confidence": 0.8,
+}
+
+if behavior == "valid":
+    json.dump({"predictions": [prediction]}, sys.stdout)
+elif behavior == "bad_shape":
+    json.dump({"items": [prediction]}, sys.stdout)
+elif behavior == "candidate_id":
+    prediction["candidate_id"] = "oracle-candidate-1"
+    json.dump({"predictions": [prediction]}, sys.stdout)
+elif behavior == "unknown_event":
+    prediction["event_id"] = "missing-event"
+    json.dump({"predictions": [prediction]}, sys.stdout)
+elif behavior == "bad_claim_type":
+    prediction["claim_type"] = "not_a_claim"
+    json.dump({"predictions": [prediction]}, sys.stdout)
+elif behavior == "bad_scope_level":
+    prediction["scope_level"] = "not_a_scope"
+    json.dump({"predictions": [prediction]}, sys.stdout)
+elif behavior == "duplicate_pair":
+    json.dump({"predictions": [prediction, dict(prediction)]}, sys.stdout)
+elif behavior == "bad_edge":
+    prediction["contradicts_event_ids"] = ["missing-event"]
+    json.dump({"predictions": [prediction]}, sys.stdout)
+elif behavior == "bad_confidence":
+    prediction["confidence"] = "high"
+    json.dump({"predictions": [prediction]}, sys.stdout)
+else:
+    raise SystemExit("unknown behavior: " + behavior)
+""".lstrip(),
+        encoding="utf-8",
+    )
+    return script_path
 
 
 if __name__ == "__main__":

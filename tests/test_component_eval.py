@@ -12,6 +12,7 @@ from cq.eval.component_eval import (
     build_oracle_component_eval_artifact,
     evaluate_component_predictions,
     load_predictions_by_scenario,
+    load_scenario_errors,
     main,
     oracle_component_predictions,
 )
@@ -304,6 +305,38 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertAlmostEqual(metrics["candidate_detection_precision"], 2 / 3)
         self.assertEqual(metrics["candidate_detection_recall"], 1.0)
 
+    def test_extra_same_event_prediction_does_not_hide_valid_prediction(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        oracle_predictions = oracle_component_predictions(scenario)
+        misleading_extra = CandidateComponentPrediction(
+            event_id=oracle_predictions[0].event_id,
+            candidate_id="",
+            canonical_id="wrong-canonical-cluster",
+            claim_type="tooling_preference",
+            scope_level="session",
+            scope_key="wrong-scope",
+        )
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {
+                scenario.scenario_id: [
+                    misleading_extra,
+                    oracle_predictions[0],
+                    oracle_predictions[1],
+                ]
+            },
+        )
+        metrics = result["metrics"]
+
+        self.assertEqual(metrics["candidate_detection_tp"], 2)
+        self.assertEqual(metrics["candidate_detection_fp"], 1)
+        self.assertEqual(metrics["candidate_detection_fn"], 0)
+        self.assertEqual(metrics["claim_type_accuracy"], 1.0)
+        self.assertEqual(metrics["scope_level_accuracy"], 1.0)
+        self.assertEqual(metrics["scope_key_accuracy"], 1.0)
+        self.assertEqual(metrics["canonicalization_b_cubed_f1"], 1.0)
+
     def test_b_cubed_matches_hand_computed_clustering_case(self) -> None:
         result = _b_cubed(
             {
@@ -408,6 +441,54 @@ class ComponentEvalTests(unittest.TestCase):
             self.assertEqual(artifact["mode"], "component_predictions")
             self.assertEqual(artifact["metrics"]["candidate_detection_f1"], 1.0)
 
+    def test_cli_reports_scenario_errors_as_zero_predictions(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            predictions_path = Path(tmpdir) / "predictions.json"
+            output_path = Path(tmpdir) / "component_eval.json"
+            predictions_path.write_text(
+                json.dumps(
+                    {
+                        "scenario_predictions": {
+                            scenario.scenario_id: [
+                                prediction.__dict__
+                                for prediction in oracle_component_predictions(scenario)
+                            ]
+                        },
+                        "scenario_errors": {
+                            scenario.scenario_id: {
+                                "error_type": "validation_error",
+                                "message": "bad enum",
+                            }
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with redirect_stdout(StringIO()):
+                exit_code = main(
+                    [
+                        "--family",
+                        "forced_contradiction",
+                        "--scenarios",
+                        "1",
+                        "--template-mix",
+                        "dirty",
+                        "--predictions-json",
+                        str(predictions_path),
+                        "--output-json",
+                        str(output_path),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 0)
+            artifact = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(artifact["scenario_error_count"], 1)
+            self.assertEqual(artifact["metrics"]["scenario_error_count"], 1)
+            self.assertEqual(artifact["metrics"]["candidate_detection_tp"], 0)
+            self.assertEqual(artifact["metrics"]["candidate_detection_fn"], 2)
+
     def test_load_predictions_by_scenario_accepts_missing_contradicts(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             predictions_path = Path(tmpdir) / "predictions.json"
@@ -502,6 +583,22 @@ class ComponentEvalTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "confidence must be numeric or null"):
                 load_predictions_by_scenario(predictions_path)
 
+    def test_load_scenario_errors_requires_object(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            predictions_path = Path(tmpdir) / "predictions.json"
+            predictions_path.write_text(
+                json.dumps(
+                    {
+                        "scenario_predictions": {},
+                        "scenario_errors": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "scenario_errors must be an object"):
+                load_scenario_errors(predictions_path)
+
     def test_load_predictions_by_scenario_requires_wrapper_key(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             predictions_path = Path(tmpdir) / "predictions.json"
@@ -542,6 +639,22 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertEqual(artifact["scenario_count"], 3)
         for gate in artifact["quality_gates"].values():
             self.assertTrue(gate["passed"])
+
+    def test_oracle_upper_bound_reference_matrix_still_scores_one_for_applicable_gates(self) -> None:
+        for family, template_mixes in TEMPLATE_MIXES_BY_FAMILY.items():
+            scenario_count = 3 if family == "mechanism_diverse_heldout" else 6
+            for template_mix in template_mixes:
+                with self.subTest(family=family, template_mix=template_mix):
+                    artifact = build_oracle_component_eval_artifact(
+                        family=family,
+                        scenario_count=scenario_count,
+                        template_mix=template_mix,
+                    )
+                    self.assertEqual(artifact["scenario_error_count"], 0)
+                    for gate in artifact["quality_gates"].values():
+                        self.assertTrue(gate["passed"])
+                        if gate["status"] == "measured":
+                            self.assertEqual(gate["value"], 1.0)
 
     def test_generated_gold_contradiction_targets_resolve_to_unique_observation_events(self) -> None:
         for family, template_mixes in TEMPLATE_MIXES_BY_FAMILY.items():

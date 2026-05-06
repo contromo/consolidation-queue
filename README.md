@@ -199,6 +199,15 @@ python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 6 --
 
 The weak mode is a negative control that should fail measured gates on forced contradiction. The positive-control mode is a deterministic text matcher that validates the bridge; it is not extractor-quality evidence.
 
+Run a transcript-only command-adapter extractor with a user-provided local model wrapper:
+
+```bash
+python3 -m cq.pipeline.local_extractor --family forced_contradiction --scenarios 6 --template-mix mixed --mode model --model-command './run_local_extractor.sh' --model-id 'local-model-name:revision' --prompt-template-path path/to/extractor_prompt.txt --decoding-json '{"temperature": 0}' --per-scenario-timeout-seconds 120 --output-json data/results/forced_contradiction_local_extractor_model_predictions.json
+python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 6 --template-mix mixed --predictions-json data/results/forced_contradiction_local_extractor_model_predictions.json --output-json data/results/forced_contradiction_local_extractor_model_component_eval.json
+```
+
+In `model` mode, the command runs once per scenario and receives a transcript-only JSON envelope on stdin. It must write strict JSON on stdout with a top-level `predictions` list. Per-scenario failures are saved in `scenario_errors`; `component_eval` reports them and scores those scenarios as zero predictions.
+
 Open the dashboard against the saved run:
 
 ```bash
@@ -237,3 +246,5 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - Memory-poisoning includes main and held-out untrusted-injection probes plus same-scope override attacks against an existing clean durable. Below-floor dirty templates show eager durable poison promotion from immediate writes; pending-eligible dirty templates intentionally expose CQ false assertion from pending memory while still avoiding durable poison promotion. Override shadow and borderline templates expose CQ's exact-scope durable demotion path and are measured with `clean_durable_displacement_rate`. This v1 family does not test adversarial corroboration or scope-laundered poison.
 - Component contradiction scoring now supports extractor-safe `contradicts_event_ids` and treats edges as undirected within a scenario. If a scenario set has no gold or predicted contradiction edges, contradiction gates are marked not applicable instead of failed; false-positive predicted edges still fail the measured gates.
 - The transcript-only extractor bridge exposes only `scenario_id`, event order, `event_id`, event kind, and text. It excludes oracle candidates, gold ids, lifecycle expectations, metrics, and policy traces.
+- Component evaluation reads extractor `scenario_errors` when present, reports them separately, and scores errored scenarios as zero predictions rather than excluding them.
+- The current component gold has one candidate per observation event. Extra same-event predictions are counted as false positives while the best same-event prediction is used for claim, scope, and canonicalization scoring.

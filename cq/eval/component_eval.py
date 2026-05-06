@@ -63,7 +63,9 @@ def oracle_predictions_by_scenario(
 def evaluate_component_predictions(
     scenarios: Iterable[Scenario],
     predictions_by_scenario: Dict[str, List[CandidateComponentPrediction]],
+    scenario_errors: Optional[Dict[str, object]] = None,
 ) -> Dict[str, object]:
+    scenario_errors = scenario_errors or {}
     counters = _new_counters()
     canonical_gold: Dict[str, str] = {}
     canonical_predicted: Dict[str, str] = {}
@@ -73,10 +75,17 @@ def evaluate_component_predictions(
 
     for scenario in scenarios:
         scenario_count += 1
-        predictions = predictions_by_scenario.get(scenario.scenario_id, [])
+        predictions = (
+            []
+            if scenario.scenario_id in scenario_errors
+            else predictions_by_scenario.get(scenario.scenario_id, [])
+        )
         gold_by_event = _gold_candidates_by_event(scenario)
         candidate_id_to_event_id = _candidate_id_to_event_id(scenario)
-        prediction_by_event, duplicate_count = _first_predictions_by_event(predictions)
+        prediction_by_event, duplicate_count = _best_predictions_by_event(
+            predictions,
+            gold_by_event,
+        )
         gold_event_ids = set(gold_by_event)
         predicted_event_ids = set(prediction_by_event)
         true_positive_events = gold_event_ids.intersection(predicted_event_ids)
@@ -155,6 +164,7 @@ def evaluate_component_predictions(
 
     metrics = {
         "scenario_count": scenario_count,
+        "scenario_error_count": len(scenario_errors),
         "candidate_detection_tp": counters["candidate_detection_tp"],
         "candidate_detection_fp": counters["candidate_detection_fp"],
         "candidate_detection_fn": counters["candidate_detection_fn"],
@@ -237,21 +247,29 @@ def build_component_eval_artifact(
     scenario_count: int,
     template_mix: str,
     predictions_by_scenario: Optional[Dict[str, List[CandidateComponentPrediction]]] = None,
+    scenario_errors: Optional[Dict[str, object]] = None,
     mode: Optional[str] = None,
 ) -> Dict[str, object]:
     scenarios = generate_scenarios(family, scenario_count, template_mix)
+    scenario_errors = scenario_errors or {}
     if predictions_by_scenario is None:
         predictions_by_scenario = oracle_predictions_by_scenario(scenarios)
         artifact_mode = mode or "oracle_component_upper_bound"
     else:
         artifact_mode = mode or "component_predictions"
-    evaluation = evaluate_component_predictions(scenarios, predictions_by_scenario)
+    evaluation = evaluate_component_predictions(
+        scenarios,
+        predictions_by_scenario,
+        scenario_errors=scenario_errors,
+    )
     return {
         "mode": artifact_mode,
         "family": family,
         "template_mix": template_mix,
         "requested_scenario_count": scenario_count,
         "scenario_count": len(scenarios),
+        "scenario_error_count": len(scenario_errors),
+        "scenario_errors": jsonable(scenario_errors),
         "quality_gate_thresholds": QUALITY_GATES,
         "metrics": evaluation["metrics"],
         "quality_gates": evaluation["quality_gates"],
@@ -276,6 +294,14 @@ def load_predictions_by_scenario(
     }
 
 
+def load_scenario_errors(predictions_path: Path) -> Dict[str, object]:
+    payload = json.loads(predictions_path.read_text(encoding="utf-8"))
+    scenario_errors = payload.get("scenario_errors", {}) if isinstance(payload, dict) else {}
+    if not isinstance(scenario_errors, dict):
+        raise ValueError("scenario_errors must be an object keyed by scenario_id")
+    return scenario_errors
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Evaluate component predictions against scenario oracle labels."
@@ -292,11 +318,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         if args.predictions_json
         else None
     )
+    scenario_errors = (
+        load_scenario_errors(Path(args.predictions_json))
+        if args.predictions_json
+        else None
+    )
     artifact = build_component_eval_artifact(
         family=args.family,
         scenario_count=args.scenarios,
         template_mix=args.template_mix,
         predictions_by_scenario=predictions_by_scenario,
+        scenario_errors=scenario_errors,
     )
     metrics = artifact["metrics"]
     print(
@@ -411,17 +443,41 @@ def _candidate_id_to_event_id(scenario: Scenario) -> Dict[str, str]:
     return candidate_id_to_event_id
 
 
-def _first_predictions_by_event(
+def _best_predictions_by_event(
     predictions: List[CandidateComponentPrediction],
+    gold_by_event: Dict[str, CandidateUpdate],
 ) -> Tuple[Dict[str, CandidateComponentPrediction], int]:
+    grouped_predictions: Dict[str, List[CandidateComponentPrediction]] = {}
+    for prediction in predictions:
+        grouped_predictions.setdefault(prediction.event_id, []).append(prediction)
+
     prediction_by_event: Dict[str, CandidateComponentPrediction] = {}
     duplicate_count = 0
-    for prediction in predictions:
-        if prediction.event_id in prediction_by_event:
-            duplicate_count += 1
-            continue
-        prediction_by_event[prediction.event_id] = prediction
+    for event_id, event_predictions in grouped_predictions.items():
+        duplicate_count += max(0, len(event_predictions) - 1)
+        gold = gold_by_event.get(event_id)
+        if gold is None:
+            prediction_by_event[event_id] = event_predictions[0]
+        else:
+            prediction_by_event[event_id] = max(
+                event_predictions,
+                key=lambda prediction: _prediction_match_score(prediction, gold),
+            )
     return prediction_by_event, duplicate_count
+
+
+def _prediction_match_score(
+    prediction: CandidateComponentPrediction,
+    gold: CandidateUpdate,
+) -> int:
+    return sum(
+        (
+            prediction.canonical_id == gold.canonical_id,
+            prediction.claim_type == gold.claim_type.value,
+            prediction.scope_level == gold.scope_level.value,
+            prediction.scope_key == gold.scope_key,
+        )
+    )
 
 
 def _new_counters() -> Dict[str, int]:
