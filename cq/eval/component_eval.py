@@ -4,7 +4,7 @@ import argparse
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from cq.eval.runner import (
     FORCED_CONTRADICTION,
@@ -386,19 +386,13 @@ def _b_cubed(gold_labels: Dict[str, str], predicted_labels: Dict[str, str]) -> D
             "f1": None,
             "coverage": coverage,
         }
+    gold_clusters = _clusters_by_label(gold_labels, evaluable_item_ids)
+    predicted_clusters = _clusters_by_label(predicted_labels, evaluable_item_ids)
     precisions = []
     recalls = []
     for item_id in evaluable_item_ids:
-        gold_cluster = {
-            other_id
-            for other_id in evaluable_item_ids
-            if gold_labels[other_id] == gold_labels[item_id]
-        }
-        predicted_cluster = {
-            other_id
-            for other_id in evaluable_item_ids
-            if predicted_labels[other_id] == predicted_labels[item_id]
-        }
+        gold_cluster = gold_clusters[gold_labels[item_id]]
+        predicted_cluster = predicted_clusters[predicted_labels[item_id]]
         overlap_count = len(gold_cluster.intersection(predicted_cluster))
         precisions.append(overlap_count / len(predicted_cluster))
         recalls.append(overlap_count / len(gold_cluster))
@@ -410,6 +404,13 @@ def _b_cubed(gold_labels: Dict[str, str], predicted_labels: Dict[str, str]) -> D
         "f1": _f1(precision, recall),
         "coverage": coverage,
     }
+
+
+def _clusters_by_label(labels: Dict[str, str], item_ids: List[str]) -> Dict[str, Set[str]]:
+    clusters = {}
+    for item_id in item_ids:
+        clusters.setdefault(labels[item_id], set()).add(item_id)
+    return clusters
 
 
 def _accuracy(correct: int, total: int) -> Optional[float]:
