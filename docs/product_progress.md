@@ -29,9 +29,9 @@
   - `mem0_lite`: `false_assertion=0.33`, `correctness=0.67`, `premature_promotion=0.67`, `poison_promotion=0.33`
   - `reflection_eager_write_lite`: `false_assertion=1.00`, `correctness=0.00`, `premature_promotion=0.67`, `poison_promotion=0.33`
 - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.component_eval --family mechanism_diverse_heldout --scenarios 3 --template-mix frozen --output-json data/results/mechanism_diverse_heldout_component_eval_oracle_upper_bound.json` reports all component upper-bound quality metrics at `1.00`
-- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_eval -q` passes with 12 tests
-- final `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 180 tests
-- follow-up component-evaluation coverage exercises zero predictions, hand-computed B-cubed, duplicate event IDs, strict prediction JSON shape, and frozen-family lock validation
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_eval -q` passes with 13 tests
+- final `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 181 tests
+- follow-up component-evaluation coverage exercises zero predictions, canonicalization coverage below threshold, hand-computed B-cubed, duplicate event IDs, strict prediction JSON shape, and frozen-family lock validation
 
 ### Open issues / next
 

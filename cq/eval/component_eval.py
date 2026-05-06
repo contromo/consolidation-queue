@@ -25,6 +25,7 @@ QUALITY_GATES = {
     "contradiction_precision": 0.75,
     "contradiction_recall": 0.70,
 }
+CANONICALIZATION_COVERAGE_THRESHOLD = QUALITY_GATES["candidate_detection_f1"]
 
 
 @dataclass
@@ -94,11 +95,11 @@ def evaluate_component_predictions(
             item_id = _component_item_id(scenario.scenario_id, event_id)
             canonical_gold[item_id] = _scoped_canonical_label(scenario.scenario_id, gold.canonical_id)
             predicted = prediction_by_event.get(event_id)
-            canonical_predicted[item_id] = (
-                _scoped_canonical_label(scenario.scenario_id, predicted.canonical_id)
-                if predicted is not None
-                else "__missing__:{}".format(item_id)
-            )
+            if predicted is not None:
+                canonical_predicted[item_id] = _scoped_canonical_label(
+                    scenario.scenario_id,
+                    predicted.canonical_id,
+                )
             for target_id in gold.contradicts:
                 gold_contradictions.add((scenario.scenario_id, gold.candidate_id, target_id))
 
@@ -152,6 +153,8 @@ def evaluate_component_predictions(
         "canonicalization_b_cubed_precision": b_cubed["precision"],
         "canonicalization_b_cubed_recall": b_cubed["recall"],
         "canonicalization_b_cubed_f1": b_cubed["f1"],
+        "canonicalization_coverage": b_cubed["coverage"],
+        "canonicalization_coverage_threshold": CANONICALIZATION_COVERAGE_THRESHOLD,
         "contradiction_tp": contradiction_tp,
         "contradiction_fp": contradiction_fp,
         "contradiction_fn": contradiction_fn,
@@ -261,12 +264,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     print(
         "component_eval: candidate_f1={candidate} claim_type={claim} "
         "scope_level={scope_level} scope_key={scope_key} "
-        "canonicalization_f1={canonicalization:.2f} contradiction_f1={contradiction}".format(
+        "canonicalization_f1={canonicalization} contradiction_f1={contradiction}".format(
             candidate=_format_metric(metrics["candidate_detection_f1"]),
             claim=_format_metric(metrics["claim_type_accuracy"]),
             scope_level=_format_metric(metrics["scope_level_accuracy"]),
             scope_key=_format_metric(metrics["scope_key_accuracy"]),
-            canonicalization=metrics["canonicalization_b_cubed_f1"],
+            canonicalization=_format_metric(metrics["canonicalization_b_cubed_f1"]),
             contradiction=_format_metric(metrics["contradiction_f1"]),
         )
     )
@@ -353,21 +356,29 @@ def _scoped_canonical_label(scenario_id: str, canonical_id: Optional[str]) -> st
     return "{}::{}".format(scenario_id, canonical_id or "")
 
 
-def _b_cubed(gold_labels: Dict[str, str], predicted_labels: Dict[str, str]) -> Dict[str, float]:
+def _b_cubed(gold_labels: Dict[str, str], predicted_labels: Dict[str, str]) -> Dict[str, Optional[float]]:
     if not gold_labels:
-        return {"precision": 1.0, "recall": 1.0, "f1": 1.0}
-    item_ids = sorted(gold_labels)
+        return {"precision": None, "recall": None, "f1": None, "coverage": None}
+    evaluable_item_ids = sorted(set(gold_labels).intersection(predicted_labels))
+    coverage = len(evaluable_item_ids) / len(gold_labels)
+    if coverage < CANONICALIZATION_COVERAGE_THRESHOLD:
+        return {
+            "precision": None,
+            "recall": None,
+            "f1": None,
+            "coverage": coverage,
+        }
     precisions = []
     recalls = []
-    for item_id in item_ids:
+    for item_id in evaluable_item_ids:
         gold_cluster = {
             other_id
-            for other_id in item_ids
+            for other_id in evaluable_item_ids
             if gold_labels[other_id] == gold_labels[item_id]
         }
         predicted_cluster = {
             other_id
-            for other_id in item_ids
+            for other_id in evaluable_item_ids
             if predicted_labels[other_id] == predicted_labels[item_id]
         }
         overlap_count = len(gold_cluster.intersection(predicted_cluster))
@@ -379,6 +390,7 @@ def _b_cubed(gold_labels: Dict[str, str], predicted_labels: Dict[str, str]) -> D
         "precision": precision,
         "recall": recall,
         "f1": _f1(precision, recall),
+        "coverage": coverage,
     }
 
 

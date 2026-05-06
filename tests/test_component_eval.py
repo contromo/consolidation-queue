@@ -69,11 +69,14 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertIsNone(metrics["claim_type_accuracy"])
         self.assertIsNone(metrics["scope_level_accuracy"])
         self.assertIsNone(metrics["scope_key_accuracy"])
+        self.assertIsNone(metrics["canonicalization_b_cubed_f1"])
+        self.assertEqual(metrics["canonicalization_coverage"], 0.0)
         self.assertIsNone(metrics["contradiction_precision"])
         self.assertEqual(metrics["contradiction_recall"], 0.0)
         self.assertFalse(gates["claim_type_accuracy"]["passed"])
         self.assertFalse(gates["scope_level_accuracy"]["passed"])
         self.assertFalse(gates["scope_key_accuracy"]["passed"])
+        self.assertFalse(gates["canonicalization_b_cubed_f1"]["passed"])
         self.assertFalse(gates["contradiction_precision"]["passed"])
 
     def test_component_errors_affect_targeted_metrics(self) -> None:
@@ -138,6 +141,26 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertEqual(result["precision"], 0.5)
         self.assertEqual(result["recall"], 1.0)
         self.assertAlmostEqual(result["f1"], 2 / 3)
+        self.assertEqual(result["coverage"], 1.0)
+
+    def test_b_cubed_is_undefined_below_canonicalization_coverage_threshold(self) -> None:
+        result = _b_cubed(
+            {
+                "item-1": "gold-a",
+                "item-2": "gold-a",
+                "item-3": "gold-b",
+                "item-4": "gold-b",
+            },
+            {
+                "item-1": "predicted-a",
+                "item-2": "predicted-a",
+            },
+        )
+
+        self.assertEqual(result["coverage"], 0.5)
+        self.assertIsNone(result["precision"])
+        self.assertIsNone(result["recall"])
+        self.assertIsNone(result["f1"])
 
     def test_cli_writes_oracle_upper_bound_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
