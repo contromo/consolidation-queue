@@ -248,3 +248,4 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - The transcript-only extractor bridge exposes only `scenario_id`, event order, `event_id`, event kind, and text. It excludes oracle candidates, gold ids, lifecycle expectations, metrics, and policy traces.
 - Component evaluation reads extractor `scenario_errors` when present, reports them separately, and scores errored scenarios as zero predictions rather than excluding them.
 - The current component gold has one candidate per observation event. Extra same-event predictions are counted as false positives while the best same-event prediction is used for claim, scope, and canonicalization scoring.
+- Component artifacts include `predictions_per_event_p50`, `predictions_per_event_p95`, `predictions_per_event_max`, and `extra_same_event_prediction_count` so noisy models that emit many guesses per event are inspectable.

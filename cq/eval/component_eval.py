@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
@@ -71,6 +72,7 @@ def evaluate_component_predictions(
     canonical_predicted: Dict[str, str] = {}
     gold_contradictions = set()
     predicted_contradictions = set()
+    prediction_counts_per_event: List[int] = []
     scenario_count = 0
 
     for scenario in scenarios:
@@ -82,10 +84,11 @@ def evaluate_component_predictions(
         )
         gold_by_event = _gold_candidates_by_event(scenario)
         candidate_id_to_event_id = _candidate_id_to_event_id(scenario)
-        prediction_by_event, duplicate_count = _best_predictions_by_event(
+        prediction_by_event, duplicate_count, event_prediction_counts = _best_predictions_by_event(
             predictions,
             gold_by_event,
         )
+        prediction_counts_per_event.extend(event_prediction_counts)
         gold_event_ids = set(gold_by_event)
         predicted_event_ids = set(prediction_by_event)
         true_positive_events = gold_event_ids.intersection(predicted_event_ids)
@@ -93,6 +96,7 @@ def evaluate_component_predictions(
         counters["candidate_detection_tp"] += len(true_positive_events)
         counters["candidate_detection_fp"] += len(predicted_event_ids - gold_event_ids) + duplicate_count
         counters["candidate_detection_fn"] += len(gold_event_ids - predicted_event_ids)
+        counters["extra_same_event_prediction_count"] += duplicate_count
         counters["claim_type_count"] += len(true_positive_events)
         counters["scope_level_count"] += len(true_positive_events)
         counters["scope_key_count"] += len(true_positive_events)
@@ -165,6 +169,13 @@ def evaluate_component_predictions(
     metrics = {
         "scenario_count": scenario_count,
         "scenario_error_count": len(scenario_errors),
+        "predicted_event_count": len(prediction_counts_per_event),
+        "extra_same_event_prediction_count": counters["extra_same_event_prediction_count"],
+        "predictions_per_event_p50": _percentile(prediction_counts_per_event, 0.50),
+        "predictions_per_event_p95": _percentile(prediction_counts_per_event, 0.95),
+        "predictions_per_event_max": max(prediction_counts_per_event)
+        if prediction_counts_per_event
+        else 0,
         "candidate_detection_tp": counters["candidate_detection_tp"],
         "candidate_detection_fp": counters["candidate_detection_fp"],
         "candidate_detection_fn": counters["candidate_detection_fn"],
@@ -446,7 +457,7 @@ def _candidate_id_to_event_id(scenario: Scenario) -> Dict[str, str]:
 def _best_predictions_by_event(
     predictions: List[CandidateComponentPrediction],
     gold_by_event: Dict[str, CandidateUpdate],
-) -> Tuple[Dict[str, CandidateComponentPrediction], int]:
+) -> Tuple[Dict[str, CandidateComponentPrediction], int, List[int]]:
     grouped_predictions: Dict[str, List[CandidateComponentPrediction]] = {}
     for prediction in predictions:
         grouped_predictions.setdefault(prediction.event_id, []).append(prediction)
@@ -454,7 +465,7 @@ def _best_predictions_by_event(
     prediction_by_event: Dict[str, CandidateComponentPrediction] = {}
     duplicate_count = 0
     for event_id, event_predictions in grouped_predictions.items():
-        duplicate_count += max(0, len(event_predictions) - 1)
+        duplicate_count += len(event_predictions) - 1
         gold = gold_by_event.get(event_id)
         if gold is None:
             prediction_by_event[event_id] = event_predictions[0]
@@ -463,7 +474,10 @@ def _best_predictions_by_event(
                 event_predictions,
                 key=lambda prediction: _prediction_match_score(prediction, gold),
             )
-    return prediction_by_event, duplicate_count
+    return prediction_by_event, duplicate_count, [
+        len(event_predictions)
+        for event_predictions in grouped_predictions.values()
+    ]
 
 
 def _prediction_match_score(
@@ -485,6 +499,7 @@ def _new_counters() -> Dict[str, int]:
         "candidate_detection_tp": 0,
         "candidate_detection_fp": 0,
         "candidate_detection_fn": 0,
+        "extra_same_event_prediction_count": 0,
         "claim_type_correct": 0,
         "claim_type_count": 0,
         "scope_level_correct": 0,
@@ -597,6 +612,14 @@ def _safe_divide(numerator: int, denominator: int) -> Optional[float]:
     if denominator == 0:
         return None
     return numerator / denominator
+
+
+def _percentile(values: List[int], quantile: float) -> Optional[float]:
+    if not values:
+        return None
+    sorted_values = sorted(values)
+    index = max(0, min(len(sorted_values) - 1, math.ceil(quantile * len(sorted_values)) - 1))
+    return float(sorted_values[index])
 
 
 def _f1(precision: Optional[float], recall: Optional[float]) -> Optional[float]:

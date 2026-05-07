@@ -13,6 +13,7 @@ from cq.eval.component_eval import (
     load_scenario_errors,
 )
 from cq.pipeline.local_extractor import (
+    MAX_MODEL_STDOUT_BYTES,
     MODEL_MODE,
     POSITIVE_CONTROL_MODE,
     WEAK_MODE,
@@ -53,6 +54,13 @@ class LocalExtractorTests(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             extract_predictions_for_scenario(scenario, WEAK_MODE)
+
+    def test_model_mode_requires_model_config_for_single_scenario_api(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="mixed")[0]
+        transcript_scenario = sanitize_scenario_for_extraction(scenario)
+
+        with self.assertRaisesRegex(ValueError, "model_config is required"):
+            extract_predictions_for_scenario(transcript_scenario, MODEL_MODE)
 
     def test_weak_extractor_fails_forced_contradiction_gates_for_measured_reasons(self) -> None:
         scenarios = generate_forced_contradiction_scenarios(6, template_mix="mixed")
@@ -153,6 +161,9 @@ class LocalExtractorTests(unittest.TestCase):
             self.assertEqual(output["model_id"], "fake-local-model:q4")
             self.assertEqual(output["prompt_template_path"], str(prompt_path))
             self.assertEqual(output["prompt_template_text"], "Extract transcript claims.\n")
+            self.assertIn("prompt_template_sha256", output)
+            self.assertIn("scenario_input_sha256", output)
+            self.assertEqual(len(output["scenario_input_sha256"]), 1)
             self.assertEqual(output["decoding_params"]["temperature"], 0)
             self.assertEqual(output["attempted_scenario_count"], 1)
             self.assertEqual(output["successful_scenario_count"], 1)
@@ -248,6 +259,49 @@ class LocalExtractorTests(unittest.TestCase):
                     self.assertIn(message, error["message"])
                     self.assertEqual(output["successful_scenario_count"], 0)
 
+    def test_model_command_records_missing_command_as_per_scenario_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            output = build_extractor_output(
+                family="forced_contradiction",
+                scenario_count=1,
+                template_mix="dirty",
+                mode=MODEL_MODE,
+                model_command="definitely-not-a-real-local-extractor-command",
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                per_scenario_timeout_seconds=5,
+            )
+
+            error = next(iter(output["scenario_errors"].values()))
+            self.assertEqual(error["error_type"], "command_error")
+            self.assertEqual(output["successful_scenario_count"], 0)
+
+    def test_model_command_records_oversized_stdout_as_per_scenario_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            output = build_extractor_output(
+                family="forced_contradiction",
+                scenario_count=1,
+                template_mix="dirty",
+                mode=MODEL_MODE,
+                model_command=_fake_model_command(script_path, "large"),
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                per_scenario_timeout_seconds=5,
+            )
+
+            error = next(iter(output["scenario_errors"].values()))
+            self.assertEqual(error["error_type"], "output_too_large")
+            self.assertIn(str(MAX_MODEL_STDOUT_BYTES), error["message"])
+            self.assertGreater(error["stdout_bytes"], MAX_MODEL_STDOUT_BYTES)
+            self.assertEqual(output["successful_scenario_count"], 0)
+
     def test_model_validation_errors_are_per_scenario_errors(self) -> None:
         cases = (
             ("candidate_id", "candidate_id"),
@@ -280,6 +334,61 @@ class LocalExtractorTests(unittest.TestCase):
                     self.assertIn(message, error["message"])
                     self.assertEqual(output["successful_scenario_count"], 0)
 
+    def test_model_config_validation_errors_fail_before_sweep(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+            cases = (
+                (
+                    {"model_command": ""},
+                    "--model-command is required",
+                ),
+                (
+                    {"model_id": ""},
+                    "--model-id is required",
+                ),
+                (
+                    {"prompt_template_path": ""},
+                    "--prompt-template-path is required",
+                ),
+                (
+                    {"prompt_template_path": str(Path(tmpdir) / "missing.txt")},
+                    "Could not read prompt template",
+                ),
+                (
+                    {"decoding_json": "{not-json"},
+                    "--decoding-json must be a JSON object",
+                ),
+                (
+                    {"decoding_json": "[]"},
+                    "--decoding-json must be a JSON object",
+                ),
+                (
+                    {"per_scenario_timeout_seconds": 0},
+                    "--per-scenario-timeout-seconds must be positive",
+                ),
+            )
+
+            for overrides, message in cases:
+                with self.subTest(overrides=overrides):
+                    kwargs = {
+                        "family": "forced_contradiction",
+                        "scenario_count": 1,
+                        "template_mix": "dirty",
+                        "mode": MODEL_MODE,
+                        "model_command": _fake_model_command(
+                            _write_fake_model_script(Path(tmpdir)),
+                            "valid",
+                        ),
+                        "model_id": "fake-local-model:q4",
+                        "prompt_template_path": str(prompt_path),
+                        "decoding_json": "{}",
+                        "per_scenario_timeout_seconds": 5,
+                    }
+                    kwargs.update(overrides)
+                    with self.assertRaisesRegex(ValueError, message):
+                        build_extractor_output(**kwargs)
+
 
 def _fake_model_command(script_path: Path, behavior: str) -> str:
     return "{} {} {}".format(
@@ -305,6 +414,9 @@ if behavior == "exit":
     sys.exit(7)
 if behavior == "nonjson":
     print("not json")
+    sys.exit(0)
+if behavior == "large":
+    sys.stdout.write("x" * (__MAX_STDOUT__ + 1))
     sys.exit(0)
 
 payload = json.load(sys.stdin)
@@ -365,7 +477,7 @@ elif behavior == "bad_confidence":
     json.dump({"predictions": [prediction]}, sys.stdout)
 else:
     raise SystemExit("unknown behavior: " + behavior)
-""".lstrip(),
+""".replace("__MAX_STDOUT__", str(MAX_MODEL_STDOUT_BYTES)).lstrip(),
         encoding="utf-8",
     )
     return script_path

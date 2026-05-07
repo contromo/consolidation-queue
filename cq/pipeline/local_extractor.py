@@ -6,6 +6,7 @@ import json
 import re
 import shlex
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -24,6 +25,8 @@ WEAK_MODE = "weak"
 POSITIVE_CONTROL_MODE = "positive_control"
 MODEL_MODE = "model"
 EXTRACTOR_MODES = (WEAK_MODE, POSITIVE_CONTROL_MODE, MODEL_MODE)
+MAX_MODEL_STDOUT_BYTES = 1_000_000
+MAX_MODEL_STDERR_BYTES = 200_000
 
 
 @dataclass(frozen=True)
@@ -173,6 +176,8 @@ def extract_predictions_for_scenario(
     if mode == MODEL_MODE:
         if model_config is None:
             raise ValueError("model_config is required for model mode")
+        # Keep this fail-fast single-scenario path in lockstep with the
+        # batch adapter path; both send the same transcript-only envelope.
         predictions, error = _run_model_for_scenario(transcript_scenario, model_config)
         if error is not None:
             raise ValueError(str(error["message"]))
@@ -216,6 +221,7 @@ def build_extractor_output(
     scenario_errors: Dict[str, object] = {}
     model_config = None
     model_metadata: Dict[str, object] = {}
+    scenario_input_sha256: Dict[str, str] = {}
     if mode == MODEL_MODE:
         model_config = _build_model_config(
             model_command=model_command,
@@ -226,6 +232,10 @@ def build_extractor_output(
         )
         model_metadata = _model_metadata(model_config)
         for transcript_scenario in transcript_scenarios:
+            scenario_input_sha256[transcript_scenario.scenario_id] = _model_stdin_sha256(
+                transcript_scenario,
+                model_config,
+            )
             predictions, error = _run_model_for_scenario(transcript_scenario, model_config)
             if error is None:
                 scenario_predictions[transcript_scenario.scenario_id] = predictions
@@ -248,6 +258,8 @@ def build_extractor_output(
         "scenario_predictions": jsonable(scenario_predictions),
     }
     output.update(model_metadata)
+    if scenario_input_sha256:
+        output["scenario_input_sha256"] = scenario_input_sha256
     return output
 
 
@@ -314,20 +326,36 @@ def _model_metadata(config: ModelExtractorConfig) -> Dict[str, object]:
     }
 
 
+def _model_stdin_sha256(
+    transcript_scenario: TranscriptScenarioInput,
+    config: ModelExtractorConfig,
+) -> str:
+    payload = _model_stdin_payload(transcript_scenario, config)
+    canonical_json = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
+
+
 def _run_model_for_scenario(
     transcript_scenario: TranscriptScenarioInput,
     config: ModelExtractorConfig,
 ) -> Tuple[List[CandidateComponentPrediction], Optional[Dict[str, object]]]:
     stdin_payload = _model_stdin_payload(transcript_scenario, config)
+    stdin_text = json.dumps(stdin_payload, indent=2, sort_keys=True)
     try:
-        completed = subprocess.run(
-            config.model_argv,
-            input=json.dumps(stdin_payload, indent=2, sort_keys=True),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            timeout=config.per_scenario_timeout_seconds,
-        )
+        stdin_bytes = stdin_text.encode("utf-8")
+    except UnicodeEncodeError as error:
+        return [], _scenario_error("input_encoding_error", str(error))
+    try:
+        with tempfile.TemporaryFile() as stdout_file, tempfile.TemporaryFile() as stderr_file:
+            completed = subprocess.run(
+                config.model_argv,
+                input=stdin_bytes,
+                stdout=stdout_file,
+                stderr=stderr_file,
+                timeout=config.per_scenario_timeout_seconds,
+            )
+            stdout_status = _read_capped_tempfile(stdout_file, MAX_MODEL_STDOUT_BYTES)
+            stderr_status = _read_capped_tempfile(stderr_file, MAX_MODEL_STDERR_BYTES)
     except subprocess.TimeoutExpired as error:
         return [], _scenario_error(
             "timeout",
@@ -339,21 +367,36 @@ def _run_model_for_scenario(
     except OSError as error:
         return [], _scenario_error("command_error", str(error))
 
+    if stdout_status["truncated"]:
+        return [], _scenario_error(
+            "output_too_large",
+            "Model stdout exceeded {} bytes".format(MAX_MODEL_STDOUT_BYTES),
+            stdout=stdout_status["text"],
+            stdout_bytes=stdout_status["byte_count"],
+            stderr=stderr_status["text"],
+            stderr_bytes=stderr_status["byte_count"],
+            stderr_truncated=stderr_status["truncated"],
+        )
     if completed.returncode != 0:
         return [], _scenario_error(
             "nonzero_exit",
             "Model command exited with status {}".format(completed.returncode),
             returncode=completed.returncode,
-            stderr=_truncate(completed.stderr),
+            stderr=stderr_status["text"],
+            stderr_bytes=stderr_status["byte_count"],
+            stderr_truncated=stderr_status["truncated"],
         )
     try:
-        payload = json.loads(completed.stdout)
+        payload = json.loads(stdout_status["text"])
     except json.JSONDecodeError as error:
         return [], _scenario_error(
             "malformed_json",
             "Model stdout was not strict JSON: {}".format(error),
-            stdout=_truncate(completed.stdout),
-            stderr=_truncate(completed.stderr),
+            stdout=stdout_status["text"],
+            stdout_bytes=stdout_status["byte_count"],
+            stderr=stderr_status["text"],
+            stderr_bytes=stderr_status["byte_count"],
+            stderr_truncated=stderr_status["truncated"],
         )
     try:
         return _validate_model_output_payload(payload, transcript_scenario), None
@@ -361,8 +404,11 @@ def _run_model_for_scenario(
         return [], _scenario_error(
             "validation_error",
             str(error),
-            stdout=_truncate(completed.stdout),
-            stderr=_truncate(completed.stderr),
+            stdout=stdout_status["text"],
+            stdout_bytes=stdout_status["byte_count"],
+            stderr=stderr_status["text"],
+            stderr_bytes=stderr_status["byte_count"],
+            stderr_truncated=stderr_status["truncated"],
         )
 
 
@@ -534,6 +580,21 @@ def _truncate(text: object, limit: int = 4000) -> str:
     if len(value) <= limit:
         return value
     return value[:limit] + "...<truncated>"
+
+
+def _read_capped_tempfile(handle, max_bytes: int) -> Dict[str, object]:
+    handle.seek(0, 2)
+    byte_count = handle.tell()
+    handle.seek(0)
+    data = handle.read(max_bytes + 1)
+    truncated = len(data) > max_bytes or byte_count > max_bytes
+    if truncated:
+        data = data[:max_bytes]
+    return {
+        "text": data.decode("utf-8", errors="replace"),
+        "byte_count": byte_count,
+        "truncated": truncated,
+    }
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
