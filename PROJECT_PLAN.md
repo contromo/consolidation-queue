@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-06
+Last updated: 2026-05-07
 
 ## Goal
 
@@ -275,11 +275,11 @@ Implemented:
 - weak negative-control and forced-contradiction positive-control extractor modes
 - command-adapter `model` mode with required model id, prompt metadata, decoding metadata, and per-scenario `scenario_errors`
 - component-eval handling for `scenario_errors` and extra same-event predictions
+- per-component failure examples for non-oracle predictions, including candidate, claim/scope, canonicalization, contradiction, and scenario-error diagnostics
 - first deterministic local Ollama command and forced-contradiction prompt, with Qwen 2.5 7B floor and 32B headroom artifacts scored before any policy run
 
 Remaining:
 
-- add per-component failure examples once non-oracle predictions exist
 - broaden noisy component scoring beyond the 6-scenario forced-contradiction smoke before making stable extractor-quality or size-scaling claims
 
 Required outcome:
@@ -431,12 +431,11 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-The first deterministic forced-contradiction local-model command/prompt and component scoring artifacts are complete. Next:
+The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. Next:
 
-1. Add per-component failure examples for non-oracle predictions now that the first noisy outputs exist.
-2. Broaden local-model component scoring beyond the 6-scenario forced-contradiction smoke before making stable extractor-quality, size-scaling, or Phase 4-vs-Phase 5 claims.
-3. Run policy comparisons with extracted candidates only after component outputs are saved, scored, and inspectable separately from policy outcomes.
-4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
+1. Broaden local-model component scoring beyond the 6-scenario forced-contradiction smoke before making stable extractor-quality, size-scaling, or Phase 4-vs-Phase 5 claims.
+2. Run policy comparisons with extracted candidates only after component outputs are saved, scored, and inspectable separately from policy outcomes.
+3. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
 

@@ -188,6 +188,8 @@ python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 4 --
 
 Prediction JSON must use a top-level `scenario_predictions` object keyed by `scenario_id`. Extractor predictions should use event-aligned contradiction edges with `contradicts_event_ids`; legacy oracle/backcompat predictions may still use `candidate_id` and `contradicts`. Optional `confidence` values must be numeric or `null`.
 
+Component-evaluation artifacts include capped `failure_examples` for scored prediction JSON. Examples are derived from the same matching records as the metrics and cover candidate detection, claim/scope mismatches, canonicalization split/merge pairs, contradiction edges, and `scenario_errors`. Canonicalization examples can appear even when B-cubed is suppressed by low coverage; they explain observed cluster behavior, not an active score.
+
 Run the transcript-only local extractor bridge smoke tests:
 
 ```bash
