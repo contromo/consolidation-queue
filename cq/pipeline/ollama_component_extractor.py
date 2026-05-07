@@ -302,7 +302,7 @@ def _parse_version_prefix(version: str) -> Tuple[int, int, int]:
     return tuple(int(item) for item in match.groups())  # type: ignore[return-value]
 
 
-def _known_event_id_list(value: object, known_event_ids: Sequence[str]) -> bool:
+def _known_event_id_list(value: object, known_event_ids: Iterable[str]) -> bool:
     if not isinstance(value, list):
         return False
     return all(isinstance(item, str) and item in known_event_ids for item in value)
