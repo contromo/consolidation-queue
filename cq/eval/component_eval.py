@@ -57,12 +57,8 @@ class _ComponentEvaluationClassification:
     counters: Dict[str, int]
     canonical_gold: Dict[str, str]
     canonical_predicted: Dict[str, str]
-    gold_claim_payloads_by_item: Dict[str, Dict[str, object]]
-    predicted_claim_payloads_by_item: Dict[str, Dict[str, object]]
     gold_contradictions: Set[Tuple[str, Tuple[str, str]]]
     predicted_contradictions: Set[Tuple[str, Tuple[str, str]]]
-    gold_contradiction_payloads: Dict[Tuple[str, Tuple[str, str]], Dict[str, object]]
-    predicted_contradiction_payloads: Dict[Tuple[str, Tuple[str, str]], Dict[str, object]]
     prediction_counts_per_event: List[int]
     failure_example_candidates: List[Dict[str, object]]
 
@@ -347,12 +343,8 @@ def _classify_component_predictions(
         counters=counters,
         canonical_gold=canonical_gold,
         canonical_predicted=canonical_predicted,
-        gold_claim_payloads_by_item=gold_claim_payloads_by_item,
-        predicted_claim_payloads_by_item=predicted_claim_payloads_by_item,
         gold_contradictions=gold_contradictions,
         predicted_contradictions=predicted_contradictions,
-        gold_contradiction_payloads=gold_contradiction_payloads,
-        predicted_contradiction_payloads=predicted_contradiction_payloads,
         prediction_counts_per_event=prediction_counts_per_event,
         failure_example_candidates=failure_example_candidates,
     )
