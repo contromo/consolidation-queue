@@ -317,6 +317,108 @@ class LocalExtractorTests(unittest.TestCase):
             self.assertEqual(error["error_type"], "command_error")
             self.assertEqual(output["successful_scenario_count"], 0)
 
+    def test_model_command_maps_structured_backend_failure_to_command_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            output = build_extractor_output(
+                family="forced_contradiction",
+                scenario_count=1,
+                template_mix="dirty",
+                mode=MODEL_MODE,
+                model_command=_fake_model_command(script_path, "command_error_payload"),
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                per_scenario_timeout_seconds=5,
+            )
+
+            error = next(iter(output["scenario_errors"].values()))
+            self.assertEqual(error["error_type"], "command_error")
+            self.assertIn("Ollama unavailable", error["message"])
+            self.assertEqual(output["successful_scenario_count"], 0)
+
+    def test_model_command_preserves_model_diagnostics_and_digest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            output = build_extractor_output(
+                family="forced_contradiction",
+                scenario_count=1,
+                template_mix="dirty",
+                mode=MODEL_MODE,
+                model_command=_fake_model_command(script_path, "diagnostics"),
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                per_scenario_timeout_seconds=5,
+            )
+
+            scenario_id = next(iter(output["scenario_predictions"]))
+            self.assertEqual(output["model_digest"], "sha256:fake-digest")
+            diagnostics = output["model_diagnostics"]
+            self.assertEqual(diagnostics["ollama_server_version"], "fake-ollama-1.0")
+            self.assertEqual(diagnostics["wrapper_name"], "ollama_component_extractor")
+            self.assertTrue(diagnostics["constrained_decoding"])
+            repair_counts = diagnostics["scenarios"][scenario_id]["repair_counts"]
+            self.assertEqual(repair_counts["candidate_id_cleared"], 1)
+            self.assertEqual(repair_counts["contradicts_renamed"], 0)
+            self.assertEqual(repair_counts["extra_top_level_dropped"], 0)
+
+    def test_model_command_preserves_diagnostics_on_validation_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            output = build_extractor_output(
+                family="forced_contradiction",
+                scenario_count=1,
+                template_mix="dirty",
+                mode=MODEL_MODE,
+                model_command=_fake_model_command(script_path, "diagnostics_bad_confidence"),
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                per_scenario_timeout_seconds=5,
+            )
+
+            scenario_id = next(iter(output["scenario_errors"]))
+            self.assertEqual(output["scenario_errors"][scenario_id]["error_type"], "validation_error")
+            self.assertEqual(output["model_digest"], "sha256:fake-digest")
+            repair_counts = output["model_diagnostics"]["scenarios"][scenario_id]["repair_counts"]
+            self.assertEqual(repair_counts["candidate_id_cleared"], 1)
+
+    def test_model_command_records_backend_drift_as_scenario_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            output = build_extractor_output(
+                family="forced_contradiction",
+                scenario_count=2,
+                template_mix="dirty",
+                mode=MODEL_MODE,
+                model_command=_fake_model_command(script_path, "diagnostics_drift"),
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                per_scenario_timeout_seconds=5,
+            )
+
+            self.assertEqual(output["successful_scenario_count"], 1)
+            self.assertEqual(output["model_digest"], "sha256:first-digest")
+            error = output["scenario_errors"]["forced_contradiction_002"]
+            self.assertEqual(error["error_type"], "backend_drift")
+            self.assertEqual(error["mismatches"][0]["field"], "model_digest")
+            self.assertEqual(error["mismatches"][0]["expected"], "sha256:first-digest")
+            self.assertEqual(error["mismatches"][0]["observed"], "sha256:second-digest")
+            self.assertIn(
+                "forced_contradiction_002",
+                output["model_diagnostics"]["scenarios"],
+            )
+
     def test_model_command_records_oversized_stdout_as_per_scenario_error(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             script_path = _write_fake_model_script(Path(tmpdir))
@@ -459,6 +561,10 @@ if behavior == "nonjson":
 if behavior == "large":
     sys.stdout.write("x" * (__MAX_STDOUT__ + 1))
     sys.exit(0)
+if behavior == "command_error_payload":
+    json.dump({"error_type": "command_error", "message": "Ollama unavailable"}, sys.stdout)
+    print("server offline", file=sys.stderr)
+    sys.exit(2)
 
 payload = json.load(sys.stdin)
 scenario = payload["scenario"]
@@ -494,6 +600,39 @@ prediction = {
 
 if behavior == "valid":
     json.dump({"predictions": [prediction]}, sys.stdout)
+elif behavior in ("diagnostics", "diagnostics_bad_confidence", "diagnostics_drift"):
+    prediction["candidate_id"] = ""
+    if behavior == "diagnostics_bad_confidence":
+        prediction["confidence"] = "high"
+    model_digest = "sha256:fake-digest"
+    if behavior == "diagnostics_drift":
+        model_digest = (
+            "sha256:first-digest"
+            if scenario["scenario_id"].endswith("_001")
+            else "sha256:second-digest"
+        )
+    json.dump(
+        {
+            "predictions": [prediction],
+            "model_diagnostics": {
+                "ollama_server_version": "fake-ollama-1.0",
+                "wrapper_name": "ollama_component_extractor",
+                "wrapper_version": "v1",
+                "constrained_decoding": True,
+                "model_digest": model_digest,
+                "scenarios": {
+                    scenario["scenario_id"]: {
+                        "repair_counts": {
+                            "candidate_id_cleared": 1,
+                            "contradicts_renamed": 0,
+                            "extra_top_level_dropped": 0,
+                        }
+                    }
+                },
+            },
+        },
+        sys.stdout,
+    )
 elif behavior == "bad_shape":
     json.dump({"items": [prediction]}, sys.stdout)
 elif behavior == "candidate_id":

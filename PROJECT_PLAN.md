@@ -96,14 +96,14 @@ Implemented:
 - contradiction-gate applicability metadata so no-edge families are marked not applicable rather than failed
 - transcript-only local extractor bridge with hard input isolation, weak negative-control mode, and forced-contradiction positive-control mode
 - transcript-only command-adapter extractor transport for user-provided local model commands, with reproducibility metadata and per-scenario error reporting
+- first forced-contradiction local-model smoke artifacts through the transcript-only bridge, using matched Qwen 2.5 `Q4_K_M` 7B floor and 32B headroom runs with scored component outputs
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
 Not implemented yet:
 
 - lexical or embedding-based `TranscriptRAG`
-- scored local-model noisy pipeline
-- committed first local-model command/prompt and measured noisy component outputs behind the transcript-only bridge
+- broader scored local-model noisy pipeline beyond the forced-contradiction smoke sample
 - optional 32B/70B routing
 - LongMemEval transfer check
 - final writeup docs
@@ -275,12 +275,12 @@ Implemented:
 - weak negative-control and forced-contradiction positive-control extractor modes
 - command-adapter `model` mode with required model id, prompt metadata, decoding metadata, and per-scenario `scenario_errors`
 - component-eval handling for `scenario_errors` and extra same-event predictions
+- first deterministic local Ollama command and forced-contradiction prompt, with Qwen 2.5 7B floor and 32B headroom artifacts scored before any policy run
 
 Remaining:
 
-- choose and run the first deterministic local-model command and prompt through the command adapter
-- score first non-oracle component outputs before any policy run
 - add per-component failure examples once non-oracle predictions exist
+- broaden noisy component scoring beyond the 6-scenario forced-contradiction smoke before making stable extractor-quality or size-scaling claims
 
 Required outcome:
 
@@ -431,11 +431,12 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Choose the first deterministic local model command/prompt, run it through `cq.pipeline.local_extractor --mode model`, and save the resulting `scenario_predictions` plus any `scenario_errors`.
-2. Score the first noisy extractor outputs with `cq.eval.component_eval` before any policy run; if gates fail, record the failure as component quality evidence rather than policy evidence.
-3. Add per-component failure examples for non-oracle predictions once the first noisy outputs exist.
-4. Run policy comparisons with extracted candidates only after component outputs are saved, scored, and inspectable separately from policy outcomes.
-5. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
+The first deterministic forced-contradiction local-model command/prompt and component scoring artifacts are complete. Next:
+
+1. Add per-component failure examples for non-oracle predictions now that the first noisy outputs exist.
+2. Broaden local-model component scoring beyond the 6-scenario forced-contradiction smoke before making stable extractor-quality, size-scaling, or Phase 4-vs-Phase 5 claims.
+3. Run policy comparisons with extracted candidates only after component outputs are saved, scored, and inspectable separately from policy outcomes.
+4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
 

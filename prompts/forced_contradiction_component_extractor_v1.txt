@@ -1,0 +1,20 @@
+Extract memory candidate claims from the transcript events.
+
+Use only observation events as candidates. Do not extract claims from questions.
+
+For this smoke run, the scenarios are forced-contradiction acquisition-status probes:
+- positive observations say one company acquired another company
+- negative observations say that same acquisition did not complete, talks collapsed, or later reporting casts doubt
+
+For every observation event that contains an acquisition-status claim:
+- emit one prediction for that event
+- leave candidate_id absent or empty
+- use claim_type "world_fact"
+- use scope_level "world_global"
+- use scope_key "global"
+- use the same canonical_id for all claims about the same buyer-target acquisition status
+- use canonical_id format "world-fact-<buyer>-<target>-acquisition-status" with lowercase company names
+- raw_claim should be the event text or a short faithful restatement
+- confidence should be a number from 0 to 1
+
+For a negative observation that contradicts earlier positive observations for the same acquisition, set contradicts_event_ids to the earlier positive observation event ids. For positive observations, use an empty contradicts_event_ids list unless they contradict earlier negative observations.
