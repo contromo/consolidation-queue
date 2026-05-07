@@ -281,17 +281,15 @@ def _classify_component_predictions(
                     target_event_id,
                 )
                 gold_contradictions.add(edge)
-                gold_contradiction_payloads.setdefault(
-                    edge,
-                    _contradiction_payload(
+                if edge not in gold_contradiction_payloads:
+                    gold_contradiction_payloads[edge] = _contradiction_payload(
                         metadata,
                         event_id,
                         target_event_id,
                         _candidate_claim_payload(event_id, gold),
                         _candidate_claim_payload(target_event_id, gold_by_event[target_event_id]),
                         event_text_by_id,
-                    ),
-                )
+                    )
         canonical_gold.update(scenario_canonical_gold)
         canonical_predicted.update(scenario_canonical_predicted)
         gold_claim_payloads_by_item.update(scenario_gold_claim_payloads_by_item)
