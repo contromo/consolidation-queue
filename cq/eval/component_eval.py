@@ -118,8 +118,6 @@ def _classify_component_predictions(
     counters = _new_counters()
     canonical_gold: Dict[str, str] = {}
     canonical_predicted: Dict[str, str] = {}
-    gold_claim_payloads_by_item: Dict[str, Dict[str, object]] = {}
-    predicted_claim_payloads_by_item: Dict[str, Dict[str, object]] = {}
     gold_contradictions: Set[Tuple[str, Tuple[str, str]]] = set()
     predicted_contradictions: Set[Tuple[str, Tuple[str, str]]] = set()
     gold_contradiction_payloads: Dict[Tuple[str, Tuple[str, str]], Dict[str, object]] = {}
@@ -292,8 +290,6 @@ def _classify_component_predictions(
                     )
         canonical_gold.update(scenario_canonical_gold)
         canonical_predicted.update(scenario_canonical_predicted)
-        gold_claim_payloads_by_item.update(scenario_gold_claim_payloads_by_item)
-        predicted_claim_payloads_by_item.update(scenario_predicted_claim_payloads_by_item)
 
         for predicted in predictions:
             edges_with_payloads = _predicted_contradiction_edges_with_payloads(
