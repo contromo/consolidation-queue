@@ -231,6 +231,28 @@ class LocalExtractorTests(unittest.TestCase):
             for error in output["scenario_errors"].values():
                 self.assertEqual(error["error_type"], "timeout")
 
+    def test_model_command_captures_stderr_on_timeout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = _write_fake_model_script(Path(tmpdir))
+            prompt_path = Path(tmpdir) / "prompt.txt"
+            prompt_path.write_text("Extract transcript claims.\n", encoding="utf-8")
+
+            output = build_extractor_output(
+                family="forced_contradiction",
+                scenario_count=1,
+                template_mix="dirty",
+                mode=MODEL_MODE,
+                model_command=_fake_model_command(script_path, "sleep_stderr"),
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                per_scenario_timeout_seconds=0.05,
+            )
+
+            error = next(iter(output["scenario_errors"].values()))
+            self.assertEqual(error["error_type"], "timeout")
+            self.assertIn("stderr before timeout", error["stderr"])
+            self.assertGreater(error["stderr_bytes"], 0)
+
     def test_model_command_records_command_and_json_failures_per_scenario(self) -> None:
         cases = (
             ("exit", "nonzero_exit", "exited with status"),
@@ -408,6 +430,9 @@ import time
 
 behavior = sys.argv[1]
 if behavior == "sleep":
+    time.sleep(5)
+if behavior == "sleep_stderr":
+    print("stderr before timeout", file=sys.stderr, flush=True)
     time.sleep(5)
 if behavior == "exit":
     print("failed", file=sys.stderr)

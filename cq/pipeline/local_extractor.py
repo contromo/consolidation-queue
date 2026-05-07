@@ -347,23 +347,27 @@ def _run_model_for_scenario(
         return [], _scenario_error("input_encoding_error", str(error))
     try:
         with tempfile.TemporaryFile() as stdout_file, tempfile.TemporaryFile() as stderr_file:
-            completed = subprocess.run(
-                config.model_argv,
-                input=stdin_bytes,
-                stdout=stdout_file,
-                stderr=stderr_file,
-                timeout=config.per_scenario_timeout_seconds,
-            )
+            try:
+                completed = subprocess.run(
+                    config.model_argv,
+                    input=stdin_bytes,
+                    stdout=stdout_file,
+                    stderr=stderr_file,
+                    timeout=config.per_scenario_timeout_seconds,
+                )
+            except subprocess.TimeoutExpired:
+                stderr_status = _read_capped_tempfile(stderr_file, MAX_MODEL_STDERR_BYTES)
+                return [], _scenario_error(
+                    "timeout",
+                    "Model command timed out after {} seconds".format(
+                        config.per_scenario_timeout_seconds
+                    ),
+                    stderr=stderr_status["text"],
+                    stderr_bytes=stderr_status["byte_count"],
+                    stderr_truncated=stderr_status["truncated"],
+                )
             stdout_status = _read_capped_tempfile(stdout_file, MAX_MODEL_STDOUT_BYTES)
             stderr_status = _read_capped_tempfile(stderr_file, MAX_MODEL_STDERR_BYTES)
-    except subprocess.TimeoutExpired as error:
-        return [], _scenario_error(
-            "timeout",
-            "Model command timed out after {} seconds".format(
-                config.per_scenario_timeout_seconds
-            ),
-            stderr=_truncate(error.stderr or ""),
-        )
     except OSError as error:
         return [], _scenario_error("command_error", str(error))
 

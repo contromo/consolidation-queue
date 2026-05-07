@@ -23,9 +23,9 @@
 
 ### Evidence
 
-- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_local_extractor -q` passes with 15 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_local_extractor -q` passes with 16 tests
 - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_eval -q` passes with 29 tests
-- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 212 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 213 tests
 - oracle upper-bound regression coverage confirms all applicable gates remain `1.00` across the current family/template matrix
 - no real noisy model artifact was generated in this slice; fake command wrappers cover transport and validation behavior only
 
