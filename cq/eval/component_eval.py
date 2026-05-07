@@ -259,17 +259,24 @@ def _classify_component_predictions(
                     )
                 )
 
+        scenario_canonical_gold: Dict[str, str] = {}
+        scenario_canonical_predicted: Dict[str, str] = {}
+        scenario_gold_claim_payloads_by_item: Dict[str, Dict[str, object]] = {}
+        scenario_predicted_claim_payloads_by_item: Dict[str, Dict[str, object]] = {}
         for event_id, gold in gold_by_event.items():
             item_id = _component_item_id(scenario.scenario_id, event_id)
-            canonical_gold[item_id] = _scoped_canonical_label(scenario.scenario_id, gold.canonical_id)
-            gold_claim_payloads_by_item[item_id] = _candidate_claim_payload(event_id, gold)
+            scenario_canonical_gold[item_id] = _scoped_canonical_label(
+                scenario.scenario_id,
+                gold.canonical_id,
+            )
+            scenario_gold_claim_payloads_by_item[item_id] = _candidate_claim_payload(event_id, gold)
             predicted = prediction_by_event.get(event_id)
             if predicted is not None:
-                canonical_predicted[item_id] = _scoped_canonical_label(
+                scenario_canonical_predicted[item_id] = _scoped_canonical_label(
                     scenario.scenario_id,
                     predicted.canonical_id,
                 )
-                predicted_claim_payloads_by_item[item_id] = _prediction_claim_payload(predicted)
+                scenario_predicted_claim_payloads_by_item[item_id] = _prediction_claim_payload(predicted)
             for target_id in gold.contradicts:
                 target_event_id = candidate_id_to_event_id[target_id]
                 edge = _contradiction_edge(
@@ -289,6 +296,10 @@ def _classify_component_predictions(
                         event_text_by_id,
                     ),
                 )
+        canonical_gold.update(scenario_canonical_gold)
+        canonical_predicted.update(scenario_canonical_predicted)
+        gold_claim_payloads_by_item.update(scenario_gold_claim_payloads_by_item)
+        predicted_claim_payloads_by_item.update(scenario_predicted_claim_payloads_by_item)
 
         for predicted in predictions:
             edges_with_payloads = _predicted_contradiction_edges_with_payloads(
@@ -306,11 +317,10 @@ def _classify_component_predictions(
             failure_example_candidates,
             metadata=metadata,
             event_text_by_id=event_text_by_id,
-            canonical_gold=canonical_gold,
-            canonical_predicted=canonical_predicted,
-            gold_claim_payloads_by_item=gold_claim_payloads_by_item,
-            predicted_claim_payloads_by_item=predicted_claim_payloads_by_item,
-            scenario_id=scenario.scenario_id,
+            canonical_gold=scenario_canonical_gold,
+            canonical_predicted=scenario_canonical_predicted,
+            gold_claim_payloads_by_item=scenario_gold_claim_payloads_by_item,
+            predicted_claim_payloads_by_item=scenario_predicted_claim_payloads_by_item,
         )
 
     contradiction_missing = gold_contradictions - predicted_contradictions
@@ -689,13 +699,9 @@ def _add_canonicalization_failure_examples(
     canonical_predicted: Dict[str, str],
     gold_claim_payloads_by_item: Dict[str, Dict[str, object]],
     predicted_claim_payloads_by_item: Dict[str, Dict[str, object]],
-    scenario_id: str,
 ) -> None:
-    scenario_prefix = "{}::".format(scenario_id)
     evaluable_item_ids = sorted(
-        item_id
-        for item_id in set(canonical_gold).intersection(canonical_predicted)
-        if item_id.startswith(scenario_prefix)
+        set(canonical_gold).intersection(canonical_predicted)
     )
     for index, first_item_id in enumerate(evaluable_item_ids):
         for second_item_id in evaluable_item_ids[index + 1:]:
@@ -758,14 +764,13 @@ def _contradiction_payload(
     second_claim: Dict[str, object],
     event_text_by_id: Dict[str, str],
 ) -> Dict[str, object]:
-    payload = {
+    return {
+        "metadata": dict(metadata),
         "event_id": event_id,
         "other_event_id": other_event_id,
         "events": _involved_events(event_text_by_id, event_id, other_event_id),
         "endpoints": [first_claim, second_claim],
     }
-    payload.update(metadata)
-    return payload
 
 
 def _failure_example_from_contradiction(
@@ -774,18 +779,22 @@ def _failure_example_from_contradiction(
     component: str,
     payload: Dict[str, object],
 ) -> Dict[str, object]:
-    return {
-        "component": component,
-        "failure_type": failure_type,
-        "scenario_id": payload["scenario_id"],
-        "template_id": payload["template_id"],
-        "template_kind": payload["template_kind"],
-        "template_split": payload["template_split"],
-        "event_id": payload["event_id"],
-        "other_event_id": payload["other_event_id"],
-        "events": payload["events"],
-        "endpoints": payload["endpoints"],
-    }
+    metadata = payload.get("metadata", {})
+    events = payload.get("events", {})
+    if not isinstance(metadata, dict):
+        metadata = {}
+    if not isinstance(events, dict):
+        events = {}
+    example = _failure_example(
+        component=component,
+        failure_type=failure_type,
+        metadata=metadata,
+        event_text_by_id=events,
+        event_id=str(payload["event_id"]),
+        other_event_id=str(payload["other_event_id"]),
+    )
+    example["endpoints"] = payload["endpoints"]
+    return example
 
 
 def _prediction_from_candidate(
@@ -1054,6 +1063,8 @@ def _clusters_by_label(labels: Dict[str, str], item_ids: List[str]) -> Dict[str,
 def _limited_failure_examples(
     examples: List[Dict[str, object]],
 ) -> Tuple[List[Dict[str, object]], Dict[str, Dict[str, object]]]:
+    # TODO: Consider stratifying this cap by scenario before broad noisy sweeps;
+    # deterministic sort can overrepresent early scenario ids when failures are abundant.
     sorted_examples = sorted(examples, key=_failure_example_sort_key)
     per_type_limit = int(FAILURE_EXAMPLE_LIMITS["per_type"])
     emitted_counts: Dict[str, int] = {}
