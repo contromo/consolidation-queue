@@ -633,7 +633,7 @@ def _command_error_from_model_stdout(
     returncode: int,
 ) -> Optional[Dict[str, object]]:
     try:
-        payload = json.loads(str(stdout_status["text"]))
+        payload = json.loads(stdout_status["text"])
     except (json.JSONDecodeError, TypeError, KeyError):
         return None
     if not isinstance(payload, dict):
