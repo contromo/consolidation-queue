@@ -1,5 +1,37 @@
 # Product Progress
 
+## 2026-05-07 — Component failure examples added
+
+### What shipped
+
+- refactored `cq.eval.component_eval` so one classification pass drives both component metrics and diagnostic examples
+- added capped component failure examples to component-eval artifacts with `failure_example_count`, `failure_example_limits`, and `failure_example_overflow`
+- covered candidate missing/extra/duplicate predictions, claim type and scope mismatches, canonicalization split/merge pairs, contradiction missing/extra edges, and `scenario_errors`
+- kept oracle upper-bound artifacts on the same schema with empty failure examples
+- regenerated the weak, positive-control, Qwen 7B, and Qwen 32B forced-contradiction component-eval artifacts from existing prediction JSON without rerunning Ollama
+
+### Why it matters
+
+- broader noisy component scoring can now be inspected by failure type instead of raw prediction JSON only
+- canonicalization examples still surface when B-cubed is suppressed by low coverage, so low-recall extractor behavior remains diagnosable
+- this is observability for Phase 3/4 component quality, not a policy comparison or a new noisy-mode quality claim
+
+### Evidence
+
+- regenerated artifact failure-example counts:
+  - weak negative control: `22`
+  - positive control: `0`
+  - Qwen 2.5 7B floor: `4`
+  - Qwen 2.5 32B headroom: `0`
+- tests:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_eval -q` passes with 33 tests
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 231 tests
+
+### Open issues / next
+
+- broaden local-model component scoring beyond the 6-scenario forced-contradiction smoke before making stable extractor-quality or size-scaling claims
+- keep extracted-candidate policy comparisons blocked until component outputs are saved, scored, and inspectable separately
+
 ## 2026-05-07 — First local-model forced-contradiction smoke scored
 
 ### What shipped

@@ -21,6 +21,17 @@ from cq.schemas.scenario import EventKind
 from cq.simulator.scenario_generator import generate_forced_contradiction_scenarios
 
 
+def _failure_types(result):
+    return {example["failure_type"] for example in result["failure_examples"]}
+
+
+def _failure_by_type(result, failure_type):
+    for example in result["failure_examples"]:
+        if example["failure_type"] == failure_type:
+            return example
+    raise AssertionError("Missing failure type {}".format(failure_type))
+
+
 class ComponentEvalTests(unittest.TestCase):
     def test_oracle_predictions_pass_quality_gates(self) -> None:
         scenarios = generate_forced_contradiction_scenarios(3, template_mix="mixed")
@@ -60,6 +71,59 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertEqual(metrics["candidate_detection_fp"], 1)
         self.assertEqual(metrics["candidate_detection_fn"], 1)
         self.assertEqual(metrics["candidate_detection_f1"], 0.5)
+        self.assertEqual(
+            _failure_types(result),
+            {"candidate_extra", "candidate_missing", "contradiction_missing"},
+        )
+        missing = _failure_by_type(result, "candidate_missing")
+        self.assertEqual(missing["component"], "candidate_detection")
+        self.assertIn("gold", missing)
+        extra = _failure_by_type(result, "candidate_extra")
+        self.assertEqual(extra["predicted"]["canonical_id"], "extra-canonical")
+
+    def test_candidate_failure_examples_track_metric_classifications_before_cap(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        oracle_predictions = oracle_component_predictions(scenario)
+        predictions = [
+            oracle_predictions[0],
+            oracle_predictions[0],
+            CandidateComponentPrediction(
+                event_id="not-an-observation-event",
+                candidate_id="extra-candidate",
+                canonical_id="extra-canonical",
+                claim_type="world_fact",
+                scope_level="world_global",
+                scope_key="global",
+            ),
+        ]
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: predictions},
+        )
+        metrics = result["metrics"]
+        candidate_failure_counts = {
+            failure_type: sum(
+                1
+                for example in result["failure_examples"]
+                if example["failure_type"] == failure_type
+            )
+            for failure_type in (
+                "candidate_missing",
+                "candidate_extra",
+                "candidate_duplicate",
+            )
+        }
+
+        self.assertEqual(
+            candidate_failure_counts["candidate_missing"],
+            metrics["candidate_detection_fn"],
+        )
+        self.assertEqual(
+            candidate_failure_counts["candidate_extra"]
+            + candidate_failure_counts["candidate_duplicate"],
+            metrics["candidate_detection_fp"],
+        )
 
     def test_zero_prediction_extractor_fails_no_data_quality_gates(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
@@ -87,6 +151,10 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertFalse(gates["scope_key_accuracy"]["passed"])
         self.assertFalse(gates["canonicalization_b_cubed_f1"]["passed"])
         self.assertFalse(gates["contradiction_precision"]["passed"])
+        self.assertEqual(
+            _failure_types(result),
+            {"candidate_missing", "contradiction_missing"},
+        )
 
     def test_component_errors_affect_targeted_metrics(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
@@ -113,6 +181,13 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertLess(metrics["scope_key_accuracy"], 1.0)
         self.assertLess(metrics["canonicalization_b_cubed_f1"], 1.0)
         self.assertLess(metrics["contradiction_recall"], 1.0)
+        failure_types = _failure_types(result)
+        self.assertIn("claim_type_mismatch", failure_types)
+        self.assertIn("scope_level_mismatch", failure_types)
+        self.assertIn("scope_key_mismatch", failure_types)
+        mismatch = _failure_by_type(result, "claim_type_mismatch")
+        self.assertEqual(mismatch["gold"]["claim_type"], "world_fact")
+        self.assertEqual(mismatch["predicted"]["claim_type"], "tooling_preference")
 
     def test_contradiction_edges_match_when_prediction_direction_is_reversed(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
@@ -267,6 +342,9 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertEqual(metrics["contradiction_applicability"], "measured")
         self.assertEqual(metrics["contradiction_fp"], 1)
         self.assertFalse(gates["contradiction_f1"]["passed"])
+        extra = _failure_by_type(result, "contradiction_extra")
+        self.assertEqual(extra["component"], "contradiction")
+        self.assertEqual(len(extra["endpoints"]), 2)
 
     def test_symmetric_gold_contradiction_edges_are_not_double_counted(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
@@ -314,6 +392,9 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertEqual(metrics["predictions_per_event_max"], 2)
         self.assertAlmostEqual(metrics["candidate_detection_precision"], 2 / 3)
         self.assertEqual(metrics["candidate_detection_recall"], 1.0)
+        duplicate = _failure_by_type(result, "candidate_duplicate")
+        self.assertEqual(duplicate["component"], "candidate_detection")
+        self.assertEqual(duplicate["event_id"], predictions[0].event_id)
 
     def test_extra_same_event_prediction_does_not_hide_valid_prediction(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
@@ -351,6 +432,67 @@ class ComponentEvalTests(unittest.TestCase):
         self.assertEqual(metrics["scope_level_accuracy"], 1.0)
         self.assertEqual(metrics["scope_key_accuracy"], 1.0)
         self.assertEqual(metrics["canonicalization_b_cubed_f1"], 1.0)
+        self.assertIn("candidate_duplicate", _failure_types(result))
+
+    def test_canonicalization_split_example_emits_below_score_coverage_threshold(self) -> None:
+        scenario = generate_scenarios("false_corroboration", 1, "clean")[0]
+        oracle_predictions = oracle_component_predictions(scenario)
+        predictions = [
+            oracle_predictions[0],
+            CandidateComponentPrediction(
+                event_id=oracle_predictions[1].event_id,
+                candidate_id="",
+                canonical_id="wrong-split-cluster",
+                claim_type=oracle_predictions[1].claim_type,
+                scope_level=oracle_predictions[1].scope_level,
+                scope_key=oracle_predictions[1].scope_key,
+            ),
+        ]
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: predictions},
+        )
+
+        self.assertLess(
+            result["metrics"]["canonicalization_coverage"],
+            result["metrics"]["canonicalization_coverage_threshold"],
+        )
+        self.assertIsNone(result["metrics"]["canonicalization_b_cubed_f1"])
+        split = _failure_by_type(result, "canonicalization_split")
+        self.assertEqual(split["component"], "canonicalization")
+        self.assertEqual(len(split["gold"]), 2)
+        self.assertEqual(len(split["predicted"]), 2)
+
+    def test_canonicalization_merge_example_is_pair_based(self) -> None:
+        scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+        observations = [
+            event
+            for event in scenario.sorted_events()
+            if event.kind == EventKind.OBSERVATION and event.candidate is not None
+        ]
+        observations[1].candidate.canonical_id = "different-gold-cluster"
+        predictions = oracle_component_predictions(scenario)
+        predictions[1] = CandidateComponentPrediction(
+            event_id=predictions[1].event_id,
+            candidate_id="",
+            canonical_id=predictions[0].canonical_id,
+            claim_type=predictions[1].claim_type,
+            scope_level=predictions[1].scope_level,
+            scope_key=predictions[1].scope_key,
+        )
+
+        result = evaluate_component_predictions(
+            [scenario],
+            {scenario.scenario_id: predictions},
+        )
+
+        merge = _failure_by_type(result, "canonicalization_merge")
+        self.assertEqual(merge["component"], "canonicalization")
+        self.assertEqual(merge["event_id"], predictions[0].event_id)
+        self.assertEqual(merge["other_event_id"], predictions[1].event_id)
+        self.assertNotEqual(merge["gold"][0]["canonical_id"], merge["gold"][1]["canonical_id"])
+        self.assertEqual(merge["predicted"][0]["canonical_id"], merge["predicted"][1]["canonical_id"])
 
     def test_b_cubed_matches_hand_computed_clustering_case(self) -> None:
         result = _b_cubed(
@@ -396,7 +538,8 @@ class ComponentEvalTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "component_eval.json"
 
-            with redirect_stdout(StringIO()):
+            stdout = StringIO()
+            with redirect_stdout(stdout):
                 exit_code = main(
                     [
                         "--family",
@@ -415,6 +558,10 @@ class ComponentEvalTests(unittest.TestCase):
             self.assertEqual(artifact["mode"], "oracle_component_upper_bound")
             self.assertEqual(artifact["scenario_count"], 2)
             self.assertEqual(artifact["metrics"]["candidate_detection_f1"], 1.0)
+            self.assertEqual(artifact["failure_examples"], [])
+            self.assertEqual(artifact["failure_example_count"], 0)
+            self.assertEqual(artifact["failure_example_limits"], {"per_type": 20})
+            self.assertIn("failure_examples=0", stdout.getvalue())
 
     def test_cli_scores_prediction_json(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
@@ -435,7 +582,8 @@ class ComponentEvalTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            with redirect_stdout(StringIO()):
+            stdout = StringIO()
+            with redirect_stdout(stdout):
                 exit_code = main(
                     [
                         "--family",
@@ -455,6 +603,9 @@ class ComponentEvalTests(unittest.TestCase):
             artifact = json.loads(output_path.read_text(encoding="utf-8"))
             self.assertEqual(artifact["mode"], "component_predictions")
             self.assertEqual(artifact["metrics"]["candidate_detection_f1"], 1.0)
+            self.assertEqual(artifact["failure_examples"], [])
+            self.assertEqual(artifact["failure_example_count"], 0)
+            self.assertIn("failure_examples=0", stdout.getvalue())
 
     def test_cli_reports_scenario_errors_as_zero_predictions(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
@@ -503,6 +654,9 @@ class ComponentEvalTests(unittest.TestCase):
             self.assertEqual(artifact["metrics"]["scenario_error_count"], 1)
             self.assertEqual(artifact["metrics"]["candidate_detection_tp"], 0)
             self.assertEqual(artifact["metrics"]["candidate_detection_fn"], 2)
+            self.assertIn("scenario_error", _failure_types(artifact))
+            scenario_error = _failure_by_type(artifact, "scenario_error")
+            self.assertEqual(scenario_error["error"]["error_type"], "validation_error")
 
     def test_load_predictions_by_scenario_accepts_missing_contradicts(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -643,6 +797,31 @@ class ComponentEvalTests(unittest.TestCase):
         )
 
         self.assertEqual(artifact["mode"], "oracle_component_upper_bound")
+        self.assertEqual(artifact["failure_examples"], [])
+        self.assertEqual(artifact["failure_example_count"], 0)
+
+    def test_failure_examples_are_capped_per_type_with_overflow(self) -> None:
+        scenarios = generate_forced_contradiction_scenarios(25, template_mix="dirty")
+
+        result = evaluate_component_predictions(
+            scenarios,
+            {scenario.scenario_id: [] for scenario in scenarios},
+        )
+
+        candidate_missing_examples = [
+            example
+            for example in result["failure_examples"]
+            if example["failure_type"] == "candidate_missing"
+        ]
+        self.assertEqual(len(candidate_missing_examples), 20)
+        self.assertEqual(
+            result["failure_example_overflow"]["candidate_missing"],
+            {
+                "emitted": 20,
+                "omitted": result["metrics"]["candidate_detection_fn"] - 20,
+                "truncated": True,
+            },
+        )
 
     def test_mechanism_diverse_heldout_oracle_artifact_uses_frozen_lock(self) -> None:
         artifact = build_oracle_component_eval_artifact(
