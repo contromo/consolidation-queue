@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
@@ -63,20 +64,31 @@ def oracle_predictions_by_scenario(
 def evaluate_component_predictions(
     scenarios: Iterable[Scenario],
     predictions_by_scenario: Dict[str, List[CandidateComponentPrediction]],
+    scenario_errors: Optional[Dict[str, object]] = None,
 ) -> Dict[str, object]:
+    scenario_errors = scenario_errors or {}
     counters = _new_counters()
     canonical_gold: Dict[str, str] = {}
     canonical_predicted: Dict[str, str] = {}
     gold_contradictions = set()
     predicted_contradictions = set()
+    prediction_counts_per_event: List[int] = []
     scenario_count = 0
 
     for scenario in scenarios:
         scenario_count += 1
-        predictions = predictions_by_scenario.get(scenario.scenario_id, [])
+        predictions = (
+            []
+            if scenario.scenario_id in scenario_errors
+            else predictions_by_scenario.get(scenario.scenario_id, [])
+        )
         gold_by_event = _gold_candidates_by_event(scenario)
         candidate_id_to_event_id = _candidate_id_to_event_id(scenario)
-        prediction_by_event, duplicate_count = _first_predictions_by_event(predictions)
+        prediction_by_event, duplicate_count, event_prediction_counts = _best_predictions_by_event(
+            predictions,
+            gold_by_event,
+        )
+        prediction_counts_per_event.extend(event_prediction_counts)
         gold_event_ids = set(gold_by_event)
         predicted_event_ids = set(prediction_by_event)
         true_positive_events = gold_event_ids.intersection(predicted_event_ids)
@@ -84,6 +96,7 @@ def evaluate_component_predictions(
         counters["candidate_detection_tp"] += len(true_positive_events)
         counters["candidate_detection_fp"] += len(predicted_event_ids - gold_event_ids) + duplicate_count
         counters["candidate_detection_fn"] += len(gold_event_ids - predicted_event_ids)
+        counters["extra_same_event_prediction_count"] += duplicate_count
         counters["claim_type_count"] += len(true_positive_events)
         counters["scope_level_count"] += len(true_positive_events)
         counters["scope_key_count"] += len(true_positive_events)
@@ -155,6 +168,14 @@ def evaluate_component_predictions(
 
     metrics = {
         "scenario_count": scenario_count,
+        "scenario_error_count": len(scenario_errors),
+        "predicted_event_count": len(prediction_counts_per_event),
+        "extra_same_event_prediction_count": counters["extra_same_event_prediction_count"],
+        "predictions_per_event_p50": _percentile(prediction_counts_per_event, 0.50),
+        "predictions_per_event_p95": _percentile(prediction_counts_per_event, 0.95),
+        "predictions_per_event_max": max(prediction_counts_per_event)
+        if prediction_counts_per_event
+        else 0,
         "candidate_detection_tp": counters["candidate_detection_tp"],
         "candidate_detection_fp": counters["candidate_detection_fp"],
         "candidate_detection_fn": counters["candidate_detection_fn"],
@@ -237,21 +258,29 @@ def build_component_eval_artifact(
     scenario_count: int,
     template_mix: str,
     predictions_by_scenario: Optional[Dict[str, List[CandidateComponentPrediction]]] = None,
+    scenario_errors: Optional[Dict[str, object]] = None,
     mode: Optional[str] = None,
 ) -> Dict[str, object]:
     scenarios = generate_scenarios(family, scenario_count, template_mix)
+    scenario_errors = scenario_errors or {}
     if predictions_by_scenario is None:
         predictions_by_scenario = oracle_predictions_by_scenario(scenarios)
         artifact_mode = mode or "oracle_component_upper_bound"
     else:
         artifact_mode = mode or "component_predictions"
-    evaluation = evaluate_component_predictions(scenarios, predictions_by_scenario)
+    evaluation = evaluate_component_predictions(
+        scenarios,
+        predictions_by_scenario,
+        scenario_errors=scenario_errors,
+    )
     return {
         "mode": artifact_mode,
         "family": family,
         "template_mix": template_mix,
         "requested_scenario_count": scenario_count,
         "scenario_count": len(scenarios),
+        "scenario_error_count": len(scenario_errors),
+        "scenario_errors": jsonable(scenario_errors),
         "quality_gate_thresholds": QUALITY_GATES,
         "metrics": evaluation["metrics"],
         "quality_gates": evaluation["quality_gates"],
@@ -276,6 +305,14 @@ def load_predictions_by_scenario(
     }
 
 
+def load_scenario_errors(predictions_path: Path) -> Dict[str, object]:
+    payload = json.loads(predictions_path.read_text(encoding="utf-8"))
+    scenario_errors = payload.get("scenario_errors", {}) if isinstance(payload, dict) else {}
+    if not isinstance(scenario_errors, dict):
+        raise ValueError("scenario_errors must be an object keyed by scenario_id")
+    return scenario_errors
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Evaluate component predictions against scenario oracle labels."
@@ -292,11 +329,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         if args.predictions_json
         else None
     )
+    scenario_errors = (
+        load_scenario_errors(Path(args.predictions_json))
+        if args.predictions_json
+        else None
+    )
     artifact = build_component_eval_artifact(
         family=args.family,
         scenario_count=args.scenarios,
         template_mix=args.template_mix,
         predictions_by_scenario=predictions_by_scenario,
+        scenario_errors=scenario_errors,
     )
     metrics = artifact["metrics"]
     print(
@@ -411,17 +454,44 @@ def _candidate_id_to_event_id(scenario: Scenario) -> Dict[str, str]:
     return candidate_id_to_event_id
 
 
-def _first_predictions_by_event(
+def _best_predictions_by_event(
     predictions: List[CandidateComponentPrediction],
-) -> Tuple[Dict[str, CandidateComponentPrediction], int]:
+    gold_by_event: Dict[str, CandidateUpdate],
+) -> Tuple[Dict[str, CandidateComponentPrediction], int, List[int]]:
+    grouped_predictions: Dict[str, List[CandidateComponentPrediction]] = {}
+    for prediction in predictions:
+        grouped_predictions.setdefault(prediction.event_id, []).append(prediction)
+
     prediction_by_event: Dict[str, CandidateComponentPrediction] = {}
     duplicate_count = 0
-    for prediction in predictions:
-        if prediction.event_id in prediction_by_event:
-            duplicate_count += 1
-            continue
-        prediction_by_event[prediction.event_id] = prediction
-    return prediction_by_event, duplicate_count
+    for event_id, event_predictions in grouped_predictions.items():
+        duplicate_count += len(event_predictions) - 1
+        gold = gold_by_event.get(event_id)
+        if gold is None:
+            prediction_by_event[event_id] = event_predictions[0]
+        else:
+            prediction_by_event[event_id] = max(
+                event_predictions,
+                key=lambda prediction: _prediction_match_score(prediction, gold),
+            )
+    return prediction_by_event, duplicate_count, [
+        len(event_predictions)
+        for event_predictions in grouped_predictions.values()
+    ]
+
+
+def _prediction_match_score(
+    prediction: CandidateComponentPrediction,
+    gold: CandidateUpdate,
+) -> int:
+    return sum(
+        (
+            prediction.canonical_id == gold.canonical_id,
+            prediction.claim_type == gold.claim_type.value,
+            prediction.scope_level == gold.scope_level.value,
+            prediction.scope_key == gold.scope_key,
+        )
+    )
 
 
 def _new_counters() -> Dict[str, int]:
@@ -429,6 +499,7 @@ def _new_counters() -> Dict[str, int]:
         "candidate_detection_tp": 0,
         "candidate_detection_fp": 0,
         "candidate_detection_fn": 0,
+        "extra_same_event_prediction_count": 0,
         "claim_type_correct": 0,
         "claim_type_count": 0,
         "scope_level_correct": 0,
@@ -541,6 +612,14 @@ def _safe_divide(numerator: int, denominator: int) -> Optional[float]:
     if denominator == 0:
         return None
     return numerator / denominator
+
+
+def _percentile(values: List[int], quantile: float) -> Optional[float]:
+    if not values:
+        return None
+    sorted_values = sorted(values)
+    index = max(0, min(len(sorted_values) - 1, math.ceil(quantile * len(sorted_values)) - 1))
+    return float(sorted_values[index])
 
 
 def _f1(precision: Optional[float], recall: Optional[float]) -> Optional[float]:

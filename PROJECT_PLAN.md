@@ -95,14 +95,15 @@ Implemented:
 - event-aligned `contradicts_event_ids` component scoring for extractor outputs, with legacy candidate-id contradiction scoring preserved for oracle/backcompat paths
 - contradiction-gate applicability metadata so no-edge families are marked not applicable rather than failed
 - transcript-only local extractor bridge with hard input isolation, weak negative-control mode, and forced-contradiction positive-control mode
+- transcript-only command-adapter extractor transport for user-provided local model commands, with reproducibility metadata and per-scenario error reporting
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
 Not implemented yet:
 
 - lexical or embedding-based `TranscriptRAG`
-- local-model noisy pipeline
-- real local-model extractor behind the transcript-only bridge
+- scored local-model noisy pipeline
+- committed first local-model command/prompt and measured noisy component outputs behind the transcript-only bridge
 - optional 32B/70B routing
 - LongMemEval transfer check
 - final writeup docs
@@ -258,7 +259,7 @@ Required outcome:
 
 ### Phase 3: Component Evaluation Harness
 
-Status: in progress; oracle upper-bound reference artifacts, event-aligned contradiction scoring, gate applicability metadata, and a transcript-only extractor bridge now exist.
+Status: in progress; oracle upper-bound reference artifacts, event-aligned contradiction scoring, gate applicability metadata, a transcript-only extractor bridge, and a backend-neutral command-adapter transport now exist.
 
 Implemented:
 
@@ -272,10 +273,13 @@ Implemented:
 - generator invariant coverage for one observation event per gold candidate id and resolvable contradiction targets
 - transcript-only extractor input contract and local extractor smoke CLI
 - weak negative-control and forced-contradiction positive-control extractor modes
+- command-adapter `model` mode with required model id, prompt metadata, decoding metadata, and per-scenario `scenario_errors`
+- component-eval handling for `scenario_errors` and extra same-event predictions
 
 Remaining:
 
-- connect a real Phase 4 local-model extractor to the transcript-only bridge
+- choose and run the first deterministic local-model command and prompt through the command adapter
+- score first non-oracle component outputs before any policy run
 - add per-component failure examples once non-oracle predictions exist
 
 Required outcome:
@@ -427,7 +431,7 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-1. Wire the first real local-model extractor behind the transcript-only bridge and write `scenario_predictions` JSON without oracle candidate ids, gold labels, lifecycle expectations, metrics, or policy traces.
+1. Choose the first deterministic local model command/prompt, run it through `cq.pipeline.local_extractor --mode model`, and save the resulting `scenario_predictions` plus any `scenario_errors`.
 2. Score the first noisy extractor outputs with `cq.eval.component_eval` before any policy run; if gates fail, record the failure as component quality evidence rather than policy evidence.
 3. Add per-component failure examples for non-oracle predictions once the first noisy outputs exist.
 4. Run policy comparisons with extracted candidates only after component outputs are saved, scored, and inspectable separately from policy outcomes.

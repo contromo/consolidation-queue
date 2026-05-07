@@ -1,5 +1,40 @@
 # Product Progress
 
+## 2026-05-06 — Transcript-only command-adapter extractor added
+
+### What shipped
+
+- added additive `model` mode to `cq.pipeline.local_extractor` for a user-provided local command behind the existing transcript-only bridge
+- persisted reproducibility metadata for model-mode artifacts: exact command, required model id, prompt template path/text/hash, per-scenario stdin envelope hashes, decoding params, timeout, scenario counts, and input contract
+- added per-scenario `scenario_errors` for timeouts, nonzero exits, malformed JSON, validation failures, and other command failures
+- updated `cq.eval.component_eval` to report `scenario_errors` and score errored scenarios as zero predictions rather than excluding them
+- changed component matching so extra predictions for an event count as false positives while a valid same-event prediction is still used for claim/scope/canonicalization scoring
+- added prediction fan-out metrics (`predictions_per_event_p50`, `predictions_per_event_p95`, max, and extra same-event count) so best-match scoring cannot hide models that emit many guesses per event
+- moved model command stdout/stderr capture to capped temporary files so oversized output becomes a per-scenario `output_too_large` error instead of unbounded in-memory buffering
+- kept `weak` and `positive_control` modes unchanged
+
+### Why it matters
+
+- Phase 4 can now plug in Ollama, llama.cpp, MLX, or another local wrapper without adding model-runtime dependencies to the repo
+- extractor crashes and malformed model output are now diagnosable separately from deliberate abstention
+- the matcher change is a benchmark-contract change: current gold still has one candidate per observation event, so genuinely multi-claim transcript turns can be penalized with FP extras until the gold schema supports them
+- prediction fan-out metrics make the lenient best-matching choice auditable in noisy-mode artifacts
+- policy comparisons remain blocked until noisy component outputs are saved, scored, and inspected separately
+
+### Evidence
+
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_local_extractor -q` passes with 16 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_eval -q` passes with 29 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 213 tests
+- oracle upper-bound regression coverage confirms all applicable gates remain `1.00` across the current family/template matrix
+- no real noisy model artifact was generated in this slice; fake command wrappers cover transport and validation behavior only
+
+### Open issues / next
+
+- choose the first deterministic local model command and prompt template for a forced-contradiction noisy smoke run
+- score the saved model-mode predictions with `cq.eval.component_eval` before any extracted-candidate policy run
+- add per-component failure examples once non-oracle predictions exist
+
 ## 2026-05-06 — Phase 3 reference matrix and transcript-only bridge added
 
 ### What shipped
