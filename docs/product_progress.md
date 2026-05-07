@@ -1,5 +1,54 @@
 # Product Progress
 
+## 2026-05-07 — First local-model forced-contradiction smoke scored
+
+### What shipped
+
+- added a stdlib-only Ollama wrapper at `scripts/ollama_component_extractor.py` backed by `cq.pipeline.ollama_component_extractor`
+- added `prompts/forced_contradiction_component_extractor_v1.txt` for transcript-only acquisition-status extraction
+- extended model-mode artifacts to preserve optional `model_diagnostics` without changing `scenario_predictions` or component scoring
+- normalized Ollama model digests into `sha256:...` form and saved the digest both at top level and in `model_diagnostics`
+- implemented constrained JSON generation plus narrow logged repair counters: `candidate_id_cleared`, `contradicts_renamed`, and `extra_top_level_dropped`
+- mapped structured wrapper backend failures onto the existing `command_error` scenario error path
+- pulled and used the exact Phase 4 floor model tag `qwen2.5:7b-instruct-q4_K_M`, rather than substituting an installed larger model
+
+### Why it matters
+
+- the first real noisy component artifacts now exist behind the transcript-only bridge and were scored before any extracted-candidate policy run
+- floor and headroom runs use matched Qwen 2.5 `Q4_K_M` quantization, so this smoke does not conflate model size with quantization tier
+- the 6-scenario run is only an end-to-end bridge smoke sample, not a stable extractor-quality estimate
+- the 7B-vs-32B difference in this sample is headroom instrumentation only; it is not Phase 4-vs-Phase 5 evidence without a larger paired run
+- noisy-mode policy comparisons remain blocked until component outputs are saved, scored, and inspected separately across a broader set
+
+### Evidence
+
+- 7B floor command:
+  - `python3 -m cq.pipeline.local_extractor --family forced_contradiction --scenarios 6 --template-mix mixed --mode model --model-command 'python3 scripts/ollama_component_extractor.py' --model-id 'qwen2.5:7b-instruct-q4_K_M' --prompt-template-path prompts/forced_contradiction_component_extractor_v1.txt --decoding-json '{"temperature": 0, "seed": 7, "top_p": 1}' --per-scenario-timeout-seconds 180 --output-json data/results/forced_contradiction_local_extractor_qwen7b_predictions.json`
+  - model digest: `sha256:845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e`
+  - Ollama server version: `0.23.1`
+  - scenarios: 6 attempted, 6 successful, 0 errors
+  - repair totals: `candidate_id_cleared=0`, `contradicts_renamed=0`, `extra_top_level_dropped=0`
+  - scored artifact: `data/results/forced_contradiction_local_extractor_qwen7b_component_eval.json`
+  - metrics: `candidate_detection_f1=0.963`, `claim_type_accuracy=1.00`, `scope_level_accuracy=1.00`, `scope_key_accuracy=1.00`, `canonicalization_b_cubed_f1=1.00`, `contradiction_f1=0.824`, `contradiction_precision=0.778`, `contradiction_recall=0.875`
+  - all measured quality gates passed on this smoke sample
+- 32B headroom command:
+  - same command shape, prompt, decoding, scenarios, and timeout with `--model-id 'qwen2.5:32b-instruct-q4_K_M'` and output `data/results/forced_contradiction_local_extractor_qwen32b_headroom_predictions.json`
+  - model digest: `sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368`
+  - Ollama server version: `0.23.1`
+  - scenarios: 6 attempted, 6 successful, 0 errors
+  - repair totals: `candidate_id_cleared=0`, `contradicts_renamed=0`, `extra_top_level_dropped=0`
+  - scored artifact: `data/results/forced_contradiction_local_extractor_qwen32b_headroom_component_eval.json`
+  - metrics: all reported component metrics and measured quality gates were `1.00`
+- tests:
+  - `python3 -m unittest tests.test_local_extractor tests.test_component_eval tests.test_ollama_component_extractor -q` passes with 54 tests
+  - `python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 222 tests
+
+### Open issues / next
+
+- add per-component failure examples for non-oracle predictions
+- broaden noisy component scoring beyond the 6-scenario forced-contradiction smoke before making stable extractor-quality or size-scaling claims
+- keep extracted-candidate policy comparisons blocked until component outputs are saved, scored, and inspectable separately
+
 ## 2026-05-06 — Transcript-only command-adapter extractor added
 
 ### What shipped

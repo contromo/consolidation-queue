@@ -178,7 +178,10 @@ def extract_predictions_for_scenario(
             raise ValueError("model_config is required for model mode")
         # Keep this fail-fast single-scenario path in lockstep with the
         # batch adapter path; both send the same transcript-only envelope.
-        predictions, error = _run_model_for_scenario(transcript_scenario, model_config)
+        predictions, error, _diagnostics = _run_model_for_scenario(
+            transcript_scenario,
+            model_config,
+        )
         if error is not None:
             raise ValueError(str(error["message"]))
         return predictions
@@ -237,11 +240,12 @@ def build_extractor_output(
                 model_config,
             )
             scenario_input_sha256[transcript_scenario.scenario_id] = _sha256_bytes(stdin_bytes)
-            predictions, error = _run_model_for_scenario(
+            predictions, error, diagnostics = _run_model_for_scenario(
                 transcript_scenario,
                 model_config,
                 stdin_bytes=stdin_bytes,
             )
+            _merge_model_diagnostics(model_metadata, diagnostics)
             if error is None:
                 scenario_predictions[transcript_scenario.scenario_id] = predictions
             else:
@@ -265,6 +269,9 @@ def build_extractor_output(
     output.update(model_metadata)
     if scenario_input_sha256:
         output["scenario_input_sha256"] = scenario_input_sha256
+    model_digest = _model_digest_from_metadata(model_metadata)
+    if model_digest:
+        output["model_digest"] = model_digest
     return output
 
 
@@ -347,7 +354,11 @@ def _run_model_for_scenario(
     transcript_scenario: TranscriptScenarioInput,
     config: ModelExtractorConfig,
     stdin_bytes: Optional[bytes] = None,
-) -> Tuple[List[CandidateComponentPrediction], Optional[Dict[str, object]]]:
+) -> Tuple[
+    List[CandidateComponentPrediction],
+    Optional[Dict[str, object]],
+    Dict[str, object],
+]:
     if stdin_bytes is None:
         stdin_bytes = _model_stdin_bytes(transcript_scenario, config)
     try:
@@ -370,11 +381,11 @@ def _run_model_for_scenario(
                     stderr=stderr_status["text"],
                     stderr_bytes=stderr_status["byte_count"],
                     stderr_truncated=stderr_status["truncated"],
-                )
+                ), {}
             stdout_status = _read_capped_tempfile(stdout_file, MAX_MODEL_STDOUT_BYTES)
             stderr_status = _read_capped_tempfile(stderr_file, MAX_MODEL_STDERR_BYTES)
     except OSError as error:
-        return [], _scenario_error("command_error", str(error))
+        return [], _scenario_error("command_error", str(error)), {}
 
     if stdout_status["truncated"]:
         return [], _scenario_error(
@@ -385,8 +396,15 @@ def _run_model_for_scenario(
             stderr=stderr_status["text"],
             stderr_bytes=stderr_status["byte_count"],
             stderr_truncated=stderr_status["truncated"],
-        )
+        ), {}
     if completed.returncode != 0:
+        command_error = _command_error_from_model_stdout(
+            stdout_status,
+            stderr_status,
+            completed.returncode,
+        )
+        if command_error is not None:
+            return [], command_error, {}
         return [], _scenario_error(
             "nonzero_exit",
             "Model command exited with status {}".format(completed.returncode),
@@ -394,7 +412,8 @@ def _run_model_for_scenario(
             stderr=stderr_status["text"],
             stderr_bytes=stderr_status["byte_count"],
             stderr_truncated=stderr_status["truncated"],
-        )
+        ), {}
+    diagnostics: Dict[str, object] = {}
     try:
         payload = json.loads(stdout_status["text"])
     except json.JSONDecodeError as error:
@@ -406,9 +425,10 @@ def _run_model_for_scenario(
             stderr=stderr_status["text"],
             stderr_bytes=stderr_status["byte_count"],
             stderr_truncated=stderr_status["truncated"],
-        )
+        ), {}
     try:
-        return _validate_model_output_payload(payload, transcript_scenario), None
+        diagnostics = _extract_model_diagnostics(payload)
+        return _validate_model_output_payload(payload, transcript_scenario), None, diagnostics
     except ValueError as error:
         return [], _scenario_error(
             "validation_error",
@@ -418,7 +438,7 @@ def _run_model_for_scenario(
             stderr=stderr_status["text"],
             stderr_bytes=stderr_status["byte_count"],
             stderr_truncated=stderr_status["truncated"],
-        )
+        ), diagnostics
 
 
 def _model_stdin_payload(
@@ -525,6 +545,83 @@ def _validate_model_output_payload(
             )
         )
     return validated
+
+
+def _extract_model_diagnostics(payload: object) -> Dict[str, object]:
+    if not isinstance(payload, dict):
+        return {}
+    diagnostics = payload.get("model_diagnostics")
+    if diagnostics is None:
+        return {}
+    if not isinstance(diagnostics, dict):
+        raise ValueError("model_diagnostics must be an object")
+    scenarios = diagnostics.get("scenarios")
+    if scenarios is not None and not isinstance(scenarios, dict):
+        raise ValueError("model_diagnostics.scenarios must be an object")
+    return diagnostics
+
+
+def _merge_model_diagnostics(
+    model_metadata: Dict[str, object],
+    diagnostics: Dict[str, object],
+) -> None:
+    if not diagnostics:
+        return
+    aggregate = model_metadata.setdefault("model_diagnostics", {})
+    if not isinstance(aggregate, dict):
+        return
+    for key in (
+        "ollama_server_version",
+        "wrapper_name",
+        "wrapper_version",
+        "constrained_decoding",
+        "model_digest",
+    ):
+        if key in diagnostics and key not in aggregate:
+            aggregate[key] = diagnostics[key]
+    scenario_diagnostics = diagnostics.get("scenarios")
+    if isinstance(scenario_diagnostics, dict):
+        aggregate_scenarios = aggregate.setdefault("scenarios", {})
+        if isinstance(aggregate_scenarios, dict):
+            aggregate_scenarios.update(scenario_diagnostics)
+
+
+def _model_digest_from_metadata(model_metadata: Dict[str, object]) -> str:
+    diagnostics = model_metadata.get("model_diagnostics")
+    if not isinstance(diagnostics, dict):
+        return ""
+    digest = diagnostics.get("model_digest")
+    if not isinstance(digest, str):
+        return ""
+    return digest
+
+
+def _command_error_from_model_stdout(
+    stdout_status: Dict[str, object],
+    stderr_status: Dict[str, object],
+    returncode: int,
+) -> Optional[Dict[str, object]]:
+    try:
+        payload = json.loads(str(stdout_status["text"]))
+    except (json.JSONDecodeError, TypeError, KeyError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("error_type") != "command_error":
+        return None
+    message = payload.get("message")
+    if not isinstance(message, str) or not message:
+        return None
+    return _scenario_error(
+        "command_error",
+        message,
+        returncode=returncode,
+        stdout=stdout_status.get("text"),
+        stdout_bytes=stdout_status.get("byte_count"),
+        stderr=stderr_status.get("text"),
+        stderr_bytes=stderr_status.get("byte_count"),
+        stderr_truncated=stderr_status.get("truncated"),
+    )
 
 
 def _required_string(mapping: Dict[str, object], field_name: str, index: int) -> str:
