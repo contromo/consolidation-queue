@@ -17,6 +17,9 @@ from cq.pipeline.local_extractor import (
     MODEL_MODE,
     POSITIVE_CONTROL_MODE,
     WEAK_MODE,
+    _build_model_config,
+    _model_stdin_bytes,
+    _sha256_bytes,
     build_extractor_output,
     extract_predictions_for_scenario,
     main,
@@ -164,6 +167,19 @@ class LocalExtractorTests(unittest.TestCase):
             self.assertIn("prompt_template_sha256", output)
             self.assertIn("scenario_input_sha256", output)
             self.assertEqual(len(output["scenario_input_sha256"]), 1)
+            scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
+            transcript_scenario = sanitize_scenario_for_extraction(scenario)
+            model_config = _build_model_config(
+                model_command=_fake_model_command(script_path, "valid"),
+                model_id="fake-local-model:q4",
+                prompt_template_path=str(prompt_path),
+                decoding_json='{"seed": 7, "temperature": 0}',
+                per_scenario_timeout_seconds=5,
+            )
+            self.assertEqual(
+                output["scenario_input_sha256"][transcript_scenario.scenario_id],
+                _sha256_bytes(_model_stdin_bytes(transcript_scenario, model_config)),
+            )
             self.assertEqual(output["decoding_params"]["temperature"], 0)
             self.assertEqual(output["attempted_scenario_count"], 1)
             self.assertEqual(output["successful_scenario_count"], 1)

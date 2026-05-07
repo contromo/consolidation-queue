@@ -232,11 +232,16 @@ def build_extractor_output(
         )
         model_metadata = _model_metadata(model_config)
         for transcript_scenario in transcript_scenarios:
-            scenario_input_sha256[transcript_scenario.scenario_id] = _model_stdin_sha256(
+            stdin_bytes = _model_stdin_bytes(
                 transcript_scenario,
                 model_config,
             )
-            predictions, error = _run_model_for_scenario(transcript_scenario, model_config)
+            scenario_input_sha256[transcript_scenario.scenario_id] = _sha256_bytes(stdin_bytes)
+            predictions, error = _run_model_for_scenario(
+                transcript_scenario,
+                model_config,
+                stdin_bytes=stdin_bytes,
+            )
             if error is None:
                 scenario_predictions[transcript_scenario.scenario_id] = predictions
             else:
@@ -326,25 +331,25 @@ def _model_metadata(config: ModelExtractorConfig) -> Dict[str, object]:
     }
 
 
-def _model_stdin_sha256(
+def _model_stdin_bytes(
     transcript_scenario: TranscriptScenarioInput,
     config: ModelExtractorConfig,
-) -> str:
+) -> bytes:
     payload = _model_stdin_payload(transcript_scenario, config)
-    canonical_json = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
+    return json.dumps(payload, indent=2, sort_keys=True).encode("utf-8")
+
+
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _run_model_for_scenario(
     transcript_scenario: TranscriptScenarioInput,
     config: ModelExtractorConfig,
+    stdin_bytes: Optional[bytes] = None,
 ) -> Tuple[List[CandidateComponentPrediction], Optional[Dict[str, object]]]:
-    stdin_payload = _model_stdin_payload(transcript_scenario, config)
-    stdin_text = json.dumps(stdin_payload, indent=2, sort_keys=True)
-    try:
-        stdin_bytes = stdin_text.encode("utf-8")
-    except UnicodeEncodeError as error:
-        return [], _scenario_error("input_encoding_error", str(error))
+    if stdin_bytes is None:
+        stdin_bytes = _model_stdin_bytes(transcript_scenario, config)
     try:
         with tempfile.TemporaryFile() as stdout_file, tempfile.TemporaryFile() as stderr_file:
             try:
