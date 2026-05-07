@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -12,6 +13,7 @@ WRAPPER_NAME = "ollama_component_extractor"
 WRAPPER_VERSION = "v1"
 DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 CONNECT_TIMEOUT_SECONDS = 5.0
+MIN_OLLAMA_VERSION = (0, 23, 0)
 REPAIR_COUNT_KEYS = (
     "candidate_id_cleared",
     "contradicts_renamed",
@@ -24,6 +26,12 @@ class OllamaCommandError(Exception):
 
 
 class OllamaHttpClient:
+    """Minimal Ollama client.
+
+    OLLAMA_BASE_URL may route transcript text away from localhost when set
+    to a non-loopback URL; the default is local-only.
+    """
+
     def __init__(self, base_url: Optional[str] = None) -> None:
         self.base_url = (base_url or os.environ.get("OLLAMA_BASE_URL") or DEFAULT_OLLAMA_BASE_URL).rstrip("/")
 
@@ -131,6 +139,7 @@ def build_extraction_output(
         raise OllamaCommandError("decoding_params must be an object")
 
     ollama_server_version = client.get_version()
+    _ensure_supported_ollama_version(ollama_server_version)
     model_digest = client.get_model_digest(model_id)
     model_text = client.generate(
         model_id=model_id,
@@ -140,10 +149,10 @@ def build_extraction_output(
     )
     try:
         model_payload = json.loads(model_text)
-    except json.JSONDecodeError:
-        model_payload = {"predictions": "__model_response_was_not_strict_json__"}
+    except json.JSONDecodeError as error:
+        raise OllamaCommandError("Model response was not strict JSON: {}".format(error))
     if not isinstance(model_payload, dict):
-        model_payload = {"predictions": "__model_response_was_not_a_json_object__"}
+        raise OllamaCommandError("Model response JSON was not an object")
 
     output, repair_counts = normalize_model_payload(model_payload, known_event_ids)
     output["model_diagnostics"] = build_model_diagnostics(
@@ -272,6 +281,25 @@ def _normalize_digest(digest: str) -> str:
     if digest.startswith("sha256:"):
         return digest
     return "sha256:{}".format(digest)
+
+
+def _ensure_supported_ollama_version(version: str) -> None:
+    parsed = _parse_version_prefix(version)
+    if parsed < MIN_OLLAMA_VERSION:
+        minimum = ".".join(str(item) for item in MIN_OLLAMA_VERSION)
+        raise OllamaCommandError(
+            "Ollama {} is below the minimum supported version {} for JSON-schema constrained decoding".format(
+                version,
+                minimum,
+            )
+        )
+
+
+def _parse_version_prefix(version: str) -> Tuple[int, int, int]:
+    match = re.match(r"^(\d+)\.(\d+)\.(\d+)", version)
+    if not match:
+        raise OllamaCommandError("Could not parse Ollama version '{}'".format(version))
+    return tuple(int(item) for item in match.groups())  # type: ignore[return-value]
 
 
 def _known_event_id_list(value: object, known_event_ids: Sequence[str]) -> bool:

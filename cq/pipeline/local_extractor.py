@@ -178,6 +178,8 @@ def extract_predictions_for_scenario(
             raise ValueError("model_config is required for model mode")
         # Keep this fail-fast single-scenario path in lockstep with the
         # batch adapter path; both send the same transcript-only envelope.
+        # This API returns predictions only. Use build_extractor_output when
+        # artifact-level model diagnostics such as digests must be preserved.
         predictions, error, _diagnostics = _run_model_for_scenario(
             transcript_scenario,
             model_config,
@@ -235,22 +237,30 @@ def build_extractor_output(
         )
         model_metadata = _model_metadata(model_config)
         for transcript_scenario in transcript_scenarios:
+            scenario_id = transcript_scenario.scenario_id
             stdin_bytes = _model_stdin_bytes(
                 transcript_scenario,
                 model_config,
             )
-            scenario_input_sha256[transcript_scenario.scenario_id] = _sha256_bytes(stdin_bytes)
+            scenario_input_sha256[scenario_id] = _sha256_bytes(stdin_bytes)
             predictions, error, diagnostics = _run_model_for_scenario(
                 transcript_scenario,
                 model_config,
                 stdin_bytes=stdin_bytes,
             )
-            _merge_model_diagnostics(model_metadata, diagnostics)
-            if error is None:
-                scenario_predictions[transcript_scenario.scenario_id] = predictions
+            diagnostics_error = _merge_model_diagnostics(
+                model_metadata,
+                diagnostics,
+                scenario_id=scenario_id,
+            )
+            if diagnostics_error is not None:
+                scenario_predictions[scenario_id] = []
+                scenario_errors[scenario_id] = diagnostics_error
+            elif error is None:
+                scenario_predictions[scenario_id] = predictions
             else:
-                scenario_predictions[transcript_scenario.scenario_id] = []
-                scenario_errors[transcript_scenario.scenario_id] = error
+                scenario_predictions[scenario_id] = []
+                scenario_errors[scenario_id] = error
     else:
         scenario_predictions = extract_predictions_by_scenario(transcript_scenarios, mode)
 
@@ -564,12 +574,15 @@ def _extract_model_diagnostics(payload: object) -> Dict[str, object]:
 def _merge_model_diagnostics(
     model_metadata: Dict[str, object],
     diagnostics: Dict[str, object],
-) -> None:
+    *,
+    scenario_id: str,
+) -> Optional[Dict[str, object]]:
     if not diagnostics:
-        return
+        return None
     aggregate = model_metadata.setdefault("model_diagnostics", {})
     if not isinstance(aggregate, dict):
-        return
+        return None
+    mismatches = []
     for key in (
         "ollama_server_version",
         "wrapper_name",
@@ -577,13 +590,31 @@ def _merge_model_diagnostics(
         "constrained_decoding",
         "model_digest",
     ):
-        if key in diagnostics and key not in aggregate:
+        if key not in diagnostics:
+            continue
+        if key not in aggregate:
             aggregate[key] = diagnostics[key]
+        elif aggregate[key] != diagnostics[key]:
+            mismatches.append(
+                {
+                    "field": key,
+                    "expected": aggregate[key],
+                    "observed": diagnostics[key],
+                }
+            )
     scenario_diagnostics = diagnostics.get("scenarios")
     if isinstance(scenario_diagnostics, dict):
         aggregate_scenarios = aggregate.setdefault("scenarios", {})
         if isinstance(aggregate_scenarios, dict):
             aggregate_scenarios.update(scenario_diagnostics)
+    if not mismatches:
+        return None
+    return _scenario_error(
+        "backend_drift",
+        "Model backend diagnostics changed during the sweep",
+        scenario_id=scenario_id,
+        mismatches=mismatches,
+    )
 
 
 def _model_digest_from_metadata(model_metadata: Dict[str, object]) -> str:

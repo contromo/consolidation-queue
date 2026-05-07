@@ -10,6 +10,9 @@
 - normalized Ollama model digests into `sha256:...` form and saved the digest both at top level and in `model_diagnostics`
 - implemented constrained JSON generation plus narrow logged repair counters: `candidate_id_cleared`, `contradicts_renamed`, and `extra_top_level_dropped`
 - mapped structured wrapper backend failures onto the existing `command_error` scenario error path
+- added model-diagnostic drift detection so a mid-sweep digest or Ollama-version change becomes a `backend_drift` scenario error instead of being silently hidden by first-write-wins aggregation
+- changed malformed or non-object model JSON responses into `command_error` wrapper failures, preserving the distinction between backend/output transport failure and valid-JSON schema validation failure
+- added a minimum Ollama version check for JSON-schema constrained decoding and documented that `OLLAMA_BASE_URL` can route transcript text away from localhost if explicitly set
 - pulled and used the exact Phase 4 floor model tag `qwen2.5:7b-instruct-q4_K_M`, rather than substituting an installed larger model
 
 ### Why it matters
@@ -40,8 +43,8 @@
   - scored artifact: `data/results/forced_contradiction_local_extractor_qwen32b_headroom_component_eval.json`
   - metrics: all reported component metrics and measured quality gates were `1.00`
 - tests:
-  - `python3 -m unittest tests.test_local_extractor tests.test_component_eval tests.test_ollama_component_extractor -q` passes with 54 tests
-  - `python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 222 tests
+  - `python3 -m unittest tests.test_local_extractor tests.test_component_eval tests.test_ollama_component_extractor -q` passes with 59 tests
+  - `python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 227 tests
 
 ### Open issues / next
 

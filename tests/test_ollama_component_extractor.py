@@ -6,6 +6,7 @@ from pathlib import Path
 
 from cq.pipeline.ollama_component_extractor import (
     OllamaCommandError,
+    _ensure_supported_ollama_version,
     _normalize_digest,
     build_extraction_output,
     build_output_schema,
@@ -43,7 +44,7 @@ class OllamaComponentExtractorTests(unittest.TestCase):
         self.assertNotIn("contradicts", prediction)
         self.assertNotIn("notes", output)
         diagnostics = output["model_diagnostics"]
-        self.assertEqual(diagnostics["ollama_server_version"], "0.0-test")
+        self.assertEqual(diagnostics["ollama_server_version"], "0.23.1")
         self.assertEqual(diagnostics["wrapper_name"], "ollama_component_extractor")
         self.assertEqual(diagnostics["wrapper_version"], "v1")
         self.assertTrue(diagnostics["constrained_decoding"])
@@ -100,6 +101,27 @@ class OllamaComponentExtractorTests(unittest.TestCase):
         self.assertEqual(_normalize_digest("abc123"), "sha256:abc123")
         self.assertEqual(_normalize_digest("sha256:abc123"), "sha256:abc123")
 
+    def test_old_ollama_version_is_command_error(self) -> None:
+        client = _FakeOllamaClient(response_payload={"predictions": []}, version="0.22.0")
+
+        with self.assertRaisesRegex(OllamaCommandError, "minimum supported version"):
+            build_extraction_output(_envelope(), client=client)
+
+    def test_supported_ollama_version_accepts_suffix(self) -> None:
+        _ensure_supported_ollama_version("0.23.1-dev")
+
+    def test_malformed_model_json_is_command_error(self) -> None:
+        client = _FakeOllamaClient(raw_response_text="not-json")
+
+        with self.assertRaisesRegex(OllamaCommandError, "not strict JSON"):
+            build_extraction_output(_envelope(), client=client)
+
+    def test_non_object_model_json_is_command_error(self) -> None:
+        client = _FakeOllamaClient(raw_response_text="[]")
+
+        with self.assertRaisesRegex(OllamaCommandError, "not an object"):
+            build_extraction_output(_envelope(), client=client)
+
     def test_script_entrypoint_can_import_repo_package(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]
         completed = subprocess.run(
@@ -116,13 +138,21 @@ class OllamaComponentExtractorTests(unittest.TestCase):
 
 
 class _FakeOllamaClient:
-    def __init__(self, response_payload, digest_error=False):
+    def __init__(
+        self,
+        response_payload=None,
+        digest_error=False,
+        raw_response_text=None,
+        version="0.23.1",
+    ):
         self.response_payload = response_payload
         self.digest_error = digest_error
+        self.raw_response_text = raw_response_text
+        self.version = version
         self.generated_model_id = ""
 
     def get_version(self):
-        return "0.0-test"
+        return self.version
 
     def get_model_digest(self, model_id):
         if self.digest_error:
@@ -134,6 +164,8 @@ class _FakeOllamaClient:
         self.prompt = prompt
         self.output_schema = output_schema
         self.decoding_params = decoding_params
+        if self.raw_response_text is not None:
+            return self.raw_response_text
         return json.dumps(self.response_payload)
 
 
