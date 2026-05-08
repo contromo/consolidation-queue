@@ -1,5 +1,46 @@
 # Product Progress
 
+## 2026-05-08 — Diagnostic noisy component matrix stopped by prompt regression guard
+
+### What shipped
+
+- ran the planned preflight for `scripts/run_component_scoring_matrix.py`
+- confirmed the exact local Ollama tags are installed: `qwen2.5:7b-instruct-q4_K_M` and `qwen2.5:32b-instruct-q4_K_M`
+- recorded the Ollama server version as `0.23.1`
+- started the diagnostic matrix with script defaults and no `--force`
+- the runner stopped before broader diagnostic rows because the Phase A prompt-regression guard fired
+
+### Why it matters
+
+- the stop condition worked as intended: no rows were run around the guard, no policy comparison was unlocked, and no noisy-mode gate verdict was issued
+- the concrete stop was 32B-only on forced-contradiction `general_v1`: `candidate_detection_f1` moved from `1.00` under `forced_v1` to `0.963`, and `forced_contradiction_006` flipped from correct to incorrect
+- the saved failure example is a single missing corroborating observation: `forced_contradiction_006-event-2`, "Brightline later confirmed the acquisition of Redwood."
+- mechanism-diverse held-out extractor rows were not reached in this run; when they are eventually produced, they must remain diagnostic only and must not shape CQ thresholds, policy logic, contract design, or scenario design before locked policy comparisons
+- extracted-candidate policy comparisons remain blocked
+
+### Evidence
+
+- `python3 scripts/run_component_scoring_matrix.py --dry-run` passed and emitted the planned diagnostic matrix
+- `ollama list` showed both required Qwen 2.5 `Q4_K_M` tags installed
+- `ollama --version` reported `0.23.1`
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_scoring_matrix -q` passed with 10 tests
+- stopped run report: `data/results/component_scoring_matrix_phase_a_stop_20260508T052810445255Z.json`
+- stop reason: `prompt_regression_failed`
+- stop details:
+  - `qwen2.5:32b-instruct-q4_K_M` `candidate_detection_f1`: baseline `1.00`, general `0.963`
+  - `qwen2.5:32b-instruct-q4_K_M` scenario regression: `forced_contradiction_006`
+- saved row artifacts:
+  - `data/results/forced_contradiction_local_extractor_qwen2_5_7b_q4km_general_v1_mixed_floor_predictions.json`
+  - `data/results/forced_contradiction_local_extractor_qwen2_5_7b_q4km_general_v1_mixed_floor_component_eval.json`
+  - `data/results/forced_contradiction_local_extractor_qwen2_5_32b_q4km_general_v1_mixed_headroom_predictions.json`
+  - `data/results/forced_contradiction_local_extractor_qwen2_5_32b_q4km_general_v1_mixed_headroom_component_eval.json`
+
+### Open issues / next
+
+- inspect whether `component_extractor_general_v1` should explicitly preserve corroborating observations as candidates even when they repeat an acquisition-status claim
+- after any prompt/schema adjustment, rerun the prompt-regression path before attempting the full diagnostic matrix
+- keep CI-aware gate-decision design and extracted-candidate policy comparison blocked until the diagnostic matrix completes cleanly and is reported separately
+
 ## 2026-05-08 — Diagnostic noisy component matrix runner added
 
 ### What shipped
