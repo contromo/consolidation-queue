@@ -224,6 +224,8 @@ python3 scripts/run_component_scoring_matrix.py
 
 This runner first checks `component_extractor_general_v1` against the forced-contradiction prompt on the existing 6-scenario smoke row, then checks byte-exact deterministic JSON output before writing broader diagnostic artifacts. These rows are artifact-producing only; they do not issue statistical noisy-mode gate verdicts or unlock extracted-candidate policy comparisons.
 
+Cached artifacts are reused only when their saved prompt hash, model id, decoding params, timeout, family, split, and scenario count match the requested row. A forced-contradiction prompt-regression failure should be inspected manually; at `n=6`, a single changed scenario can move a metric sharply even when the failure is prompt-budget or extraction-shape related.
+
 Open the dashboard against the saved run:
 
 ```bash

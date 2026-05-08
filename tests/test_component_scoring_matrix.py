@@ -74,6 +74,93 @@ class ComponentScoringMatrixTests(unittest.TestCase):
         self.assertEqual(plan["statistical_gate_verdicts"], "not_issued")
         self.assertGreater(len(plan["rows"]), len(matrix.floor_diagnostic_rows()))
 
+    def test_matching_cached_artifacts_are_reused_without_running_model(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            prompt_path = output_dir / "prompt.txt"
+            prompt_path.write_text("Extract claims.\n", encoding="utf-8")
+            row = matrix.MatrixRow(
+                "forced_contradiction",
+                "mixed",
+                6,
+                matrix.QWEN_7B_Q4KM,
+                "general_v1",
+                prompt_path,
+            )
+            paths = matrix.artifact_paths(row, output_dir)
+            _write_cached_artifacts(
+                row,
+                paths,
+                decoding_params={"temperature": 0},
+                timeout=180.0,
+            )
+
+            result = matrix.run_or_reuse_row(
+                row,
+                output_dir=output_dir,
+                model_command="definitely-not-a-real-command",
+                decoding_json='{"temperature": 0}',
+                per_scenario_timeout_seconds=180.0,
+            )
+
+            self.assertTrue(result.reused)
+            self.assertEqual(result.paths, paths)
+
+    def test_cached_artifact_provenance_mismatch_blocks_reuse(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            prompt_path = output_dir / "prompt.txt"
+            prompt_path.write_text("Extract claims.\n", encoding="utf-8")
+            row = matrix.MatrixRow(
+                "forced_contradiction",
+                "mixed",
+                6,
+                matrix.QWEN_7B_Q4KM,
+                "general_v1",
+                prompt_path,
+            )
+            paths = matrix.artifact_paths(row, output_dir)
+            _write_cached_artifacts(
+                row,
+                paths,
+                decoding_params={"temperature": 0},
+                timeout=180.0,
+            )
+
+            prompt_path.write_text("Extract claims after a prompt edit.\n", encoding="utf-8")
+
+            mismatches = matrix.cached_artifact_provenance_mismatches(
+                row,
+                paths,
+                decoding_json='{"temperature": 0}',
+                per_scenario_timeout_seconds=180.0,
+            )
+
+            self.assertFalse(
+                matrix.cached_artifacts_match_row(
+                    row,
+                    paths,
+                    decoding_json='{"temperature": 0}',
+                    per_scenario_timeout_seconds=180.0,
+                )
+            )
+            fields = {item["field"] for item in mismatches}
+            self.assertIn("predictions.prompt_template_sha256", fields)
+
+    def test_legacy_forced_prompt_paths_are_backcompat_names(self) -> None:
+        row, _general = matrix.regression_rows(matrix.QWEN_7B_Q4KM)
+
+        paths = matrix.legacy_forced_prompt_paths(row, Path("/tmp/cq-results"))
+
+        self.assertEqual(
+            paths.predictions.name,
+            "forced_contradiction_local_extractor_qwen7b_predictions.json",
+        )
+        self.assertEqual(
+            paths.component_eval.name,
+            "forced_contradiction_local_extractor_qwen7b_component_eval.json",
+        )
+
     def test_metric_non_regression_checks_each_gate_metric(self) -> None:
         baseline = _component_artifact({metric: 1.0 for metric in matrix.GATE_METRICS})
         general = _component_artifact({metric: 1.0 for metric in matrix.GATE_METRICS})
@@ -195,12 +282,59 @@ class ComponentScoringMatrixTests(unittest.TestCase):
             matrix.normalized_json_bytes(reordered_array),
         )
 
+    def test_stop_report_records_reason_and_keeps_policy_comparison_locked(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            report_path = matrix.write_stop_report(
+                Path(tmpdir),
+                matrix.StopConditionError("determinism_check_failed", {"row": "example"}),
+            )
+
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+
+            self.assertTrue(report_path.name.startswith("component_scoring_matrix_phase_a_stop_"))
+            self.assertEqual(payload["reason"], "determinism_check_failed")
+            self.assertEqual(payload["details"], {"row": "example"})
+            self.assertFalse(payload["phase_b_policy_comparison_unlocked"])
+
 
 def _component_artifact(metrics):
     return {
         "metrics": metrics,
         "scenario_error_count": 0,
     }
+
+
+def _write_cached_artifacts(row, paths, *, decoding_params, timeout):
+    paths.predictions.parent.mkdir(parents=True, exist_ok=True)
+    predictions_payload = {
+        "family": row.family,
+        "template_mix": row.template_mix,
+        "requested_scenario_count": row.scenarios,
+        "scenario_count": row.scenarios,
+        "mode": matrix.MODEL_MODE,
+        "input_contract": "transcript_only",
+        "model_id": row.model.model_id,
+        "prompt_template_sha256": matrix.prompt_template_sha256(row.prompt_path),
+        "decoding_params": decoding_params,
+        "per_scenario_timeout_seconds": timeout,
+        "scenario_predictions": {},
+        "scenario_errors": {},
+    }
+    component_payload = {
+        "family": row.family,
+        "template_mix": row.template_mix,
+        "requested_scenario_count": row.scenarios,
+        "scenario_count": row.scenarios,
+        "metrics": {},
+    }
+    paths.predictions.write_text(
+        json.dumps(predictions_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    paths.component_eval.write_text(
+        json.dumps(component_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":

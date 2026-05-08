@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
+"""Diagnostic-only noisy component matrix runner.
+
+This script broadens saved local-model component artifacts while keeping Phase A
+separate from gate decisions and policy comparisons. It refuses to treat small
+matrix rows as statistical verdicts, blocks prompt/determinism regressions, and
+only reuses cached artifacts when their provenance matches the current run.
+"""
+
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shlex
 import sys
 import tempfile
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -45,7 +55,7 @@ DEFAULT_MODEL_COMMAND = "{} {}".format(
 GENERAL_PROMPT_PATH = REPO_ROOT / "prompts" / "component_extractor_general_v1.txt"
 FORCED_PROMPT_PATH = REPO_ROOT / "prompts" / "forced_contradiction_component_extractor_v1.txt"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "results"
-STOP_REPORT_NAME = "component_scoring_matrix_phase_a_stop.json"
+STOP_REPORT_PREFIX = "component_scoring_matrix_phase_a_stop"
 EPSILON = 1e-12
 
 GATE_METRICS: Tuple[str, ...] = tuple(QUALITY_GATES.keys())
@@ -159,6 +169,8 @@ def artifact_paths(row: MatrixRow, output_dir: Path) -> ArtifactPaths:
 
 
 def legacy_forced_prompt_paths(row: MatrixRow, output_dir: Path) -> Optional[ArtifactPaths]:
+    # Back-compat shim for operator-local artifacts from the pre-matrix
+    # forced-contradiction smoke run; fresh checkouts will not have these.
     if row.family != FORCED_CONTRADICTION or row.template_mix != "mixed" or row.scenarios != 6:
         return None
     if row.prompt_label != "forced_v1":
@@ -187,7 +199,12 @@ def run_or_reuse_row(
     legacy_paths: Optional[ArtifactPaths] = None,
 ) -> RowResult:
     paths = legacy_paths if legacy_paths and not force and _paths_exist(legacy_paths) else artifact_paths(row, output_dir)
-    if not force and _paths_exist(paths):
+    if not force and _paths_exist(paths) and cached_artifacts_match_row(
+        row,
+        paths,
+        decoding_json=decoding_json,
+        per_scenario_timeout_seconds=per_scenario_timeout_seconds,
+    ):
         return RowResult(row=row, paths=paths, component_artifact=_read_json(paths.component_eval), reused=True)
     return run_row(
         row,
@@ -196,6 +213,77 @@ def run_or_reuse_row(
         decoding_json=decoding_json,
         per_scenario_timeout_seconds=per_scenario_timeout_seconds,
     )
+
+
+def cached_artifacts_match_row(
+    row: MatrixRow,
+    paths: ArtifactPaths,
+    *,
+    decoding_json: str,
+    per_scenario_timeout_seconds: float,
+) -> bool:
+    if not _paths_exist(paths):
+        return False
+    try:
+        mismatches = cached_artifact_provenance_mismatches(
+            row,
+            paths,
+            decoding_json=decoding_json,
+            per_scenario_timeout_seconds=per_scenario_timeout_seconds,
+        )
+    except (OSError, ValueError, json.JSONDecodeError):
+        return False
+    return not mismatches
+
+
+def cached_artifact_provenance_mismatches(
+    row: MatrixRow,
+    paths: ArtifactPaths,
+    *,
+    decoding_json: str,
+    per_scenario_timeout_seconds: float,
+) -> List[Dict[str, object]]:
+    predictions_payload = _read_json(paths.predictions)
+    component_payload = _read_json(paths.component_eval)
+    expected_decoding = _parse_decoding_json(decoding_json)
+    expected_prompt_sha = prompt_template_sha256(row.prompt_path)
+    checks = [
+        ("predictions.family", predictions_payload.get("family"), row.family),
+        ("predictions.template_mix", predictions_payload.get("template_mix"), row.template_mix),
+        ("predictions.requested_scenario_count", predictions_payload.get("requested_scenario_count"), row.scenarios),
+        ("predictions.scenario_count", predictions_payload.get("scenario_count"), row.scenarios),
+        ("predictions.mode", predictions_payload.get("mode"), MODEL_MODE),
+        ("predictions.input_contract", predictions_payload.get("input_contract"), "transcript_only"),
+        ("predictions.model_id", predictions_payload.get("model_id"), row.model.model_id),
+        ("predictions.prompt_template_sha256", predictions_payload.get("prompt_template_sha256"), expected_prompt_sha),
+        ("predictions.decoding_params", predictions_payload.get("decoding_params"), expected_decoding),
+        (
+            "predictions.per_scenario_timeout_seconds",
+            predictions_payload.get("per_scenario_timeout_seconds"),
+            per_scenario_timeout_seconds,
+        ),
+        ("component.family", component_payload.get("family"), row.family),
+        ("component.template_mix", component_payload.get("template_mix"), row.template_mix),
+        ("component.requested_scenario_count", component_payload.get("requested_scenario_count"), row.scenarios),
+        ("component.scenario_count", component_payload.get("scenario_count"), row.scenarios),
+    ]
+    mismatches = []
+    for field, observed, expected in checks:
+        if not _values_match(observed, expected):
+            mismatches.append(
+                {
+                    "field": field,
+                    "observed": observed,
+                    "expected": expected,
+                    "predictions_path": str(paths.predictions),
+                    "component_eval_path": str(paths.component_eval),
+                }
+            )
+    return mismatches
+
+
+def prompt_template_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
 
 
 def run_row(
@@ -578,7 +666,10 @@ def equivalent_commands(
 
 def write_stop_report(output_dir: Path, error: StopConditionError) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
-    path = output_dir / STOP_REPORT_NAME
+    path = output_dir / "{}_{}.json".format(
+        STOP_REPORT_PREFIX,
+        datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ"),
+    )
     _write_json(
         path,
         {
@@ -632,6 +723,19 @@ def _all_planned_rows() -> List[MatrixRow]:
 
 def _paths_exist(paths: ArtifactPaths) -> bool:
     return paths.predictions.exists() and paths.component_eval.exists()
+
+
+def _parse_decoding_json(decoding_json: str) -> Dict[str, object]:
+    payload = json.loads(decoding_json or "{}")
+    if not isinstance(payload, dict):
+        raise ValueError("decoding JSON must be an object")
+    return payload
+
+
+def _values_match(observed: object, expected: object) -> bool:
+    if _is_number(observed) and _is_number(expected):
+        return abs(float(observed) - float(expected)) <= EPSILON
+    return observed == expected
 
 
 def _read_json(path: Path) -> Dict[str, object]:
