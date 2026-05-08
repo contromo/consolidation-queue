@@ -7,6 +7,8 @@
 - revised `prompts/component_extractor_general_v1.txt` in place with family-neutral rules that extraction is per observation event, not per unique memory slot
 - added explicit prompt guidance that repeated, confirming, supporting, or reaffirming observations still get their own predictions and are not contradictions
 - tightened the canonicalization wording so repeated or supporting observations "should reuse" the same `canonical_id`, without a "usually" hedge
+- aligned the contradiction-exclusion terminology with the extraction rule: repetition, support, confirmation, reaffirmation, and restatement are not contradictions
+- clarified that repeated or supporting observations should reuse the `canonical_id` of the claim or claims they support or confirm, avoiding a singular "earlier claim" antecedent
 - reran `scripts/run_component_scoring_matrix.py` with script defaults and no `--force` after the final prompt wording
 - Phase A cleared after the prompt change, and the runner wrote or reused 20 diagnostic rows
 - no statistical gate verdict was issued and no policy comparison was unlocked
@@ -24,7 +26,7 @@
 ### Evidence
 
 - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_scoring_matrix -q` passed with 10 tests before the rerun
-- `python3 scripts/run_component_scoring_matrix.py` completed with: `Wrote or reused 20 diagnostic rows in /Users/manav/code/consolidation-queue/data/results`
+- `python3 scripts/run_component_scoring_matrix.py` completed with: `Wrote or reused 20 diagnostic rows in data/results`
 - runner completion line: `No statistical gate verdicts were issued.`
 - all `qwen2_5` `general_v1` prediction artifacts now match the final prompt hash, so the diagnostic artifacts reflect the tightened canonicalization wording rather than stale provenance-cache reuse
 - diagnostic artifacts now include:
