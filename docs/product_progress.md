@@ -1,5 +1,35 @@
 # Product Progress
 
+## 2026-05-08 — Diagnostic noisy component matrix runner added
+
+### What shipped
+
+- added `prompts/component_extractor_general_v1.txt` for cross-family transcript-only extraction
+- added `scripts/run_component_scoring_matrix.py`, a stdlib runner around the existing local extractor and component evaluator
+- encoded Phase A stop conditions: forced-contradiction prompt non-regression for 7B and 32B, per-scenario correct-to-incorrect regression blocking, and byte-exact deterministic JSON checks with array order preserved
+- guarded cached artifact reuse with provenance checks for prompt hash, model id, decoding params, timeout, family, split, and scenario count
+- added collision-resistant artifact names that include Qwen family, size, quantization, prompt label, split, and floor/headroom role
+- added dry-run output for the fixed matrix and tests for row definitions, artifact names, command generation, metric regressions, per-scenario regressions, and deterministic JSON comparison
+
+### Why it matters
+
+- this broadens noisy component scoring infrastructure without silently converting small diagnostic rows into gate verdicts
+- the forced-contradiction regression only checks that `general_v1` does not break the easy acquisition-status smoke case; it does not prove harder scope-key or canonicalization competence
+- `mechanism_diverse_heldout` noisy rows remain descriptive only at `n=3`, including the 32B headroom point
+- extracted-candidate policy comparisons remain blocked until a separate CI-aware gate-decision run is designed and reported
+
+### Evidence
+
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_scoring_matrix -q` passes with 10 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_component_scoring_matrix.py --dry-run` emits the planned diagnostic matrix without writing artifacts or issuing gate verdicts
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_local_extractor tests.test_component_eval tests.test_ollama_component_extractor tests.test_component_scoring_matrix -q` passes with 73 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q` passes with 241 tests
+
+### Open issues / next
+
+- run the real diagnostic matrix against local Ollama after confirming the required Qwen 2.5 `Q4_K_M` models are available
+- add the separate CI-aware gate-decision protocol before any extracted-candidate policy comparison
+
 ## 2026-05-07 — Component failure examples added
 
 ### What shipped

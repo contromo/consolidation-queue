@@ -210,6 +210,22 @@ python3 -m cq.eval.component_eval --family forced_contradiction --scenarios 6 --
 
 In `model` mode, the command runs once per scenario and receives a transcript-only JSON envelope on stdin. It must write strict JSON on stdout with a top-level `predictions` list. Per-scenario failures are saved in `scenario_errors`; `component_eval` reports them and scores those scenarios as zero predictions.
 
+Preview the diagnostic-only noisy component matrix:
+
+```bash
+python3 scripts/run_component_scoring_matrix.py --dry-run
+```
+
+Run the diagnostic matrix after confirming the required local Qwen 2.5 `Q4_K_M` Ollama models are installed:
+
+```bash
+python3 scripts/run_component_scoring_matrix.py
+```
+
+This runner first checks `component_extractor_general_v1` against the forced-contradiction prompt on the existing 6-scenario smoke row, then checks byte-exact deterministic JSON output before writing broader diagnostic artifacts. These rows are artifact-producing only; they do not issue statistical noisy-mode gate verdicts or unlock extracted-candidate policy comparisons.
+
+Cached artifacts are reused only when their saved prompt hash, model id, decoding params, timeout, family, split, and scenario count match the requested row. A forced-contradiction prompt-regression failure should be inspected manually; at `n=6`, a single changed scenario can move a metric sharply even when the failure is prompt-budget or extraction-shape related.
+
 Open the dashboard against the saved run:
 
 ```bash
