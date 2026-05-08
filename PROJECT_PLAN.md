@@ -285,6 +285,7 @@ Implemented:
 Remaining:
 
 - interpret the completed diagnostic matrix as artifact-producing component evidence only, with row-level observations rather than family rankings or noisy-mode claims
+- do not treat Phase A clearance as cross-family prompt safety; it only guards the forced-contradiction smoke row, so scope, drift, poisoning, false-corroboration, useful-pending, and mechanism-diverse regressions require direct artifact inspection
 - decide whether prompt/schema diagnostics or CI-aware gate-decision design is the next active task based on the completed matrix interpretation
 - design and run larger CI-aware gate-decision sets before making stable extractor-quality, size-scaling, or Phase 4 policy-comparison claims
 

@@ -12,7 +12,7 @@ Extraction is per observation event, not per unique fact or memory slot.
 Do not deduplicate across events. If a later observation repeats, confirms,
 supports, reaffirms, or restates an earlier memory-relevant claim, emit a new
 prediction for that later observation too. Repeated or supporting observations
-should usually reuse the same canonical_id as the earlier claim.
+should reuse the same canonical_id as the earlier claim.
 
 Leave candidate_id absent or empty. Use event ids exactly as provided.
 
