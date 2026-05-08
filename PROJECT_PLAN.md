@@ -280,11 +280,11 @@ Implemented:
 - diagnostic-only local-model component scoring matrix runner, with `general_v1` prompt regression checks, deterministic JSON checks, collision-resistant artifact naming, and descriptive-only framing
 - first attempted diagnostic matrix run, stopped by the Phase A prompt-regression guard before broader rows because 32B `general_v1` missed one forced-contradiction corroborating observation
 - family-neutral `general_v1` prompt revision for per-observation extraction and support-vs-contradiction guidance
-- completed diagnostic matrix run after the prompt revision, with 20 diagnostic rows written or reused and no statistical gate verdict issued
+- completed diagnostic matrix run after the prompt revision, with final prompt-hash-matching diagnostic artifacts and no statistical gate verdict issued
 
 Remaining:
 
-- interpret the completed diagnostic matrix as artifact-producing component evidence only, with row-level observations rather than family rankings or noisy-mode claims
+- interpret the completed diagnostic matrix as artifact-producing component evidence only, with row-level observations rather than family rankings or noisy-mode claims; see the 2026-05-08 `docs/product_progress.md` entry for the current descriptive observations
 - do not treat Phase A clearance as cross-family prompt safety; it only guards the forced-contradiction smoke row, so scope, drift, poisoning, false-corroboration, useful-pending, and mechanism-diverse regressions require direct artifact inspection
 - decide whether prompt/schema diagnostics or CI-aware gate-decision design is the next active task based on the completed matrix interpretation
 - design and run larger CI-aware gate-decision sets before making stable extractor-quality, size-scaling, or Phase 4 policy-comparison claims

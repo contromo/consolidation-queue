@@ -26,6 +26,7 @@
 - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_scoring_matrix -q` passed with 10 tests before the rerun
 - `python3 scripts/run_component_scoring_matrix.py` completed with: `Wrote or reused 20 diagnostic rows in /Users/manav/code/consolidation-queue/data/results`
 - runner completion line: `No statistical gate verdicts were issued.`
+- all `qwen2_5` `general_v1` prediction artifacts now match the final prompt hash, so the diagnostic artifacts reflect the tightened canonicalization wording rather than stale provenance-cache reuse
 - diagnostic artifacts now include:
   - 13 `qwen2.5:7b-instruct-q4_K_M` floor rows across the planned family/split matrix
   - 7 `qwen2.5:32b-instruct-q4_K_M` headroom rows across the planned held-out/frozen matrix
@@ -34,6 +35,7 @@
   - no row reported extra same-event predictions; max predictions per event was `1`
   - 32B headroom rows reported no scenario errors and no measured artifact gate failures, but several rows are small enough that one scenario flip could move a descriptive pass to a failure
   - 32B headroom failure-example counts by row: forced-contradiction held-out `0`, scope-contamination held-out `3`, preference-drift held-out `10`, useful-pending-memory held-out `0`, false-corroboration held-out `0`, memory-poisoning held-out `0`, mechanism-diverse frozen `3`
+  - the final prompt wording moved the 32B scope-contamination held-out failure-example count from `4` to `3` relative to the immediately preceding matrix artifact, a small diagnostic improvement rather than a stable quality claim
   - 7B floor rows reported scenario errors on some scope, preference-drift, and memory-poisoning rows
   - 7B floor rows reported measured artifact gate failures on some scope, preference-drift, memory-poisoning, and mechanism-diverse rows
 
