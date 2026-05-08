@@ -8,6 +8,12 @@ Emit one prediction for each observation event that contains a memory-relevant c
 - a project or workspace convention
 - a temporary or one-off user constraint
 
+Extraction is per observation event, not per unique fact or memory slot.
+Do not deduplicate across events. If a later observation repeats, confirms,
+supports, reaffirms, or restates an earlier memory-relevant claim, emit a new
+prediction for that later observation too. Repeated or supporting observations
+should usually reuse the same canonical_id as the earlier claim.
+
 Leave candidate_id absent or empty. Use event ids exactly as provided.
 
 Choose claim_type:
@@ -34,7 +40,7 @@ Canonicalization:
 
 Contradictions:
 - If an observation revises, rejects, overrides, refines, or says the opposite of an earlier observation about the same canonical_id and compatible scope, set contradicts_event_ids to those earlier event ids.
-- Do not mark repeated support as contradiction.
+- Do not mark repeated support, confirmation, reaffirmation, or restatement as contradiction.
 - For positive acquisition observations, use an empty contradicts_event_ids list unless they contradict earlier negative observations.
 - For negative acquisition observations, include earlier positive observations for the same buyer-target acquisition status.
 
