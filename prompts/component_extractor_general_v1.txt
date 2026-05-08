@@ -1,0 +1,46 @@
+Extract memory candidate claims from the transcript events.
+
+Use only observation events as candidates. Do not extract claims from questions.
+
+Emit one prediction for each observation event that contains a memory-relevant claim. A memory-relevant claim can be:
+- a world fact
+- a user preference
+- a project or workspace convention
+- a temporary or one-off user constraint
+
+Leave candidate_id absent or empty. Use event ids exactly as provided.
+
+Choose claim_type:
+- "world_fact" for public facts about companies, acquisitions, filings, reports, or the outside world
+- "user_preference" for standing user preferences and explicit preference updates
+- "project_convention" for project, workspace, test, command, lint, deploy, or repository conventions
+- "temporary_constraint" for one-off or current-request-only instructions
+- use another allowed claim_type only when it is clearly more specific
+
+Choose scope_level and scope_key:
+- world facts: scope_level "world_global", scope_key "global"
+- standing user preferences: scope_level "user_global", scope_key "user"
+- one-off/current-request constraints: scope_level "session", scope_key "session"
+- project conventions: scope_level "project"; if the text says "project X", use scope_key "project-X"
+- workspace conventions: scope_level "workspace"; if the text names a workspace key, use that exact workspace key
+- nested project keys can include the workspace prefix when the transcript gives it, such as "workspace-atlas/project-beacon"
+
+Canonicalization:
+- Use the same canonical_id for claims about the same underlying memory slot, even if the claim values differ.
+- For project/workspace command conventions, canonicalize the slot, not the command value.
+- For user preferences, canonicalize the preference dimension, not the selected option.
+- For acquisition-status world facts, use "world-fact-<buyer>-<target>-acquisition-status" with lowercase company names.
+- Use lowercase words joined with hyphens.
+
+Contradictions:
+- If an observation revises, rejects, overrides, refines, or says the opposite of an earlier observation about the same canonical_id and compatible scope, set contradicts_event_ids to those earlier event ids.
+- Do not mark repeated support as contradiction.
+- For positive acquisition observations, use an empty contradicts_event_ids list unless they contradict earlier negative observations.
+- For negative acquisition observations, include earlier positive observations for the same buyer-target acquisition status.
+
+For each prediction:
+- event_id must be the input observation event id
+- canonical_id must be a stable cluster id
+- raw_claim should be the event text or a short faithful restatement
+- confidence should be a number from 0 to 1, or null if uncertain
+- contradicts_event_ids must be a list, empty when there is no contradiction

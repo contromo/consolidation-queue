@@ -277,10 +277,12 @@ Implemented:
 - component-eval handling for `scenario_errors` and extra same-event predictions
 - per-component failure examples for non-oracle predictions, including candidate, claim/scope, canonicalization, contradiction, and scenario-error diagnostics
 - first deterministic local Ollama command and forced-contradiction prompt, with Qwen 2.5 7B floor and 32B headroom artifacts scored before any policy run
+- diagnostic-only local-model component scoring matrix runner, with `general_v1` prompt regression checks, deterministic JSON checks, collision-resistant artifact naming, and descriptive-only framing
 
 Remaining:
 
-- broaden noisy component scoring beyond the 6-scenario forced-contradiction smoke before making stable extractor-quality or size-scaling claims
+- execute the diagnostic matrix beyond the 6-scenario forced-contradiction smoke; treat it as artifact-producing only, not as a statistical gate verdict
+- design and run larger CI-aware gate-decision sets before making stable extractor-quality, size-scaling, or Phase 4 policy-comparison claims
 
 Required outcome:
 
@@ -433,9 +435,10 @@ These are the highest-priority implementation steps right now.
 
 The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. Next:
 
-1. Broaden local-model component scoring beyond the 6-scenario forced-contradiction smoke before making stable extractor-quality, size-scaling, or Phase 4-vs-Phase 5 claims.
-2. Run policy comparisons with extracted candidates only after component outputs are saved, scored, and inspectable separately from policy outcomes.
-3. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
+1. Run the diagnostic noisy component matrix through `scripts/run_component_scoring_matrix.py`; this produces inspectable artifacts only and must not be framed as a gate verdict.
+2. Add CI-aware gate-decision runs with enough held-out/decision examples for Wilson lower bounds to be interpretable against the noisy-mode thresholds.
+3. Run policy comparisons with extracted candidates only after component outputs are saved, scored, inspectable, and gate-decision results are reported separately from policy outcomes.
+4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
 
