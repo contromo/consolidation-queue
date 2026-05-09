@@ -216,13 +216,27 @@ Preview the diagnostic-only noisy component matrix:
 python3 scripts/run_component_scoring_matrix.py --dry-run
 ```
 
+Preview the targeted prompt/schema diagnostic slice with the `general_v2` prompt candidate:
+
+```bash
+python3 scripts/run_component_scoring_matrix.py --row-set prompt_schema_diagnostic --general-prompt-path prompts/component_extractor_general_v2.txt --general-prompt-label general_v2 --dry-run
+```
+
 Run the diagnostic matrix after confirming the required local Qwen 2.5 `Q4_K_M` Ollama models are installed:
 
 ```bash
 python3 scripts/run_component_scoring_matrix.py
 ```
 
+Run only the targeted prompt/schema diagnostic slice with `general_v2`:
+
+```bash
+python3 scripts/run_component_scoring_matrix.py --row-set prompt_schema_diagnostic --general-prompt-path prompts/component_extractor_general_v2.txt --general-prompt-label general_v2
+```
+
 This runner first checks `component_extractor_general_v1` against the forced-contradiction prompt on the existing 6-scenario smoke row, then checks byte-exact deterministic JSON output before writing broader diagnostic artifacts. These rows are artifact-producing only; they do not issue statistical noisy-mode gate verdicts or unlock extracted-candidate policy comparisons.
+
+When a custom general prompt path/label is provided, the Phase A check and determinism check use that prompt while the forced-contradiction baseline remains `forced_v1`. The `prompt_schema_diagnostic` row-set also writes a summary JSON with raw bucket counts, pre-enumerated benchmark-boundary exclusions, adjusted 32B counts, and `policy_comparison_unlocked: false`.
 
 Cached artifacts are reused only when their saved prompt hash, model id, decoding params, timeout, family, split, and scenario count match the requested row. A forced-contradiction prompt-regression failure should be inspected manually; at `n=6`, a single changed scenario can move a metric sharply even when the failure is prompt-budget or extraction-shape related.
 
