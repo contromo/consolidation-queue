@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 ## Goal
 
@@ -278,10 +278,15 @@ Implemented:
 - per-component failure examples for non-oracle predictions, including candidate, claim/scope, canonicalization, contradiction, and scenario-error diagnostics
 - first deterministic local Ollama command and forced-contradiction prompt, with Qwen 2.5 7B floor and 32B headroom artifacts scored before any policy run
 - diagnostic-only local-model component scoring matrix runner, with `general_v1` prompt regression checks, deterministic JSON checks, collision-resistant artifact naming, and descriptive-only framing
+- first attempted diagnostic matrix run, stopped by the Phase A prompt-regression guard before broader rows because 32B `general_v1` missed one forced-contradiction corroborating observation
+- family-neutral `general_v1` prompt revision for per-observation extraction and support-vs-contradiction guidance
+- completed diagnostic matrix run after the prompt revision, with final prompt-hash-matching diagnostic artifacts and no statistical gate verdict issued
 
 Remaining:
 
-- execute the diagnostic matrix beyond the 6-scenario forced-contradiction smoke; treat it as artifact-producing only, not as a statistical gate verdict
+- interpret the completed diagnostic matrix as artifact-producing component evidence only, with row-level observations rather than family rankings or noisy-mode claims; see the 2026-05-08 `docs/product_progress.md` entry for the current descriptive observations
+- do not treat Phase A clearance as cross-family prompt safety; it only guards the forced-contradiction smoke row, so scope, drift, poisoning, false-corroboration, useful-pending, and mechanism-diverse regressions require direct artifact inspection
+- decide whether prompt/schema diagnostics or CI-aware gate-decision design is the next active task based on the completed matrix interpretation
 - design and run larger CI-aware gate-decision sets before making stable extractor-quality, size-scaling, or Phase 4 policy-comparison claims
 
 Required outcome:
@@ -433,12 +438,13 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. Next:
+The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. Policy comparisons remain locked. Next:
 
-1. Run the diagnostic noisy component matrix through `scripts/run_component_scoring_matrix.py`; this produces inspectable artifacts only and must not be framed as a gate verdict.
-2. Add CI-aware gate-decision runs with enough held-out/decision examples for Wilson lower bounds to be interpretable against the noisy-mode thresholds.
-3. Run policy comparisons with extracted candidates only after component outputs are saved, scored, inspectable, and gate-decision results are reported separately from policy outcomes.
-4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
+1. Interpret the completed diagnostic matrix as component evidence only, reporting row-level observations and failure examples without family rankings or noisy-mode claims.
+2. Decide whether the next active task is prompt/schema diagnostics or CI-aware gate-decision design based on that interpretation.
+3. Add CI-aware gate-decision runs with enough held-out/decision examples for Wilson lower bounds to be interpretable against the noisy-mode thresholds.
+4. Run policy comparisons with extracted candidates only after component outputs are saved, scored, inspectable, and gate-decision results are reported separately from policy outcomes.
+5. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
 
