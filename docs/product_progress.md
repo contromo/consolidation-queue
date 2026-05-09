@@ -1,5 +1,34 @@
 # Product Progress
 
+## 2026-05-09 — Diagnostic matrix interpreted and prompt/schema branch selected
+
+### What shipped
+
+- added `docs/component_diagnostic_matrix.md` as the Phase 3 diagnostic interpretation report
+- verified the completed diagnostic inventory as 13 Qwen 2.5 7B floor rows and 7 Qwen 2.5 32B headroom rows, with Phase A forced-contradiction regression artifacts treated separately
+- assigned every saved failure example to one fixed bucket: candidate miss/extra, repetition-as-contradiction, scope-key/level drift, canonical split/merge, claim-type drift, or scenario error
+- directly inspected the 32B `preference_drift` held-out row because it had 10 failure examples, the largest 32B headroom failure count
+- updated `PROJECT_PLAN.md` so the next active task is targeted prompt/schema diagnostics before CI-aware gate-decision design
+
+### Why it matters
+
+- the operational branch rule selected prompt/schema diagnostics: `scope_key_or_level_drift` appears at both 7B and 32B in `preference_drift`, `scope_contamination`, and `mechanism_diverse_heldout`, while `canonical_split_or_merge` appears at both sizes in `preference_drift` and `scope_contamination`
+- the 32B `preference_drift` held-out failures are concentrated in temporary-looking drift-back language that the model predicts as `temporary_constraint`/`session` while gold labels treat it as durable `user_preference`/`user_global`
+- the 7B held-out/main sanity check found the sharpest split-specific spike in false-corroboration held-out, where empty `canonical_id` validation errors caused candidate misses; that spike did not appear in the 32B held-out row
+- this remains component diagnostic evidence only, not a noisy-mode claim and not a policy comparison unlock
+
+### Evidence
+
+- no model inference was rerun
+- `docs/component_diagnostic_matrix.md` records the row-level metrics, bucket counts, 7B held-out/main sanity check, and branch decision
+- policy comparisons remain locked until component outputs are saved, scored, inspectable, and CI-aware gate-decision results are reported separately from policy outcomes
+
+### Open issues / next
+
+- run targeted prompt/schema diagnostics for scope-key/scope-level drift, canonical slot reuse, preference-drift temporary-looking language, and empty required-field validation failures
+- after any prompt/schema adjustment, rerun the forced-contradiction Phase A regression path before broader diagnostic rows
+- keep CI-aware gate-decision design and extracted-candidate policy comparison blocked until the prompt/schema diagnostic branch is resolved
+
 ## 2026-05-08 — Prompt revision cleared Phase A and diagnostic matrix completed
 
 ### What shipped
