@@ -53,12 +53,39 @@ DEFAULT_MODEL_COMMAND = "{} {}".format(
     shlex.quote(str(REPO_ROOT / "scripts" / "ollama_component_extractor.py")),
 )
 GENERAL_PROMPT_PATH = REPO_ROOT / "prompts" / "component_extractor_general_v1.txt"
+DEFAULT_GENERAL_PROMPT_LABEL = "general_v1"
 FORCED_PROMPT_PATH = REPO_ROOT / "prompts" / "forced_contradiction_component_extractor_v1.txt"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "results"
 STOP_REPORT_PREFIX = "component_scoring_matrix_phase_a_stop"
+ROW_SET_FULL = "full"
+ROW_SET_PROMPT_SCHEMA_DIAGNOSTIC = "prompt_schema_diagnostic"
+ROW_SETS = (ROW_SET_FULL, ROW_SET_PROMPT_SCHEMA_DIAGNOSTIC)
+SUMMARY_PREFIX = "component_scoring_matrix"
 EPSILON = 1e-12
 
 GATE_METRICS: Tuple[str, ...] = tuple(QUALITY_GATES.keys())
+FAILURE_BUCKETS: Tuple[str, ...] = (
+    "scenario_error",
+    "candidate_miss_or_extra",
+    "contradiction_edge_drift",
+    "scope_key_or_level_drift",
+    "canonical_split_or_merge",
+    "claim_type_drift",
+    "unmapped",
+)
+# These are the pre-enumerated preference-drift held-out scope mismatches
+# documented in docs/component_diagnostic_matrix.md. They are excluded only
+# from 32B scope drift; canonicalization failures for the same events still count.
+BOUNDARY_SCOPE_EXCLUSIONS = frozenset(
+    (
+        ("preference_drift_002", "preference_drift_002-event-4", "scope_key"),
+        ("preference_drift_002", "preference_drift_002-event-4", "scope_level"),
+        ("preference_drift_004", "preference_drift_004-event-4", "scope_key"),
+        ("preference_drift_004", "preference_drift_004-event-4", "scope_level"),
+    )
+)
+ACCEPTANCE_SCOPE_DRIFT_MAX_EXCLUSIVE = 4
+ACCEPTANCE_CANONICAL_DRIFT_MAX_EXCLUSIVE = 3
 
 
 @dataclass(frozen=True)
@@ -121,17 +148,43 @@ class StopConditionError(RuntimeError):
         self.details = details
 
 
-def floor_diagnostic_rows(prompt_path: Path = GENERAL_PROMPT_PATH) -> List[MatrixRow]:
+def floor_diagnostic_rows(
+    prompt_path: Path = GENERAL_PROMPT_PATH,
+    prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
+) -> List[MatrixRow]:
     return [
-        MatrixRow(family, mix, scenarios, QWEN_7B_Q4KM, "general_v1", prompt_path)
+        MatrixRow(family, mix, scenarios, QWEN_7B_Q4KM, prompt_label, prompt_path)
         for family, mix, scenarios in _diagnostic_family_rows()
     ]
 
 
-def headroom_diagnostic_rows(prompt_path: Path = GENERAL_PROMPT_PATH) -> List[MatrixRow]:
+def headroom_diagnostic_rows(
+    prompt_path: Path = GENERAL_PROMPT_PATH,
+    prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
+) -> List[MatrixRow]:
     return [
-        MatrixRow(family, mix, scenarios, QWEN_32B_Q4KM, "general_v1", prompt_path)
+        MatrixRow(family, mix, scenarios, QWEN_32B_Q4KM, prompt_label, prompt_path)
         for family, mix, scenarios in _headroom_family_rows()
+    ]
+
+
+def prompt_schema_diagnostic_floor_rows(
+    prompt_path: Path = GENERAL_PROMPT_PATH,
+    prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
+) -> List[MatrixRow]:
+    return [
+        MatrixRow(family, mix, scenarios, QWEN_7B_Q4KM, prompt_label, prompt_path)
+        for family, mix, scenarios in _prompt_schema_diagnostic_floor_family_rows()
+    ]
+
+
+def prompt_schema_diagnostic_headroom_rows(
+    prompt_path: Path = GENERAL_PROMPT_PATH,
+    prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
+) -> List[MatrixRow]:
+    return [
+        MatrixRow(family, mix, scenarios, QWEN_32B_Q4KM, prompt_label, prompt_path)
+        for family, mix, scenarios in _prompt_schema_diagnostic_headroom_family_rows()
     ]
 
 
@@ -140,6 +193,7 @@ def regression_rows(
     *,
     forced_prompt_path: Path = FORCED_PROMPT_PATH,
     general_prompt_path: Path = GENERAL_PROMPT_PATH,
+    general_prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
 ) -> Tuple[MatrixRow, MatrixRow]:
     return (
         MatrixRow(
@@ -155,7 +209,7 @@ def regression_rows(
             "mixed",
             6,
             model,
-            "general_v1",
+            general_prompt_label,
             general_prompt_path,
         ),
     )
@@ -327,11 +381,17 @@ def run_prompt_regression(
     model_command: str,
     decoding_json: str,
     per_scenario_timeout_seconds: float,
+    general_prompt_path: Path = GENERAL_PROMPT_PATH,
+    general_prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
     force: bool = False,
 ) -> None:
     all_violations: List[Dict[str, object]] = []
     for model in (QWEN_7B_Q4KM, QWEN_32B_Q4KM):
-        baseline_row, general_row = regression_rows(model)
+        baseline_row, general_row = regression_rows(
+            model,
+            general_prompt_path=general_prompt_path,
+            general_prompt_label=general_prompt_label,
+        )
         baseline = run_or_reuse_row(
             baseline_row,
             output_dir=output_dir,
@@ -502,14 +562,16 @@ def run_determinism_check(
     model_command: str,
     decoding_json: str,
     per_scenario_timeout_seconds: float,
+    general_prompt_path: Path = GENERAL_PROMPT_PATH,
+    general_prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
 ) -> None:
     row = MatrixRow(
         FORCED_CONTRADICTION,
         "mixed",
         6,
         QWEN_7B_Q4KM,
-        "general_v1",
-        GENERAL_PROMPT_PATH,
+        general_prompt_label,
+        general_prompt_path,
     )
     with tempfile.TemporaryDirectory(prefix="cq_component_matrix_determinism_a_") as first_dir:
         with tempfile.TemporaryDirectory(prefix="cq_component_matrix_determinism_b_") as second_dir:
@@ -554,10 +616,17 @@ def run_diagnostic_matrix(
     model_command: str,
     decoding_json: str,
     per_scenario_timeout_seconds: float,
+    row_set: str = ROW_SET_FULL,
+    general_prompt_path: Path = GENERAL_PROMPT_PATH,
+    general_prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
     force: bool = False,
 ) -> List[RowResult]:
     results = []
-    for row in floor_diagnostic_rows() + headroom_diagnostic_rows():
+    for row in _diagnostic_rows_for_row_set(
+        row_set,
+        prompt_path=general_prompt_path,
+        prompt_label=general_prompt_label,
+    ):
         results.append(
             run_or_reuse_row(
                 row,
@@ -577,9 +646,16 @@ def dry_run_plan(
     model_command: str,
     decoding_json: str,
     per_scenario_timeout_seconds: float,
+    row_set: str = ROW_SET_FULL,
+    general_prompt_path: Path = GENERAL_PROMPT_PATH,
+    general_prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
 ) -> Dict[str, object]:
     rows = []
-    for row in _all_planned_rows():
+    for row in _all_planned_rows(
+        row_set,
+        general_prompt_path=general_prompt_path,
+        general_prompt_label=general_prompt_label,
+    ):
         rows.append(
             {
                 "family": row.family,
@@ -604,6 +680,9 @@ def dry_run_plan(
     return {
         "mode": "dry_run",
         "phase": "diagnostic_noisy_component_matrix",
+        "row_set": row_set,
+        "general_prompt_path": str(general_prompt_path),
+        "general_prompt_label": general_prompt_label,
         "statistical_gate_verdicts": "not_issued",
         "rows": rows,
     }
@@ -682,6 +761,293 @@ def write_stop_report(output_dir: Path, error: StopConditionError) -> Path:
     return path
 
 
+def write_diagnostic_summary(
+    *,
+    output_dir: Path,
+    row_set: str,
+    general_prompt_path: Path,
+    general_prompt_label: str,
+    results: Sequence[RowResult],
+) -> Path:
+    path = diagnostic_summary_path(
+        output_dir,
+        row_set=row_set,
+        general_prompt_label=general_prompt_label,
+    )
+    _write_json(
+        path,
+        diagnostic_summary_payload(
+            row_set=row_set,
+            general_prompt_path=general_prompt_path,
+            general_prompt_label=general_prompt_label,
+            results=results,
+        ),
+    )
+    return path
+
+
+def diagnostic_summary_path(
+    output_dir: Path,
+    *,
+    row_set: str,
+    general_prompt_label: str,
+) -> Path:
+    return output_dir / "{}_{}_{}_summary.json".format(
+        SUMMARY_PREFIX,
+        _slug_for_filename(row_set),
+        _slug_for_filename(general_prompt_label),
+    )
+
+
+def diagnostic_summary_payload(
+    *,
+    row_set: str,
+    general_prompt_path: Path,
+    general_prompt_label: str,
+    results: Sequence[RowResult],
+) -> Dict[str, object]:
+    rows = []
+    raw_by_role: Dict[str, Dict[str, int]] = {}
+    exclusions_by_role: Dict[str, Dict[str, int]] = {}
+    adjusted_by_role: Dict[str, Dict[str, int]] = {}
+    scenario_error_count_by_role: Dict[str, int] = {}
+    boundary_exclusion_records = []
+    boundary_exclusion_triples = set()
+    has_headroom_preference_heldout = False
+
+    for result in results:
+        if _row_uses_boundary_exclusion_scope(result.row):
+            has_headroom_preference_heldout = True
+        raw_counts = _empty_bucket_counts()
+        exclusion_counts = _empty_bucket_counts()
+        row_exclusions = []
+        for example in _failure_examples(result.component_artifact):
+            bucket = failure_bucket(example)
+            raw_counts[bucket] = raw_counts.get(bucket, 0) + 1
+            if is_boundary_scope_exclusion(result.row, example):
+                exclusion_counts[bucket] = exclusion_counts.get(bucket, 0) + 1
+                exclusion_record = _boundary_exclusion_record(result.row, example, bucket)
+                row_exclusions.append(exclusion_record)
+                boundary_exclusion_records.append(exclusion_record)
+                boundary_exclusion_triples.add(_boundary_exclusion_triple(example))
+
+        adjusted_counts = {
+            bucket: raw_counts.get(bucket, 0) - exclusion_counts.get(bucket, 0)
+            for bucket in FAILURE_BUCKETS
+        }
+        role = result.row.model.role
+        _add_bucket_counts(raw_by_role, role, raw_counts)
+        _add_bucket_counts(exclusions_by_role, role, exclusion_counts)
+        _add_bucket_counts(adjusted_by_role, role, adjusted_counts)
+        scenario_error_count = int(result.component_artifact.get("scenario_error_count") or 0)
+        scenario_error_count_by_role[role] = (
+            scenario_error_count_by_role.get(role, 0) + scenario_error_count
+        )
+        rows.append(
+            {
+                "family": result.row.family,
+                "template_mix": result.row.template_mix,
+                "scenarios": result.row.scenarios,
+                "model_id": result.row.model.model_id,
+                "model_role": role,
+                "prompt_label": result.row.prompt_label,
+                "reused": result.reused,
+                "paths": {
+                    "predictions": str(result.paths.predictions),
+                    "component_eval": str(result.paths.component_eval),
+                },
+                "scenario_error_count": scenario_error_count,
+                "failure_example_count": int(
+                    result.component_artifact.get("failure_example_count") or 0
+                ),
+                "raw_bucket_counts": raw_counts,
+                "boundary_exclusions": row_exclusions,
+                "boundary_exclusion_bucket_counts": exclusion_counts,
+                "adjusted_bucket_counts": adjusted_counts,
+            }
+        )
+
+    headroom_adjusted = _bucket_counts_for_role(adjusted_by_role, QWEN_32B_Q4KM.role)
+    headroom_scenario_errors = scenario_error_count_by_role.get(QWEN_32B_Q4KM.role, 0)
+    total_scenario_errors = sum(scenario_error_count_by_role.values())
+    scope_drift_count = headroom_adjusted["scope_key_or_level_drift"]
+    canonical_count = headroom_adjusted["canonical_split_or_merge"]
+    acceptance = {
+        "phase_a_regression_required_before_rows": True,
+        "policy_comparison_unlocked": False,
+        "scenario_errors_absent": total_scenario_errors == 0,
+        "scenario_error_count": total_scenario_errors,
+        "headroom_scenario_error_count": headroom_scenario_errors,
+        "adjusted_32b_scope_key_or_level_drift": scope_drift_count,
+        "adjusted_32b_canonical_split_or_merge": canonical_count,
+        "scope_key_or_level_drift_threshold_exclusive": ACCEPTANCE_SCOPE_DRIFT_MAX_EXCLUSIVE,
+        "canonical_split_or_merge_threshold_exclusive": ACCEPTANCE_CANONICAL_DRIFT_MAX_EXCLUSIVE,
+        "scope_key_or_level_drift_passed": (
+            scope_drift_count < ACCEPTANCE_SCOPE_DRIFT_MAX_EXCLUSIVE
+        ),
+        "canonical_split_or_merge_passed": (
+            canonical_count < ACCEPTANCE_CANONICAL_DRIFT_MAX_EXCLUSIVE
+        ),
+    }
+    acceptance["branch_resolved"] = (
+        acceptance["scenario_errors_absent"]
+        and acceptance["scope_key_or_level_drift_passed"]
+        and acceptance["canonical_split_or_merge_passed"]
+    )
+    return {
+        "mode": "diagnostic_noisy_component_matrix_summary",
+        "row_set": row_set,
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "general_prompt_path": str(general_prompt_path),
+        "general_prompt_label": general_prompt_label,
+        "general_prompt_sha256": prompt_template_sha256(general_prompt_path),
+        "statistical_gate_verdicts": "not_issued",
+        "policy_comparison_unlocked": False,
+        "boundary_exclusion_rule": {
+            "applies_to_model_role": QWEN_32B_Q4KM.role,
+            "bucket": "scope_key_or_level_drift",
+            "excluded_examples": [
+                {
+                    "scenario_id": scenario_id,
+                    "event_id": event_id,
+                    "component": component,
+                }
+                for scenario_id, event_id, component in sorted(BOUNDARY_SCOPE_EXCLUSIONS)
+            ],
+        },
+        "boundary_exclusion_check": _boundary_exclusion_check(
+            has_headroom_preference_heldout=has_headroom_preference_heldout,
+            observed_triples=boundary_exclusion_triples,
+        ),
+        "raw_bucket_counts_by_model_role": raw_by_role,
+        "boundary_exclusion_bucket_counts_by_model_role": exclusions_by_role,
+        "adjusted_bucket_counts_by_model_role": adjusted_by_role,
+        "scenario_error_count_by_model_role": scenario_error_count_by_role,
+        "boundary_exclusions": boundary_exclusion_records,
+        "acceptance": acceptance,
+        "rows": rows,
+    }
+
+
+def failure_bucket(example: Dict[str, object]) -> str:
+    component = example.get("component")
+    failure_type = example.get("failure_type")
+    if component == "scenario" or failure_type == "scenario_error":
+        return "scenario_error"
+    if component == "candidate_detection":
+        return "candidate_miss_or_extra"
+    if component == "contradiction":
+        return "contradiction_edge_drift"
+    if component in ("scope_key", "scope_level"):
+        return "scope_key_or_level_drift"
+    if component == "canonicalization":
+        return "canonical_split_or_merge"
+    if component == "claim_type":
+        return "claim_type_drift"
+    return "unmapped"
+
+
+def is_boundary_scope_exclusion(row: MatrixRow, example: Dict[str, object]) -> bool:
+    if not _row_uses_boundary_exclusion_scope(row):
+        return False
+    return _boundary_exclusion_triple(example) in BOUNDARY_SCOPE_EXCLUSIONS
+
+
+def _row_uses_boundary_exclusion_scope(row: MatrixRow) -> bool:
+    return (
+        row.model == QWEN_32B_Q4KM
+        and row.family == PREFERENCE_DRIFT
+        and row.template_mix == "heldout"
+    )
+
+
+def _boundary_exclusion_triple(example: Dict[str, object]) -> Tuple[str, str, str]:
+    return (
+        str(example.get("scenario_id") or ""),
+        str(example.get("event_id") or ""),
+        str(example.get("component") or ""),
+    )
+
+
+def _boundary_exclusion_check(
+    *,
+    has_headroom_preference_heldout: bool,
+    observed_triples: object,
+) -> Dict[str, object]:
+    observed = set(observed_triples)
+    missing = BOUNDARY_SCOPE_EXCLUSIONS - observed if has_headroom_preference_heldout else set()
+    unexpected = observed - BOUNDARY_SCOPE_EXCLUSIONS
+    return {
+        "applies": has_headroom_preference_heldout,
+        "status": "missing_expected_exclusions" if missing else "ok",
+        "expected_count": len(BOUNDARY_SCOPE_EXCLUSIONS),
+        "observed_expected_count": len(observed.intersection(BOUNDARY_SCOPE_EXCLUSIONS)),
+        "missing_expected_exclusions": [
+            {
+                "scenario_id": scenario_id,
+                "event_id": event_id,
+                "component": component,
+            }
+            for scenario_id, event_id, component in sorted(missing)
+        ],
+        "unexpected_exclusions": [
+            {
+                "scenario_id": scenario_id,
+                "event_id": event_id,
+                "component": component,
+            }
+            for scenario_id, event_id, component in sorted(unexpected)
+        ],
+    }
+
+
+def _boundary_exclusion_record(
+    row: MatrixRow,
+    example: Dict[str, object],
+    bucket: str,
+) -> Dict[str, object]:
+    return {
+        "family": row.family,
+        "template_mix": row.template_mix,
+        "model_id": row.model.model_id,
+        "model_role": row.model.role,
+        "scenario_id": example.get("scenario_id"),
+        "template_id": example.get("template_id"),
+        "event_id": example.get("event_id"),
+        "component": example.get("component"),
+        "failure_type": example.get("failure_type"),
+        "bucket": bucket,
+        "reason": "pre_enumerated_preference_drift_one_off_scope_boundary",
+    }
+
+
+def _failure_examples(component_artifact: Dict[str, object]) -> List[Dict[str, object]]:
+    examples = component_artifact.get("failure_examples") or []
+    return [example for example in examples if isinstance(example, dict)]
+
+
+def _empty_bucket_counts() -> Dict[str, int]:
+    return {bucket: 0 for bucket in FAILURE_BUCKETS}
+
+
+def _add_bucket_counts(
+    grouped_counts: Dict[str, Dict[str, int]],
+    role: str,
+    counts: Dict[str, int],
+) -> None:
+    if role not in grouped_counts:
+        grouped_counts[role] = _empty_bucket_counts()
+    for bucket in FAILURE_BUCKETS:
+        grouped_counts[role][bucket] = grouped_counts[role].get(bucket, 0) + counts.get(bucket, 0)
+
+
+def _bucket_counts_for_role(
+    grouped_counts: Dict[str, Dict[str, int]],
+    role: str,
+) -> Dict[str, int]:
+    return grouped_counts.get(role, _empty_bucket_counts())
+
+
 def _diagnostic_family_rows() -> Tuple[Tuple[str, str, int], ...]:
     return (
         (FORCED_CONTRADICTION, "mixed", 6),
@@ -712,12 +1078,68 @@ def _headroom_family_rows() -> Tuple[Tuple[str, str, int], ...]:
     )
 
 
-def _all_planned_rows() -> List[MatrixRow]:
+def _prompt_schema_diagnostic_floor_family_rows() -> Tuple[Tuple[str, str, int], ...]:
+    return (
+        (PREFERENCE_DRIFT, "mixed", 6),
+        (PREFERENCE_DRIFT, "heldout", 4),
+        (SCOPE_CONTAMINATION, "mixed", 8),
+        (SCOPE_CONTAMINATION, "heldout", 4),
+        (MEMORY_POISONING, "mixed", 10),
+        (MEMORY_POISONING, "heldout", 10),
+        (FALSE_CORROBORATION, "heldout", 4),
+        (MECHANISM_DIVERSE_HELDOUT, "frozen", 3),
+    )
+
+
+def _prompt_schema_diagnostic_headroom_family_rows() -> Tuple[Tuple[str, str, int], ...]:
+    return (
+        (PREFERENCE_DRIFT, "heldout", 4),
+        (SCOPE_CONTAMINATION, "heldout", 4),
+        (MECHANISM_DIVERSE_HELDOUT, "frozen", 3),
+    )
+
+
+def _diagnostic_rows_for_row_set(
+    row_set: str,
+    *,
+    prompt_path: Path,
+    prompt_label: str,
+) -> List[MatrixRow]:
+    if row_set == ROW_SET_FULL:
+        return floor_diagnostic_rows(prompt_path, prompt_label) + headroom_diagnostic_rows(
+            prompt_path,
+            prompt_label,
+        )
+    if row_set == ROW_SET_PROMPT_SCHEMA_DIAGNOSTIC:
+        return prompt_schema_diagnostic_floor_rows(
+            prompt_path,
+            prompt_label,
+        ) + prompt_schema_diagnostic_headroom_rows(prompt_path, prompt_label)
+    raise ValueError("Unsupported row set: {}".format(row_set))
+
+
+def _all_planned_rows(
+    row_set: str = ROW_SET_FULL,
+    *,
+    general_prompt_path: Path = GENERAL_PROMPT_PATH,
+    general_prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
+) -> List[MatrixRow]:
     rows: List[MatrixRow] = []
     for model in (QWEN_7B_Q4KM, QWEN_32B_Q4KM):
-        rows.extend(regression_rows(model))
-    rows.extend(floor_diagnostic_rows())
-    rows.extend(headroom_diagnostic_rows())
+        rows.extend(
+            regression_rows(
+                model,
+                general_prompt_path=general_prompt_path,
+                general_prompt_label=general_prompt_label,
+            )
+        )
+    rows.extend(
+        _diagnostic_rows_for_row_set(
+            row_set,
+            prompt_path=general_prompt_path,
+            prompt_label=general_prompt_label,
+        )
+    )
     return rows
 
 
@@ -761,6 +1183,13 @@ def _is_number(value: object) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
+def _slug_for_filename(value: str) -> str:
+    slug = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in value.strip())
+    while "__" in slug:
+        slug = slug.replace("__", "_")
+    return slug.strip("_") or "default"
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Run the diagnostic-only noisy component scoring matrix."
@@ -769,11 +1198,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
     parser.add_argument("--decoding-json", default=DEFAULT_DECODING_JSON)
     parser.add_argument("--per-scenario-timeout-seconds", type=float, default=DEFAULT_TIMEOUT_SECONDS)
+    parser.add_argument("--row-set", choices=ROW_SETS, default=ROW_SET_FULL)
+    parser.add_argument("--general-prompt-path", default=str(GENERAL_PROMPT_PATH))
+    parser.add_argument("--general-prompt-label", default=DEFAULT_GENERAL_PROMPT_LABEL)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
 
     output_dir = Path(args.output_dir)
+    general_prompt_path = Path(args.general_prompt_path)
     if args.dry_run:
         print(
             json.dumps(
@@ -782,6 +1215,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     model_command=args.model_command,
                     decoding_json=args.decoding_json,
                     per_scenario_timeout_seconds=args.per_scenario_timeout_seconds,
+                    row_set=args.row_set,
+                    general_prompt_path=general_prompt_path,
+                    general_prompt_label=args.general_prompt_label,
                 ),
                 indent=2,
                 sort_keys=True,
@@ -795,18 +1231,25 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             model_command=args.model_command,
             decoding_json=args.decoding_json,
             per_scenario_timeout_seconds=args.per_scenario_timeout_seconds,
+            general_prompt_path=general_prompt_path,
+            general_prompt_label=args.general_prompt_label,
             force=args.force,
         )
         run_determinism_check(
             model_command=args.model_command,
             decoding_json=args.decoding_json,
             per_scenario_timeout_seconds=args.per_scenario_timeout_seconds,
+            general_prompt_path=general_prompt_path,
+            general_prompt_label=args.general_prompt_label,
         )
         results = run_diagnostic_matrix(
             output_dir=output_dir,
             model_command=args.model_command,
             decoding_json=args.decoding_json,
             per_scenario_timeout_seconds=args.per_scenario_timeout_seconds,
+            row_set=args.row_set,
+            general_prompt_path=general_prompt_path,
+            general_prompt_label=args.general_prompt_label,
             force=args.force,
         )
     except StopConditionError as error:
@@ -817,7 +1260,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         )
         return 2
 
+    summary_path = write_diagnostic_summary(
+        output_dir=output_dir,
+        row_set=args.row_set,
+        general_prompt_path=general_prompt_path,
+        general_prompt_label=args.general_prompt_label,
+        results=results,
+    )
     print("Wrote or reused {} diagnostic rows in {}".format(len(results), output_dir))
+    print("Wrote diagnostic summary {}".format(summary_path))
     print("No statistical gate verdicts were issued.")
     return 0
 

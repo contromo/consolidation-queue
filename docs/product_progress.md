@@ -1,5 +1,48 @@
 # Product Progress
 
+## 2026-05-09 — Prompt diagnostic slice runner added and v2 branch failed
+
+### What shipped
+
+- added `prompts/component_extractor_general_v2.txt` as the single prompt-only diagnostic candidate for the selected Phase 3 branch
+- extended `scripts/run_component_scoring_matrix.py` with `--row-set full|prompt_schema_diagnostic`, prompt path/label overrides, and unchanged default `full` row ordering and artifact stems
+- added targeted prompt-schema diagnostic rows for the affected 7B and 32B families only
+- added diagnostic summary artifacts with raw bucket counts, pre-enumerated benchmark-boundary exclusions, adjusted counts, and `policy_comparison_unlocked: false`
+- added regression tests for the default matrix contract, targeted `general_v2` artifact naming, and boundary-adjusted counting
+- ran the targeted `general_v2` diagnostic row-set after confirming local Qwen 2.5 7B/32B `Q4_K_M` availability
+
+### Why it matters
+
+- the planned prompt/schema branch can be tested without rerunning the entire matrix by default
+- the acceptance arithmetic now excludes only the two documented 32B preference-drift one-off scope-boundary events from scope drift, while still counting their canonicalization failures
+- `general_v2` keeps one-off/current-request preference constraints as `temporary_constraint`/`session`, so this pass does not force-fit the prompt to disputed gold labels
+- the branch did not resolve: adjusted 32B scope drift was `5` against the `< 4` target, adjusted 32B canonical split/merge was `7` against the `< 3` target, and six 7B scenario errors remained from empty `scope_key` validation failures
+- those six 7B errors were prompt-following failures where the model still emitted empty `scope_key` values despite the v2 fallback instruction; the validator rejected emptiness, not the shape of a fallback slug
+- branch resolution uses a strict zero targeted-row scenario-error requirement, not a no-regression comparison against v1
+- this remains component diagnostic evidence only; no noisy-mode claim or policy comparison is unlocked by this change
+
+### Evidence
+
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_scoring_matrix -q` passes with 13 tests
+- the requested unit bundle passes: `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_scoring_matrix tests.test_local_extractor tests.test_component_eval tests.test_ollama_component_extractor -q`
+- targeted dry-run completed with the Phase A rows plus 11 `general_v2` diagnostic rows
+- local Ollama tags were present: `qwen2.5:7b-instruct-q4_K_M` and `qwen2.5:32b-instruct-q4_K_M`; server version was `0.23.1`
+- an initial sandboxed run stopped because localhost Ollama access was blocked; the approved `--force` rerun completed and overwrote those placeholder Phase A artifacts
+- completed run output: `Wrote or reused 11 diagnostic rows in /Users/manav/code/consolidation-queue/data/results`
+- summary artifact: `data/results/component_scoring_matrix_prompt_schema_diagnostic_general_v2_summary.json`
+- summary acceptance:
+  - `branch_resolved=false`
+  - `adjusted_32b_scope_key_or_level_drift=5`
+  - `adjusted_32b_canonical_split_or_merge=7`
+  - `scenario_error_count=6`, all on 7B floor rows
+  - `policy_comparison_unlocked=false`
+
+### Open issues / next
+
+- stop prompt iteration for this branch and proceed to CI-aware gate-decision design with the current component evidence
+- keep `general_v1` as the current default for future full diagnostic/gate runs unless a separate task explicitly changes the default
+- keep extracted-candidate policy comparisons blocked
+
 ## 2026-05-09 — Diagnostic matrix interpreted and prompt/schema branch selected
 
 ### What shipped

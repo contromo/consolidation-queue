@@ -47,6 +47,65 @@ class ComponentScoringMatrixTests(unittest.TestCase):
             "forced_contradiction_local_extractor_qwen2_5_7b_q4km_general_v1_mixed_floor_component_eval.json",
         )
 
+    def test_full_row_set_preserves_existing_default_matrix(self) -> None:
+        rows = matrix._all_planned_rows()
+        explicit_rows = matrix._all_planned_rows(
+            matrix.ROW_SET_FULL,
+            general_prompt_path=matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label=matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+        )
+
+        self.assertEqual(
+            [row.artifact_stem for row in rows],
+            [row.artifact_stem for row in explicit_rows],
+        )
+        expected_row_count = (
+            4
+            + len(matrix._diagnostic_family_rows())
+            + len(matrix._headroom_family_rows())
+        )
+        self.assertEqual(len(rows), expected_row_count)
+        self.assertEqual(rows[0].prompt_label, "forced_v1")
+        self.assertEqual(rows[1].prompt_label, "general_v1")
+        self.assertEqual(rows[4].artifact_stem, rows[1].artifact_stem)
+        self.assertEqual(
+            rows[-1].artifact_stem,
+            "mechanism_diverse_heldout_local_extractor_qwen2_5_32b_q4km_general_v1_frozen_headroom",
+        )
+
+    def test_prompt_schema_diagnostic_rows_and_v2_artifact_names_are_fixed(self) -> None:
+        prompt_path = Path("/tmp/component_extractor_general_v2.txt")
+        floor_rows = matrix.prompt_schema_diagnostic_floor_rows(prompt_path, "general_v2")
+        headroom_rows = matrix.prompt_schema_diagnostic_headroom_rows(prompt_path, "general_v2")
+
+        self.assertEqual(
+            [(row.family, row.template_mix, row.scenarios) for row in floor_rows],
+            [
+                (matrix.PREFERENCE_DRIFT, "mixed", 6),
+                (matrix.PREFERENCE_DRIFT, "heldout", 4),
+                (matrix.SCOPE_CONTAMINATION, "mixed", 8),
+                (matrix.SCOPE_CONTAMINATION, "heldout", 4),
+                (matrix.MEMORY_POISONING, "mixed", 10),
+                (matrix.MEMORY_POISONING, "heldout", 10),
+                (matrix.FALSE_CORROBORATION, "heldout", 4),
+                (matrix.MECHANISM_DIVERSE_HELDOUT, "frozen", 3),
+            ],
+        )
+        self.assertEqual(
+            [(row.family, row.template_mix, row.scenarios) for row in headroom_rows],
+            [
+                (matrix.PREFERENCE_DRIFT, "heldout", 4),
+                (matrix.SCOPE_CONTAMINATION, "heldout", 4),
+                (matrix.MECHANISM_DIVERSE_HELDOUT, "frozen", 3),
+            ],
+        )
+        self.assertTrue(all(row.prompt_label == "general_v2" for row in floor_rows + headroom_rows))
+        paths = matrix.artifact_paths(headroom_rows[0], Path("/tmp/cq-results"))
+        self.assertEqual(
+            paths.predictions.name,
+            "preference_drift_local_extractor_qwen2_5_32b_q4km_general_v2_heldout_headroom_predictions.json",
+        )
+
     def test_dry_run_commands_use_existing_extractor_and_scorer_clis(self) -> None:
         row = matrix.floor_diagnostic_rows()[0]
         commands = matrix.equivalent_commands(
@@ -72,7 +131,27 @@ class ComponentScoringMatrixTests(unittest.TestCase):
         )
 
         self.assertEqual(plan["statistical_gate_verdicts"], "not_issued")
+        self.assertEqual(plan["row_set"], matrix.ROW_SET_FULL)
         self.assertGreater(len(plan["rows"]), len(matrix.floor_diagnostic_rows()))
+        self.assertEqual(matrix._slug_for_filename("v2 (test)"), "v2_test")
+
+        targeted_plan = matrix.dry_run_plan(
+            output_dir=Path("/tmp/cq-results"),
+            model_command="python3 scripts/ollama_component_extractor.py",
+            decoding_json='{"temperature": 0}',
+            per_scenario_timeout_seconds=180.0,
+            row_set=matrix.ROW_SET_PROMPT_SCHEMA_DIAGNOSTIC,
+            general_prompt_path=Path("/tmp/component_extractor_general_v2.txt"),
+            general_prompt_label="general_v2",
+        )
+
+        self.assertEqual(
+            len(targeted_plan["rows"]),
+            4 + len(matrix.prompt_schema_diagnostic_floor_rows())
+            + len(matrix.prompt_schema_diagnostic_headroom_rows()),
+        )
+        self.assertIn("component_extractor_general_v2.txt", targeted_plan["rows"][1]["commands"]["extract"])
+        self.assertIn("general_v2", targeted_plan["rows"][-1]["paths"]["predictions"])
 
     def test_matching_cached_artifacts_are_reused_without_running_model(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -296,6 +375,123 @@ class ComponentScoringMatrixTests(unittest.TestCase):
             self.assertEqual(payload["details"], {"row": "example"})
             self.assertFalse(payload["phase_b_policy_comparison_unlocked"])
 
+    def test_summary_excludes_only_pre_enumerated_headroom_scope_boundary(self) -> None:
+        preference_row = matrix.MatrixRow(
+            matrix.PREFERENCE_DRIFT,
+            "heldout",
+            4,
+            matrix.QWEN_32B_Q4KM,
+            "general_v2",
+            matrix.GENERAL_PROMPT_PATH,
+        )
+        scope_row = matrix.MatrixRow(
+            matrix.SCOPE_CONTAMINATION,
+            "heldout",
+            4,
+            matrix.QWEN_32B_Q4KM,
+            "general_v2",
+            matrix.GENERAL_PROMPT_PATH,
+        )
+        floor_row = matrix.MatrixRow(
+            matrix.PREFERENCE_DRIFT,
+            "heldout",
+            4,
+            matrix.QWEN_7B_Q4KM,
+            "general_v2",
+            matrix.GENERAL_PROMPT_PATH,
+        )
+        summary = matrix.diagnostic_summary_payload(
+            row_set=matrix.ROW_SET_PROMPT_SCHEMA_DIAGNOSTIC,
+            general_prompt_path=matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label="general_v2",
+            results=[
+                _row_result(
+                    preference_row,
+                    [
+                        _failure("scope_key", "preference_drift_002", "preference_drift_002-event-4"),
+                        _failure("scope_level", "preference_drift_002", "preference_drift_002-event-4"),
+                        _failure("scope_key", "preference_drift_004", "preference_drift_004-event-4"),
+                        _failure("scope_level", "preference_drift_004", "preference_drift_004-event-4"),
+                        _failure("canonicalization", "preference_drift_002", "preference_drift_002-event-4"),
+                    ],
+                ),
+                _row_result(
+                    scope_row,
+                    [_failure("scope_key", "scope_contamination_004", "scope_contamination_004-event-2")],
+                ),
+                _row_result(
+                    floor_row,
+                    [_failure("scope_key", "preference_drift_002", "preference_drift_002-event-4")],
+                ),
+            ],
+        )
+
+        raw = summary["raw_bucket_counts_by_model_role"]["headroom"]
+        exclusions = summary["boundary_exclusion_bucket_counts_by_model_role"]["headroom"]
+        adjusted = summary["adjusted_bucket_counts_by_model_role"]["headroom"]
+
+        self.assertEqual(raw["scope_key_or_level_drift"], 5)
+        self.assertEqual(exclusions["scope_key_or_level_drift"], 4)
+        self.assertEqual(adjusted["scope_key_or_level_drift"], 1)
+        self.assertEqual(adjusted["canonical_split_or_merge"], 1)
+        self.assertEqual(len(summary["boundary_exclusions"]), 4)
+        self.assertEqual(summary["boundary_exclusion_check"]["status"], "ok")
+        self.assertEqual(summary["boundary_exclusion_check"]["observed_expected_count"], 4)
+        self.assertFalse(summary["policy_comparison_unlocked"])
+        self.assertTrue(summary["acceptance"]["branch_resolved"])
+
+    def test_summary_branch_resolution_uses_exclusive_thresholds(self) -> None:
+        headroom_row = matrix.MatrixRow(
+            matrix.SCOPE_CONTAMINATION,
+            "heldout",
+            4,
+            matrix.QWEN_32B_Q4KM,
+            "general_v2",
+            matrix.GENERAL_PROMPT_PATH,
+        )
+        summary = matrix.diagnostic_summary_payload(
+            row_set=matrix.ROW_SET_PROMPT_SCHEMA_DIAGNOSTIC,
+            general_prompt_path=matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label="general_v2",
+            results=[
+                _row_result(
+                    headroom_row,
+                    [
+                        _failure("scope_key", "scenario-1", "event-1"),
+                        _failure("scope_key", "scenario-2", "event-2"),
+                        _failure("scope_level", "scenario-3", "event-3"),
+                        _failure("scope_level", "scenario-4", "event-4"),
+                    ],
+                ),
+            ],
+        )
+
+        acceptance = summary["acceptance"]
+        self.assertEqual(acceptance["adjusted_32b_scope_key_or_level_drift"], 4)
+        self.assertFalse(acceptance["scope_key_or_level_drift_passed"])
+        self.assertFalse(acceptance["branch_resolved"])
+
+    def test_summary_records_missing_boundary_exclusions_when_row_is_present(self) -> None:
+        preference_row = matrix.MatrixRow(
+            matrix.PREFERENCE_DRIFT,
+            "heldout",
+            4,
+            matrix.QWEN_32B_Q4KM,
+            "general_v2",
+            matrix.GENERAL_PROMPT_PATH,
+        )
+        summary = matrix.diagnostic_summary_payload(
+            row_set=matrix.ROW_SET_PROMPT_SCHEMA_DIAGNOSTIC,
+            general_prompt_path=matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label="general_v2",
+            results=[_row_result(preference_row, [])],
+        )
+
+        check = summary["boundary_exclusion_check"]
+        self.assertTrue(check["applies"])
+        self.assertEqual(check["status"], "missing_expected_exclusions")
+        self.assertEqual(len(check["missing_expected_exclusions"]), 4)
+
 
 def _component_artifact(metrics):
     return {
@@ -335,6 +531,32 @@ def _write_cached_artifacts(row, paths, *, decoding_params, timeout):
         json.dumps(component_payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+
+
+def _row_result(row, failure_examples, *, scenario_error_count=0):
+    return matrix.RowResult(
+        row=row,
+        paths=matrix.ArtifactPaths(
+            predictions=Path("/tmp/predictions.json"),
+            component_eval=Path("/tmp/component_eval.json"),
+        ),
+        component_artifact={
+            "failure_examples": failure_examples,
+            "failure_example_count": len(failure_examples),
+            "scenario_error_count": scenario_error_count,
+        },
+        reused=False,
+    )
+
+
+def _failure(component, scenario_id, event_id):
+    return {
+        "component": component,
+        "failure_type": "{}_mismatch".format(component),
+        "scenario_id": scenario_id,
+        "template_id": "template",
+        "event_id": event_id,
+    }
 
 
 if __name__ == "__main__":

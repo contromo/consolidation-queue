@@ -282,11 +282,15 @@ Implemented:
 - family-neutral `general_v1` prompt revision for per-observation extraction and support-vs-contradiction guidance
 - completed diagnostic matrix run after the prompt revision, with final prompt-hash-matching diagnostic artifacts and no statistical gate verdict issued
 - `docs/component_diagnostic_matrix.md`, interpreting the completed diagnostic matrix with a fixed failure taxonomy and selecting prompt/schema diagnostics as the next active task
+- `prompt_schema_diagnostic` row-set support in `scripts/run_component_scoring_matrix.py`, with prompt path/label overrides, `general_v2` prompt artifact naming, and boundary-adjusted diagnostic summaries that keep policy comparisons locked
+- `prompts/component_extractor_general_v2.txt`, a single prompt-only diagnostic candidate focused on non-empty required fields, canonical slot reuse, full scope-key preservation, and explicit treatment of one-off preference constraints as benchmark-boundary scope cases
+- completed targeted `general_v2` diagnostic run; Phase A passed and 11 targeted rows were written, but the branch did not resolve because adjusted 32B scope drift was `5`, adjusted 32B canonical split/merge was `7`, and 7B still had six validation-error scenario failures
+- the only accepted boundary carve-outs for that summary are 32B `preference_drift_002-event-4` and `preference_drift_004-event-4` `scope_key`/`scope_level` mismatches from `docs/component_diagnostic_matrix.md`; the branch-resolution criterion still requires zero targeted-row scenario errors
 
 Remaining:
 
 - do not treat Phase A clearance as cross-family prompt safety; it only guards the forced-contradiction smoke row, so scope, drift, poisoning, false-corroboration, useful-pending, and mechanism-diverse regressions require direct artifact inspection
-- run one targeted prompt/schema-or-benchmark-boundary diagnostic slice for repeated scope-key/scope-level drift and canonical split behavior before CI-aware gate-decision design
+- stop prompt iteration for this branch and design CI-aware gate-decision runs with the current component evidence and explicit boundary/failure notes
 - design and run larger CI-aware gate-decision sets before making stable extractor-quality, size-scaling, or Phase 4 policy-comparison claims
 
 Required outcome:
@@ -438,13 +442,12 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. Policy comparisons remain locked. Next:
+The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. Policy comparisons remain locked. Next:
 
-1. Run one targeted prompt/schema-or-benchmark-boundary diagnostic slice for preference-drift temporary-looking language, scope-key/scope-level extraction, canonical slot reuse, and empty required-field validation failures.
-2. After any prompt/schema adjustment, rerun the forced-contradiction Phase A regression path before broader diagnostic rows.
-3. Add CI-aware gate-decision runs with enough held-out/decision examples for Wilson lower bounds to be interpretable against the noisy-mode thresholds.
-4. Run policy comparisons with extracted candidates only after component outputs are saved, scored, inspectable, and gate-decision results are reported separately from policy outcomes.
-5. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
+1. Design CI-aware gate-decision runs with enough held-out/decision examples for Wilson lower bounds to be interpretable against the noisy-mode thresholds.
+2. Carry forward the `general_v2` failure note: one prompt-only pass did not resolve cross-family scope/canonicalization drift, and remaining 7B empty-`scope_key` validation errors should be treated as component-quality risk.
+3. Run policy comparisons with extracted candidates only after component outputs are saved, scored, inspectable, and gate-decision results are reported separately from policy outcomes.
+4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
 
