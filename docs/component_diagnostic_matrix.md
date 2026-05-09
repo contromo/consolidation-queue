@@ -1,6 +1,6 @@
 # Phase 3 Component Diagnostic Matrix Interpretation
 
-Date: 2026-05-09
+Date: 2026-05-09. The diagnostic matrix artifacts interpreted here were produced from the 2026-05-08 run.
 
 This report interprets the completed `general_v1` noisy component diagnostic matrix as component evidence only. It does not rank scenario families, does not make a noisy-mode policy claim, and does not unlock extracted-candidate policy comparisons.
 
@@ -8,7 +8,7 @@ This report interprets the completed `general_v1` noisy component diagnostic mat
 
 The next active task should be targeted prompt/schema diagnostics, not CI-aware gate-decision design yet.
 
-The operational rule was: choose prompt/schema diagnostics first if at least 2 families show the same taxonomy bucket at both 7B and 32B; otherwise choose CI-aware gate-decision design. The rule is met:
+The operational rule used for this interpretation was selected after seeing the diagnostic matrix: choose prompt/schema diagnostics first if at least 2 families show the same taxonomy bucket at both 7B and 32B; otherwise choose CI-aware gate-decision design. Future diagnostic-to-gate branching rules should be preregistered before new matrix runs. The rule is met:
 
 - `scope_key_or_level_drift` appears at both 7B and 32B in `preference_drift`, `scope_contamination`, and `mechanism_diverse_heldout`.
 - `canonical_split_or_merge` appears at both 7B and 32B in `preference_drift` and `scope_contamination`.
@@ -19,13 +19,13 @@ Policy comparisons remain locked until component outputs are saved, scored, insp
 
 The highest-signal 32B row is `preference_drift` held-out. It has 10 failure examples, the largest 32B failure count in the current matrix notes, despite all measured quality gates passing.
 
-Direct inspection shows the failures concentrate on two held-out drift-back scenarios. In both, an event phrased as a one-checkpoint return to the earlier style was predicted as a `temporary_constraint` scoped to `session`, while gold labels treat it as a `user_preference` in `user_global` scope. That single interpretation pattern fans out into:
+Direct inspection shows the failures concentrate on two held-out drift-back scenarios. In both, an event phrased as a one-checkpoint return to the earlier style was predicted as a `temporary_constraint` scoped to `session`, while gold labels treat it as a `user_preference` in `user_global` scope. That surface reading is defensible: the text can reasonably be read as temporary without the scenario-level drift-back intent. This row should therefore be treated as a prompt/schema-or-benchmark-boundary diagnostic, not as simple evidence that the extractor is wrong. The same pattern fans out into:
 
 - 4 `canonical_split_or_merge` examples
 - 4 `scope_key_or_level_drift` examples
 - 2 `claim_type_drift` examples
 
-This is a prompt/schema diagnostic signal because it is visible in the 32B headroom path and overlaps with 7B defects rather than being only a small-model capacity issue.
+This is enough to block CI-aware gate-decision design for one targeted diagnostic slice because it is visible in the 32B headroom path and overlaps with 7B defects. The slice should decide whether the prompt/schema must expose scenario-position context more clearly, whether the gold boundary should be documented or revised, or whether this remains an accepted benchmark ambiguity.
 
 ## Artifact Inventory
 
@@ -43,7 +43,7 @@ Every failure example was assigned to exactly one bucket using this fixed preced
 
 1. `scenario_error`
 2. `candidate_miss_or_extra`
-3. `repetition_as_contradiction`
+3. `contradiction_edge_drift`
 4. `scope_key_or_level_drift`
 5. `canonical_split_or_merge`
 6. `claim_type_drift`
@@ -52,12 +52,12 @@ The artifact-to-bucket mapping is:
 
 - `component=scenario` or `failure_type=scenario_error` -> `scenario_error`
 - `component=candidate_detection` -> `candidate_miss_or_extra`
-- `component=contradiction` -> `repetition_as_contradiction`
+- `component=contradiction` -> `contradiction_edge_drift`
 - `component=scope_key` or `component=scope_level` -> `scope_key_or_level_drift`
 - `component=canonicalization` -> `canonical_split_or_merge`
 - `component=claim_type` -> `claim_type_drift`
 
-This taxonomy maps all observed failure examples with no unmapped cases. Because the fixed taxonomy has one contradiction bucket, both `contradiction_extra` and `contradiction_missing` examples are counted under `repetition_as_contradiction`; the underlying artifact `failure_type` should be inspected when that subcase matters.
+This taxonomy maps all observed failure examples with no unmapped cases. The contradiction bucket is intentionally neutral: it includes both `contradiction_extra` and `contradiction_missing`, and the underlying artifact `failure_type` should be inspected when that subcase matters.
 
 ## Row-Level Metrics
 
@@ -88,7 +88,7 @@ This taxonomy maps all observed failure examples with no unmapped cases. Because
 
 ## Bucketed Failure Examples
 
-| Family | Split | Model | Total | Candidate | Repetition as contradiction | Scope drift | Canon split/merge | Claim type | Scenario errors |
+| Family | Split | Model | Total | Candidate | Contradiction edge drift | Scope drift | Canon split/merge | Claim type | Scenario errors |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
 | false_corroboration | heldout | 32B | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | false_corroboration | heldout | 7B | 18 | 15 | 0 | 0 | 0 | 0 | 3 |
@@ -111,14 +111,16 @@ This taxonomy maps all observed failure examples with no unmapped cases. Because
 | useful_pending_memory | heldout | 7B | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | useful_pending_memory | mixed | 7B | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
-Across the 20 diagnostic rows, the bucket totals are:
+Across the 20 diagnostic rows, the bucket totals by model size are:
 
-- `scope_key_or_level_drift`: 44
-- `candidate_miss_or_extra`: 33
-- `canonical_split_or_merge`: 19
-- `repetition_as_contradiction`: 18
-- `claim_type_drift`: 13
-- `scenario_error`: 11
+| Bucket | 7B floor | 32B headroom | Total |
+|---|---:|---:|---:|
+| `scope_key_or_level_drift` | 37 | 7 | 44 |
+| `candidate_miss_or_extra` | 33 | 0 | 33 |
+| `canonical_split_or_merge` | 13 | 6 | 19 |
+| `contradiction_edge_drift` | 17 | 1 | 18 |
+| `claim_type_drift` | 11 | 2 | 13 |
+| `scenario_error` | 11 | 0 | 11 |
 
 These counts are diagnostic only. They are not weighted by scenario importance, confidence, or downstream policy effect.
 
@@ -128,7 +130,7 @@ This check looks only at families with both mixed/main and held-out rows at 7B.
 
 | Family | 7B mixed failures | 7B held-out failures | Interpretation |
 |---|---:|---:|---|
-| forced_contradiction | 2 | 2 | No sharp split divergence. Both rows show repetition/support observations being marked as contradiction edges. |
+| forced_contradiction | 2 | 2 | No sharp split divergence. Both rows show contradiction-edge drift; in these rows the observed subcase is repetition/support observations being marked as contradiction edges. |
 | scope_contamination | 19 | 12 | No held-out-only spike. Both splits show broad scope/canonicalization fragility, with mixed somewhat worse. |
 | preference_drift | 14 | 16 | No sharp split divergence. Both splits show scope, canonicalization, and claim-type drift around preference updates and temporary-looking language. |
 | useful_pending_memory | 0 | 0 | No observed split fragility in this diagnostic matrix. |
@@ -155,4 +157,4 @@ The next prompt/schema diagnostic slice should focus on:
 3. Canonicalization behavior when a later event updates or reuses the same memory slot but changes the observed value.
 4. Validation failures where 7B emits empty required fields under constrained decoding.
 
-Any prompt/schema change should rerun the forced-contradiction Phase A regression path first, then rerun the affected diagnostic rows before CI-aware gate-decision design resumes.
+Resolve this slice with at most one prompt/schema revision pass plus one rerun of the forced-contradiction Phase A regression path and the affected diagnostic rows. Treat the branch as resolved if the rerun reduces 32B headroom `scope_key_or_level_drift` below 4 examples and `canonical_split_or_merge` below 3 examples without introducing any Phase A regression. If those targets are not met, stop prompt iteration and proceed to CI-aware gate-decision design with the current prompt and an explicit boundary/failure note.

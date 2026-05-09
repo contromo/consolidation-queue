@@ -286,7 +286,7 @@ Implemented:
 Remaining:
 
 - do not treat Phase A clearance as cross-family prompt safety; it only guards the forced-contradiction smoke row, so scope, drift, poisoning, false-corroboration, useful-pending, and mechanism-diverse regressions require direct artifact inspection
-- run targeted prompt/schema diagnostics for repeated scope-key/scope-level drift and canonical split behavior before CI-aware gate-decision design
+- run one targeted prompt/schema-or-benchmark-boundary diagnostic slice for repeated scope-key/scope-level drift and canonical split behavior before CI-aware gate-decision design
 - design and run larger CI-aware gate-decision sets before making stable extractor-quality, size-scaling, or Phase 4 policy-comparison claims
 
 Required outcome:
@@ -440,7 +440,7 @@ These are the highest-priority implementation steps right now.
 
 The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. Policy comparisons remain locked. Next:
 
-1. Run targeted prompt/schema diagnostics for preference-drift temporary-looking language, scope-key/scope-level extraction, canonical slot reuse, and empty required-field validation failures.
+1. Run one targeted prompt/schema-or-benchmark-boundary diagnostic slice for preference-drift temporary-looking language, scope-key/scope-level extraction, canonical slot reuse, and empty required-field validation failures.
 2. After any prompt/schema adjustment, rerun the forced-contradiction Phase A regression path before broader diagnostic rows.
 3. Add CI-aware gate-decision runs with enough held-out/decision examples for Wilson lower bounds to be interpretable against the noisy-mode thresholds.
 4. Run policy comparisons with extracted candidates only after component outputs are saved, scored, inspectable, and gate-decision results are reported separately from policy outcomes.
