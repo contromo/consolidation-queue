@@ -1,5 +1,36 @@
 # Product Progress
 
+## 2026-05-09 — CI-aware component gate-decision runner added
+
+### What shipped
+
+- added `scripts/run_component_gate_decision.py` as a separate Phase 3 gate runner rather than extending the diagnostic-only matrix runner
+- reused the existing Phase A prompt-regression contract and 7B deterministic JSON check from `scripts/run_component_scoring_matrix.py`
+- fixed the primary gate rows at 7B `general_v1`, held-out split, 60 scenarios per benchmark family, with optional descriptive 32B headroom and optional frozen-sentinel rows
+- added gate artifact semantics that avoid statistical overclaiming: `wilson_lower_bound_event_assumption` for binomial ratios, `f1_conservative_composite_from_wilson_pr` for F1, observed-only `canonicalization_b_cubed_f1`, and a separate pairwise canonicalization CI-support gate
+- added exact current-generator denominator reporting for candidate events, contradiction edges, and positive canonical pairs, plus an explicit warning that the rows are deterministic template-rotation variants rather than independent new mechanisms
+- exposed claim/scope correct/count denominators in component-eval metrics so aggregate CI gates do not scrape capped failure examples
+- added focused tests for row definitions, denominator expectations, Wilson math, F1 naming, B-cubed labeling, dry-run output, oracle-pass unlock, and scenario-error blocking
+
+### Why it matters
+
+- the project now has the CI-aware gate-decision machinery requested before any extracted-candidate policy comparison
+- policy comparison unlock remains strict and 7B-primary: Phase A must pass, determinism must pass, primary rows must have zero scenario errors, aggregate CI-supported gates must pass, and per-family observed gates must pass
+- 32B headroom is explicitly descriptive and cannot unlock policy comparison by itself
+- the artifact distinguishes statistical decision aids from true confidence claims, especially for F1 and canonicalization
+- this remains component-quality infrastructure only; no noisy-mode policy claim has been made
+
+### Evidence
+
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_gate_decision tests.test_component_eval tests.test_component_scoring_matrix -q` passes with 54 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_component_gate_decision.py --dry-run --include-headroom --include-frozen-sentinel` emits valid JSON with 13 planned rows and the expected aggregate denominators: 849 candidate events, 204 undirected contradiction edges, and 909 positive canonical pairs
+- no Ollama inference or extracted-candidate policy comparison was run in this change
+
+### Open issues / next
+
+- run the real 7B `general_v1` gate decision, optionally with 32B headroom and frozen sentinel rows
+- keep extracted-candidate policy comparisons blocked unless the gate summary explicitly sets `policy_comparison_unlocked=true`
+
 ## 2026-05-09 — Prompt diagnostic slice runner added and v2 branch failed
 
 ### What shipped

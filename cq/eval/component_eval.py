@@ -400,14 +400,20 @@ def _metrics_from_classification(
         "candidate_detection_precision": candidate_precision,
         "candidate_detection_recall": candidate_recall,
         "candidate_detection_f1": _f1(candidate_precision, candidate_recall),
+        "claim_type_correct": counters["claim_type_correct"],
+        "claim_type_count": counters["claim_type_count"],
         "claim_type_accuracy": _accuracy(
             counters["claim_type_correct"],
             counters["claim_type_count"],
         ),
+        "scope_level_correct": counters["scope_level_correct"],
+        "scope_level_count": counters["scope_level_count"],
         "scope_level_accuracy": _accuracy(
             counters["scope_level_correct"],
             counters["scope_level_count"],
         ),
+        "scope_key_correct": counters["scope_key_correct"],
+        "scope_key_count": counters["scope_key_count"],
         "scope_key_accuracy": _accuracy(
             counters["scope_key_correct"],
             counters["scope_key_count"],
