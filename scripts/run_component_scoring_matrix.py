@@ -73,6 +73,9 @@ FAILURE_BUCKETS: Tuple[str, ...] = (
     "claim_type_drift",
     "unmapped",
 )
+# These are the pre-enumerated preference-drift held-out scope mismatches
+# documented in docs/component_diagnostic_matrix.md. They are excluded only
+# from 32B scope drift; canonicalization failures for the same events still count.
 BOUNDARY_SCOPE_EXCLUSIONS = frozenset(
     (
         ("preference_drift_002", "preference_drift_002-event-4", "scope_key"),
@@ -809,8 +812,12 @@ def diagnostic_summary_payload(
     adjusted_by_role: Dict[str, Dict[str, int]] = {}
     scenario_error_count_by_role: Dict[str, int] = {}
     boundary_exclusion_records = []
+    boundary_exclusion_triples = set()
+    has_headroom_preference_heldout = False
 
     for result in results:
+        if _row_uses_boundary_exclusion_scope(result.row):
+            has_headroom_preference_heldout = True
         raw_counts = _empty_bucket_counts()
         exclusion_counts = _empty_bucket_counts()
         row_exclusions = []
@@ -822,6 +829,7 @@ def diagnostic_summary_payload(
                 exclusion_record = _boundary_exclusion_record(result.row, example, bucket)
                 row_exclusions.append(exclusion_record)
                 boundary_exclusion_records.append(exclusion_record)
+                boundary_exclusion_triples.add(_boundary_exclusion_triple(example))
 
         adjusted_counts = {
             bucket: raw_counts.get(bucket, 0) - exclusion_counts.get(bucket, 0)
@@ -907,6 +915,10 @@ def diagnostic_summary_payload(
                 for scenario_id, event_id, component in sorted(BOUNDARY_SCOPE_EXCLUSIONS)
             ],
         },
+        "boundary_exclusion_check": _boundary_exclusion_check(
+            has_headroom_preference_heldout=has_headroom_preference_heldout,
+            observed_triples=boundary_exclusion_triples,
+        ),
         "raw_bucket_counts_by_model_role": raw_by_role,
         "boundary_exclusion_bucket_counts_by_model_role": exclusions_by_role,
         "adjusted_bucket_counts_by_model_role": adjusted_by_role,
@@ -936,15 +948,57 @@ def failure_bucket(example: Dict[str, object]) -> str:
 
 
 def is_boundary_scope_exclusion(row: MatrixRow, example: Dict[str, object]) -> bool:
-    if row.model != QWEN_32B_Q4KM:
+    if not _row_uses_boundary_exclusion_scope(row):
         return False
-    if row.family != PREFERENCE_DRIFT or row.template_mix != "heldout":
-        return False
+    return _boundary_exclusion_triple(example) in BOUNDARY_SCOPE_EXCLUSIONS
+
+
+def _row_uses_boundary_exclusion_scope(row: MatrixRow) -> bool:
+    return (
+        row.model == QWEN_32B_Q4KM
+        and row.family == PREFERENCE_DRIFT
+        and row.template_mix == "heldout"
+    )
+
+
+def _boundary_exclusion_triple(example: Dict[str, object]) -> Tuple[str, str, str]:
     return (
         str(example.get("scenario_id") or ""),
         str(example.get("event_id") or ""),
         str(example.get("component") or ""),
-    ) in BOUNDARY_SCOPE_EXCLUSIONS
+    )
+
+
+def _boundary_exclusion_check(
+    *,
+    has_headroom_preference_heldout: bool,
+    observed_triples: object,
+) -> Dict[str, object]:
+    observed = set(observed_triples)
+    missing = BOUNDARY_SCOPE_EXCLUSIONS - observed if has_headroom_preference_heldout else set()
+    unexpected = observed - BOUNDARY_SCOPE_EXCLUSIONS
+    return {
+        "applies": has_headroom_preference_heldout,
+        "status": "missing_expected_exclusions" if missing else "ok",
+        "expected_count": len(BOUNDARY_SCOPE_EXCLUSIONS),
+        "observed_expected_count": len(observed.intersection(BOUNDARY_SCOPE_EXCLUSIONS)),
+        "missing_expected_exclusions": [
+            {
+                "scenario_id": scenario_id,
+                "event_id": event_id,
+                "component": component,
+            }
+            for scenario_id, event_id, component in sorted(missing)
+        ],
+        "unexpected_exclusions": [
+            {
+                "scenario_id": scenario_id,
+                "event_id": event_id,
+                "component": component,
+            }
+            for scenario_id, event_id, component in sorted(unexpected)
+        ],
+    }
 
 
 def _boundary_exclusion_record(
@@ -1131,6 +1185,8 @@ def _is_number(value: object) -> bool:
 
 def _slug_for_filename(value: str) -> str:
     slug = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in value.strip())
+    while "__" in slug:
+        slug = slug.replace("__", "_")
     return slug.strip("_") or "default"
 
 

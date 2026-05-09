@@ -236,7 +236,7 @@ python3 scripts/run_component_scoring_matrix.py --row-set prompt_schema_diagnost
 
 This runner first checks `component_extractor_general_v1` against the forced-contradiction prompt on the existing 6-scenario smoke row, then checks byte-exact deterministic JSON output before writing broader diagnostic artifacts. These rows are artifact-producing only; they do not issue statistical noisy-mode gate verdicts or unlock extracted-candidate policy comparisons.
 
-When a custom general prompt path/label is provided, the Phase A check and determinism check use that prompt while the forced-contradiction baseline remains `forced_v1`. The `prompt_schema_diagnostic` row-set also writes a summary JSON with raw bucket counts, pre-enumerated benchmark-boundary exclusions, adjusted 32B counts, and `policy_comparison_unlocked: false`.
+When a custom general prompt path/label is provided, the Phase A check and determinism check use that prompt while the forced-contradiction baseline remains `forced_v1`. The `prompt_schema_diagnostic` row-set also writes a summary JSON with raw bucket counts, pre-enumerated benchmark-boundary exclusions, adjusted 32B counts, a strict zero-scenario-error branch-resolution check, and `policy_comparison_unlocked: false`.
 
 Cached artifacts are reused only when their saved prompt hash, model id, decoding params, timeout, family, split, and scenario count match the requested row. A forced-contradiction prompt-regression failure should be inspected manually; at `n=6`, a single changed scenario can move a metric sharply even when the failure is prompt-budget or extraction-shape related.
 

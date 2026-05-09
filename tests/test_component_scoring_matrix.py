@@ -59,7 +59,12 @@ class ComponentScoringMatrixTests(unittest.TestCase):
             [row.artifact_stem for row in rows],
             [row.artifact_stem for row in explicit_rows],
         )
-        self.assertEqual(len(rows), 24)
+        expected_row_count = (
+            4
+            + len(matrix._diagnostic_family_rows())
+            + len(matrix._headroom_family_rows())
+        )
+        self.assertEqual(len(rows), expected_row_count)
         self.assertEqual(rows[0].prompt_label, "forced_v1")
         self.assertEqual(rows[1].prompt_label, "general_v1")
         self.assertEqual(rows[4].artifact_stem, rows[1].artifact_stem)
@@ -128,6 +133,7 @@ class ComponentScoringMatrixTests(unittest.TestCase):
         self.assertEqual(plan["statistical_gate_verdicts"], "not_issued")
         self.assertEqual(plan["row_set"], matrix.ROW_SET_FULL)
         self.assertGreater(len(plan["rows"]), len(matrix.floor_diagnostic_rows()))
+        self.assertEqual(matrix._slug_for_filename("v2 (test)"), "v2_test")
 
         targeted_plan = matrix.dry_run_plan(
             output_dir=Path("/tmp/cq-results"),
@@ -403,6 +409,8 @@ class ComponentScoringMatrixTests(unittest.TestCase):
                     preference_row,
                     [
                         _failure("scope_key", "preference_drift_002", "preference_drift_002-event-4"),
+                        _failure("scope_level", "preference_drift_002", "preference_drift_002-event-4"),
+                        _failure("scope_key", "preference_drift_004", "preference_drift_004-event-4"),
                         _failure("scope_level", "preference_drift_004", "preference_drift_004-event-4"),
                         _failure("canonicalization", "preference_drift_002", "preference_drift_002-event-4"),
                     ],
@@ -422,13 +430,67 @@ class ComponentScoringMatrixTests(unittest.TestCase):
         exclusions = summary["boundary_exclusion_bucket_counts_by_model_role"]["headroom"]
         adjusted = summary["adjusted_bucket_counts_by_model_role"]["headroom"]
 
-        self.assertEqual(raw["scope_key_or_level_drift"], 3)
-        self.assertEqual(exclusions["scope_key_or_level_drift"], 2)
+        self.assertEqual(raw["scope_key_or_level_drift"], 5)
+        self.assertEqual(exclusions["scope_key_or_level_drift"], 4)
         self.assertEqual(adjusted["scope_key_or_level_drift"], 1)
         self.assertEqual(adjusted["canonical_split_or_merge"], 1)
-        self.assertEqual(len(summary["boundary_exclusions"]), 2)
+        self.assertEqual(len(summary["boundary_exclusions"]), 4)
+        self.assertEqual(summary["boundary_exclusion_check"]["status"], "ok")
+        self.assertEqual(summary["boundary_exclusion_check"]["observed_expected_count"], 4)
         self.assertFalse(summary["policy_comparison_unlocked"])
         self.assertTrue(summary["acceptance"]["branch_resolved"])
+
+    def test_summary_branch_resolution_uses_exclusive_thresholds(self) -> None:
+        headroom_row = matrix.MatrixRow(
+            matrix.SCOPE_CONTAMINATION,
+            "heldout",
+            4,
+            matrix.QWEN_32B_Q4KM,
+            "general_v2",
+            matrix.GENERAL_PROMPT_PATH,
+        )
+        summary = matrix.diagnostic_summary_payload(
+            row_set=matrix.ROW_SET_PROMPT_SCHEMA_DIAGNOSTIC,
+            general_prompt_path=matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label="general_v2",
+            results=[
+                _row_result(
+                    headroom_row,
+                    [
+                        _failure("scope_key", "scenario-1", "event-1"),
+                        _failure("scope_key", "scenario-2", "event-2"),
+                        _failure("scope_level", "scenario-3", "event-3"),
+                        _failure("scope_level", "scenario-4", "event-4"),
+                    ],
+                ),
+            ],
+        )
+
+        acceptance = summary["acceptance"]
+        self.assertEqual(acceptance["adjusted_32b_scope_key_or_level_drift"], 4)
+        self.assertFalse(acceptance["scope_key_or_level_drift_passed"])
+        self.assertFalse(acceptance["branch_resolved"])
+
+    def test_summary_records_missing_boundary_exclusions_when_row_is_present(self) -> None:
+        preference_row = matrix.MatrixRow(
+            matrix.PREFERENCE_DRIFT,
+            "heldout",
+            4,
+            matrix.QWEN_32B_Q4KM,
+            "general_v2",
+            matrix.GENERAL_PROMPT_PATH,
+        )
+        summary = matrix.diagnostic_summary_payload(
+            row_set=matrix.ROW_SET_PROMPT_SCHEMA_DIAGNOSTIC,
+            general_prompt_path=matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label="general_v2",
+            results=[_row_result(preference_row, [])],
+        )
+
+        check = summary["boundary_exclusion_check"]
+        self.assertTrue(check["applies"])
+        self.assertEqual(check["status"], "missing_expected_exclusions")
+        self.assertEqual(len(check["missing_expected_exclusions"]), 4)
 
 
 def _component_artifact(metrics):

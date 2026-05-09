@@ -17,6 +17,8 @@
 - the acceptance arithmetic now excludes only the two documented 32B preference-drift one-off scope-boundary events from scope drift, while still counting their canonicalization failures
 - `general_v2` keeps one-off/current-request preference constraints as `temporary_constraint`/`session`, so this pass does not force-fit the prompt to disputed gold labels
 - the branch did not resolve: adjusted 32B scope drift was `5` against the `< 4` target, adjusted 32B canonical split/merge was `7` against the `< 3` target, and six 7B scenario errors remained from empty `scope_key` validation failures
+- those six 7B errors were prompt-following failures where the model still emitted empty `scope_key` values despite the v2 fallback instruction; the validator rejected emptiness, not the shape of a fallback slug
+- branch resolution uses a strict zero targeted-row scenario-error requirement, not a no-regression comparison against v1
 - this remains component diagnostic evidence only; no noisy-mode claim or policy comparison is unlocked by this change
 
 ### Evidence
