@@ -14,7 +14,7 @@
 - the lock was not driven by aggregate CI math; aggregate CI failure count was `0` and aggregate observed canonicalization failure count was `0`
 - the decisive blockers were component-quality/model-following failures: `45` primary scenario errors, `8` primary observed gate failures, and `3` frozen-sentinel observed gate failures
 - primary scenario errors were concentrated in invalid model outputs rather than runner arithmetic: `scope_contamination` `12`, `preference_drift` `8`, `useful_pending_memory` `3`, `false_corroboration` `17`, and `memory_poisoning` `5`
-- direct payload inspection confirmed the scenario-error subclasses are model-output defects, not runner bugs: empty `scope_key`, empty `canonical_id`, and canonical-id slugs incorrectly emitted in `contradicts_event_id` slots
+- direct payload inspection confirmed the scenario-error subclasses are model-output defects, not runner bugs: empty `scope_key`, empty `canonical_id`, and canonical-id slugs incorrectly emitted as `contradicts_event_ids` entries
 - the inspected failure taxonomy now resolves into four mode-level patterns: required-field omission, ID-namespace confusion between `canonical_id` and `contradicts_event_ids`, durable-claim drift into `temporary_constraint`/`session`, and contradiction-edge misses
 - the cross-family rollup masked the failure pattern; aggregate gates passed while per-family and frozen-sentinel checks did the actual blocking work
 - the `8` primary observed gate failures were concentrated rather than diffuse: `scope_contamination` `3`, `preference_drift` `2`, `false_corroboration` `1`, and `memory_poisoning` `2`
@@ -29,7 +29,7 @@
 - inspected scenario-error subclass counts:
   - empty `scope_key`: `15` primary scenarios plus `1` frozen-sentinel scenario
   - empty `canonical_id`: `25` primary scenarios
-  - unknown `contradicts_event_id`: `5` primary scenarios, all from canonical-id slugs emitted where earlier event ids were required
+  - invalid `contradicts_event_ids` target: `5` primary scenarios, all from canonical-id slugs emitted where earlier event ids were required
 - unlock checks:
   - `phase_a_passed=true`
   - `determinism_passed=true`
@@ -40,8 +40,10 @@
   - `aggregate_observed_gate_failure_count=0`
   - `policy_comparison_unlocked=false`
 
-### Open issues / next
+### Constraints / next steps
 
+- begin the failure-taxonomy writeup from the locked 7B gate evidence, using the inspected per-family blocker breakdown and mode-level taxonomy as the starting artifact
+- optionally run one separate descriptive 32B headroom row on `scope_contamination` for size-scaling evidence only; it must not reopen or reinterpret the locked 7B gate verdict
 - do not start extracted-candidate policy comparisons under the current gate result
 - do not reopen `general_v2`, relax validators, or lower the gate contract to turn invalid outputs into passes
 - treat a future retry as requiring a separately scoped component-model change with the same gate contract, not a prompt-tuning loop on the current branch

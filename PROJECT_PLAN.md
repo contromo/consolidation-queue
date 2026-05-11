@@ -290,10 +290,10 @@ Implemented:
 - `scripts/run_component_gate_decision.py`, a separate CI-aware gate-decision runner that reuses Phase A prompt regression and determinism checks, runs 7B `general_v1` over 60 held-out scenarios per benchmark family, keeps 32B headroom descriptive, and emits `policy_comparison_unlocked` only from the 7B primary gate
 - the real 7B `general_v1` gate run completed with required frozen sentinel and no 32B headroom; `phase_a_passed=true` and `determinism_passed=true`, but `policy_comparison_unlocked=false` because the run recorded `45` primary scenario errors, `8` primary observed gate failures, and `3` frozen-sentinel observed gate failures
 
-Remaining:
+Status notes:
 
 - do not treat Phase A clearance as cross-family prompt safety; it only guards the forced-contradiction smoke row, so scope, drift, poisoning, false-corroboration, useful-pending, and mechanism-diverse regressions require direct artifact inspection
-- the locked gate result is dominated by invalid model outputs rather than aggregate CI math: empty `scope_key`, empty `canonical_id`, and unknown `contradicts_event_id` drive the scenario-error burden across `scope_contamination`, `preference_drift`, `useful_pending_memory`, `false_corroboration`, `memory_poisoning`, and the frozen sentinel
+- the locked gate result is dominated by invalid model outputs rather than aggregate CI math: empty `scope_key`, empty `canonical_id`, and invalid `contradicts_event_ids` targets drive the scenario-error burden across `scope_contamination`, `preference_drift`, `useful_pending_memory`, `false_corroboration`, `memory_poisoning`, and the frozen sentinel
 - do not reopen `general_v2`, add prompt-only retries, loosen validators, lower thresholds, or otherwise make the component gate easier to pass; those are model-quality workarounds, not code fixes
 - interpret the locked gate artifact as the current component-quality ceiling for this extractor/prompt path and do not make Phase 4 noisy policy-comparison claims from it
 
