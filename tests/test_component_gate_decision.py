@@ -7,6 +7,7 @@ from pathlib import Path
 
 from cq.eval.component_eval import evaluate_component_predictions, oracle_predictions_by_scenario
 from cq.eval.runner import generate_scenarios
+from cq.schemas.memory import jsonable
 
 
 def _load_gate_module():
@@ -159,6 +160,30 @@ class ComponentGateDecisionTests(unittest.TestCase):
             aggregate["denominators"]["canonicalization_pairwise"]["gold_positive_pair_count"],
             909,
         )
+        self.assertIn(
+            "Proxy threshold",
+            aggregate["ci_supported_gates"]["canonicalization_pairwise_f1"]["threshold_note"],
+        )
+
+    def test_phase_a_and_determinism_failures_block_unlock(self) -> None:
+        results = [_oracle_row_result(row) for row in gate.primary_gate_rows()]
+
+        summary = gate.gate_summary_payload(
+            primary_results=results,
+            headroom_results=[],
+            frozen_sentinel_results=[],
+            general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
+            per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+            phase_a_passed=False,
+            determinism_passed=False,
+        )
+
+        self.assertFalse(summary["policy_comparison_unlocked"])
+        blocker_types = {blocker["type"] for blocker in summary["blockers"]}
+        self.assertIn("phase_a_failed", blocker_types)
+        self.assertIn("determinism_failed", blocker_types)
 
     def test_scenario_errors_block_unlock_even_if_other_gates_pass(self) -> None:
         results = [_oracle_row_result(row) for row in gate.primary_gate_rows()]
@@ -189,7 +214,134 @@ class ComponentGateDecisionTests(unittest.TestCase):
         self.assertFalse(summary["policy_comparison_unlocked"])
         blocker_types = {blocker["type"] for blocker in summary["blockers"]}
         self.assertIn("primary_scenario_errors", blocker_types)
-        self.assertIn("per_family_observed_gate_failed", blocker_types)
+        self.assertNotIn("per_family_observed_gate_failed", blocker_types)
+
+    def test_aggregate_ci_gate_failure_blocks_unlock(self) -> None:
+        results = [_oracle_row_result(row) for row in gate.primary_gate_rows()]
+        first = results[0]
+        results[0] = gate.GateRowResult(
+            row=first.row,
+            paths=first.paths,
+            component_artifact=first.component_artifact,
+            predictions_by_scenario={},
+            scenario_errors=first.scenario_errors,
+            reused=first.reused,
+        )
+
+        summary = gate.gate_summary_payload(
+            primary_results=results,
+            headroom_results=[],
+            frozen_sentinel_results=[],
+            general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
+            per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+            phase_a_passed=True,
+            determinism_passed=True,
+        )
+
+        self.assertFalse(summary["policy_comparison_unlocked"])
+        aggregate_blockers = [
+            blocker
+            for blocker in summary["blockers"]
+            if blocker["type"] == "aggregate_ci_gate_failed"
+        ]
+        self.assertTrue(aggregate_blockers)
+
+    def test_frozen_sentinel_observed_gate_failure_blocks_unlock(self) -> None:
+        primary_results = [_oracle_row_result(row) for row in gate.primary_gate_rows()]
+        frozen = _oracle_row_result(gate.frozen_sentinel_rows()[0])
+        artifact = dict(frozen.component_artifact)
+        quality_gates = {
+            name: dict(payload)
+            for name, payload in artifact["quality_gates"].items()
+        }
+        quality_gates["candidate_detection_f1"]["passed"] = False
+        quality_gates["candidate_detection_f1"]["value"] = 0.0
+        artifact["quality_gates"] = quality_gates
+        frozen = gate.GateRowResult(
+            row=frozen.row,
+            paths=frozen.paths,
+            component_artifact=artifact,
+            predictions_by_scenario=frozen.predictions_by_scenario,
+            scenario_errors=frozen.scenario_errors,
+            reused=frozen.reused,
+        )
+
+        summary = gate.gate_summary_payload(
+            primary_results=primary_results,
+            headroom_results=[],
+            frozen_sentinel_results=[frozen],
+            general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
+            per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+            phase_a_passed=True,
+            determinism_passed=True,
+        )
+
+        self.assertFalse(summary["policy_comparison_unlocked"])
+        blocker_types = {blocker["type"] for blocker in summary["blockers"]}
+        self.assertIn("frozen_sentinel_observed_gate_failed", blocker_types)
+
+    def test_run_or_reuse_gate_row_uses_matching_cached_artifacts(self) -> None:
+        row = gate.primary_gate_rows()[0]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            paths = gate.gate_artifact_paths(row, output_dir)
+            cached = _oracle_row_result(row)
+            scenarios = generate_scenarios(row.family, row.scenarios, row.template_mix)
+            predictions_payload = {
+                "family": row.family,
+                "template_mix": row.template_mix,
+                "requested_scenario_count": row.scenarios,
+                "scenario_count": len(scenarios),
+                "mode": gate.MODEL_MODE,
+                "input_contract": "transcript_only",
+                "model_id": row.model.model_id,
+                "prompt_template_sha256": gate.matrix.prompt_template_sha256(row.prompt_path),
+                "decoding_params": json.loads(gate.matrix.DEFAULT_DECODING_JSON),
+                "per_scenario_timeout_seconds": gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+                "scenario_predictions": cached.predictions_by_scenario,
+                "scenario_errors": {},
+            }
+            paths.predictions.write_text(
+                json.dumps(jsonable(predictions_payload), indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            paths.component_eval.write_text(
+                json.dumps(jsonable(cached.component_artifact), indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+
+            result = gate.run_or_reuse_gate_row(
+                row,
+                output_dir=output_dir,
+                model_command="should not run",
+                decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
+                per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+            )
+
+        self.assertTrue(result.reused)
+        self.assertEqual(result.component_artifact["family"], row.family)
+
+    def test_main_returns_one_and_writes_stop_report_on_stop_condition(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            original_run_gate_decision = gate.run_gate_decision
+
+            def stop_gate_decision(**_kwargs):
+                raise gate.matrix.StopConditionError("phase_a_failed", {"example": True})
+
+            try:
+                gate.run_gate_decision = stop_gate_decision
+                exit_code = gate.main(["--output-dir", tmpdir])
+            finally:
+                gate.run_gate_decision = original_run_gate_decision
+
+            reports = list(Path(tmpdir).glob("component_gate_decision_phase_a_stop_*.json"))
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(len(reports), 1)
 
 
 def _oracle_row_result(row):

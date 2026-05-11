@@ -109,6 +109,20 @@ def evaluate_component_predictions(
     }
 
 
+def canonical_component_maps(
+    scenarios: Iterable[Scenario],
+    predictions_by_scenario: Dict[str, List[CandidateComponentPrediction]],
+    *,
+    scenario_errors: Optional[Dict[str, object]] = None,
+) -> Tuple[Dict[str, str], Dict[str, str]]:
+    classification = _classify_component_predictions(
+        scenarios,
+        predictions_by_scenario,
+        scenario_errors=scenario_errors or {},
+    )
+    return classification.canonical_gold, classification.canonical_predicted
+
+
 def _classify_component_predictions(
     scenarios: Iterable[Scenario],
     predictions_by_scenario: Dict[str, List[CandidateComponentPrediction]],

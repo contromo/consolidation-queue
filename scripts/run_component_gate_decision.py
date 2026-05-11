@@ -29,7 +29,7 @@ if str(REPO_ROOT) not in sys.path:
 from cq.eval.component_eval import (  # noqa: E402
     QUALITY_GATES,
     CandidateComponentPrediction,
-    _classify_component_predictions,
+    canonical_component_maps,
     evaluate_component_predictions,
     load_predictions_by_scenario,
     load_scenario_errors,
@@ -392,6 +392,7 @@ def run_gate_decision(
         else []
     )
     path = gate_summary_path(output_dir, general_prompt_label=general_prompt_label)
+    # These helpers raise StopConditionError on failure; reaching the summary write means both guards passed.
     _write_json(
         path,
         gate_summary_payload(
@@ -434,6 +435,11 @@ def gate_summary_payload(
     frozen_summaries = [row_summary(result) for result in frozen_sentinel_results]
     primary_observed_failures = _observed_gate_failures(primary_results)
     frozen_failures = _observed_gate_failures(frozen_sentinel_results)
+    aggregate_ci_failures = [
+        {"metric": metric_name, "gate": gate}
+        for metric_name, gate in aggregate["ci_supported_gates"].items()
+        if gate.get("status") == "measured" and not gate.get("passed")
+    ]
     scenario_error_count = sum(
         int(result.component_artifact.get("scenario_error_count") or 0)
         for result in primary_results
@@ -452,16 +458,16 @@ def gate_summary_payload(
         )
     for failure in primary_observed_failures:
         blockers.append({"type": "per_family_observed_gate_failed", **failure})
-    for metric_name, gate in aggregate["ci_supported_gates"].items():
-        if gate.get("status") == "measured" and not gate.get("passed"):
-            blockers.append(
-                {
-                    "type": "aggregate_ci_gate_failed",
-                    "metric": metric_name,
-                    "threshold": gate.get("threshold"),
-                    "value": gate.get("value"),
-                }
-            )
+    for failure in aggregate_ci_failures:
+        gate = failure["gate"]
+        blockers.append(
+            {
+                "type": "aggregate_ci_gate_failed",
+                "metric": failure["metric"],
+                "threshold": gate.get("threshold"),
+                "value": gate.get("value"),
+            }
+        )
     for failure in frozen_failures:
         blockers.append({"type": "frozen_sentinel_observed_gate_failed", **failure})
     policy_unlocked = not blockers
@@ -503,10 +509,12 @@ def gate_summary_payload(
             "determinism_passed": determinism_passed,
             "primary_scenario_error_count": scenario_error_count,
             "primary_observed_gate_failure_count": len(primary_observed_failures),
-            "aggregate_ci_gate_failure_count": sum(
-                1
-                for gate in aggregate["ci_supported_gates"].values()
-                if gate.get("status") == "measured" and not gate.get("passed")
+            "aggregate_ci_gate_failure_count": len(
+                [
+                    blocker
+                    for blocker in blockers
+                    if blocker["type"] == "aggregate_ci_gate_failed"
+                ]
             ),
             "frozen_sentinel_included": bool(frozen_sentinel_results),
             "frozen_sentinel_observed_gate_failure_count": len(frozen_failures),
@@ -593,6 +601,10 @@ def ci_supported_gates_payload(
         recall_successes=int(canonical_pairwise["true_positive_pair_count"]),
         recall_total=int(canonical_pairwise["gold_positive_pair_count"]),
         supports_quality_gate="canonicalization_b_cubed_f1",
+        threshold_note=(
+            "Proxy threshold: this reuses canonicalization_b_cubed_f1's threshold without a "
+            "separate pairwise calibration artifact."
+        ),
     )
     contradiction_precision = ratio_gate(
         metric_name="contradiction_precision",
@@ -678,6 +690,7 @@ def f1_composite_gate(
     recall_successes: int,
     recall_total: int,
     supports_quality_gate: Optional[str] = None,
+    threshold_note: Optional[str] = None,
 ) -> Dict[str, object]:
     precision_gate = ratio_gate(
         metric_name="{}_precision_support".format(metric_name),
@@ -698,7 +711,7 @@ def f1_composite_gate(
     recall_lb = recall_gate.get("wilson_lower_bound_event_assumption")
     composite = _f1(precision_lb, recall_lb)
     status = "measured" if composite is not None else "no_data"
-    return {
+    payload = {
         "metric": metric_name,
         "status": status,
         "passed": bool(composite is not None and composite >= threshold),
@@ -711,6 +724,9 @@ def f1_composite_gate(
         "recall_support": recall_gate,
         "supports_quality_gate": supports_quality_gate,
     }
+    if threshold_note is not None:
+        payload["threshold_note"] = threshold_note
+    return payload
 
 
 def pairwise_canonicalization_counts(
@@ -718,13 +734,11 @@ def pairwise_canonicalization_counts(
     predictions_by_scenario: Dict[str, List[CandidateComponentPrediction]],
     scenario_errors: Dict[str, object],
 ) -> Dict[str, int]:
-    classification = _classify_component_predictions(
+    gold, predicted = canonical_component_maps(
         scenarios,
         predictions_by_scenario,
         scenario_errors=scenario_errors,
     )
-    gold = classification.canonical_gold
-    predicted = classification.canonical_predicted
     item_ids_by_scenario: Dict[str, List[str]] = {}
     for item_id in gold:
         scenario_id = item_id.split("::", 1)[0]
@@ -1038,6 +1052,10 @@ def determinism_contract_payload(passed: bool) -> Dict[str, object]:
             "comparison": 'json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")',
             "array_order": "preserved",
             "same_seed_and_decoding_required": True,
+            "scope_note": (
+                "This sentinel checks the fixed 6-scenario forced-contradiction prompt-regression row; "
+                "primary held-out gate rows are not rerun for determinism."
+            ),
         },
     }
 
@@ -1066,6 +1084,10 @@ def statistical_contract_payload() -> Dict[str, object]:
             "reason": "Wilson intervals do not apply to B-cubed F1.",
         },
         "canonicalization_ci_gate": "canonicalization_pairwise_f1",
+        "canonicalization_pairwise_threshold_note": (
+            "Pairwise F1 is a CI-supported proxy for canonicalization_b_cubed_f1 and currently "
+            "uses the same 0.65 threshold without separate oracle-artifact calibration."
+        ),
         "per_family_contradiction_ci_policy": (
             "Reported for diagnostics only; per-family edge counts are small, so per-family "
             "contradiction CIs do not unlock policy comparisons. Per-family observed gate "
@@ -1077,16 +1099,6 @@ def statistical_contract_payload() -> Dict[str, object]:
 def _observed_gate_failures(results: Sequence[GateRowResult]) -> List[Dict[str, object]]:
     failures = []
     for result in results:
-        if int(result.component_artifact.get("scenario_error_count") or 0):
-            failures.append(
-                {
-                    "family": result.row.family,
-                    "template_mix": result.row.template_mix,
-                    "model_id": result.row.model.model_id,
-                    "metric": "scenario_error_count",
-                    "value": int(result.component_artifact.get("scenario_error_count") or 0),
-                }
-            )
         for metric_name, gate in _quality_gates(result.component_artifact).items():
             if not gate.get("passed"):
                 failures.append(
