@@ -1,5 +1,33 @@
 # Product Progress
 
+## 2026-05-11 — Publication outline and locked-gate taxonomy drafted
+
+### What shipped
+
+- added `docs/component_gate_publication_outline.md` to define the publishable benchmark-plus-failure-taxonomy package, target framing, section structure, and minimum additional evidence decision
+- added `docs/component_gate_failure_taxonomy.md` as a repo-tracked interpretation note for the locked 7B `general_v1` gate, including the per-family blocker pattern, four mode-level failure modes, and the oracle/noisy bridge
+- kept the locked 7B verdict fixed while drafting: no new 7B rerun, no 32B descriptive row, no second model-family row, and no validator or threshold changes
+
+### Why it matters
+
+- the publication story now has an explicit structure: oracle-mode benchmark result, gate methodology, failure taxonomy, and blocked noisy-mode policy claim
+- the minimum extra evidence is now scoped to one descriptive 32B `scope_contamination` row; a second model family is conditional rather than assumed
+- the locked noisy-mode result is now integrated with the existing oracle-mode `Mem0Lite` comparison instead of living as a standalone postmortem
+- LongMemEval is positioned as future transfer work rather than a missing current experiment
+
+### Evidence
+
+- new docs:
+  - `docs/component_gate_publication_outline.md`
+  - `docs/component_gate_failure_taxonomy.md`
+- no new Ollama inference was run
+- no tests were run because this change is documentation-only
+
+### Open issues / next
+
+- run one descriptive 32B `scope_contamination` row only if the publication draft still needs size-scaling evidence beyond the current 7B lock
+- otherwise continue by folding the oracle benchmark result and the locked-gate taxonomy into a single paper/report draft
+
 ## 2026-05-11 — Real 7B component gate run stayed locked
 
 ### What shipped
@@ -18,7 +46,7 @@
 - the inspected failure taxonomy now resolves into four mode-level patterns: required-field omission, ID-namespace confusion between `canonical_id` and `contradicts_event_ids`, durable-claim drift into `temporary_constraint`/`session`, and contradiction-edge misses
 - the cross-family rollup masked the failure pattern; aggregate gates passed while per-family and frozen-sentinel checks did the actual blocking work
 - the `8` primary observed gate failures were concentrated rather than diffuse: `scope_contamination` `3`, `preference_drift` `2`, `false_corroboration` `1`, and `memory_poisoning` `2`
-- the frozen sentinel miss is substantive rather than just held-out spread: the fixed `frozen_preference_drift_001` scenario itself carries the same empty-`scope_key` and contradiction-chain defects
+- the frozen sentinel miss is substantive rather than just held-out spread: the fixed `frozen_preference_drift_001` scenario itself carries the same empty-`scope_key` and missed-contradiction-edge pattern seen in held-out `preference_drift`
 - under the project contract, this keeps Phase 4 noisy policy comparison work on hold and shifts the current writeup framing toward benchmark/failure-taxonomy contribution rather than a CQ noisy-policy contribution
 
 ### Evidence
