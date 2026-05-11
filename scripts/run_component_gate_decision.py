@@ -1201,11 +1201,13 @@ def _metric_passed(value: object, threshold: float) -> bool:
 def _int_metric(metrics: Mapping[str, object], key: str) -> int:
     value = metrics.get(key)
     if isinstance(value, bool):
-        return int(value)
+        raise ValueError("{} must be an integer count, not a boolean".format(key))
     if isinstance(value, int):
         return value
     if isinstance(value, float):
-        return int(value)
+        if value.is_integer():
+            return int(value)
+        raise ValueError("{} must be an integer count, not a rate: {}".format(key, value))
     return 0
 
 

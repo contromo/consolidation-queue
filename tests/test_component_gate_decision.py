@@ -100,6 +100,16 @@ class ComponentGateDecisionTests(unittest.TestCase):
             payload["threshold"],
         )
 
+    def test_int_metric_rejects_fractional_rates_for_count_fields(self) -> None:
+        self.assertEqual(gate._int_metric({"count": 3.0}, "count"), 3)
+        self.assertEqual(gate._int_metric({}, "missing_count"), 0)
+
+        with self.assertRaisesRegex(ValueError, "must be an integer count"):
+            gate._int_metric({"candidate_detection_tp": 0.99}, "candidate_detection_tp")
+
+        with self.assertRaisesRegex(ValueError, "not a boolean"):
+            gate._int_metric({"candidate_detection_tp": True}, "candidate_detection_tp")
+
     def test_dry_run_records_generation_warning_and_paths_without_ollama(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plan = gate.dry_run_plan(
