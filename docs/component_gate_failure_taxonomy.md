@@ -165,6 +165,7 @@ The publication package should not present this taxonomy in isolation.
 The oracle-mode frozen benchmark already provides the positive benchmark result:
 
 - all 108 preregistered oracle-mode deltas matched the observed deltas
+  (`3` frozen families x `6` comparators x `6` metrics)
 - CQ shows narrow oracle-mode support over `Mem0Lite`, primarily on
   `premature_promotion_rate`
 - CQ does not show broad oracle-mode superiority on answer correctness or false
@@ -198,6 +199,14 @@ Boundary:
 - this is descriptive-only evidence
 - it cannot unlock policy comparison
 - it cannot rewrite the locked 7B verdict
+- before running it, expected outcomes should be written down first so the
+  interpretation is not post-hoc:
+  - if 32B materially reduces the `scope_contamination` failure pattern, treat
+    that as capacity-sensitive evidence
+  - if 32B reproduces the same pattern, treat that as broader task/prompt/schema
+    evidence
+- both outcomes are publishable and neither outcome should, by default, trigger
+  a wider follow-up run set
 
 A second model-family row is optional and should be added only if the eventual
 publication starts making a generalization claim that one 32B row cannot

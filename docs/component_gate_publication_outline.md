@@ -8,9 +8,15 @@ gate result.
 
 ## Target Framing
 
-Preferred format:
+Selected initial format:
 
-- workshop paper or technical report
+- technical report
+
+Decision rule:
+
+- keep the initial package as a technical report unless the later descriptive
+  size-scaling evidence is strong enough to support a tighter workshop-style
+  submission without overstating generalization
 
 Primary claim:
 
@@ -31,9 +37,9 @@ Non-claim:
 | --- | --- | --- | --- |
 | 1. Benchmark question and design | Define the memory-governance question, six scenario families, frozen mechanism-diverse contracts, and fairness constraints across policies | `README.md`, `PROJECT_PLAN.md`, `docs/preregistration.md` | none |
 | 2. Preregistration discipline | Show that predictions were committed before frozen policy execution and that the benchmark can yield negative or mixed results without changing the contract | `docs/preregistration.md`, `PROJECT_PLAN.md` | none |
-| 3. Oracle-mode policy results | Report the frozen oracle sweep and the narrow CQ-vs-`Mem0Lite` support | `docs/predictions_vs_results.md`, `docs/product_progress.md`, frozen oracle artifact paths cited in `docs/predictions_vs_results.md` | none |
+| 3. Oracle-mode policy results | Report the frozen oracle sweep and the narrow oracle-mode support over `Mem0Lite` | `docs/predictions_vs_results.md`, `docs/product_progress.md`, frozen oracle artifact paths cited in `docs/predictions_vs_results.md` | none |
 | 4. Component-quality gate methodology | Explain Phase A, determinism, aggregate CI gates, per-family observed gates, and frozen-sentinel observed gates | `PROJECT_PLAN.md`, `docs/product_progress.md`, `scripts/run_component_gate_decision.py` | none |
-| 5. Locked noisy-mode result and failure taxonomy | Explain why the 7B `general_v1` path remained locked, where failures concentrate, and what mode-level patterns they form | `docs/product_progress.md`, `docs/component_diagnostic_matrix.md` | dedicated repo-tracked taxonomy note |
+| 5. Locked noisy-mode result and failure taxonomy | Explain why the 7B `general_v1` path remained locked, where failures concentrate, and what mode-level patterns they form | `docs/product_progress.md`, `docs/component_diagnostic_matrix.md`, `docs/component_gate_failure_taxonomy.md` | none |
 | 6. Discussion and publication boundary | State what is supported now, what remains blocked, and why the contribution is benchmark + failure taxonomy rather than noisy-policy evidence | `PROJECT_PLAN.md`, `docs/product_progress.md` | publication outline wording |
 | 7. External positioning | Place LongMemEval and any future noisy transfer result as external validation rather than a current claim | `PROJECT_PLAN.md` | none for the current draft |
 
@@ -42,7 +48,7 @@ Non-claim:
 ### Oracle-mode result
 
 - all 108 preregistered oracle-mode deltas matched observed deltas on the frozen
-  mechanism-diverse sweep
+  mechanism-diverse sweep (`3` frozen families x `6` comparators x `6` metrics)
 - CQ does not show broad answer-quality superiority over `Mem0Lite` on the
   frozen aggregate
 - the narrow oracle-mode support is lower premature durable promotion versus
@@ -70,7 +76,7 @@ Primary sources:
 
 ## Minimum Additional Evidence Decision
 
-For a workshop paper or technical report, the minimum additional evidence is:
+For the current technical-report target, the minimum additional evidence is:
 
 1. one descriptive 32B `scope_contamination` row
 
@@ -94,11 +100,19 @@ Condition:
 - only add a second model family if the target paper starts making a
   cross-family or cross-model generalization claim that one 32B row cannot
   honestly support
+- before running the descriptive 32B row, write expected outcomes and
+  interpretation rules in advance:
+  - if 32B materially reduces the `scope_contamination` failure pattern, treat
+    that as capacity-sensitive evidence
+  - if 32B reproduces the same pattern, treat that as broader task/prompt/schema
+    evidence
+- both outcomes are publishable and neither outcome, by itself, justifies
+  expanding into additional families or model rows
 
 ## Execution Order
 
-1. draft the locked-gate failure-taxonomy note in
-   `docs/component_gate_failure_taxonomy.md`
+1. use `docs/component_gate_failure_taxonomy.md` as the locked-gate section
+   draft
 2. keep the 7B gate verdict fixed while drafting
 3. if the publication draft still needs size-scaling evidence, run one
    descriptive 32B `scope_contamination` row as a separate follow-up
