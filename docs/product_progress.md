@@ -1,5 +1,51 @@
 # Product Progress
 
+## 2026-05-11 — Real 7B component gate run stayed locked
+
+### What shipped
+
+- ran the authoritative 7B `general_v1` CI-aware gate decision through `scripts/run_component_gate_decision.py` with the required frozen sentinel and without 32B headroom
+- wrote the full gate artifact set under `data/results/`, including the summary artifact `component_gate_decision_general_v1_summary.json`
+- confirmed the preflight guards passed in the real run: `phase_a_passed=true` and `determinism_passed=true`
+
+### Why it matters
+
+- the gate remained locked: `policy_comparison_unlocked=false`
+- the lock was not driven by aggregate CI math; aggregate CI failure count was `0` and aggregate observed canonicalization failure count was `0`
+- the decisive blockers were component-quality/model-following failures: `45` primary scenario errors, `8` primary observed gate failures, and `3` frozen-sentinel observed gate failures
+- primary scenario errors were concentrated in invalid model outputs rather than runner arithmetic: `scope_contamination` `12`, `preference_drift` `8`, `useful_pending_memory` `3`, `false_corroboration` `17`, and `memory_poisoning` `5`
+- direct payload inspection confirmed the scenario-error subclasses are model-output defects, not runner bugs: empty `scope_key`, empty `canonical_id`, and canonical-id slugs incorrectly emitted in `contradicts_event_id` slots
+- the inspected failure taxonomy now resolves into four mode-level patterns: required-field omission, ID-namespace confusion between `canonical_id` and `contradicts_event_ids`, durable-claim drift into `temporary_constraint`/`session`, and contradiction-edge misses
+- the cross-family rollup masked the failure pattern; aggregate gates passed while per-family and frozen-sentinel checks did the actual blocking work
+- the `8` primary observed gate failures were concentrated rather than diffuse: `scope_contamination` `3`, `preference_drift` `2`, `false_corroboration` `1`, and `memory_poisoning` `2`
+- the frozen sentinel miss is substantive rather than just held-out spread: the fixed `frozen_preference_drift_001` scenario itself carries the same empty-`scope_key` and contradiction-chain defects
+- under the project contract, this keeps Phase 4 noisy policy comparison work on hold and shifts the current writeup framing toward benchmark/failure-taxonomy contribution rather than a CQ noisy-policy contribution
+
+### Evidence
+
+- command: `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_component_gate_decision.py --include-frozen-sentinel`
+- runtime: `3279157` ms (`54m 39s`)
+- summary artifact: `data/results/component_gate_decision_general_v1_summary.json`
+- inspected scenario-error subclass counts:
+  - empty `scope_key`: `15` primary scenarios plus `1` frozen-sentinel scenario
+  - empty `canonical_id`: `25` primary scenarios
+  - unknown `contradicts_event_id`: `5` primary scenarios, all from canonical-id slugs emitted where earlier event ids were required
+- unlock checks:
+  - `phase_a_passed=true`
+  - `determinism_passed=true`
+  - `primary_scenario_error_count=45`
+  - `primary_observed_gate_failure_count=8`
+  - `frozen_sentinel_observed_gate_failure_count=3`
+  - `aggregate_ci_gate_failure_count=0`
+  - `aggregate_observed_gate_failure_count=0`
+  - `policy_comparison_unlocked=false`
+
+### Open issues / next
+
+- do not start extracted-candidate policy comparisons under the current gate result
+- do not reopen `general_v2`, relax validators, or lower the gate contract to turn invalid outputs into passes
+- treat a future retry as requiring a separately scoped component-model change with the same gate contract, not a prompt-tuning loop on the current branch
+
 ## 2026-05-11 — Component gate-decision contract hardened
 
 ### What shipped

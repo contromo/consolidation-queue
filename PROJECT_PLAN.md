@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-09
+Last updated: 2026-05-11
 
 ## Goal
 
@@ -260,7 +260,7 @@ Required outcome:
 
 ### Phase 3: Component Evaluation Harness
 
-Status: in progress; oracle upper-bound reference artifacts, event-aligned contradiction scoring, gate applicability metadata, a transcript-only extractor bridge, and a backend-neutral command-adapter transport now exist.
+Status: in progress; oracle upper-bound reference artifacts, event-aligned contradiction scoring, gate applicability metadata, a transcript-only extractor bridge, and a backend-neutral command-adapter transport now exist, but the real 7B `general_v1` CI-aware gate run with required frozen sentinel stayed locked on 2026-05-11.
 
 Implemented:
 
@@ -288,12 +288,14 @@ Implemented:
 - completed targeted `general_v2` diagnostic run; Phase A passed and 11 targeted rows were written, but the branch did not resolve because adjusted 32B scope drift was `5`, adjusted 32B canonical split/merge was `7`, and 7B still had six validation-error scenario failures
 - the only accepted boundary carve-outs for that summary are 32B `preference_drift_002-event-4` and `preference_drift_004-event-4` `scope_key`/`scope_level` mismatches from `docs/component_diagnostic_matrix.md`; the branch-resolution criterion still requires zero targeted-row scenario errors
 - `scripts/run_component_gate_decision.py`, a separate CI-aware gate-decision runner that reuses Phase A prompt regression and determinism checks, runs 7B `general_v1` over 60 held-out scenarios per benchmark family, keeps 32B headroom descriptive, and emits `policy_comparison_unlocked` only from the 7B primary gate
+- the real 7B `general_v1` gate run completed with required frozen sentinel and no 32B headroom; `phase_a_passed=true` and `determinism_passed=true`, but `policy_comparison_unlocked=false` because the run recorded `45` primary scenario errors, `8` primary observed gate failures, and `3` frozen-sentinel observed gate failures
 
 Remaining:
 
 - do not treat Phase A clearance as cross-family prompt safety; it only guards the forced-contradiction smoke row, so scope, drift, poisoning, false-corroboration, useful-pending, and mechanism-diverse regressions require direct artifact inspection
-- stop prompt iteration for this branch and run the CI-aware gate-decision runner with the current component evidence and explicit boundary/failure notes
-- interpret the larger CI-aware gate-decision artifact before making stable extractor-quality, size-scaling, or Phase 4 policy-comparison claims
+- the locked gate result is dominated by invalid model outputs rather than aggregate CI math: empty `scope_key`, empty `canonical_id`, and unknown `contradicts_event_id` drive the scenario-error burden across `scope_contamination`, `preference_drift`, `useful_pending_memory`, `false_corroboration`, `memory_poisoning`, and the frozen sentinel
+- do not reopen `general_v2`, add prompt-only retries, loosen validators, lower thresholds, or otherwise make the component gate easier to pass; those are model-quality workarounds, not code fixes
+- interpret the locked gate artifact as the current component-quality ceiling for this extractor/prompt path and do not make Phase 4 noisy policy-comparison claims from it
 
 Required outcome:
 
@@ -302,6 +304,8 @@ Required outcome:
 - no noisy-mode claim unless component outputs are scored through the transcript-only bridge
 
 ### Phase 4: Noisy Local-Model Pipeline
+
+Status: on hold. The 2026-05-11 real 7B `general_v1` component gate run stayed locked, so extracted-candidate policy comparison does not start under the current contract.
 
 Add:
 
@@ -361,6 +365,10 @@ LongMemEval positioning:
 - Do not frame the claim as "beating LongMemEval".
 - Frame the claim as whether the CQ-vs-baseline policy comparison transfers to a benchmark the project did not design.
 - Keep real-user, weeks-long helpfulness as an explicit limitation and future-work item.
+
+Current framing note:
+
+- unless a separately scoped future component-model change clears the Phase 3 gate, frame the noisy-mode outcome as a benchmark and failure-taxonomy contribution rather than a CQ noisy-policy contribution
 
 ## Scenario Families
 
@@ -444,11 +452,11 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. `scripts/run_component_gate_decision.py` now defines the CI-aware gate-decision run, including 60-scenario held-out primary rows, exact generator-denominator reporting, event-assumption Wilson lower bounds, conservative F1 composites, observed-only B-cubed labeling, and pairwise canonicalization CI support. Policy comparisons remain locked. Next:
+The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. The real 7B `general_v1` CI-aware gate run with required frozen sentinel completed on 2026-05-11 and stayed locked (`policy_comparison_unlocked=false`) despite passing Phase A and determinism. The decisive blockers were model-quality failures, not aggregate CI math: `45` primary scenario errors, `8` primary observed gate failures, and `3` frozen-sentinel observed gate failures, driven mainly by empty `scope_key`, empty `canonical_id`, and unknown `contradicts_event_id` outputs. Phase 4 remains on hold. Next:
 
-1. Run the CI-aware gate-decision runner with 7B `general_v1`; optionally include descriptive 32B headroom and the frozen sentinel, but do not let headroom unlock policy comparison.
-2. Carry forward the `general_v2` failure note: one prompt-only pass did not resolve cross-family scope/canonicalization drift, and remaining 7B empty-`scope_key` validation errors should be treated as component-quality risk.
-3. Run policy comparisons with extracted candidates only after component outputs are saved, scored, inspectable, and gate-decision results are reported separately from policy outcomes.
+1. Keep Phase 4 extracted-candidate policy comparisons on hold while `policy_comparison_unlocked=false`.
+2. Treat the current blocker cluster as component-quality/model-following risk, not as a prompt-tuning or validator-loosening opportunity; do not reopen `general_v2` or lower the gate contract.
+3. Reframe the writeup emphasis toward benchmark design and failure taxonomy rather than CQ noisy-policy contribution unless a separately scoped future component-model change materially changes the gate evidence.
 4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
