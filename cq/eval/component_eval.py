@@ -115,6 +115,7 @@ def canonical_component_maps(
     *,
     scenario_errors: Optional[Dict[str, object]] = None,
 ) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """Return gold/predicted canonical maps; None scenario_errors is treated as no errors."""
     classification = _classify_component_predictions(
         scenarios,
         predictions_by_scenario,

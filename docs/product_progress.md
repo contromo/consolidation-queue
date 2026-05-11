@@ -6,12 +6,14 @@
 
 - promoted canonical-id map access through `cq.eval.component_eval.canonical_component_maps` so the gate runner no longer imports a private evaluator classifier
 - documented that Phase A and determinism helpers fail by raising `StopConditionError`, that pairwise canonicalization is an uncalibrated proxy for the B-cubed threshold, and that determinism is checked on the fixed forced-contradiction sentinel rather than every held-out gate row
+- made canonicalization unlock require both the aggregate observed B-cubed threshold and the pairwise CI-supported proxy threshold
 - removed the duplicate scenario-error blocker source and derived the aggregate CI failure count from emitted blockers
-- added gate-decision tests for Phase A/determinism blockers, aggregate CI failure, frozen sentinel failure, cache reuse, and the CLI stop exit-code/report contract
+- added gate-decision tests for Phase A/determinism blockers, aggregate CI failure, aggregate observed B-cubed failure, frozen sentinel failure, schema-backed cache reuse, and the CLI stop exit-code/report contract
+- added focused public-API coverage for `canonical_component_maps`
 
 ### Evidence
 
-- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_gate_decision tests.test_component_eval tests.test_component_scoring_matrix -q` passes with 59 tests
+- `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_component_gate_decision tests.test_component_eval tests.test_component_scoring_matrix -q` passes with 61 tests
 - no Ollama inference or extracted-candidate policy comparison was run in this change
 
 ## 2026-05-09 — CI-aware component gate-decision runner added

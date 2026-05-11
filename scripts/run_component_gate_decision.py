@@ -435,6 +435,7 @@ def gate_summary_payload(
     frozen_summaries = [row_summary(result) for result in frozen_sentinel_results]
     primary_observed_failures = _observed_gate_failures(primary_results)
     frozen_failures = _observed_gate_failures(frozen_sentinel_results)
+    aggregate_observed_failures = _aggregate_observed_gate_failures(aggregate)
     aggregate_ci_failures = [
         {"metric": metric_name, "gate": gate}
         for metric_name, gate in aggregate["ci_supported_gates"].items()
@@ -458,6 +459,8 @@ def gate_summary_payload(
         )
     for failure in primary_observed_failures:
         blockers.append({"type": "per_family_observed_gate_failed", **failure})
+    for failure in aggregate_observed_failures:
+        blockers.append({"type": "aggregate_observed_gate_failed", **failure})
     for failure in aggregate_ci_failures:
         gate = failure["gate"]
         blockers.append(
@@ -509,6 +512,7 @@ def gate_summary_payload(
             "determinism_passed": determinism_passed,
             "primary_scenario_error_count": scenario_error_count,
             "primary_observed_gate_failure_count": len(primary_observed_failures),
+            "aggregate_observed_gate_failure_count": len(aggregate_observed_failures),
             "aggregate_ci_gate_failure_count": len(
                 [
                     blocker
@@ -548,8 +552,16 @@ def aggregate_gate_evaluation(results: Sequence[GateRowResult]) -> Dict[str, obj
         "metrics_observed": metrics,
         "canonicalization_b_cubed_f1_interval_policy": {
             "value": metrics.get("canonicalization_b_cubed_f1"),
+            "threshold": QUALITY_GATES["canonicalization_b_cubed_f1"],
+            "passed": _metric_passed(
+                metrics.get("canonicalization_b_cubed_f1"),
+                QUALITY_GATES["canonicalization_b_cubed_f1"],
+            ),
             "status": "observed_only",
-            "reason": "Wilson intervals are not applied to B-cubed F1; pairwise canonicalization carries the CI-supported gate.",
+            "reason": (
+                "Wilson intervals are not applied to B-cubed F1; both observed aggregate "
+                "B-cubed F1 and the pairwise CI-supported proxy must pass."
+            ),
         },
         "denominators": denominator_summary(metrics, canonical_pairwise),
         "expected_denominators_current_generator": expected_denominators_payload(
@@ -1081,12 +1093,14 @@ def statistical_contract_payload() -> Dict[str, object]:
         "f1_warning": "The F1 field is not a 95% lower bound on F1.",
         "canonicalization_b_cubed_f1": {
             "status": "observed_only",
+            "unlock_rule": "Aggregate observed B-cubed F1 must clear its threshold.",
             "reason": "Wilson intervals do not apply to B-cubed F1.",
         },
         "canonicalization_ci_gate": "canonicalization_pairwise_f1",
         "canonicalization_pairwise_threshold_note": (
             "Pairwise F1 is a CI-supported proxy for canonicalization_b_cubed_f1 and currently "
-            "uses the same 0.65 threshold without separate oracle-artifact calibration."
+            "uses the same 0.65 threshold without separate oracle-artifact calibration; it cannot "
+            "unlock canonicalization unless observed aggregate B-cubed F1 also clears 0.65."
         ),
         "per_family_contradiction_ci_policy": (
             "Reported for diagnostics only; per-family edge counts are small, so per-family "
@@ -1113,6 +1127,20 @@ def _observed_gate_failures(results: Sequence[GateRowResult]) -> List[Dict[str, 
                     }
                 )
     return failures
+
+
+def _aggregate_observed_gate_failures(aggregate: Mapping[str, object]) -> List[Dict[str, object]]:
+    policy = aggregate.get("canonicalization_b_cubed_f1_interval_policy")
+    if not isinstance(policy, dict) or policy.get("passed"):
+        return []
+    return [
+        {
+            "metric": "canonicalization_b_cubed_f1",
+            "status": policy.get("status"),
+            "value": policy.get("value"),
+            "threshold": policy.get("threshold"),
+        }
+    ]
 
 
 def _combined_inputs(
@@ -1164,6 +1192,10 @@ def _safe_divide(numerator: Optional[int], denominator: Optional[int]) -> Option
     if denominator is None or denominator == 0 or numerator is None:
         return None
     return numerator / denominator
+
+
+def _metric_passed(value: object, threshold: float) -> bool:
+    return isinstance(value, (int, float)) and value >= threshold
 
 
 def _int_metric(metrics: Mapping[str, object], key: str) -> int:
