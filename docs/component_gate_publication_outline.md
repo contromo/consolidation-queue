@@ -40,7 +40,7 @@ Non-claim:
 | 3. Oracle-mode policy results | Report the frozen oracle sweep and the narrow oracle-mode support over `Mem0Lite` | `docs/predictions_vs_results.md`, `docs/product_progress.md`, frozen oracle artifact paths cited in `docs/predictions_vs_results.md` | none |
 | 4. Component-quality gate methodology | Explain Phase A, determinism, aggregate CI gates, per-family observed gates, and frozen-sentinel observed gates | `PROJECT_PLAN.md`, `docs/product_progress.md`, `scripts/run_component_gate_decision.py` | none |
 | 5. Locked noisy-mode result and failure taxonomy | Explain why the 7B `general_v1` path remained locked, where failures concentrate, and what mode-level patterns they form | `docs/product_progress.md`, `docs/component_diagnostic_matrix.md`, `docs/component_gate_failure_taxonomy.md` | none |
-| 6. Discussion and publication boundary | State what is supported now, what remains blocked, and why the contribution is benchmark + failure taxonomy rather than noisy-policy evidence | `PROJECT_PLAN.md`, `docs/product_progress.md` | publication outline wording |
+| 6. Discussion and publication boundary | State what is supported now, what remains blocked, and why the contribution is benchmark + failure taxonomy rather than noisy-policy evidence | `PROJECT_PLAN.md`, `docs/product_progress.md`, `docs/component_gate_publication_outline.md` | none |
 | 7. External positioning | Place LongMemEval and any future noisy transfer result as external validation rather than a current claim | `PROJECT_PLAN.md` | none for the current draft |
 
 ## Existing Evidence To Lead With

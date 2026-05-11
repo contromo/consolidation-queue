@@ -59,8 +59,9 @@ local generated gate summary artifact is not git-tracked.
 Two facts matter most:
 
 1. The blocker pattern is concentrated rather than diffuse.
-2. The frozen sentinel fails on the same class of defects as the held-out rows,
-   so this is not only a held-out-generalization problem.
+2. The frozen sentinel fails on the same class of defects as held-out
+   `preference_drift` rows, so this is not only a held-out-generalization
+   problem.
 
 ## Mode-Level Taxonomy
 
@@ -140,8 +141,9 @@ Why it matters:
 - `memory_poisoning_005`: an override claim is emitted with `scope_level=session`
   and `scope_key=""`, then the contradiction edge against the trusted note is
   missed downstream
-- `frozen_preference_drift_001`: the frozen sentinel reproduces the same empty
-  `scope_key` and contradiction-chain failures seen in held-out rows
+- `frozen_preference_drift_001`: the frozen sentinel reproduces the held-out
+  `preference_drift` failure pattern: empty `scope_key` values plus missed
+  contradiction edges across the revision chain
 
 These examples matter because they show that the failure taxonomy is grounded in
 raw model output and evaluator failure examples, not only in top-line counts.

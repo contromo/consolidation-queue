@@ -46,7 +46,7 @@
 - the inspected failure taxonomy now resolves into four mode-level patterns: required-field omission, ID-namespace confusion between `canonical_id` and `contradicts_event_ids`, durable-claim drift into `temporary_constraint`/`session`, and contradiction-edge misses
 - the cross-family rollup masked the failure pattern; aggregate gates passed while per-family and frozen-sentinel checks did the actual blocking work
 - the `8` primary observed gate failures were concentrated rather than diffuse: `scope_contamination` `3`, `preference_drift` `2`, `false_corroboration` `1`, and `memory_poisoning` `2`
-- the frozen sentinel miss is substantive rather than just held-out spread: the fixed `frozen_preference_drift_001` scenario itself carries the same empty-`scope_key` and contradiction-chain defects
+- the frozen sentinel miss is substantive rather than just held-out spread: the fixed `frozen_preference_drift_001` scenario itself carries the same empty-`scope_key` and missed-contradiction-edge pattern seen in held-out `preference_drift`
 - under the project contract, this keeps Phase 4 noisy policy comparison work on hold and shifts the current writeup framing toward benchmark/failure-taxonomy contribution rather than a CQ noisy-policy contribution
 
 ### Evidence
