@@ -97,6 +97,7 @@ Implemented:
 - transcript-only local extractor bridge with hard input isolation, weak negative-control mode, and forced-contradiction positive-control mode
 - transcript-only command-adapter extractor transport for user-provided local model commands, with reproducibility metadata and per-scenario error reporting
 - first forced-contradiction local-model smoke artifacts through the transcript-only bridge, using matched Qwen 2.5 `Q4_K_M` 7B floor and 32B headroom runs with scored component outputs
+- CI-aware component gate-decision runner with 60-scenario held-out primary rows, Wilson event-assumption lower bounds, conservative F1 composites, observed-only B-cubed labeling, and pairwise canonicalization CI support
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -286,12 +287,13 @@ Implemented:
 - `prompts/component_extractor_general_v2.txt`, a single prompt-only diagnostic candidate focused on non-empty required fields, canonical slot reuse, full scope-key preservation, and explicit treatment of one-off preference constraints as benchmark-boundary scope cases
 - completed targeted `general_v2` diagnostic run; Phase A passed and 11 targeted rows were written, but the branch did not resolve because adjusted 32B scope drift was `5`, adjusted 32B canonical split/merge was `7`, and 7B still had six validation-error scenario failures
 - the only accepted boundary carve-outs for that summary are 32B `preference_drift_002-event-4` and `preference_drift_004-event-4` `scope_key`/`scope_level` mismatches from `docs/component_diagnostic_matrix.md`; the branch-resolution criterion still requires zero targeted-row scenario errors
+- `scripts/run_component_gate_decision.py`, a separate CI-aware gate-decision runner that reuses Phase A prompt regression and determinism checks, runs 7B `general_v1` over 60 held-out scenarios per benchmark family, keeps 32B headroom descriptive, and emits `policy_comparison_unlocked` only from the 7B primary gate
 
 Remaining:
 
 - do not treat Phase A clearance as cross-family prompt safety; it only guards the forced-contradiction smoke row, so scope, drift, poisoning, false-corroboration, useful-pending, and mechanism-diverse regressions require direct artifact inspection
-- stop prompt iteration for this branch and design CI-aware gate-decision runs with the current component evidence and explicit boundary/failure notes
-- design and run larger CI-aware gate-decision sets before making stable extractor-quality, size-scaling, or Phase 4 policy-comparison claims
+- stop prompt iteration for this branch and run the CI-aware gate-decision runner with the current component evidence and explicit boundary/failure notes
+- interpret the larger CI-aware gate-decision artifact before making stable extractor-quality, size-scaling, or Phase 4 policy-comparison claims
 
 Required outcome:
 
@@ -442,9 +444,9 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. Policy comparisons remain locked. Next:
+The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. `scripts/run_component_gate_decision.py` now defines the CI-aware gate-decision run, including 60-scenario held-out primary rows, exact generator-denominator reporting, event-assumption Wilson lower bounds, conservative F1 composites, observed-only B-cubed labeling, and pairwise canonicalization CI support. Policy comparisons remain locked. Next:
 
-1. Design CI-aware gate-decision runs with enough held-out/decision examples for Wilson lower bounds to be interpretable against the noisy-mode thresholds.
+1. Run the CI-aware gate-decision runner with 7B `general_v1`; optionally include descriptive 32B headroom and the frozen sentinel, but do not let headroom unlock policy comparison.
 2. Carry forward the `general_v2` failure note: one prompt-only pass did not resolve cross-family scope/canonicalization drift, and remaining 7B empty-`scope_key` validation errors should be treated as component-quality risk.
 3. Run policy comparisons with extracted candidates only after component outputs are saved, scored, inspectable, and gate-decision results are reported separately from policy outcomes.
 4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.

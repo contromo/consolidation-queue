@@ -109,6 +109,21 @@ def evaluate_component_predictions(
     }
 
 
+def canonical_component_maps(
+    scenarios: Iterable[Scenario],
+    predictions_by_scenario: Dict[str, List[CandidateComponentPrediction]],
+    *,
+    scenario_errors: Optional[Dict[str, object]] = None,
+) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """Return gold/predicted canonical maps; None scenario_errors is treated as no errors."""
+    classification = _classify_component_predictions(
+        scenarios,
+        predictions_by_scenario,
+        scenario_errors=scenario_errors or {},
+    )
+    return classification.canonical_gold, classification.canonical_predicted
+
+
 def _classify_component_predictions(
     scenarios: Iterable[Scenario],
     predictions_by_scenario: Dict[str, List[CandidateComponentPrediction]],
@@ -400,14 +415,20 @@ def _metrics_from_classification(
         "candidate_detection_precision": candidate_precision,
         "candidate_detection_recall": candidate_recall,
         "candidate_detection_f1": _f1(candidate_precision, candidate_recall),
+        "claim_type_correct": counters["claim_type_correct"],
+        "claim_type_count": counters["claim_type_count"],
         "claim_type_accuracy": _accuracy(
             counters["claim_type_correct"],
             counters["claim_type_count"],
         ),
+        "scope_level_correct": counters["scope_level_correct"],
+        "scope_level_count": counters["scope_level_count"],
         "scope_level_accuracy": _accuracy(
             counters["scope_level_correct"],
             counters["scope_level_count"],
         ),
+        "scope_key_correct": counters["scope_key_correct"],
+        "scope_key_count": counters["scope_key_count"],
         "scope_key_accuracy": _accuracy(
             counters["scope_key_correct"],
             counters["scope_key_count"],

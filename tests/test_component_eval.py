@@ -10,11 +10,13 @@ from cq.eval.component_eval import (
     _b_cubed,
     build_component_eval_artifact,
     build_oracle_component_eval_artifact,
+    canonical_component_maps,
     evaluate_component_predictions,
     load_predictions_by_scenario,
     load_scenario_errors,
     main,
     oracle_component_predictions,
+    oracle_predictions_by_scenario,
 )
 from cq.eval.runner import TEMPLATE_MIXES_BY_FAMILY, generate_scenarios
 from cq.schemas.scenario import EventKind
@@ -45,6 +47,16 @@ class ComponentEvalTests(unittest.TestCase):
         for gate in result["quality_gates"].values():
             self.assertTrue(gate["passed"])
             self.assertEqual(gate["value"], 1.0)
+
+    def test_canonical_component_maps_returns_public_gold_and_prediction_maps(self) -> None:
+        scenarios = generate_forced_contradiction_scenarios(1, template_mix="mixed")
+        predictions = oracle_predictions_by_scenario(scenarios)
+
+        gold, predicted = canonical_component_maps(scenarios, predictions)
+
+        self.assertEqual(set(gold), set(predicted))
+        self.assertTrue(all(item_id.startswith(scenarios[0].scenario_id) for item_id in gold))
+        self.assertEqual(gold, predicted)
 
     def test_candidate_detection_counts_false_positives_and_false_negatives(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="dirty")[0]
