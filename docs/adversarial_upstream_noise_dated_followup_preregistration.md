@@ -80,6 +80,8 @@ Required code changes before any follow-up run:
 3. add a targeted regression test pinning the expected behavior on
    `adversarial_temporal_skew_v1`
 
+Until those land, the intended CLI surface is not available end-to-end: the runner’s policy-set allowlist (for example `POLICY_SET_CHOICES` / `cq.eval.runner` wiring) currently includes only the headline sets (`default`, `phase2_5`), not `followup`. The commands in the next section are the preregistered contract; they will fail or reject `--policy-set followup` until `CQDatedContestation`, the new policy set, and the regression test are implemented.
+
 Required follow-up runs after those code changes land:
 
 ```bash

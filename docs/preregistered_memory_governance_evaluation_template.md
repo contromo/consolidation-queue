@@ -199,5 +199,6 @@ It does not solve:
 - mislabeled scenarios
 - poor component quality in noisy-mode pipelines
 - overbroad claims that ignore the actual family contract
+- polarized mechanism design where every instance of a mechanism yields the same policy outcome (all-or-nothing correctness within mechanism): the template’s paired-bootstrap CI step assumes enough within-mechanism variance for bounds to be inferential; if each scenario repeats the same deterministic outcome, the CI step is descriptive (it confirms the constant delta) rather than a noisy-effect gate, and headline sample size is less informative for that inferential role
 
 Those still require honest benchmark design and honest writing. The template is there to reduce hindsight bias, not to replace scientific judgment.
