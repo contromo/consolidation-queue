@@ -21,7 +21,6 @@ SCHEMA_PROFILES = (
     SCHEMA_PROFILE_DEFAULT,
     SCHEMA_PROFILE_SCENARIO_CONDITIONED,
 )
-NONEMPTY_STRING_PATTERN = r".*\S.*"
 REPAIR_COUNT_KEYS = (
     "candidate_id_cleared",
     "contradicts_renamed",
@@ -225,12 +224,44 @@ def build_output_schema(
             },
         }
     elif schema_profile == SCHEMA_PROFILE_SCENARIO_CONDITIONED:
+        scenario = _required_mapping(envelope, "scenario")
+        observation_event_ids = _observation_event_ids(scenario)
+        if not observation_event_ids:
+            raise OllamaCommandError("scenario.events must include at least one observation event")
         prediction_items = {
-            "oneOf": _scenario_conditioned_prediction_schemas(
-                envelope,
-                claim_types=claim_types,
-                scope_levels=scope_levels,
-            )
+            "type": "object",
+            "additionalProperties": False,
+            "required": [
+                "event_id",
+                "canonical_id",
+                "claim_type",
+                "scope_level",
+                "scope_key",
+                "contradicts_event_ids",
+                "raw_claim",
+                "confidence",
+            ],
+            "properties": {
+                "event_id": {"type": "string", "enum": observation_event_ids},
+                "candidate_id": {"type": "string", "enum": [""]},
+                "canonical_id": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "claim_type": {"type": "string", "enum": claim_types},
+                "scope_level": {"type": "string", "enum": scope_levels},
+                "scope_key": {
+                    "type": "string",
+                    "minLength": 1,
+                },
+                "contradicts_event_ids": {
+                    "type": "array",
+                    "uniqueItems": True,
+                    "items": {"type": "string", "enum": observation_event_ids},
+                },
+                "raw_claim": {"type": "string"},
+                "confidence": {"type": ["number", "null"]},
+            },
         }
     else:
         raise OllamaCommandError("Unsupported schema profile '{}'".format(schema_profile))
@@ -245,67 +276,6 @@ def build_output_schema(
             }
         },
     }
-
-
-def _scenario_conditioned_prediction_schemas(
-    envelope: Dict[str, object],
-    *,
-    claim_types: List[str],
-    scope_levels: List[str],
-) -> List[Dict[str, object]]:
-    scenario = _required_mapping(envelope, "scenario")
-    observation_event_ids = _observation_event_ids(scenario)
-    if not observation_event_ids:
-        raise OllamaCommandError("scenario.events must include at least one observation event")
-    schemas = []
-    for index, event_id in enumerate(observation_event_ids):
-        prior_event_ids = observation_event_ids[:index]
-        contradiction_items: Dict[str, object] = {"type": "string"}
-        contradiction_schema: Dict[str, object] = {
-            "type": "array",
-            "uniqueItems": True,
-            "items": contradiction_items,
-        }
-        if prior_event_ids:
-            contradiction_items["enum"] = prior_event_ids
-        else:
-            contradiction_schema["maxItems"] = 0
-        schemas.append(
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": [
-                    "event_id",
-                    "canonical_id",
-                    "claim_type",
-                    "scope_level",
-                    "scope_key",
-                    "contradicts_event_ids",
-                    "raw_claim",
-                    "confidence",
-                ],
-                "properties": {
-                    "event_id": {"type": "string", "const": event_id},
-                    "candidate_id": {"type": "string", "enum": [""]},
-                    "canonical_id": {
-                        "type": "string",
-                        "minLength": 1,
-                        "pattern": NONEMPTY_STRING_PATTERN,
-                    },
-                    "claim_type": {"type": "string", "enum": claim_types},
-                    "scope_level": {"type": "string", "enum": scope_levels},
-                    "scope_key": {
-                        "type": "string",
-                        "minLength": 1,
-                        "pattern": NONEMPTY_STRING_PATTERN,
-                    },
-                    "contradicts_event_ids": contradiction_schema,
-                    "raw_claim": {"type": "string"},
-                    "confidence": {"type": ["number", "null"]},
-                },
-            }
-        )
-    return schemas
 
 
 def normalize_model_payload(

@@ -362,6 +362,7 @@ class LocalExtractorTests(unittest.TestCase):
             self.assertEqual(diagnostics["ollama_server_version"], "fake-ollama-1.0")
             self.assertEqual(diagnostics["wrapper_name"], "ollama_component_extractor")
             self.assertTrue(diagnostics["constrained_decoding"])
+            self.assertEqual(diagnostics["schema_profile"], "scenario_conditioned")
             repair_counts = diagnostics["scenarios"][scenario_id]["repair_counts"]
             self.assertEqual(repair_counts["candidate_id_cleared"], 1)
             self.assertEqual(repair_counts["contradicts_renamed"], 0)
@@ -619,6 +620,7 @@ elif behavior in ("diagnostics", "diagnostics_bad_confidence", "diagnostics_drif
                 "wrapper_name": "ollama_component_extractor",
                 "wrapper_version": "v1",
                 "constrained_decoding": True,
+                "schema_profile": "scenario_conditioned",
                 "model_digest": model_digest,
                 "scenarios": {
                     scenario["scenario_id"]: {

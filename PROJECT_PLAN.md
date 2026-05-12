@@ -260,7 +260,7 @@ Required outcome:
 
 ### Phase 3: Component Evaluation Harness
 
-Status: in progress; oracle upper-bound reference artifacts, event-aligned contradiction scoring, gate applicability metadata, a transcript-only extractor bridge, and a backend-neutral command-adapter transport now exist, but the real 7B `general_v1` CI-aware gate run with required frozen sentinel stayed locked on 2026-05-11.
+Status: in progress; oracle upper-bound reference artifacts, event-aligned contradiction scoring, gate applicability metadata, a transcript-only extractor bridge, and a backend-neutral command-adapter transport now exist. The real 7B `general_v1` CI-aware gate run with required frozen sentinel stayed locked on 2026-05-11, and the 2026-05-12 follow-up evidence block completed: the 7B schema-rescue path removed all primary scenario errors but still stayed gate-locked on observed per-family/frozen failures, while the descriptive 32B blocker-surface sweep cleared the same common-surface failures.
 
 Implemented:
 
@@ -289,13 +289,17 @@ Implemented:
 - the only accepted boundary carve-outs for that summary are 32B `preference_drift_002-event-4` and `preference_drift_004-event-4` `scope_key`/`scope_level` mismatches from `docs/component_diagnostic_matrix.md`; the branch-resolution criterion still requires zero targeted-row scenario errors
 - `scripts/run_component_gate_decision.py`, a separate CI-aware gate-decision runner that reuses Phase A prompt regression and determinism checks, runs 7B `general_v1` over 60 held-out scenarios per benchmark family, keeps 32B headroom descriptive, and emits `policy_comparison_unlocked` only from the 7B primary gate
 - the real 7B `general_v1` gate run completed with required frozen sentinel and no 32B headroom; `phase_a_passed=true` and `determinism_passed=true`, but `policy_comparison_unlocked=false` because the run recorded `45` primary scenario errors, `8` primary observed gate failures, and `3` frozen-sentinel observed gate failures
+- completed follow-up evidence under `docs/component_gate_followup_preregistration.md`: the descriptive 32B default-schema sweep over `scope_contamination`, `preference_drift`, `memory_poisoning`, and the frozen sentinel, plus the full 7B `general_v1_dynamic_schema` run with frozen sentinel
+- the 7B schema-rescue run recorded `phase_a_passed=true`, `determinism_passed=true`, `primary_scenario_error_count=0`, `primary_observed_gate_failure_count=5`, `frozen_sentinel_observed_gate_failure_count=2`, and `policy_comparison_unlocked=false`
+- `docs/component_gate_followup_benchmark_memo.md`, recording the completed follow-up comparison, the common-surface burden reductions, the no-quadrant decision, and the draft-versus-expansion recommendation
 
 Status notes:
 
 - do not treat Phase A clearance as cross-family prompt safety; it only guards the forced-contradiction smoke row, so scope, drift, poisoning, false-corroboration, useful-pending, and mechanism-diverse regressions require direct artifact inspection
-- the locked gate result is dominated by invalid model outputs rather than aggregate CI math: empty `scope_key`, empty `canonical_id`, and invalid `contradicts_event_ids` targets drive the scenario-error burden across `scope_contamination`, `preference_drift`, `useful_pending_memory`, `false_corroboration`, `memory_poisoning`, and the frozen sentinel
+- the locked 7B baseline is dominated by invalid model outputs rather than aggregate CI math: empty `scope_key`, empty `canonical_id`, and invalid `contradicts_event_ids` targets drive the scenario-error burden across `scope_contamination`, `preference_drift`, `useful_pending_memory`, `false_corroboration`, `memory_poisoning`, and the frozen sentinel
+- the completed follow-up now splits that baseline burden into two effects: a stricter structured interface removes the schema-shaped blocker class on 7B without vacuous placeholder substitution, while larger-model capacity removes the remaining common-surface measured failures in the descriptive 32B rows
 - do not reopen `general_v2`, add prompt-only retries, loosen validators, lower thresholds, or otherwise make the component gate easier to pass; those are model-quality workarounds, not code fixes
-- interpret the locked gate artifact as the current component-quality ceiling for this extractor/prompt path and do not make Phase 4 noisy policy-comparison claims from it
+- do not make Phase 4 noisy policy-comparison claims from the current 7B path; the follow-up supports a benchmark/gate-methodology/failure-taxonomy writeup, not a noisy-policy unlock
 
 Required outcome:
 
@@ -368,7 +372,7 @@ LongMemEval positioning:
 
 Current framing note:
 
-- unless a separately scoped future component-model change clears the Phase 3 gate, frame the noisy-mode outcome as a benchmark and failure-taxonomy contribution rather than a CQ noisy-policy contribution
+- frame the current noisy-mode outcome as a benchmark, gate-methodology, and failure-taxonomy contribution rather than a CQ noisy-policy contribution; the follow-up evidence now supports drafting that methodology story without reopening Phase 4
 
 ## Scenario Families
 
@@ -452,11 +456,11 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. The real 7B `general_v1` CI-aware gate run with required frozen sentinel completed on 2026-05-11 and stayed locked (`policy_comparison_unlocked=false`) despite passing Phase A and determinism. The decisive blockers were model-quality failures, not aggregate CI math: `45` primary scenario errors, `8` primary observed gate failures, and `3` frozen-sentinel observed gate failures, driven mainly by empty `scope_key`, empty `canonical_id`, and invalid `contradicts_event_ids` targets. `docs/component_gate_publication_outline.md` now maps the publication package and identifies the minimum extra evidence, while `docs/component_gate_failure_taxonomy.md` records the locked-gate interpretation. Phase 4 remains on hold. Next:
+The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. The real 7B `general_v1` CI-aware gate run with required frozen sentinel completed on 2026-05-11 and stayed locked (`policy_comparison_unlocked=false`) despite passing Phase A and determinism. The completed 2026-05-12 follow-up evidence block then ran the descriptive 32B blocker-surface sweep and the full 7B schema-rescue run. Both mandatory runs reduced the preregistered common-surface schema-shaped burden from `26` to `0`, so the conditional `32B + schema` quadrant did not trigger. The 7B schema-rescue run still remained locked on observed per-family/frozen failures (`5` primary, `2` frozen), while the 32B descriptive rows cleared the same common-surface measured failures. `docs/component_gate_publication_outline.md` maps the publication package, `docs/component_gate_failure_taxonomy.md` records the locked-gate interpretation, and `docs/component_gate_followup_benchmark_memo.md` records the follow-up decomposition and next-step recommendation. Phase 4 remains on hold. Next:
 
 1. Keep Phase 4 extracted-candidate policy comparisons on hold while `policy_comparison_unlocked=false`.
-2. If the publication draft still needs size-scaling evidence, run one descriptive 32B `scope_contamination` row; add a second model-family row only if the paper starts making a stronger generalization claim than the current benchmark-plus-taxonomy framing can support.
-3. Fold the oracle benchmark result, the locked-gate taxonomy, and the blocked noisy-mode story into one paper/report draft rather than keeping them as separate notes.
+2. Start the integrated benchmark/methodology paper or report draft using the publication outline, locked-taxonomy note, and follow-up benchmark memo.
+3. If a target venue needs more empirical breadth after the first draft outline exists, expand frozen held-out benchmark evidence through a separate preregistered benchmark-strengthening step rather than by reopening the completed follow-up.
 4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules

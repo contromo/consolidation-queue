@@ -94,34 +94,24 @@ class OllamaComponentExtractorTests(unittest.TestCase):
             ["project", "session", "world_global"],
         )
 
-    def test_scenario_conditioned_schema_uses_prior_event_constraints_and_nonempty_strings(self) -> None:
+    def test_scenario_conditioned_schema_uses_flat_event_enums_and_min_length_strings(self) -> None:
         schema = build_output_schema(
             _envelope(),
             schema_profile=SCHEMA_PROFILE_SCENARIO_CONDITIONED,
         )
-        branches = schema["properties"]["predictions"]["items"]["oneOf"]
+        item_schema = schema["properties"]["predictions"]["items"]["properties"]
 
-        self.assertEqual(len(branches), 2)
-        first_branch = branches[0]["properties"]
-        second_branch = branches[1]["properties"]
-
-        self.assertEqual(first_branch["event_id"]["const"], "event-1")
-        self.assertEqual(
-            first_branch["canonical_id"]["minLength"],
-            1,
+        self.assertEqual(item_schema["event_id"]["enum"], ["event-1", "event-2"])
+        self.assertEqual(item_schema["canonical_id"]["minLength"], 1)
+        self.assertNotIn("pattern", item_schema["canonical_id"])
+        self.assertEqual(item_schema["scope_key"]["minLength"], 1)
+        self.assertNotIn("pattern", item_schema["scope_key"])
+        self.assertTrue(
+            item_schema["contradicts_event_ids"]["uniqueItems"],
         )
         self.assertEqual(
-            first_branch["scope_key"]["pattern"],
-            ".*\\S.*",
-        )
-        self.assertEqual(
-            first_branch["contradicts_event_ids"]["maxItems"],
-            0,
-        )
-        self.assertEqual(second_branch["event_id"]["const"], "event-2")
-        self.assertEqual(
-            second_branch["contradicts_event_ids"]["items"]["enum"],
-            ["event-1"],
+            item_schema["contradicts_event_ids"]["items"]["enum"],
+            ["event-1", "event-2"],
         )
 
     def test_missing_model_digest_is_command_error(self) -> None:

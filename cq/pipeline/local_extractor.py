@@ -588,6 +588,7 @@ def _merge_model_diagnostics(
         "wrapper_name",
         "wrapper_version",
         "constrained_decoding",
+        "schema_profile",
         "model_digest",
     ):
         if key not in diagnostics:
