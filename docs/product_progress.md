@@ -1,5 +1,70 @@
 # Product Progress
 
+## 2026-05-12 — Adversarial upstream-noise headline runs recorded
+
+### What shipped
+
+- ran the three preregistered headline commands for the oracle-only
+  `adversarial_upstream_noise` family:
+  - default policy set, `mixed`
+  - `phase2_5` policy set, `mixed`
+  - `phase2_5` policy set, `heldout`
+- regenerated a tracked artifact set under `data/results/adversarial_upstream_noise/`
+  so the saved JSON and CSV files include the persisted pairwise bootstrap
+  comparison rows required by the preregistered reporting contract
+- added `docs/adversarial_upstream_noise_results.md` with the preregistered
+  bucket readout, per-mechanism CQ-versus-Reflection deltas and lower bounds,
+  ablation attribution labels, held-out direction check, and Mem0 partial
+  baseline sub-table
+- added `docs/adversarial_upstream_noise_dated_followup_preregistration.md`
+  because the preregistered Bucket D surprise-lane trigger fired
+- added `docs/preregistered_memory_governance_evaluation_template.md` as the
+  reusable methodology artifact for future benchmark families
+
+### Why it matters
+
+- the policy comparison has now moved from preregistration-only to recorded
+  empirical evidence at the correct locus of noise: adversarial upstream
+  candidate streams with extraction held constant
+- CQ clears the mixed win rule on four of five mechanisms and loses only
+  `temporal_skew`, exactly the preregistered surprise lane
+- because the four dedicated component lanes still clear, the correct read is
+  not a generic "3+ wins" headline but the stronger Bucket D mechanism story:
+  CQ works on the named lanes and has a dated-evidence weakness
+- the held-out `_v2` rows do not reverse any mechanism direction, so the
+  robustness split supports the same story
+- the methodology contribution is now citable independently of whether the
+  follow-up fix succeeds
+
+### Evidence
+
+- focused pre-flight bundle:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_adversarial_upstream_noise tests.test_bootstrap tests.test_cq_ablations tests.test_runner_policy_sets tests.test_metrics -q`
+- tracked artifacts:
+  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_default_mixed.json`
+  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_default_mixed_metrics.csv`
+  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_mixed.json`
+  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_mixed_metrics.csv`
+  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_heldout.json`
+  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_heldout_metrics.csv`
+- mixed `phase2_5` CQ-versus-Reflection mechanism deltas with one-sided `95%`
+  lower bounds:
+  - `adversarial_retraction_v1`: `+1.00`, `+1.00`
+  - `adversarial_witness_conflict_v1`: `+1.00`, `+1.00`
+  - `adversarial_temporal_skew_v1`: `-1.00`, `-1.00`
+  - `adversarial_scope_narrowing_v1`: `+1.00`, `+1.00`
+  - `adversarial_pending_competition_v1`: `+1.00`, `+1.00`
+- held-out direction check:
+  - no mechanism reverses direction between `mixed` and `heldout`
+
+### Open issues / next
+
+- commit the tracked headline artifact set and result-side docs together
+- implement `CQDatedContestation` only under the new dated follow-up
+  preregistration; do not retrofit the original `phase2_5` headline result
+- fold the result doc, methodology template, and later dated follow-up into the
+  integrated benchmark/methodology draft
+
 ## 2026-05-12 — Oracle-only adversarial upstream-noise family added
 
 ### What shipped
