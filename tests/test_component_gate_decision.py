@@ -182,6 +182,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
             frozen_sentinel_results=[],
             general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
             general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            summary_label=None,
             decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
             per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             phase_a_passed=True,
@@ -228,6 +229,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
             frozen_sentinel_results=[],
             general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
             general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            summary_label=None,
             decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
             per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             phase_a_passed=False,
@@ -259,6 +261,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
             frozen_sentinel_results=[],
             general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
             general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            summary_label=None,
             decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
             per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             phase_a_passed=True,
@@ -289,6 +292,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
             frozen_sentinel_results=[],
             general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
             general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            summary_label=None,
             decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
             per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             phase_a_passed=True,
@@ -340,6 +344,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
             frozen_sentinel_results=[],
             general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
             general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            summary_label=None,
             decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
             per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             phase_a_passed=True,
@@ -383,6 +388,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
             frozen_sentinel_results=[frozen],
             general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
             general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            summary_label=None,
             decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
             per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             phase_a_passed=True,
@@ -392,6 +398,48 @@ class ComponentGateDecisionTests(unittest.TestCase):
         self.assertFalse(summary["policy_comparison_unlocked"])
         blocker_types = {blocker["type"] for blocker in summary["blockers"]}
         self.assertIn("frozen_sentinel_observed_gate_failed", blocker_types)
+
+    def test_descriptive_headroom_frozen_sentinel_does_not_block_unlock(self) -> None:
+        primary_results = [_oracle_row_result(row) for row in gate.primary_gate_rows()]
+        headroom_frozen = _oracle_row_result(
+            gate.frozen_sentinel_rows(
+                model=gate.matrix.QWEN_32B_Q4KM,
+                gate_role="descriptive_headroom_frozen_sentinel",
+            )[0]
+        )
+        artifact = dict(headroom_frozen.component_artifact)
+        quality_gates = {
+            name: dict(payload)
+            for name, payload in artifact["quality_gates"].items()
+        }
+        quality_gates["candidate_detection_f1"]["passed"] = False
+        quality_gates["candidate_detection_f1"]["value"] = 0.0
+        artifact["quality_gates"] = quality_gates
+        headroom_frozen = gate.GateRowResult(
+            row=headroom_frozen.row,
+            paths=headroom_frozen.paths,
+            component_artifact=artifact,
+            predictions_by_scenario=headroom_frozen.predictions_by_scenario,
+            scenario_errors=headroom_frozen.scenario_errors,
+            reused=headroom_frozen.reused,
+        )
+
+        summary = gate.gate_summary_payload(
+            primary_results=primary_results,
+            headroom_results=[headroom_frozen],
+            frozen_sentinel_results=[],
+            general_prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
+            general_prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            summary_label=None,
+            decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
+            per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+            phase_a_passed=True,
+            determinism_passed=True,
+        )
+
+        self.assertTrue(summary["policy_comparison_unlocked"])
+        self.assertEqual(summary["unlock_checks"]["frozen_sentinel_observed_gate_failure_count"], 0)
+        self.assertEqual(summary["blockers"], [])
 
     def test_run_or_reuse_gate_row_uses_matching_cached_artifacts(self) -> None:
         row = gate.GateRow(
@@ -444,6 +492,107 @@ class ComponentGateDecisionTests(unittest.TestCase):
         self.assertTrue(result.reused)
         self.assertEqual(result.predictions_by_scenario, loaded_predictions)
         self.assertEqual(result.component_artifact["family"], row.family)
+
+    def test_run_or_reuse_gate_row_flags_vacuous_placeholders_from_cached_predictions(self) -> None:
+        row = gate.GateRow(
+            family=gate.FORCED_CONTRADICTION,
+            template_mix=gate.TEMPLATE_MIX_HELDOUT,
+            scenarios=1,
+            model=gate.matrix.QWEN_7B_Q4KM,
+            prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
+            gate_role="primary_floor",
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            paths = gate.gate_artifact_paths(row, output_dir)
+            script_path = _write_empty_prediction_model_script(output_dir)
+            predictions_payload = gate.build_extractor_output(
+                family=row.family,
+                scenario_count=row.scenarios,
+                template_mix=row.template_mix,
+                mode=gate.MODEL_MODE,
+                model_command=_fake_model_command(script_path),
+                model_id=row.model.model_id,
+                prompt_template_path=str(row.prompt_path),
+                decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
+                per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+            )
+            scenario_id = next(iter(predictions_payload["scenario_predictions"]))
+            predictions_payload["scenario_predictions"][scenario_id] = [
+                {
+                    "event_id": "{}-event-1".format(scenario_id),
+                    "candidate_id": "",
+                    "canonical_id": "unknown",
+                    "claim_type": "world_fact",
+                    "scope_level": "world_global",
+                    "scope_key": "global",
+                    "contradicts_event_ids": [],
+                    "raw_claim": "claim",
+                    "confidence": 1.0,
+                }
+            ]
+            paths.predictions.write_text(
+                json.dumps(jsonable(predictions_payload), indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            component_artifact = gate._build_row_component_artifact(
+                row,
+                gate.load_predictions_by_scenario(paths.predictions),
+                gate.load_scenario_errors(paths.predictions),
+            )
+            paths.component_eval.write_text(
+                json.dumps(jsonable(component_artifact), indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+
+            result = gate.run_or_reuse_gate_row(
+                row,
+                output_dir=output_dir,
+                model_command="should not run",
+                decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
+                per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+            )
+
+        self.assertTrue(result.reused)
+        self.assertEqual(result.predictions_by_scenario[scenario_id], [])
+        self.assertEqual(
+            result.scenario_errors[scenario_id]["message"],
+            "Prediction 0 must include non-vacuous string canonical_id",
+        )
+        self.assertEqual(result.component_artifact["scenario_error_count"], 1)
+        self.assertEqual(
+            result.component_artifact["scenario_errors"][scenario_id]["message"],
+            "Prediction 0 must include non-vacuous string canonical_id",
+        )
+
+    def test_main_uses_summary_label_for_output_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            original_run_gate_decision = gate.run_gate_decision
+            called = {}
+
+            def fake_run_gate_decision(**kwargs):
+                called.update(kwargs)
+                return gate.gate_summary_path(
+                    Path(kwargs["output_dir"]),
+                    general_prompt_label=kwargs["summary_label"] or kwargs["general_prompt_label"],
+                )
+
+            try:
+                gate.run_gate_decision = fake_run_gate_decision
+                exit_code = gate.main(
+                    [
+                        "--output-dir",
+                        tmpdir,
+                        "--summary-label",
+                        "custom_followup_label",
+                    ]
+                )
+            finally:
+                gate.run_gate_decision = original_run_gate_decision
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(called["summary_label"], "custom_followup_label")
 
     def test_main_returns_one_and_writes_stop_report_on_stop_condition(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

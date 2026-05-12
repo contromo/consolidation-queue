@@ -114,6 +114,23 @@ class OllamaComponentExtractorTests(unittest.TestCase):
             ["event-1", "event-2"],
         )
 
+    def test_scenario_conditioned_schema_requires_observation_events(self) -> None:
+        envelope = _envelope()
+        envelope["scenario"]["events"] = [
+            {
+                "event_id": "question-1",
+                "event_kind": "question",
+                "turn_index": 1,
+                "text": "Did Alpha acquire Beta?",
+            }
+        ]
+
+        with self.assertRaisesRegex(OllamaCommandError, "at least one observation event"):
+            build_output_schema(
+                envelope,
+                schema_profile=SCHEMA_PROFILE_SCENARIO_CONDITIONED,
+            )
+
     def test_missing_model_digest_is_command_error(self) -> None:
         client = _FakeOllamaClient(response_payload={"predictions": []}, digest_error=True)
 

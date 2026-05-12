@@ -194,77 +194,32 @@ def build_output_schema(
     schema_profile: str = SCHEMA_PROFILE_DEFAULT,
 ) -> Dict[str, object]:
     claim_types, scope_levels = _enum_values_from_output_contract(envelope)
-    if schema_profile == SCHEMA_PROFILE_DEFAULT:
-        prediction_items: Dict[str, object] = {
-            "type": "object",
-            "additionalProperties": False,
-            "required": [
-                "event_id",
-                "canonical_id",
-                "claim_type",
-                "scope_level",
-                "scope_key",
-                "contradicts_event_ids",
-                "raw_claim",
-                "confidence",
-            ],
-            "properties": {
-                "event_id": {"type": "string"},
-                "candidate_id": {"type": "string", "enum": [""]},
-                "canonical_id": {"type": "string"},
-                "claim_type": {"type": "string", "enum": claim_types},
-                "scope_level": {"type": "string", "enum": scope_levels},
-                "scope_key": {"type": "string"},
-                "contradicts_event_ids": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                },
-                "raw_claim": {"type": "string"},
-                "confidence": {"type": ["number", "null"]},
-            },
-        }
-    elif schema_profile == SCHEMA_PROFILE_SCENARIO_CONDITIONED:
+    if schema_profile not in SCHEMA_PROFILES:
+        raise OllamaCommandError("Unsupported schema profile '{}'".format(schema_profile))
+    observation_event_ids = None
+    if schema_profile == SCHEMA_PROFILE_SCENARIO_CONDITIONED:
         scenario = _required_mapping(envelope, "scenario")
         observation_event_ids = _observation_event_ids(scenario)
-        if not observation_event_ids:
-            raise OllamaCommandError("scenario.events must include at least one observation event")
-        prediction_items = {
-            "type": "object",
-            "additionalProperties": False,
-            "required": [
-                "event_id",
-                "canonical_id",
-                "claim_type",
-                "scope_level",
-                "scope_key",
-                "contradicts_event_ids",
-                "raw_claim",
-                "confidence",
-            ],
-            "properties": {
-                "event_id": {"type": "string", "enum": observation_event_ids},
-                "candidate_id": {"type": "string", "enum": [""]},
-                "canonical_id": {
-                    "type": "string",
-                    "minLength": 1,
-                },
-                "claim_type": {"type": "string", "enum": claim_types},
-                "scope_level": {"type": "string", "enum": scope_levels},
-                "scope_key": {
-                    "type": "string",
-                    "minLength": 1,
-                },
-                "contradicts_event_ids": {
-                    "type": "array",
-                    "uniqueItems": True,
-                    "items": {"type": "string", "enum": observation_event_ids},
-                },
-                "raw_claim": {"type": "string"},
-                "confidence": {"type": ["number", "null"]},
-            },
-        }
-    else:
-        raise OllamaCommandError("Unsupported schema profile '{}'".format(schema_profile))
+    prediction_items: Dict[str, object] = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": [
+            "event_id",
+            "canonical_id",
+            "claim_type",
+            "scope_level",
+            "scope_key",
+            "contradicts_event_ids",
+            "raw_claim",
+            "confidence",
+        ],
+        "properties": _prediction_item_properties(
+            claim_types=claim_types,
+            scope_levels=scope_levels,
+            schema_profile=schema_profile,
+            observation_event_ids=observation_event_ids,
+        ),
+    }
     return {
         "type": "object",
         "additionalProperties": False,
@@ -275,6 +230,39 @@ def build_output_schema(
                 "items": prediction_items,
             }
         },
+    }
+
+
+def _prediction_item_properties(
+    *,
+    claim_types: List[str],
+    scope_levels: List[str],
+    schema_profile: str,
+    observation_event_ids: Optional[List[str]] = None,
+) -> Dict[str, object]:
+    event_id_schema: Dict[str, object] = {"type": "string"}
+    canonical_id_schema: Dict[str, object] = {"type": "string"}
+    scope_key_schema: Dict[str, object] = {"type": "string"}
+    contradiction_items: Dict[str, object] = {"type": "string"}
+    contradiction_schema: Dict[str, object] = {"type": "array", "items": contradiction_items}
+    if schema_profile == SCHEMA_PROFILE_SCENARIO_CONDITIONED:
+        if observation_event_ids is None:
+            raise OllamaCommandError("scenario_conditioned schema requires observation event ids")
+        event_id_schema["enum"] = observation_event_ids
+        canonical_id_schema["minLength"] = 1
+        scope_key_schema["minLength"] = 1
+        contradiction_schema["uniqueItems"] = True
+        contradiction_items["enum"] = observation_event_ids
+    return {
+        "event_id": event_id_schema,
+        "candidate_id": {"type": "string", "enum": [""]},
+        "canonical_id": canonical_id_schema,
+        "claim_type": {"type": "string", "enum": claim_types},
+        "scope_level": {"type": "string", "enum": scope_levels},
+        "scope_key": scope_key_schema,
+        "contradicts_event_ids": contradiction_schema,
+        "raw_claim": {"type": "string"},
+        "confidence": {"type": ["number", "null"]},
     }
 
 
@@ -366,7 +354,11 @@ def _known_event_id_list(value: object, known_event_ids: Iterable[str]) -> bool:
     return all(isinstance(item, str) and item in known_event_ids for item in value)
 
 
-def _known_event_ids(scenario: Dict[str, object]) -> List[str]:
+def _scenario_event_ids(
+    scenario: Dict[str, object],
+    *,
+    observation_only: bool = False,
+) -> List[str]:
     events = scenario.get("events")
     if not isinstance(events, list):
         raise OllamaCommandError("scenario.events must be a list")
@@ -377,24 +369,20 @@ def _known_event_ids(scenario: Dict[str, object]) -> List[str]:
         event_id = event.get("event_id")
         if not isinstance(event_id, str) or not event_id:
             raise OllamaCommandError("scenario.events[{}].event_id must be a string".format(index))
+        if observation_only and event.get("event_kind") != "observation":
+            continue
         event_ids.append(event_id)
+    if observation_only and not event_ids:
+        raise OllamaCommandError("scenario.events must include at least one observation event")
     return event_ids
 
 
+def _known_event_ids(scenario: Dict[str, object]) -> List[str]:
+    return _scenario_event_ids(scenario)
+
+
 def _observation_event_ids(scenario: Dict[str, object]) -> List[str]:
-    events = scenario.get("events")
-    if not isinstance(events, list):
-        raise OllamaCommandError("scenario.events must be a list")
-    observation_event_ids = []
-    for index, event in enumerate(events):
-        if not isinstance(event, dict):
-            raise OllamaCommandError("scenario.events[{}] must be an object".format(index))
-        event_id = event.get("event_id")
-        if not isinstance(event_id, str) or not event_id:
-            raise OllamaCommandError("scenario.events[{}].event_id must be a string".format(index))
-        if event.get("event_kind") == "observation":
-            observation_event_ids.append(event_id)
-    return observation_event_ids
+    return _scenario_event_ids(scenario, observation_only=True)
 
 
 def _enum_values_from_output_contract(envelope: Dict[str, object]) -> Tuple[List[str], List[str]]:

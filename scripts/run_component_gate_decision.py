@@ -69,6 +69,7 @@ TEMPLATE_MIX_HELDOUT = "heldout"
 TEMPLATE_MIX_FROZEN = "frozen"
 CONFIDENCE_LEVEL = 0.95
 WILSON_Z = 1.959963984540054
+VACUOUS_STRING_VALUES = frozenset(("", "unknown", "n/a", "na", "none", "null", "todo"))
 PRIMARY_GATE_FAMILIES: Tuple[str, ...] = (
     FORCED_CONTRADICTION,
     SCOPE_CONTAMINATION,
@@ -239,6 +240,7 @@ def run_gate_row(
         decoding_json=decoding_json,
         per_scenario_timeout_seconds=per_scenario_timeout_seconds,
     )
+    _flag_vacuous_predictions(extractor_output)
     _write_json(paths.predictions, extractor_output)
     predictions = load_predictions_by_scenario(paths.predictions)
     scenario_errors = load_scenario_errors(paths.predictions)
@@ -260,12 +262,23 @@ def _gate_result_from_paths(
     *,
     reused: bool,
 ) -> GateRowResult:
+    payload = _read_json(paths.predictions)
+    changed = _flag_vacuous_predictions(payload)
+    if changed:
+        _write_json(paths.predictions, payload)
     predictions = load_predictions_by_scenario(paths.predictions)
     scenario_errors = load_scenario_errors(paths.predictions)
+    component_artifact = (
+        _build_row_component_artifact(row, predictions, scenario_errors)
+        if changed
+        else _read_json(paths.component_eval)
+    )
+    if changed:
+        _write_json(paths.component_eval, component_artifact)
     return GateRowResult(
         row=row,
         paths=paths,
-        component_artifact=_read_json(paths.component_eval),
+        component_artifact=component_artifact,
         predictions_by_scenario=predictions,
         scenario_errors=scenario_errors,
         reused=reused,
@@ -434,6 +447,7 @@ def run_gate_decision(
             frozen_sentinel_results=frozen_results,
             general_prompt_path=general_prompt_path,
             general_prompt_label=general_prompt_label,
+            summary_label=summary_label,
             decoding_json=decoding_json,
             per_scenario_timeout_seconds=per_scenario_timeout_seconds,
             phase_a_passed=True,
@@ -457,6 +471,7 @@ def gate_summary_payload(
     frozen_sentinel_results: Sequence[GateRowResult],
     general_prompt_path: Path,
     general_prompt_label: str,
+    summary_label: Optional[str],
     decoding_json: str,
     per_scenario_timeout_seconds: float,
     phase_a_passed: bool,
@@ -514,6 +529,7 @@ def gate_summary_payload(
         "phase": "phase3_component_gate_decision",
         "general_prompt_path": str(general_prompt_path),
         "general_prompt_label": general_prompt_label,
+        "summary_label": summary_label,
         "general_prompt_sha256": matrix.prompt_template_sha256(general_prompt_path),
         "decoding_params": _parse_decoding_json(decoding_json),
         "per_scenario_timeout_seconds": per_scenario_timeout_seconds,
@@ -1206,6 +1222,50 @@ def _combined_inputs(
         predictions.update(result.predictions_by_scenario)
         scenario_errors.update(result.scenario_errors)
     return scenarios, predictions, scenario_errors
+
+
+def _flag_vacuous_predictions(payload: Dict[str, object]) -> bool:
+    scenario_predictions = payload.get("scenario_predictions")
+    scenario_errors = payload.setdefault("scenario_errors", {})
+    if not isinstance(scenario_predictions, dict) or not isinstance(scenario_errors, dict):
+        return False
+    changed = False
+    for scenario_id, predictions in scenario_predictions.items():
+        if scenario_id in scenario_errors or not isinstance(predictions, list):
+            continue
+        for index, prediction in enumerate(predictions):
+            if not isinstance(prediction, dict):
+                continue
+            vacuous_field = _first_vacuous_prediction_field(prediction)
+            if vacuous_field is None:
+                continue
+            scenario_errors[scenario_id] = {
+                "error_type": "validation_error",
+                "message": "Prediction {} must include non-vacuous string {}".format(
+                    index,
+                    vacuous_field,
+                ),
+            }
+            scenario_predictions[scenario_id] = []
+            changed = True
+            break
+    scenario_count = payload.get("scenario_count")
+    if isinstance(scenario_count, int):
+        payload["successful_scenario_count"] = max(0, scenario_count - len(scenario_errors))
+    return changed
+
+
+def _first_vacuous_prediction_field(prediction: Mapping[str, object]) -> Optional[str]:
+    for field in ("canonical_id", "scope_key"):
+        if _is_vacuous_string(prediction.get(field)):
+            return field
+    return None
+
+
+def _is_vacuous_string(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    return value.strip().lower() in VACUOUS_STRING_VALUES
 
 
 def wilson_lower_bound(successes: int, total: int, z: float = WILSON_Z) -> Optional[float]:
