@@ -370,6 +370,9 @@ def _build_witness_conflict_scenario(
         source_id=scenario_id + "-src-d",
         strength=0.34,
         contradicts=[a1_id, a2_id],
+        # Repeated b1_id entries inflate _raw_support_promotion_score in
+        # CQNoSourceIndependenceGate without affecting the independent-source
+        # count used by full CQ.
         supports=[b1_id, b1_id, b1_id, b1_id],
     )
     probe_question = _make_question(

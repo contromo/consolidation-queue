@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
+from cq.eval.bootstrap import paired_bootstrap_confidence_result
 from cq.eval.end_to_end_eval import execute_scenario, failure_example_sort_key, summarize_runs
 from cq.eval.preregistration_lock import (
     PREREGISTRATION_PATH,
@@ -143,6 +144,62 @@ def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, d
     }
 
 
+def _scenario_metric_by_field(
+    run_records: List[dict],
+    *,
+    field_name: str,
+    metric_name: str,
+) -> Dict[str, List[float]]:
+    grouped: Dict[str, List[float]] = {}
+    for record in run_records:
+        field_value = record["scenario"].get(field_name, "")
+        if not field_value:
+            continue
+        grouped.setdefault(field_value, []).append(float(record["metrics"][metric_name]))
+    return grouped
+
+
+def _pairwise_metric_comparisons(
+    reference_run_records: List[dict],
+    comparator_run_records: List[dict],
+    *,
+    metric_name: str = "answer_correctness",
+    field_name: str = "template_id",
+) -> Dict[str, dict]:
+    reference = _scenario_metric_by_field(
+        reference_run_records,
+        field_name=field_name,
+        metric_name=metric_name,
+    )
+    comparator = _scenario_metric_by_field(
+        comparator_run_records,
+        field_name=field_name,
+        metric_name=metric_name,
+    )
+    comparisons: Dict[str, dict] = {}
+    for field_value in sorted(reference):
+        reference_values = reference[field_value]
+        comparator_values = comparator.get(field_value)
+        if comparator_values is None or len(reference_values) != len(comparator_values):
+            continue
+        deltas = [left - right for left, right in zip(reference_values, comparator_values)]
+        bootstrap = paired_bootstrap_confidence_result(
+            deltas,
+            resamples=10_000,
+            confidence_level=0.95,
+            seed=0,
+        )
+        comparisons[field_value] = {
+            "metric_name": metric_name,
+            "point_estimate_delta": bootstrap.point_estimate,
+            "one_sided_95_lcb": bootstrap.lower_confidence_bound,
+            "scenario_count": len(deltas),
+            "reference_policy_name": reference_run_records[0]["policy_name"],
+            "comparator_policy_name": comparator_run_records[0]["policy_name"],
+        }
+    return comparisons
+
+
 def generate_scenarios(
     family: str,
     scenario_count: int,
@@ -234,8 +291,10 @@ def build_run_artifact(
     )
     policies = _policies_for_family(family, policy_set=policy_set)
     policy_runs = []
+    run_records_by_policy = {}
     for policy_cls in policies:
         run_records = [execute_scenario(policy_cls, scenario) for scenario in scenarios]
+        run_records_by_policy[policy_cls.policy_name] = run_records
         summary = summarize_runs(run_records)
         failure_examples = sorted(
             [
@@ -284,8 +343,35 @@ def build_run_artifact(
         }
         if policy_set == POLICY_SET_PHASE_2_5
         else {},
+        "pairwise_template_id_comparisons": _build_pairwise_comparisons(
+            run_records_by_policy,
+            policy_set=policy_set,
+        ),
         "policies": policy_runs,
     }
+
+
+def _build_pairwise_comparisons(
+    run_records_by_policy: Dict[str, List[dict]],
+    *,
+    policy_set: str,
+) -> Dict[str, Dict[str, dict]]:
+    comparisons: Dict[str, Dict[str, dict]] = {}
+    reflection = run_records_by_policy.get(ReflectionEagerWriteLite.policy_name)
+    cq = run_records_by_policy.get(ConsolidationQueueLite.policy_name)
+    if reflection is not None and cq is not None:
+        comparisons["consolidation_queue_vs_reflection_by_template_id"] = _pairwise_metric_comparisons(
+            cq,
+            reflection,
+        )
+    if policy_set == POLICY_SET_PHASE_2_5:
+        mem0 = run_records_by_policy.get(Mem0Lite.policy_name)
+        if reflection is not None and mem0 is not None:
+            comparisons["mem0_vs_reflection_by_template_id"] = _pairwise_metric_comparisons(
+                mem0,
+                reflection,
+            )
+    return comparisons
 
 
 def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> None:
@@ -323,6 +409,12 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                 "contradiction_recovery_rate",
                 "answer_correctness_after_contradiction",
                 "average_time_to_demotion",
+                "comparison_name",
+                "comparison_metric_name",
+                "comparison_reference_policy_name",
+                "comparison_comparator_policy_name",
+                "comparison_point_estimate_delta",
+                "comparison_one_sided_95_lcb",
             ],
         )
         writer.writeheader()
@@ -370,6 +462,47 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                     }
                 )
                 writer.writerow(row)
+        for comparison_name, comparison_rows in run_artifact.get(
+            "pairwise_template_id_comparisons",
+            {},
+        ).items():
+            for template_id, comparison in comparison_rows.items():
+                writer.writerow(
+                    {
+                        "policy_name": "",
+                        "summary_scope": "template_id_comparison",
+                        "template_id": template_id,
+                        "template_kind": "",
+                        "template_split": "",
+                        "scenario_count": comparison["scenario_count"],
+                        "answer_correctness": "",
+                        "false_assertion_rate": "",
+                        "leakage_rate": "",
+                        "premature_promotion_rate": "",
+                        "poison_promotion_rate": "",
+                        "clean_durable_displacement_rate": "",
+                        "retraction_demotion_rate": "",
+                        "stale_evidence_promotion_rate": "",
+                        "narrow_scope_override_success_rate": "",
+                        "pending_competition_resolution_rate": "",
+                        "useful_recall": "",
+                        "used_pending": "",
+                        "durable_commit": "",
+                        "useful_recall_before_contradiction": "",
+                        "used_pending_before_contradiction": "",
+                        "durable_commit_before_contradiction": "",
+                        "false_assertion_after_contradiction": "",
+                        "contradiction_recovery_rate": "",
+                        "answer_correctness_after_contradiction": "",
+                        "average_time_to_demotion": "",
+                        "comparison_name": comparison_name,
+                        "comparison_metric_name": comparison["metric_name"],
+                        "comparison_reference_policy_name": comparison["reference_policy_name"],
+                        "comparison_comparator_policy_name": comparison["comparator_policy_name"],
+                        "comparison_point_estimate_delta": comparison["point_estimate_delta"],
+                        "comparison_one_sided_95_lcb": comparison["one_sided_95_lcb"],
+                    }
+                )
 
 
 def main(argv: List[str] = None) -> int:

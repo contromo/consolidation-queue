@@ -115,6 +115,9 @@ For `witness_conflict`, correct abstention is `1.0`; any concrete forbidden
 assertion or other miss is `0.0`.
 
 Auxiliary diagnostics remain descriptive and do not alter the bootstrap scale.
+For metric-shape consistency, `useful_recall` mirrors `answer_correctness` on
+this family even on abstention-correct rows; interpret that field as a shared
+binary outcome column rather than literal recalled content.
 
 ## Decision rules
 
@@ -154,6 +157,11 @@ At `N = 60` scenarios per mechanism, the noise scale on a proportion is roughly
 - `0.05` = inert / noise-scale
 - `0.10` = minimum practically interesting policy gain
 - `0.15` = clearly load-bearing ablation drop
+
+Scenario calibration depends on the current lifecycle thresholds in
+`cq/memory/lifecycle.py`: `world_fact_promotion=0.85`,
+`non_world_promotion=0.70`, and `overwrite_margin=0.05`. Changes to those
+values require recalibration before this family is rerun.
 
 ## Ablation attribution rule
 

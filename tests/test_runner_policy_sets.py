@@ -1,3 +1,6 @@
+import csv
+import tempfile
+from pathlib import Path
 import unittest
 
 from cq.eval.runner import (
@@ -11,6 +14,7 @@ from cq.eval.runner import (
     SCOPE_CONTAMINATION,
     USEFUL_PENDING_MEMORY,
     build_run_artifact,
+    write_outputs,
 )
 
 
@@ -92,6 +96,29 @@ class RunnerPolicySetTests(unittest.TestCase):
                 family=ADVERSARIAL_UPSTREAM_NOISE,
                 policy_set=POLICY_SET_PHASE_2_5,
             )
+
+    def test_phase2_5_csv_includes_mem0_bootstrap_comparison_rows(self) -> None:
+        artifact = build_run_artifact(
+            5,
+            template_mix="mixed",
+            family=ADVERSARIAL_UPSTREAM_NOISE,
+            policy_set=POLICY_SET_PHASE_2_5,
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_json = Path(tmpdir) / "adversarial.json"
+            output_csv = Path(tmpdir) / "adversarial.csv"
+            write_outputs(artifact, output_json, output_csv)
+            with output_csv.open("r", encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle))
+
+        mem0_rows = [
+            row
+            for row in rows
+            if row["summary_scope"] == "template_id_comparison"
+            and row["comparison_name"] == "mem0_vs_reflection_by_template_id"
+        ]
+        self.assertTrue(mem0_rows)
+        self.assertTrue(all(row["comparison_one_sided_95_lcb"] for row in mem0_rows))
 
 
 if __name__ == "__main__":

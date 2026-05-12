@@ -1,4 +1,6 @@
 import unittest
+import math
+import random
 
 from cq.eval.bootstrap import (
     one_sided_lower_confidence_bound,
@@ -37,6 +39,22 @@ class BootstrapTests(unittest.TestCase):
         self.assertLessEqual(result.lower_confidence_bound, result.point_estimate)
         self.assertEqual(result.resamples, 500)
         self.assertEqual(result.seed, 3)
+
+    def test_production_scale_lcb_tracks_analytic_uniform_mean(self) -> None:
+        rng = random.Random(17)
+        deltas = [rng.uniform(-0.2, 0.4) for _ in range(1000)]
+
+        result = paired_bootstrap_confidence_result(
+            deltas,
+            resamples=10_000,
+            confidence_level=0.95,
+            seed=11,
+        )
+
+        mean = 0.1
+        sigma = 0.6 / math.sqrt(12)
+        analytic_lcb = mean - 1.6448536269514722 * sigma / math.sqrt(1000)
+        self.assertAlmostEqual(result.lower_confidence_bound, analytic_lcb, delta=0.01)
 
 
 if __name__ == "__main__":

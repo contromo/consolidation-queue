@@ -1,6 +1,7 @@
 import json
 import unittest
 
+from cq.eval.bootstrap import paired_delta_point_estimate
 from cq.eval.end_to_end_eval import execute_scenario
 from cq.memory.consolidation_queue import (
     CQNoContestationDemotion,
@@ -163,6 +164,49 @@ class CQAblationTests(unittest.TestCase):
         ablated_candidates = json.dumps(ablated_result["store_snapshot"]["candidate_memories"], sort_keys=True)
 
         self.assertEqual(full_candidates, ablated_candidates)
+
+    def test_retraction_family_feasibility_on_small_batch(self) -> None:
+        self._assert_small_batch_delta_exceeds_threshold(
+            "adversarial_retraction_v1",
+            ConsolidationQueueLite,
+            CQNoContestationDemotion,
+        )
+
+    def test_witness_conflict_family_feasibility_on_small_batch(self) -> None:
+        self._assert_small_batch_delta_exceeds_threshold(
+            "adversarial_witness_conflict_v1",
+            ConsolidationQueueLite,
+            CQNoSourceIndependenceGate,
+        )
+
+    def test_scope_narrowing_family_feasibility_on_small_batch(self) -> None:
+        self._assert_small_batch_delta_exceeds_threshold(
+            "adversarial_scope_narrowing_v1",
+            ConsolidationQueueLite,
+            CQNoWiderScopePendingOverride,
+        )
+
+    def test_pending_competition_family_feasibility_on_small_batch(self) -> None:
+        self._assert_small_batch_delta_exceeds_threshold(
+            "adversarial_pending_competition_v1",
+            ConsolidationQueueLite,
+            CQNoPendingLookupUse,
+        )
+
+    def _assert_small_batch_delta_exceeds_threshold(self, template_id, full_policy, comparator_policy) -> None:
+        scenarios = [
+            scenario
+            for scenario in generate_adversarial_upstream_noise_scenarios(10, template_mix="mixed")
+            if scenario.template_id == template_id
+        ]
+        deltas = []
+        for scenario in scenarios:
+            full_result = execute_scenario(full_policy, scenario)
+            comparator_result = execute_scenario(comparator_policy, scenario)
+            deltas.append(
+                full_result["metrics"]["answer_correctness"] - comparator_result["metrics"]["answer_correctness"]
+            )
+        self.assertGreaterEqual(paired_delta_point_estimate(deltas), 0.10)
 
 
 if __name__ == "__main__":
