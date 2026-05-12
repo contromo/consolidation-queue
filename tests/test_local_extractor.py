@@ -142,6 +142,15 @@ class LocalExtractorTests(unittest.TestCase):
         self.assertEqual(output["input_contract"], "transcript_only")
         self.assertIn("scenario_predictions", output)
 
+    def test_adversarial_upstream_noise_is_not_local_extractor_eligible(self) -> None:
+        with self.assertRaisesRegex(ValueError, "not local-extractor eligible"):
+            build_extractor_output(
+                family="adversarial_upstream_noise",
+                scenario_count=1,
+                template_mix="mixed",
+                mode=WEAK_MODE,
+            )
+
     def test_model_command_writes_valid_output_with_reproducibility_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             script_path = _write_fake_model_script(Path(tmpdir))

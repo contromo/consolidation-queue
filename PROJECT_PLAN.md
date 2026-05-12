@@ -58,6 +58,9 @@ Implemented:
 - `ConsolidationQueueLite`
 - `Mem0Lite` as an opt-in Phase 2.5 external published-family baseline over the shared substrate
 - four named CQ ablation policy variants over the same shared substrate
+- oracle-only `adversarial_upstream_noise` family with retraction, witness-conflict, temporal-skew, scope-narrowing, and pending-competition mechanisms
+- fixed-seed paired-bootstrap helper for preregistered per-mechanism CQ-versus-Reflection comparisons
+- explicit component-eval and local-extractor family allowlists so oracle-only adversarial families do not auto-enroll in the locked Phase 3 path
 - mechanism-diverse frozen held-out scenario contracts behind a verified preregistration lock
 - `docs/preregistration.md` with numeric Phase 2.5 predictions and a frozen contract hash
 - `docs/predictions_vs_results.md` with the Phase 2.5 frozen oracle predictions and observed results
@@ -373,6 +376,7 @@ LongMemEval positioning:
 Current framing note:
 
 - frame the current noisy-mode outcome as a benchmark, gate-methodology, and failure-taxonomy contribution rather than a CQ noisy-policy contribution; the follow-up evidence now supports drafting that methodology story without reopening Phase 4
+- run the new oracle-only `adversarial_upstream_noise` comparison as a separate preregistered policy test at the candidate-stream locus of noise, with extraction held constant and the locked Phase 3 / Phase 4 path left unchanged
 
 ## Scenario Families
 
@@ -460,8 +464,8 @@ The first deterministic forced-contradiction local-model command/prompt, compone
 
 1. Keep Phase 4 extracted-candidate policy comparisons on hold while `policy_comparison_unlocked=false`.
 2. Start the integrated benchmark/methodology paper or report draft using the publication outline, locked-taxonomy note, and follow-up benchmark memo.
-3. If a target venue needs more empirical breadth after the first draft outline exists, expand frozen held-out benchmark evidence through a separate preregistered benchmark-strengthening step rather than by reopening the completed follow-up.
-4. Add more independent false-corroboration, poisoning, scope, or drift mechanisms only when they test a distinct failure mode rather than another surface-form variant.
+3. Execute the separate preregistered oracle-only `adversarial_upstream_noise` policy comparison at the candidate-stream locus of noise; do not treat it as a continuation of the locked Phase 3 / Phase 4 path.
+4. After that sweep lands, fold the result into the benchmark/methodology draft and only add further mechanisms when they test a distinct failure mode rather than another surface-form variant.
 
 ## Working Rules
 

@@ -6,6 +6,7 @@ from typing import get_type_hints
 from cq.eval.end_to_end_eval import (
     _asserted_candidate_ids,
     _contains_any,
+    compute_adversarial_upstream_noise_metrics,
     compute_forced_contradiction_metrics,
     compute_false_corroboration_metrics,
     compute_memory_poisoning_metrics,
@@ -23,6 +24,7 @@ from cq.simulator.scenario_generator import (
     generate_scope_contamination_scenarios,
     generate_useful_pending_memory_scenarios,
 )
+from cq.simulator.adversarial_upstream_noise import generate_adversarial_upstream_noise_scenarios
 
 
 class PolicySummaryMetricsTests(unittest.TestCase):
@@ -439,6 +441,174 @@ class PolicySummaryMetricsTests(unittest.TestCase):
                 [],
                 {"candidate_memories": [], "durable_memories": [], "lifecycle_events": []},
             )
+
+    def test_adversarial_witness_conflict_scores_abstention_as_correct(self) -> None:
+        scenario = generate_adversarial_upstream_noise_scenarios(5, template_mix="mixed")[1]
+        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
+
+        metrics = compute_adversarial_upstream_noise_metrics(
+            "test-policy",
+            scenario,
+            [
+                AnswerTrace(
+                    answer_id="answer-probe",
+                    question_id=probe_question.question_id,
+                    query=probe_question.text,
+                    relevant_canonical_id=probe_question.relevant_canonical_id,
+                    scope_level=probe_question.scope_level,
+                    scope_key=probe_question.scope_key,
+                    resolved_candidate_ids=[],
+                    used_memory_ids=[],
+                    answer_text="abstain",
+                    used_pending=False,
+                    created_at=probe_question.asked_at,
+                )
+            ],
+            {"candidate_memories": [], "durable_memories": [], "lifecycle_events": []},
+        )
+
+        self.assertEqual(metrics.answer_correctness, 1.0)
+        self.assertEqual(metrics.false_assertion_rate, 0.0)
+
+    def test_adversarial_retraction_tracks_retraction_demotion_rate(self) -> None:
+        scenario = generate_adversarial_upstream_noise_scenarios(5, template_mix="mixed")[0]
+        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
+        retraction_id = scenario.expected_lifecycle["retraction_candidate_ids"][0]
+        retracted_ids = scenario.expected_lifecycle["retracted_candidate_ids"]
+
+        metrics = compute_adversarial_upstream_noise_metrics(
+            "test-policy",
+            scenario,
+            [
+                AnswerTrace(
+                    answer_id="answer-probe",
+                    question_id=probe_question.question_id,
+                    query=probe_question.text,
+                    relevant_canonical_id=probe_question.relevant_canonical_id,
+                    scope_level=probe_question.scope_level,
+                    scope_key=probe_question.scope_key,
+                    resolved_candidate_ids=[retraction_id],
+                    used_memory_ids=[],
+                    answer_text="retracted",
+                    used_pending=True,
+                    created_at=probe_question.asked_at,
+                )
+            ],
+            {
+                "candidate_memories": [
+                    {
+                        "candidate_id": retracted_ids[0],
+                        "state": "contested",
+                    },
+                    {
+                        "candidate_id": retracted_ids[1],
+                        "state": "contested",
+                    },
+                ],
+                "durable_memories": [],
+                "lifecycle_events": [],
+            },
+        )
+
+        self.assertEqual(metrics.answer_correctness, 1.0)
+        self.assertEqual(metrics.retraction_demotion_rate, 1.0)
+
+    def test_adversarial_temporal_skew_tracks_stale_promotion(self) -> None:
+        scenario = generate_adversarial_upstream_noise_scenarios(5, template_mix="mixed")[2]
+        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
+        stale_id = scenario.expected_lifecycle["stale_candidate_ids"][0]
+
+        metrics = compute_adversarial_upstream_noise_metrics(
+            "test-policy",
+            scenario,
+            [
+                AnswerTrace(
+                    answer_id="answer-probe",
+                    question_id=probe_question.question_id,
+                    query=probe_question.text,
+                    relevant_canonical_id=probe_question.relevant_canonical_id,
+                    scope_level=probe_question.scope_level,
+                    scope_key=probe_question.scope_key,
+                    resolved_candidate_ids=[stale_id],
+                    used_memory_ids=["memory-" + stale_id],
+                    answer_text="stale",
+                    used_pending=False,
+                    created_at=probe_question.asked_at,
+                )
+            ],
+            {
+                "candidate_memories": [],
+                "durable_memories": [
+                    {
+                        "memory_id": "memory-" + stale_id,
+                        "created_from_candidate_ids": [stale_id],
+                        "active": True,
+                    }
+                ],
+                "lifecycle_events": [],
+            },
+        )
+
+        self.assertEqual(metrics.answer_correctness, 0.0)
+        self.assertEqual(metrics.stale_evidence_promotion_rate, 1.0)
+
+    def test_adversarial_scope_narrowing_tracks_override_success(self) -> None:
+        scenario = generate_adversarial_upstream_noise_scenarios(5, template_mix="mixed")[3]
+        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
+        narrow_id = scenario.expected_lifecycle["narrower_scope_candidate_ids"][0]
+
+        metrics = compute_adversarial_upstream_noise_metrics(
+            "test-policy",
+            scenario,
+            [
+                AnswerTrace(
+                    answer_id="answer-probe",
+                    question_id=probe_question.question_id,
+                    query=probe_question.text,
+                    relevant_canonical_id=probe_question.relevant_canonical_id,
+                    scope_level=probe_question.scope_level,
+                    scope_key=probe_question.scope_key,
+                    resolved_candidate_ids=[narrow_id],
+                    used_memory_ids=[],
+                    answer_text="narrow",
+                    used_pending=True,
+                    created_at=probe_question.asked_at,
+                )
+            ],
+            {"candidate_memories": [], "durable_memories": [], "lifecycle_events": []},
+        )
+
+        self.assertEqual(metrics.answer_correctness, 1.0)
+        self.assertEqual(metrics.narrow_scope_override_success_rate, 1.0)
+
+    def test_adversarial_pending_competition_tracks_resolution(self) -> None:
+        scenario = generate_adversarial_upstream_noise_scenarios(5, template_mix="mixed")[4]
+        probe_question = [event.question for event in scenario.sorted_events() if event.question is not None][0]
+        gold_id = scenario.expected_lifecycle["gold_candidate_ids"][0]
+
+        metrics = compute_adversarial_upstream_noise_metrics(
+            "test-policy",
+            scenario,
+            [
+                AnswerTrace(
+                    answer_id="answer-probe",
+                    question_id=probe_question.question_id,
+                    query=probe_question.text,
+                    relevant_canonical_id=probe_question.relevant_canonical_id,
+                    scope_level=probe_question.scope_level,
+                    scope_key=probe_question.scope_key,
+                    resolved_candidate_ids=[gold_id],
+                    used_memory_ids=[],
+                    answer_text="gold",
+                    used_pending=True,
+                    created_at=probe_question.asked_at,
+                )
+            ],
+            {"candidate_memories": [], "durable_memories": [], "lifecycle_events": []},
+        )
+
+        self.assertEqual(metrics.answer_correctness, 1.0)
+        self.assertEqual(metrics.pending_competition_resolution_rate, 1.0)
 
     def test_asserted_candidate_ids_use_primary_durable_source(self) -> None:
         trace = AnswerTrace(

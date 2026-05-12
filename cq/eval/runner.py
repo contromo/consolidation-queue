@@ -26,6 +26,7 @@ from cq.memory.reflection_eager_write import ReflectionEagerWriteLite
 from cq.memory.scope_blind_transcript_rag import ScopeBlindTranscriptRAGLite
 from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import (
+    generate_adversarial_upstream_noise_scenarios,
     generate_false_corroboration_scenarios,
     generate_forced_contradiction_scenarios,
     generate_memory_poisoning_scenarios,
@@ -42,6 +43,7 @@ PREFERENCE_DRIFT = "preference_drift"
 USEFUL_PENDING_MEMORY = "useful_pending_memory"
 FALSE_CORROBORATION = "false_corroboration"
 MEMORY_POISONING = "memory_poisoning"
+ADVERSARIAL_UPSTREAM_NOISE = "adversarial_upstream_noise"
 MECHANISM_DIVERSE_HELDOUT = "mechanism_diverse_heldout"
 POLICY_SET_DEFAULT = "default"
 POLICY_SET_PHASE_2_5 = "phase2_5"
@@ -59,12 +61,24 @@ TEMPLATE_MIXES_BY_FAMILY = {
     USEFUL_PENDING_MEMORY: ("mixed", "clean", "dirty", "heldout"),
     FALSE_CORROBORATION: ("mixed", "clean", "dirty", "heldout"),
     MEMORY_POISONING: ("mixed", "clean", "dirty", "heldout"),
+    ADVERSARIAL_UPSTREAM_NOISE: ("mixed", "dirty", "heldout"),
     MECHANISM_DIVERSE_HELDOUT: ("frozen",),
 }
+COMPONENT_EVAL_FAMILIES = (
+    FORCED_CONTRADICTION,
+    SCOPE_CONTAMINATION,
+    PREFERENCE_DRIFT,
+    USEFUL_PENDING_MEMORY,
+    FALSE_CORROBORATION,
+    MEMORY_POISONING,
+    MECHANISM_DIVERSE_HELDOUT,
+)
 SUMMARY_METRIC_FORMAT = (
     "false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} "
     "leakage={leakage:.2f} premature_promotion={premature:.2f} "
-    "poison_promotion={poison:.2f} clean_displacement={clean_displacement:.2f}"
+    "poison_promotion={poison:.2f} clean_displacement={clean_displacement:.2f} "
+    "retraction_demotion={retraction_demotion:.2f} stale_promotion={stale_promotion:.2f} "
+    "narrow_override={narrow_override:.2f} pending_competition={pending_competition:.2f}"
 )
 OVERALL_SUMMARY_FORMAT = (
     "{policy_name}: useful_recall={useful:.2f} pending_use={pending:.2f} "
@@ -84,6 +98,10 @@ def _summary_metric_values(summary: dict) -> Dict[str, float]:
         "premature": summary["premature_promotion_rate"],
         "poison": summary["poison_promotion_rate"],
         "clean_displacement": summary["clean_durable_displacement_rate"],
+        "retraction_demotion": summary.get("retraction_demotion_rate", 0.0),
+        "stale_promotion": summary.get("stale_evidence_promotion_rate", 0.0),
+        "narrow_override": summary.get("narrow_scope_override_success_rate", 0.0),
+        "pending_competition": summary.get("pending_competition_resolution_rate", 0.0),
     }
 
 
@@ -147,6 +165,8 @@ def generate_scenarios(
         return generate_false_corroboration_scenarios(scenario_count, template_mix=template_mix)
     if family == MEMORY_POISONING:
         return generate_memory_poisoning_scenarios(scenario_count, template_mix=template_mix)
+    if family == ADVERSARIAL_UPSTREAM_NOISE:
+        return generate_adversarial_upstream_noise_scenarios(scenario_count, template_mix=template_mix)
     raise ValueError("Unsupported family: {}".format(family))
 
 
@@ -190,6 +210,7 @@ def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
         USEFUL_PENDING_MEMORY,
         FALSE_CORROBORATION,
         MEMORY_POISONING,
+        ADVERSARIAL_UPSTREAM_NOISE,
         MECHANISM_DIVERSE_HELDOUT,
     }:
         policies.append(ScopeBlindTranscriptRAGLite)
@@ -288,6 +309,10 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                 "premature_promotion_rate",
                 "poison_promotion_rate",
                 "clean_durable_displacement_rate",
+                "retraction_demotion_rate",
+                "stale_evidence_promotion_rate",
+                "narrow_scope_override_success_rate",
+                "pending_competition_resolution_rate",
                 "useful_recall",
                 "used_pending",
                 "durable_commit",
@@ -358,6 +383,7 @@ def main(argv: List[str] = None) -> int:
             USEFUL_PENDING_MEMORY,
             FALSE_CORROBORATION,
             MEMORY_POISONING,
+            ADVERSARIAL_UPSTREAM_NOISE,
             MECHANISM_DIVERSE_HELDOUT,
         ],
         default=FORCED_CONTRADICTION,

@@ -15,6 +15,7 @@ from cq.simulator.scenario_generator import (
     generate_scope_contamination_scenarios,
     generate_useful_pending_memory_scenarios,
 )
+from cq.simulator.adversarial_upstream_noise import generate_adversarial_upstream_noise_scenarios
 
 
 def _scenario_by_template(scenarios, template_id):
@@ -104,6 +105,64 @@ class CQAblationTests(unittest.TestCase):
                 ablated_result = execute_scenario(policy_cls, scenario)
                 self.assertEqual(_trace_json(ablated_result), _trace_json(full_result))
                 self.assertEqual(_lifecycle_json(ablated_result), _lifecycle_json(full_result))
+
+    def test_adversarial_retraction_regression_for_no_contestation_demotion(self) -> None:
+        scenario = _scenario_by_template(
+            generate_adversarial_upstream_noise_scenarios(5, template_mix="mixed"),
+            "adversarial_retraction_v1",
+        )
+
+        full_result = execute_scenario(ConsolidationQueueLite, scenario)
+        ablated_result = execute_scenario(CQNoContestationDemotion, scenario)
+
+        self.assertEqual(full_result["metrics"]["answer_correctness"], 1.0)
+        self.assertEqual(ablated_result["metrics"]["answer_correctness"], 0.0)
+
+    def test_adversarial_scope_narrowing_regression_for_no_wider_scope_override(self) -> None:
+        scenario = _scenario_by_template(
+            generate_adversarial_upstream_noise_scenarios(5, template_mix="mixed"),
+            "adversarial_scope_narrowing_v1",
+        )
+
+        full_result = execute_scenario(ConsolidationQueueLite, scenario)
+        ablated_result = execute_scenario(CQNoWiderScopePendingOverride, scenario)
+
+        self.assertEqual(full_result["metrics"]["answer_correctness"], 1.0)
+        self.assertEqual(ablated_result["metrics"]["answer_correctness"], 0.0)
+
+    def test_adversarial_pending_competition_regression_for_no_pending_lookup_use(self) -> None:
+        scenario = _scenario_by_template(
+            generate_adversarial_upstream_noise_scenarios(5, template_mix="mixed"),
+            "adversarial_pending_competition_v1",
+        )
+
+        full_result = execute_scenario(ConsolidationQueueLite, scenario)
+        ablated_result = execute_scenario(CQNoPendingLookupUse, scenario)
+
+        self.assertEqual(full_result["metrics"]["answer_correctness"], 1.0)
+        self.assertEqual(ablated_result["metrics"]["answer_correctness"], 0.0)
+
+    def test_adversarial_witness_conflict_regression_for_no_source_independence_gate(self) -> None:
+        scenario = _scenario_by_template(
+            generate_adversarial_upstream_noise_scenarios(5, template_mix="mixed"),
+            "adversarial_witness_conflict_v1",
+        )
+
+        full_result = execute_scenario(ConsolidationQueueLite, scenario)
+        ablated_result = execute_scenario(CQNoSourceIndependenceGate, scenario)
+
+        self.assertEqual(full_result["metrics"]["answer_correctness"], 1.0)
+        self.assertEqual(ablated_result["metrics"]["answer_correctness"], 0.0)
+
+    def test_adversarial_candidate_stream_is_identical_across_policies(self) -> None:
+        scenario = generate_adversarial_upstream_noise_scenarios(1, template_mix="mixed")[0]
+        full_result = execute_scenario(ConsolidationQueueLite, scenario)
+        ablated_result = execute_scenario(CQNoPendingLookupUse, scenario)
+
+        full_candidates = json.dumps(full_result["store_snapshot"]["candidate_memories"], sort_keys=True)
+        ablated_candidates = json.dumps(ablated_result["store_snapshot"]["candidate_memories"], sort_keys=True)
+
+        self.assertEqual(full_candidates, ablated_candidates)
 
 
 if __name__ == "__main__":

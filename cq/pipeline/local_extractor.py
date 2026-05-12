@@ -13,8 +13,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 from cq.eval.component_eval import CandidateComponentPrediction
 from cq.eval.runner import (
+    COMPONENT_EVAL_FAMILIES,
     FORCED_CONTRADICTION,
-    TEMPLATE_MIXES_BY_FAMILY,
     generate_scenarios,
 )
 from cq.schemas.memory import ClaimType, ScopeLevel, jsonable
@@ -217,6 +217,13 @@ def build_extractor_output(
     decoding_json: str = "{}",
     per_scenario_timeout_seconds: float = 120.0,
 ) -> Dict[str, object]:
+    if family not in COMPONENT_EVAL_FAMILIES:
+        raise ValueError(
+            "Family '{}' is not local-extractor eligible. Allowed: {}".format(
+                family,
+                ", ".join(sorted(COMPONENT_EVAL_FAMILIES)),
+            )
+        )
     scenarios = generate_scenarios(family, scenario_count, template_mix)
     transcript_scenarios = [sanitize_scenario_for_extraction(scenario) for scenario in scenarios]
     if mode == POSITIVE_CONTROL_MODE and family != FORCED_CONTRADICTION:
@@ -739,7 +746,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Write transcript-only component predictions for local extractor smoke tests."
     )
-    parser.add_argument("--family", default=FORCED_CONTRADICTION, choices=sorted(TEMPLATE_MIXES_BY_FAMILY))
+    parser.add_argument("--family", default=FORCED_CONTRADICTION, choices=sorted(COMPONENT_EVAL_FAMILIES))
     parser.add_argument("--scenarios", type=int, default=25)
     parser.add_argument("--template-mix", default="mixed")
     parser.add_argument("--mode", choices=EXTRACTOR_MODES, default=WEAK_MODE)

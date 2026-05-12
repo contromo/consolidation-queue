@@ -1,6 +1,7 @@
 import unittest
 
 from cq.eval.runner import (
+    ADVERSARIAL_UPSTREAM_NOISE,
     CQ_ABLATION_POLICIES,
     FALSE_CORROBORATION,
     FORCED_CONTRADICTION,
@@ -22,6 +23,7 @@ class RunnerPolicySetTests(unittest.TestCase):
             USEFUL_PENDING_MEMORY,
             FALSE_CORROBORATION,
             MEMORY_POISONING,
+            ADVERSARIAL_UPSTREAM_NOISE,
         ]:
             with self.subTest(family=family):
                 artifact = build_run_artifact(1, template_mix="mixed", family=family)
@@ -40,6 +42,7 @@ class RunnerPolicySetTests(unittest.TestCase):
             USEFUL_PENDING_MEMORY,
             FALSE_CORROBORATION,
             MEMORY_POISONING,
+            ADVERSARIAL_UPSTREAM_NOISE,
         ]:
             with self.subTest(family=family):
                 artifact = build_run_artifact(
@@ -80,6 +83,15 @@ class RunnerPolicySetTests(unittest.TestCase):
             "scope_blind_transcript_rag_lite",
             [policy["policy_name"] for policy in scoped["policies"]],
         )
+
+    def test_adversarial_family_rejects_clean_mix(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Template mix 'clean' is not supported"):
+            build_run_artifact(
+                1,
+                template_mix="clean",
+                family=ADVERSARIAL_UPSTREAM_NOISE,
+                policy_set=POLICY_SET_PHASE_2_5,
+            )
 
 
 if __name__ == "__main__":

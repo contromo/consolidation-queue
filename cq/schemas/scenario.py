@@ -15,6 +15,7 @@ class TaskFamily(str, Enum):
     USEFUL_PENDING_MEMORY = "useful_pending_memory"
     FALSE_CORROBORATION = "false_corroboration"
     MEMORY_POISONING = "memory_poisoning"
+    ADVERSARIAL_UPSTREAM_NOISE = "adversarial_upstream_noise"
 
 
 class EventKind(str, Enum):

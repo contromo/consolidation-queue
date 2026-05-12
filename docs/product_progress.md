@@ -1,5 +1,50 @@
 # Product Progress
 
+## 2026-05-12 — Oracle-only adversarial upstream-noise family added
+
+### What shipped
+
+- added the `adversarial_upstream_noise` oracle family with five adversarial
+  mechanisms: `adversarial_retraction`, `adversarial_witness_conflict`,
+  `adversarial_temporal_skew`, `adversarial_scope_narrowing`, and
+  `adversarial_pending_competition`, each with held-out `_v2` variants
+- wired the family through the oracle runner and Phase 2.5 policy set, including
+  per-template summaries, CSV propagation of new diagnostics, and failure-example
+  extraction via a single `adversarial_probe` phase
+- added fixed-seed paired-bootstrap utilities for the preregistered
+  mechanism-level CQ-versus-Reflection comparison rule
+- split runner family registration from Phase 3 component-eval / local-extractor
+  eligibility so the new oracle-only family cannot auto-enroll in the locked
+  noisy harness
+- added focused regressions for scenario structure, abstention scoring,
+  bootstrap determinism, policy-set wiring, component-eval exclusion,
+  local-extractor exclusion, and adversarial ablation behavior
+
+### Why it matters
+
+- this restores the policy comparison at the correct locus of noise: adversarial
+  upstream candidate streams with extraction held constant at oracle
+- the new family exercises all four named CQ ablations directly, giving the
+  oracle comparison a mechanism-attribution story instead of only another family
+  row
+- the temporal-skew lane is explicitly a weakness probe rather than a hidden
+  calibration failure, because it now lives in its own preregisterable mechanism
+- the locked Phase 3 / Phase 4 path remains unchanged: the new family is
+  runner-eligible but not component-eval-eligible and not local-extractor-eligible
+
+### Evidence
+
+- focused test bundle:
+  - `python3 -m unittest tests.test_adversarial_upstream_noise tests.test_bootstrap tests.test_runner_policy_sets tests.test_cq_ablations tests.test_metrics tests.test_component_eval tests.test_local_extractor -q`
+
+### Open issues / next
+
+- commit `docs/adversarial_upstream_noise_preregistration.md` before any run
+- inspect a tiny dirty sample and then run the `mixed` / `heldout` sweeps at
+  counts that deliver `60` scenarios per mechanism
+- report per-mechanism CQ-versus-Reflection deltas, bootstrap lower bounds, and
+  ablation drops exactly as preregistered
+
 ## 2026-05-12 — Schema-rescue follow-up completed and quadrant ruled out
 
 ### What shipped
