@@ -22,6 +22,40 @@ paper:
 The follow-up is methodological evidence only. It does not authorize noisy-mode
 policy comparisons while the 7B primary gate remains locked.
 
+## Amendment — 2026-05-12
+
+Before Mandatory Run B executes, the schema-rescue intervention is amended for
+Ollama compatibility.
+
+The original plan for `SCHEMA_PROFILE_SCENARIO_CONDITIONED` constrained
+`contradicts_event_ids` to prior observation `event_id` values through a
+per-position discriminated-union schema. Ollama rejects that `oneOf`-based JSON
+schema format, so Run B and Run C are amended as follows:
+
+- keep generation-time non-empty constraints for `scope_key` and
+  `canonical_id`
+- keep generation-time `event_id` namespace binding to scenario observation
+  `event_id` values
+- keep generation-time `contradicts_event_ids` namespace binding to scenario
+  observation `event_id` values
+- relax `contradicts_event_ids` from prior-only observation `event_id` values
+  to a flat scenario-wide observation `event_id` enum
+
+What this preserves:
+
+- the observed locked-taxonomy namespace failure remains in scope, because
+  canonical-id slugs are still outside the observation-`event_id` enum
+- the schema-rescue path still tests whether generation-time structure can
+  recover the smaller-model deployment path
+
+What this does not preserve:
+
+- a generation-time temporal-ordering restriction on contradiction edges
+
+This amendment applies only to the follow-up schema-rescue runs in this note. It
+does not modify the locked Phase 2.5 oracle preregistration or the locked 7B
+`general_v1` default-schema verdict.
+
 ## Fixed Baseline
 
 The baseline for comparison is the locked 7B `general_v1` gate run already on
@@ -80,8 +114,10 @@ generation-time schema bundle on 7B:
 
 - non-empty `scope_key`
 - non-empty `canonical_id`
-- `contradicts_event_ids` constrained to prior scenario `event_id` values at
-  generation time
+- `event_id` constrained to scenario observation `event_id` values at generation
+  time
+- `contradicts_event_ids` constrained to scenario observation `event_id` values
+  at generation time
 
 Run the full primary family set so the follow-up still observes
 `false_corroboration`, even though the 32B sweep focuses on the concentrated
@@ -226,6 +262,9 @@ Expected interpretation only if triggered:
   complementary
 - if the combined quadrant adds little beyond the stronger main effect, the
   interaction is weak and the benchmark story should not overstate it
+- if the stronger main effect already drives the common-surface failure budget
+  to zero or near-zero, a null combined effect should be interpreted as
+  saturation rather than as evidence against interaction
 - if the combined quadrant still fails materially, the remaining blockers are
   not explained by either factor alone
 
