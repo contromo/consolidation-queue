@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
+from cq.eval.bootstrap import paired_bootstrap_confidence_result
 from cq.eval.end_to_end_eval import execute_scenario, failure_example_sort_key, summarize_runs
 from cq.eval.preregistration_lock import (
     PREREGISTRATION_PATH,
@@ -26,6 +27,7 @@ from cq.memory.reflection_eager_write import ReflectionEagerWriteLite
 from cq.memory.scope_blind_transcript_rag import ScopeBlindTranscriptRAGLite
 from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import (
+    generate_adversarial_upstream_noise_scenarios,
     generate_false_corroboration_scenarios,
     generate_forced_contradiction_scenarios,
     generate_memory_poisoning_scenarios,
@@ -42,6 +44,7 @@ PREFERENCE_DRIFT = "preference_drift"
 USEFUL_PENDING_MEMORY = "useful_pending_memory"
 FALSE_CORROBORATION = "false_corroboration"
 MEMORY_POISONING = "memory_poisoning"
+ADVERSARIAL_UPSTREAM_NOISE = "adversarial_upstream_noise"
 MECHANISM_DIVERSE_HELDOUT = "mechanism_diverse_heldout"
 POLICY_SET_DEFAULT = "default"
 POLICY_SET_PHASE_2_5 = "phase2_5"
@@ -59,12 +62,24 @@ TEMPLATE_MIXES_BY_FAMILY = {
     USEFUL_PENDING_MEMORY: ("mixed", "clean", "dirty", "heldout"),
     FALSE_CORROBORATION: ("mixed", "clean", "dirty", "heldout"),
     MEMORY_POISONING: ("mixed", "clean", "dirty", "heldout"),
+    ADVERSARIAL_UPSTREAM_NOISE: ("mixed", "dirty", "heldout"),
     MECHANISM_DIVERSE_HELDOUT: ("frozen",),
 }
+COMPONENT_EVAL_FAMILIES = (
+    FORCED_CONTRADICTION,
+    SCOPE_CONTAMINATION,
+    PREFERENCE_DRIFT,
+    USEFUL_PENDING_MEMORY,
+    FALSE_CORROBORATION,
+    MEMORY_POISONING,
+    MECHANISM_DIVERSE_HELDOUT,
+)
 SUMMARY_METRIC_FORMAT = (
     "false_assertion={false:.2f} recovery={recovery:.2f} correctness={correctness:.2f} "
     "leakage={leakage:.2f} premature_promotion={premature:.2f} "
-    "poison_promotion={poison:.2f} clean_displacement={clean_displacement:.2f}"
+    "poison_promotion={poison:.2f} clean_displacement={clean_displacement:.2f} "
+    "retraction_demotion={retraction_demotion:.2f} stale_promotion={stale_promotion:.2f} "
+    "narrow_override={narrow_override:.2f} pending_competition={pending_competition:.2f}"
 )
 OVERALL_SUMMARY_FORMAT = (
     "{policy_name}: useful_recall={useful:.2f} pending_use={pending:.2f} "
@@ -84,6 +99,10 @@ def _summary_metric_values(summary: dict) -> Dict[str, float]:
         "premature": summary["premature_promotion_rate"],
         "poison": summary["poison_promotion_rate"],
         "clean_displacement": summary["clean_durable_displacement_rate"],
+        "retraction_demotion": summary.get("retraction_demotion_rate", 0.0),
+        "stale_promotion": summary.get("stale_evidence_promotion_rate", 0.0),
+        "narrow_override": summary.get("narrow_scope_override_success_rate", 0.0),
+        "pending_competition": summary.get("pending_competition_resolution_rate", 0.0),
     }
 
 
@@ -125,6 +144,62 @@ def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, d
     }
 
 
+def _scenario_metric_by_field(
+    run_records: List[dict],
+    *,
+    field_name: str,
+    metric_name: str,
+) -> Dict[str, List[float]]:
+    grouped: Dict[str, List[float]] = {}
+    for record in run_records:
+        field_value = record["scenario"].get(field_name, "")
+        if not field_value:
+            continue
+        grouped.setdefault(field_value, []).append(float(record["metrics"][metric_name]))
+    return grouped
+
+
+def _pairwise_metric_comparisons(
+    reference_run_records: List[dict],
+    comparator_run_records: List[dict],
+    *,
+    metric_name: str = "answer_correctness",
+    field_name: str = "template_id",
+) -> Dict[str, dict]:
+    reference = _scenario_metric_by_field(
+        reference_run_records,
+        field_name=field_name,
+        metric_name=metric_name,
+    )
+    comparator = _scenario_metric_by_field(
+        comparator_run_records,
+        field_name=field_name,
+        metric_name=metric_name,
+    )
+    comparisons: Dict[str, dict] = {}
+    for field_value in sorted(reference):
+        reference_values = reference[field_value]
+        comparator_values = comparator.get(field_value)
+        if comparator_values is None or len(reference_values) != len(comparator_values):
+            continue
+        deltas = [left - right for left, right in zip(reference_values, comparator_values)]
+        bootstrap = paired_bootstrap_confidence_result(
+            deltas,
+            resamples=10_000,
+            confidence_level=0.95,
+            seed=0,
+        )
+        comparisons[field_value] = {
+            "metric_name": metric_name,
+            "point_estimate_delta": bootstrap.point_estimate,
+            "one_sided_95_lcb": bootstrap.lower_confidence_bound,
+            "scenario_count": len(deltas),
+            "reference_policy_name": reference_run_records[0]["policy_name"],
+            "comparator_policy_name": comparator_run_records[0]["policy_name"],
+        }
+    return comparisons
+
+
 def generate_scenarios(
     family: str,
     scenario_count: int,
@@ -147,6 +222,8 @@ def generate_scenarios(
         return generate_false_corroboration_scenarios(scenario_count, template_mix=template_mix)
     if family == MEMORY_POISONING:
         return generate_memory_poisoning_scenarios(scenario_count, template_mix=template_mix)
+    if family == ADVERSARIAL_UPSTREAM_NOISE:
+        return generate_adversarial_upstream_noise_scenarios(scenario_count, template_mix=template_mix)
     raise ValueError("Unsupported family: {}".format(family))
 
 
@@ -190,6 +267,7 @@ def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
         USEFUL_PENDING_MEMORY,
         FALSE_CORROBORATION,
         MEMORY_POISONING,
+        ADVERSARIAL_UPSTREAM_NOISE,
         MECHANISM_DIVERSE_HELDOUT,
     }:
         policies.append(ScopeBlindTranscriptRAGLite)
@@ -213,8 +291,10 @@ def build_run_artifact(
     )
     policies = _policies_for_family(family, policy_set=policy_set)
     policy_runs = []
+    run_records_by_policy = {}
     for policy_cls in policies:
         run_records = [execute_scenario(policy_cls, scenario) for scenario in scenarios]
+        run_records_by_policy[policy_cls.policy_name] = run_records
         summary = summarize_runs(run_records)
         failure_examples = sorted(
             [
@@ -263,8 +343,35 @@ def build_run_artifact(
         }
         if policy_set == POLICY_SET_PHASE_2_5
         else {},
+        "pairwise_template_id_comparisons": _build_pairwise_comparisons(
+            run_records_by_policy,
+            policy_set=policy_set,
+        ),
         "policies": policy_runs,
     }
+
+
+def _build_pairwise_comparisons(
+    run_records_by_policy: Dict[str, List[dict]],
+    *,
+    policy_set: str,
+) -> Dict[str, Dict[str, dict]]:
+    comparisons: Dict[str, Dict[str, dict]] = {}
+    reflection = run_records_by_policy.get(ReflectionEagerWriteLite.policy_name)
+    cq = run_records_by_policy.get(ConsolidationQueueLite.policy_name)
+    if reflection is not None and cq is not None:
+        comparisons["consolidation_queue_vs_reflection_by_template_id"] = _pairwise_metric_comparisons(
+            cq,
+            reflection,
+        )
+    if policy_set == POLICY_SET_PHASE_2_5:
+        mem0 = run_records_by_policy.get(Mem0Lite.policy_name)
+        if reflection is not None and mem0 is not None:
+            comparisons["mem0_vs_reflection_by_template_id"] = _pairwise_metric_comparisons(
+                mem0,
+                reflection,
+            )
+    return comparisons
 
 
 def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> None:
@@ -288,6 +395,10 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                 "premature_promotion_rate",
                 "poison_promotion_rate",
                 "clean_durable_displacement_rate",
+                "retraction_demotion_rate",
+                "stale_evidence_promotion_rate",
+                "narrow_scope_override_success_rate",
+                "pending_competition_resolution_rate",
                 "useful_recall",
                 "used_pending",
                 "durable_commit",
@@ -298,6 +409,12 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                 "contradiction_recovery_rate",
                 "answer_correctness_after_contradiction",
                 "average_time_to_demotion",
+                "comparison_name",
+                "comparison_metric_name",
+                "comparison_reference_policy_name",
+                "comparison_comparator_policy_name",
+                "comparison_point_estimate_delta",
+                "comparison_one_sided_95_lcb",
             ],
         )
         writer.writeheader()
@@ -345,6 +462,47 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                     }
                 )
                 writer.writerow(row)
+        for comparison_name, comparison_rows in run_artifact.get(
+            "pairwise_template_id_comparisons",
+            {},
+        ).items():
+            for template_id, comparison in comparison_rows.items():
+                writer.writerow(
+                    {
+                        "policy_name": "",
+                        "summary_scope": "template_id_comparison",
+                        "template_id": template_id,
+                        "template_kind": "",
+                        "template_split": "",
+                        "scenario_count": comparison["scenario_count"],
+                        "answer_correctness": "",
+                        "false_assertion_rate": "",
+                        "leakage_rate": "",
+                        "premature_promotion_rate": "",
+                        "poison_promotion_rate": "",
+                        "clean_durable_displacement_rate": "",
+                        "retraction_demotion_rate": "",
+                        "stale_evidence_promotion_rate": "",
+                        "narrow_scope_override_success_rate": "",
+                        "pending_competition_resolution_rate": "",
+                        "useful_recall": "",
+                        "used_pending": "",
+                        "durable_commit": "",
+                        "useful_recall_before_contradiction": "",
+                        "used_pending_before_contradiction": "",
+                        "durable_commit_before_contradiction": "",
+                        "false_assertion_after_contradiction": "",
+                        "contradiction_recovery_rate": "",
+                        "answer_correctness_after_contradiction": "",
+                        "average_time_to_demotion": "",
+                        "comparison_name": comparison_name,
+                        "comparison_metric_name": comparison["metric_name"],
+                        "comparison_reference_policy_name": comparison["reference_policy_name"],
+                        "comparison_comparator_policy_name": comparison["comparator_policy_name"],
+                        "comparison_point_estimate_delta": comparison["point_estimate_delta"],
+                        "comparison_one_sided_95_lcb": comparison["one_sided_95_lcb"],
+                    }
+                )
 
 
 def main(argv: List[str] = None) -> int:
@@ -358,6 +516,7 @@ def main(argv: List[str] = None) -> int:
             USEFUL_PENDING_MEMORY,
             FALSE_CORROBORATION,
             MEMORY_POISONING,
+            ADVERSARIAL_UPSTREAM_NOISE,
             MECHANISM_DIVERSE_HELDOUT,
         ],
         default=FORCED_CONTRADICTION,

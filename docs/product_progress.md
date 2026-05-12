@@ -1,5 +1,109 @@
 # Product Progress
 
+## 2026-05-12 — Oracle-only adversarial upstream-noise family added
+
+### What shipped
+
+- added the `adversarial_upstream_noise` oracle family with five adversarial
+  mechanisms: `adversarial_retraction`, `adversarial_witness_conflict`,
+  `adversarial_temporal_skew`, `adversarial_scope_narrowing`, and
+  `adversarial_pending_competition`, each with held-out `_v2` variants
+- wired the family through the oracle runner and Phase 2.5 policy set, including
+  per-template summaries, CSV propagation of new diagnostics, and failure-example
+  extraction via a single `adversarial_probe` phase
+- added fixed-seed paired-bootstrap utilities for the preregistered
+  mechanism-level CQ-versus-Reflection comparison rule
+- split runner family registration from Phase 3 component-eval / local-extractor
+  eligibility so the new oracle-only family cannot auto-enroll in the locked
+  noisy harness
+- added focused regressions for scenario structure, abstention scoring,
+  bootstrap determinism, policy-set wiring, component-eval exclusion,
+  local-extractor exclusion, and adversarial ablation behavior
+
+### Why it matters
+
+- this restores the policy comparison at the correct locus of noise: adversarial
+  upstream candidate streams with extraction held constant at oracle
+- the new family exercises all four named CQ ablations directly, giving the
+  oracle comparison a mechanism-attribution story instead of only another family
+  row
+- the temporal-skew lane is explicitly a weakness probe rather than a hidden
+  calibration failure, because it now lives in its own preregisterable mechanism
+- the locked Phase 3 / Phase 4 path remains unchanged: the new family is
+  runner-eligible but not component-eval-eligible and not local-extractor-eligible
+
+### Evidence
+
+- focused test bundle:
+  - `python3 -m unittest tests.test_adversarial_upstream_noise tests.test_bootstrap tests.test_runner_policy_sets tests.test_cq_ablations tests.test_metrics tests.test_component_eval tests.test_local_extractor -q`
+
+### Open issues / next
+
+- commit `docs/adversarial_upstream_noise_preregistration.md` before any run
+- inspect a tiny dirty sample and then run the `mixed` / `heldout` sweeps at
+  counts that deliver `60` scenarios per mechanism
+- report per-mechanism CQ-versus-Reflection deltas, bootstrap lower bounds, and
+  ablation drops exactly as preregistered
+
+## 2026-05-12 — Schema-rescue follow-up completed and quadrant ruled out
+
+### What shipped
+
+- replaced the rejected `oneOf` scenario-conditioned Ollama schema with a flat
+  event-id-enum schema and preserved `schema_profile` through
+  `cq.pipeline.local_extractor` aggregation
+- committed the follow-up preregistration amendment first, then completed the
+  blocker-surface smoke sweep and the full 7B schema-rescue gate run with frozen
+  sentinel
+- added `docs/component_gate_followup_benchmark_memo.md` to record the follow-up
+  readout, the quadrant decision, and the next-step recommendation
+
+### Why it matters
+
+- the 7B schema-rescue path removed all `45` primary scenario errors from the
+  locked 7B baseline without introducing preregistered vacuous placeholder
+  values on the common blocker surface
+- the preregistered common-surface schema-shaped burden fell from `26` in the
+  locked 7B baseline to `0` in both the 7B schema-rescue run and the descriptive
+  32B default-schema sweep
+- the 7B run still stayed gate-locked because measured per-family and
+  frozen-sentinel failures remained (`5` primary observed gate failures and `2`
+  frozen-sentinel observed gate failures), which localizes the remaining 7B
+  problem to semantic extraction quality rather than output-contract breakage
+- the descriptive 32B rows clear the same common-surface measured failures, so
+  the follow-up now supports a capacity-versus-structure methodology result
+- the symmetric `32B + schema` quadrant was not run because both mandatory runs
+  already achieved a `100%` reduction in the preregistered common-surface burden
+
+### Evidence
+
+- preregistration amendment commit: `aef1619` (`Amend schema-rescue preregistration`)
+- unit tests:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_ollama_component_extractor tests.test_local_extractor`
+- smoke artifacts:
+  - `data/results/schema_smoke/scope_contamination_predictions.json`
+  - `data/results/schema_smoke/preference_drift_predictions.json`
+  - `data/results/schema_smoke/memory_poisoning_predictions.json`
+  - `data/results/schema_smoke/mechanism_diverse_heldout_frozen_predictions.json`
+- full 7B schema-rescue command:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_component_gate_decision.py --model-command "python3 scripts/ollama_component_extractor.py --schema-profile scenario_conditioned" --general-prompt-label general_v1_dynamic_schema --include-frozen-sentinel`
+- full 7B schema-rescue runtime: `3481852` ms (`58m 02s`)
+- summary artifacts:
+  - `data/results/component_gate_decision_general_v1_dynamic_schema_summary.json`
+  - `data/results/component_gate_decision_general_v1_followup_32b_default_summary.json`
+  - `docs/component_gate_followup_benchmark_memo.md`
+
+### Open issues / next
+
+- keep Phase 4 extracted-candidate policy comparisons on hold while
+  `policy_comparison_unlocked=false`
+- start the integrated benchmark/methodology draft using the publication
+  outline, locked-taxonomy note, and follow-up benchmark memo rather than adding
+  the combined quadrant
+- treat any future benchmark expansion as a separate preregistered
+  benchmark-strengthening step, not as a hidden continuation of the completed
+  follow-up
+
 ## 2026-05-11 — Publication outline and locked-gate taxonomy drafted
 
 ### What shipped

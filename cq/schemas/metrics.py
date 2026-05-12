@@ -24,6 +24,10 @@ class PolicyScenarioMetrics:
     premature_promotion_rate: float = 0.0
     poison_promotion_rate: float = 0.0
     clean_durable_displacement_rate: float = 0.0
+    retraction_demotion_rate: float = 0.0
+    stale_evidence_promotion_rate: float = 0.0
+    narrow_scope_override_success_rate: float = 0.0
+    pending_competition_resolution_rate: float = 0.0
     useful_recall: float = _UNSET_FLOAT
     used_pending: float = _UNSET_FLOAT
     durable_commit: float = _UNSET_FLOAT
@@ -58,6 +62,10 @@ class PolicySummaryMetrics:
     premature_promotion_rate: float = 0.0
     poison_promotion_rate: float = 0.0
     clean_durable_displacement_rate: float = 0.0
+    retraction_demotion_rate: float = 0.0
+    stale_evidence_promotion_rate: float = 0.0
+    narrow_scope_override_success_rate: float = 0.0
+    pending_competition_resolution_rate: float = 0.0
     useful_recall: float = 0.0
     used_pending: float = 0.0
     durable_commit: float = 0.0
@@ -82,6 +90,10 @@ class PolicySummaryMetrics:
                 premature_promotion_rate=0.0,
                 poison_promotion_rate=0.0,
                 clean_durable_displacement_rate=0.0,
+                retraction_demotion_rate=0.0,
+                stale_evidence_promotion_rate=0.0,
+                narrow_scope_override_success_rate=0.0,
+                pending_competition_resolution_rate=0.0,
                 useful_recall=0.0,
                 used_pending=0.0,
                 durable_commit=0.0,
@@ -118,6 +130,19 @@ class PolicySummaryMetrics:
             poison_promotion_rate=sum(metric.poison_promotion_rate for metric in metrics) / count,
             clean_durable_displacement_rate=sum(
                 metric.clean_durable_displacement_rate for metric in metrics
+            )
+            / count,
+            retraction_demotion_rate=sum(metric.retraction_demotion_rate for metric in metrics) / count,
+            stale_evidence_promotion_rate=sum(
+                metric.stale_evidence_promotion_rate for metric in metrics
+            )
+            / count,
+            narrow_scope_override_success_rate=sum(
+                metric.narrow_scope_override_success_rate for metric in metrics
+            )
+            / count,
+            pending_competition_resolution_rate=sum(
+                metric.pending_competition_resolution_rate for metric in metrics
             )
             / count,
             useful_recall=sum(metric.useful_recall for metric in metrics) / count,

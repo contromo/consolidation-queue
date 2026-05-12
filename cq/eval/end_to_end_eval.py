@@ -60,6 +60,13 @@ def compute_policy_metrics(
         return compute_false_corroboration_metrics(policy_name, scenario, question_traces, store_snapshot)
     if scenario.task_family == TaskFamily.MEMORY_POISONING:
         return compute_memory_poisoning_metrics(policy_name, scenario, question_traces, store_snapshot)
+    if scenario.task_family == TaskFamily.ADVERSARIAL_UPSTREAM_NOISE:
+        return compute_adversarial_upstream_noise_metrics(
+            policy_name,
+            scenario,
+            question_traces,
+            store_snapshot,
+        )
     raise ValueError("Unsupported task family: {}".format(scenario.task_family))
 
 
@@ -70,6 +77,7 @@ DIAGNOSTIC_PHASE_BY_FAMILY = {
     TaskFamily.USEFUL_PENDING_MEMORY: "pending_probe",
     TaskFamily.FALSE_CORROBORATION: "corroboration_probe",
     TaskFamily.MEMORY_POISONING: "poison_probe",
+    TaskFamily.ADVERSARIAL_UPSTREAM_NOISE: "adversarial_probe",
 }
 
 
@@ -98,6 +106,10 @@ ASSERTION_FAILURE_BY_FAMILY = {
         "false_assertion",
         "forbidden_poison_candidate_asserted",
     ),
+    TaskFamily.ADVERSARIAL_UPSTREAM_NOISE: (
+        "false_assertion",
+        "forbidden_adversarial_candidate_asserted",
+    ),
 }
 
 
@@ -108,6 +120,7 @@ PREMATURE_PROMOTION_REASON_BY_FAMILY = {
     TaskFamily.USEFUL_PENDING_MEMORY: "should_not_promote_useful_pending_candidate_promoted",
     TaskFamily.FALSE_CORROBORATION: "false_corroboration_stack_promoted",
     TaskFamily.MEMORY_POISONING: "poison_candidate_promoted",
+    TaskFamily.ADVERSARIAL_UPSTREAM_NOISE: "forbidden_adversarial_candidate_promoted",
 }
 
 
@@ -544,6 +557,92 @@ def compute_memory_poisoning_metrics(
     )
 
 
+def compute_adversarial_upstream_noise_metrics(
+    policy_name: str,
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+) -> PolicyScenarioMetrics:
+    mechanism = str(scenario.expected_lifecycle.get("mechanism", ""))
+    values = _compute_single_probe_values(
+        scenario,
+        question_traces,
+        store_snapshot,
+        "adversarial_probe",
+    )
+    answer_correctness = values["answer_correctness"]
+    false_assertion = values["false_assertion"]
+
+    if mechanism == "adversarial_witness_conflict":
+        probe_question, probe_trace = _probe_question_and_trace(
+            scenario,
+            question_traces,
+            "adversarial_probe",
+        )
+        asserted_ids = _asserted_candidate_ids(probe_trace, store_snapshot)
+        abstention_ok = bool(scenario.expected_lifecycle.get("abstention_ok", False))
+        abstained = not asserted_ids and not list(getattr(probe_trace, "resolved_candidate_ids", []))
+        answer_correctness = 1.0 if abstention_ok and abstained else 0.0
+        false_assertion = 1.0 if asserted_ids else 0.0
+
+    retraction_demotion_rate = 0.0
+    stale_evidence_promotion_rate = 0.0
+    narrow_scope_override_success_rate = 0.0
+    pending_competition_resolution_rate = 0.0
+
+    if mechanism == "adversarial_retraction":
+        retracted_ids = scenario.expected_lifecycle.get("retracted_candidate_ids", [])
+        retraction_demotion_rate = _candidate_invalidated_rate(store_snapshot, retracted_ids)
+    elif mechanism == "adversarial_temporal_skew":
+        stale_ids = scenario.expected_lifecycle.get("stale_candidate_ids", [])
+        stale_evidence_promotion_rate = _candidate_promotion_rate(store_snapshot, stale_ids)
+    elif mechanism == "adversarial_scope_narrowing":
+        probe_question, probe_trace = _probe_question_and_trace(
+            scenario,
+            question_traces,
+            "adversarial_probe",
+        )
+        narrow_scope_override_success_rate = (
+            1.0
+            if _contains_any(probe_trace.resolved_candidate_ids, probe_question.gold_candidate_ids)
+            else 0.0
+        )
+    elif mechanism == "adversarial_pending_competition":
+        probe_question, probe_trace = _probe_question_and_trace(
+            scenario,
+            question_traces,
+            "adversarial_probe",
+        )
+        pending_competition_resolution_rate = (
+            1.0
+            if _contains_any(probe_trace.resolved_candidate_ids, probe_question.gold_candidate_ids)
+            else 0.0
+        )
+
+    return PolicyScenarioMetrics(
+        scenario_id=scenario.scenario_id,
+        policy_name=policy_name,
+        useful_recall_before_contradiction=0.0,
+        used_pending_before_contradiction=0.0,
+        durable_commit_before_contradiction=0.0,
+        false_assertion_after_contradiction=0.0,
+        contradiction_recovery_rate=0.0,
+        answer_correctness_after_contradiction=0.0,
+        time_to_demotion=None,
+        answer_correctness=answer_correctness,
+        false_assertion_rate=false_assertion,
+        leakage_rate=0.0,
+        premature_promotion_rate=values["premature_promotion"],
+        useful_recall=answer_correctness,
+        used_pending=values["used_pending"],
+        durable_commit=values["durable_commit"],
+        retraction_demotion_rate=retraction_demotion_rate,
+        stale_evidence_promotion_rate=stale_evidence_promotion_rate,
+        narrow_scope_override_success_rate=narrow_scope_override_success_rate,
+        pending_competition_resolution_rate=pending_competition_resolution_rate,
+    )
+
+
 def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics:
     metrics = []
     policy_name = ""
@@ -570,6 +669,16 @@ def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics
                 premature_promotion_rate=metric.get("premature_promotion_rate", 0.0),
                 poison_promotion_rate=metric.get("poison_promotion_rate", 0.0),
                 clean_durable_displacement_rate=metric.get("clean_durable_displacement_rate", 0.0),
+                retraction_demotion_rate=metric.get("retraction_demotion_rate", 0.0),
+                stale_evidence_promotion_rate=metric.get("stale_evidence_promotion_rate", 0.0),
+                narrow_scope_override_success_rate=metric.get(
+                    "narrow_scope_override_success_rate",
+                    0.0,
+                ),
+                pending_competition_resolution_rate=metric.get(
+                    "pending_competition_resolution_rate",
+                    0.0,
+                ),
                 useful_recall=metric.get(
                     "useful_recall",
                     metric["useful_recall_before_contradiction"],
@@ -627,6 +736,31 @@ def _compute_single_probe_values(
         "used_pending": 1.0 if probe_trace.used_pending else 0.0,
         "durable_commit": 1.0 if getattr(probe_trace, "used_memory_ids", []) else 0.0,
     }
+
+
+def _probe_question_and_trace(
+    scenario: Scenario,
+    question_traces: List[object],
+    probe_phase: str,
+) -> tuple[QuestionSpec, object]:
+    questions = {}
+    for event in scenario.sorted_events():
+        if event.question is not None:
+            questions[event.question.phase] = event.question
+    traces = {trace.question_id: trace for trace in question_traces}
+    probe_question = questions.get(probe_phase)
+    if probe_question is None:
+        raise ValueError("Scenario {} is missing {} question".format(scenario.scenario_id, probe_phase))
+    probe_trace = traces.get(probe_question.question_id)
+    if probe_trace is None:
+        raise ValueError(
+            "Scenario {} is missing trace for {} question {}".format(
+                scenario.scenario_id,
+                probe_phase,
+                probe_question.question_id,
+            )
+        )
+    return probe_question, probe_trace
 
 
 def _ordered_intersection(source_ids: List[str], target_ids: List[str]) -> List[str]:
@@ -774,6 +908,16 @@ def _candidate_promotion_rate(store_snapshot: Dict[str, object], candidate_ids: 
         if _candidate_became_durable(store_snapshot, candidate_id):
             promoted += 1
     return promoted / len(candidate_ids)
+
+
+def _candidate_invalidated_rate(store_snapshot: Dict[str, object], candidate_ids: List[str]) -> float:
+    if not candidate_ids:
+        return 0.0
+    invalidated = 0
+    for candidate_id in candidate_ids:
+        if _old_claim_invalidated(store_snapshot, candidate_id):
+            invalidated += 1
+    return invalidated / len(candidate_ids)
 
 
 def _time_to_invalidation(

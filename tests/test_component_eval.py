@@ -18,7 +18,7 @@ from cq.eval.component_eval import (
     oracle_component_predictions,
     oracle_predictions_by_scenario,
 )
-from cq.eval.runner import TEMPLATE_MIXES_BY_FAMILY, generate_scenarios
+from cq.eval.runner import COMPONENT_EVAL_FAMILIES, TEMPLATE_MIXES_BY_FAMILY, generate_scenarios
 from cq.schemas.scenario import EventKind
 from cq.simulator.scenario_generator import generate_forced_contradiction_scenarios
 
@@ -847,7 +847,8 @@ class ComponentEvalTests(unittest.TestCase):
             self.assertTrue(gate["passed"])
 
     def test_oracle_upper_bound_reference_matrix_still_scores_one_for_applicable_gates(self) -> None:
-        for family, template_mixes in TEMPLATE_MIXES_BY_FAMILY.items():
+        for family in COMPONENT_EVAL_FAMILIES:
+            template_mixes = TEMPLATE_MIXES_BY_FAMILY[family]
             scenario_count = 3 if family == "mechanism_diverse_heldout" else 6
             for template_mix in template_mixes:
                 with self.subTest(family=family, template_mix=template_mix):
@@ -863,7 +864,8 @@ class ComponentEvalTests(unittest.TestCase):
                             self.assertEqual(gate["value"], 1.0)
 
     def test_generated_gold_contradiction_targets_resolve_to_unique_observation_events(self) -> None:
-        for family, template_mixes in TEMPLATE_MIXES_BY_FAMILY.items():
+        for family in COMPONENT_EVAL_FAMILIES:
+            template_mixes = TEMPLATE_MIXES_BY_FAMILY[family]
             scenario_count = 3 if family == "mechanism_diverse_heldout" else 12
             for template_mix in template_mixes:
                 scenarios = generate_scenarios(family, scenario_count, template_mix)
@@ -880,6 +882,14 @@ class ComponentEvalTests(unittest.TestCase):
                             continue
                         for target_candidate_id in event.candidate.contradicts:
                             self.assertIn(target_candidate_id, candidate_id_to_event_id)
+
+    def test_adversarial_upstream_noise_is_not_component_eval_eligible(self) -> None:
+        with self.assertRaisesRegex(ValueError, "not component-eval eligible"):
+            build_oracle_component_eval_artifact(
+                family="adversarial_upstream_noise",
+                scenario_count=5,
+                template_mix="mixed",
+            )
 
 
 if __name__ == "__main__":

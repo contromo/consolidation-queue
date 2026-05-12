@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from cq.eval.runner import (
+    COMPONENT_EVAL_FAMILIES,
     FORCED_CONTRADICTION,
-    TEMPLATE_MIXES_BY_FAMILY,
     generate_scenarios,
 )
 from cq.schemas.memory import CandidateUpdate, jsonable
@@ -496,6 +496,13 @@ def build_component_eval_artifact(
     scenario_errors: Optional[Dict[str, object]] = None,
     mode: Optional[str] = None,
 ) -> Dict[str, object]:
+    if family not in COMPONENT_EVAL_FAMILIES:
+        raise ValueError(
+            "Family '{}' is not component-eval eligible. Allowed: {}".format(
+                family,
+                ", ".join(sorted(COMPONENT_EVAL_FAMILIES)),
+            )
+        )
     scenarios = generate_scenarios(family, scenario_count, template_mix)
     scenario_errors = scenario_errors or {}
     if predictions_by_scenario is None:
@@ -556,7 +563,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Evaluate component predictions against scenario oracle labels."
     )
-    parser.add_argument("--family", default=FORCED_CONTRADICTION, choices=sorted(TEMPLATE_MIXES_BY_FAMILY))
+    parser.add_argument("--family", default=FORCED_CONTRADICTION, choices=sorted(COMPONENT_EVAL_FAMILIES))
     parser.add_argument("--scenarios", type=int, default=25)
     parser.add_argument("--template-mix", default="mixed")
     parser.add_argument("--predictions-json", default="")

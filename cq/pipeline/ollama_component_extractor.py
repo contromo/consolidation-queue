@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
@@ -14,6 +15,12 @@ WRAPPER_VERSION = "v1"
 DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 CONNECT_TIMEOUT_SECONDS = 5.0
 MIN_OLLAMA_VERSION = (0, 23, 0)
+SCHEMA_PROFILE_DEFAULT = "default"
+SCHEMA_PROFILE_SCENARIO_CONDITIONED = "scenario_conditioned"
+SCHEMA_PROFILES = (
+    SCHEMA_PROFILE_DEFAULT,
+    SCHEMA_PROFILE_SCENARIO_CONDITIONED,
+)
 REPAIR_COUNT_KEYS = (
     "candidate_id_cleared",
     "contradicts_renamed",
@@ -128,6 +135,7 @@ class OllamaHttpClient:
 def build_extraction_output(
     envelope: Dict[str, object],
     client: Optional[OllamaHttpClient] = None,
+    schema_profile: str = SCHEMA_PROFILE_DEFAULT,
 ) -> Dict[str, object]:
     client = client or OllamaHttpClient()
     model_id = _required_string(envelope, "model_id")
@@ -144,7 +152,7 @@ def build_extraction_output(
     model_text = client.generate(
         model_id=model_id,
         prompt=build_generation_prompt(envelope),
-        output_schema=build_output_schema(envelope),
+        output_schema=build_output_schema(envelope, schema_profile=schema_profile),
         decoding_params=decoding_params,
     )
     try:
@@ -159,6 +167,7 @@ def build_extraction_output(
         ollama_server_version=ollama_server_version,
         model_digest=model_digest,
         scenario_id=scenario_id,
+        schema_profile=schema_profile,
         repair_counts=repair_counts,
     )
     return output
@@ -180,8 +189,37 @@ def build_generation_prompt(envelope: Dict[str, object]) -> str:
     )
 
 
-def build_output_schema(envelope: Dict[str, object]) -> Dict[str, object]:
+def build_output_schema(
+    envelope: Dict[str, object],
+    schema_profile: str = SCHEMA_PROFILE_DEFAULT,
+) -> Dict[str, object]:
     claim_types, scope_levels = _enum_values_from_output_contract(envelope)
+    if schema_profile not in SCHEMA_PROFILES:
+        raise OllamaCommandError("Unsupported schema profile '{}'".format(schema_profile))
+    observation_event_ids = None
+    if schema_profile == SCHEMA_PROFILE_SCENARIO_CONDITIONED:
+        scenario = _required_mapping(envelope, "scenario")
+        observation_event_ids = _observation_event_ids(scenario)
+    prediction_items: Dict[str, object] = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": [
+            "event_id",
+            "canonical_id",
+            "claim_type",
+            "scope_level",
+            "scope_key",
+            "contradicts_event_ids",
+            "raw_claim",
+            "confidence",
+        ],
+        "properties": _prediction_item_properties(
+            claim_types=claim_types,
+            scope_levels=scope_levels,
+            schema_profile=schema_profile,
+            observation_event_ids=observation_event_ids,
+        ),
+    }
     return {
         "type": "object",
         "additionalProperties": False,
@@ -189,36 +227,42 @@ def build_output_schema(envelope: Dict[str, object]) -> Dict[str, object]:
         "properties": {
             "predictions": {
                 "type": "array",
-                "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "required": [
-                        "event_id",
-                        "canonical_id",
-                        "claim_type",
-                        "scope_level",
-                        "scope_key",
-                        "contradicts_event_ids",
-                        "raw_claim",
-                        "confidence",
-                    ],
-                    "properties": {
-                        "event_id": {"type": "string"},
-                        "candidate_id": {"type": "string", "enum": [""]},
-                        "canonical_id": {"type": "string"},
-                        "claim_type": {"type": "string", "enum": claim_types},
-                        "scope_level": {"type": "string", "enum": scope_levels},
-                        "scope_key": {"type": "string"},
-                        "contradicts_event_ids": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                        },
-                        "raw_claim": {"type": "string"},
-                        "confidence": {"type": ["number", "null"]},
-                    },
-                },
+                "items": prediction_items,
             }
         },
+    }
+
+
+def _prediction_item_properties(
+    *,
+    claim_types: List[str],
+    scope_levels: List[str],
+    schema_profile: str,
+    observation_event_ids: Optional[List[str]] = None,
+) -> Dict[str, object]:
+    event_id_schema: Dict[str, object] = {"type": "string"}
+    canonical_id_schema: Dict[str, object] = {"type": "string"}
+    scope_key_schema: Dict[str, object] = {"type": "string"}
+    contradiction_items: Dict[str, object] = {"type": "string"}
+    contradiction_schema: Dict[str, object] = {"type": "array", "items": contradiction_items}
+    if schema_profile == SCHEMA_PROFILE_SCENARIO_CONDITIONED:
+        if observation_event_ids is None:
+            raise OllamaCommandError("scenario_conditioned schema requires observation event ids")
+        event_id_schema["enum"] = observation_event_ids
+        canonical_id_schema["minLength"] = 1
+        scope_key_schema["minLength"] = 1
+        contradiction_schema["uniqueItems"] = True
+        contradiction_items["enum"] = observation_event_ids
+    return {
+        "event_id": event_id_schema,
+        "candidate_id": {"type": "string", "enum": [""]},
+        "canonical_id": canonical_id_schema,
+        "claim_type": {"type": "string", "enum": claim_types},
+        "scope_level": {"type": "string", "enum": scope_levels},
+        "scope_key": scope_key_schema,
+        "contradicts_event_ids": contradiction_schema,
+        "raw_claim": {"type": "string"},
+        "confidence": {"type": ["number", "null"]},
     }
 
 
@@ -258,6 +302,7 @@ def build_model_diagnostics(
     ollama_server_version: str,
     model_digest: str,
     scenario_id: str,
+    schema_profile: str,
     repair_counts: Dict[str, int],
 ) -> Dict[str, object]:
     return {
@@ -265,6 +310,7 @@ def build_model_diagnostics(
         "wrapper_name": WRAPPER_NAME,
         "wrapper_version": WRAPPER_VERSION,
         "constrained_decoding": True,
+        "schema_profile": schema_profile,
         "model_digest": model_digest,
         "scenarios": {
             scenario_id: {
@@ -308,7 +354,11 @@ def _known_event_id_list(value: object, known_event_ids: Iterable[str]) -> bool:
     return all(isinstance(item, str) and item in known_event_ids for item in value)
 
 
-def _known_event_ids(scenario: Dict[str, object]) -> List[str]:
+def _scenario_event_ids(
+    scenario: Dict[str, object],
+    *,
+    observation_only: bool = False,
+) -> List[str]:
     events = scenario.get("events")
     if not isinstance(events, list):
         raise OllamaCommandError("scenario.events must be a list")
@@ -319,8 +369,20 @@ def _known_event_ids(scenario: Dict[str, object]) -> List[str]:
         event_id = event.get("event_id")
         if not isinstance(event_id, str) or not event_id:
             raise OllamaCommandError("scenario.events[{}].event_id must be a string".format(index))
+        if observation_only and event.get("event_kind") != "observation":
+            continue
         event_ids.append(event_id)
+    if observation_only and not event_ids:
+        raise OllamaCommandError("scenario.events must include at least one observation event")
     return event_ids
+
+
+def _known_event_ids(scenario: Dict[str, object]) -> List[str]:
+    return _scenario_event_ids(scenario)
+
+
+def _observation_event_ids(scenario: Dict[str, object]) -> List[str]:
+    return _scenario_event_ids(scenario, observation_only=True)
 
 
 def _enum_values_from_output_contract(envelope: Dict[str, object]) -> Tuple[List[str], List[str]]:
@@ -365,7 +427,15 @@ def _write_command_error(error: Exception) -> int:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    _ = argv
+    parser = argparse.ArgumentParser(
+        description="Run the local Ollama transcript-only extractor wrapper."
+    )
+    parser.add_argument(
+        "--schema-profile",
+        choices=SCHEMA_PROFILES,
+        default=SCHEMA_PROFILE_DEFAULT,
+    )
+    args = parser.parse_args(argv)
     try:
         envelope = json.load(sys.stdin)
     except json.JSONDecodeError as error:
@@ -373,7 +443,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if not isinstance(envelope, dict):
         return _write_command_error(OllamaCommandError("stdin envelope must be a JSON object"))
     try:
-        output = build_extraction_output(envelope)
+        output = build_extraction_output(envelope, schema_profile=args.schema_profile)
     except OllamaCommandError as error:
         return _write_command_error(error)
     json.dump(output, sys.stdout, sort_keys=True)

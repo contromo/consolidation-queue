@@ -142,6 +142,15 @@ class LocalExtractorTests(unittest.TestCase):
         self.assertEqual(output["input_contract"], "transcript_only")
         self.assertIn("scenario_predictions", output)
 
+    def test_adversarial_upstream_noise_is_not_local_extractor_eligible(self) -> None:
+        with self.assertRaisesRegex(ValueError, "not local-extractor eligible"):
+            build_extractor_output(
+                family="adversarial_upstream_noise",
+                scenario_count=1,
+                template_mix="mixed",
+                mode=WEAK_MODE,
+            )
+
     def test_model_command_writes_valid_output_with_reproducibility_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             script_path = _write_fake_model_script(Path(tmpdir))
@@ -362,6 +371,7 @@ class LocalExtractorTests(unittest.TestCase):
             self.assertEqual(diagnostics["ollama_server_version"], "fake-ollama-1.0")
             self.assertEqual(diagnostics["wrapper_name"], "ollama_component_extractor")
             self.assertTrue(diagnostics["constrained_decoding"])
+            self.assertEqual(diagnostics["schema_profile"], "scenario_conditioned")
             repair_counts = diagnostics["scenarios"][scenario_id]["repair_counts"]
             self.assertEqual(repair_counts["candidate_id_cleared"], 1)
             self.assertEqual(repair_counts["contradicts_renamed"], 0)
@@ -619,6 +629,7 @@ elif behavior in ("diagnostics", "diagnostics_bad_confidence", "diagnostics_drif
                 "wrapper_name": "ollama_component_extractor",
                 "wrapper_version": "v1",
                 "constrained_decoding": True,
+                "schema_profile": "scenario_conditioned",
                 "model_digest": model_digest,
                 "scenarios": {
                     scenario["scenario_id"]: {
