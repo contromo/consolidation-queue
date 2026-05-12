@@ -6,6 +6,8 @@ from pathlib import Path
 
 from cq.pipeline.ollama_component_extractor import (
     OllamaCommandError,
+    SCHEMA_PROFILE_DEFAULT,
+    SCHEMA_PROFILE_SCENARIO_CONDITIONED,
     _ensure_supported_ollama_version,
     _normalize_digest,
     build_extraction_output,
@@ -48,6 +50,7 @@ class OllamaComponentExtractorTests(unittest.TestCase):
         self.assertEqual(diagnostics["wrapper_name"], "ollama_component_extractor")
         self.assertEqual(diagnostics["wrapper_version"], "v1")
         self.assertTrue(diagnostics["constrained_decoding"])
+        self.assertEqual(diagnostics["schema_profile"], SCHEMA_PROFILE_DEFAULT)
         self.assertEqual(diagnostics["model_digest"], "sha256:test-digest")
         repair_counts = diagnostics["scenarios"]["scenario-1"]["repair_counts"]
         self.assertEqual(repair_counts["candidate_id_cleared"], 1)
@@ -89,6 +92,36 @@ class OllamaComponentExtractorTests(unittest.TestCase):
         self.assertEqual(
             item_schema["properties"]["scope_level"]["enum"],
             ["project", "session", "world_global"],
+        )
+
+    def test_scenario_conditioned_schema_uses_prior_event_constraints_and_nonempty_strings(self) -> None:
+        schema = build_output_schema(
+            _envelope(),
+            schema_profile=SCHEMA_PROFILE_SCENARIO_CONDITIONED,
+        )
+        branches = schema["properties"]["predictions"]["items"]["oneOf"]
+
+        self.assertEqual(len(branches), 2)
+        first_branch = branches[0]["properties"]
+        second_branch = branches[1]["properties"]
+
+        self.assertEqual(first_branch["event_id"]["const"], "event-1")
+        self.assertEqual(
+            first_branch["canonical_id"]["minLength"],
+            1,
+        )
+        self.assertEqual(
+            first_branch["scope_key"]["pattern"],
+            ".*\\S.*",
+        )
+        self.assertEqual(
+            first_branch["contradicts_event_ids"]["maxItems"],
+            0,
+        )
+        self.assertEqual(second_branch["event_id"]["const"], "event-2")
+        self.assertEqual(
+            second_branch["contradicts_event_ids"]["items"]["enum"],
+            ["event-1"],
         )
 
     def test_missing_model_digest_is_command_error(self) -> None:

@@ -50,6 +50,22 @@ class ComponentGateDecisionTests(unittest.TestCase):
         )
         self.assertIn("_n60_primary_floor_component_eval.json", paths.component_eval.name)
 
+    def test_headroom_rows_can_be_filtered_and_include_descriptive_frozen_sentinel(self) -> None:
+        rows = gate.headroom_gate_rows(
+            families=(gate.SCOPE_CONTAMINATION, gate.PREFERENCE_DRIFT),
+        )
+        self.assertEqual(
+            [row.family for row in rows],
+            [gate.SCOPE_CONTAMINATION, gate.PREFERENCE_DRIFT],
+        )
+        self.assertTrue(all(row.model == gate.matrix.QWEN_32B_Q4KM for row in rows))
+        frozen = gate.frozen_sentinel_rows(
+            model=gate.matrix.QWEN_32B_Q4KM,
+            gate_role="descriptive_headroom_frozen_sentinel",
+        )[0]
+        self.assertEqual(frozen.model, gate.matrix.QWEN_32B_Q4KM)
+        self.assertEqual(frozen.gate_role, "descriptive_headroom_frozen_sentinel")
+
     def test_expected_denominators_match_current_generator_contract(self) -> None:
         expected = {
             gate.FORCED_CONTRADICTION: (150, 90, 120),
@@ -132,6 +148,30 @@ class ComponentGateDecisionTests(unittest.TestCase):
         self.assertIn("run_prompt_regression", plan["phase_a_contract"]["source"])
         self.assertIn("run_determinism_check", plan["determinism_contract"]["source"])
         self.assertIn("_n60_primary_floor_predictions.json", plan["rows"][0]["paths"]["predictions"])
+
+    def test_dry_run_supports_selected_headroom_families_and_headroom_frozen_sentinel(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plan = gate.dry_run_plan(
+                output_dir=Path(tmpdir),
+                model_command="python3 scripts/ollama_component_extractor.py",
+                decoding_json='{"temperature": 0}',
+                per_scenario_timeout_seconds=180.0,
+                include_headroom=True,
+                headroom_families=(gate.SCOPE_CONTAMINATION, gate.PREFERENCE_DRIFT),
+                include_headroom_frozen_sentinel=True,
+            )
+
+        rows = plan["rows"]
+        self.assertEqual(len(rows), 9)
+        headroom_rows = [row for row in rows if row["gate_role"].startswith("descriptive_headroom")]
+        self.assertEqual(
+            {(row["family"], row["gate_role"]) for row in headroom_rows},
+            {
+                (gate.SCOPE_CONTAMINATION, "descriptive_headroom"),
+                (gate.PREFERENCE_DRIFT, "descriptive_headroom"),
+                (gate.MECHANISM_DIVERSE_HELDOUT, "descriptive_headroom_frozen_sentinel"),
+            },
+        )
 
     def test_oracle_summary_unlocks_and_marks_b_cubed_observed_only(self) -> None:
         results = [_oracle_row_result(row) for row in gate.primary_gate_rows()]

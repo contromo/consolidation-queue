@@ -149,6 +149,7 @@ def primary_gate_rows(
 def headroom_gate_rows(
     prompt_path: Path = matrix.GENERAL_PROMPT_PATH,
     prompt_label: str = matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+    families: Sequence[str] = PRIMARY_GATE_FAMILIES,
 ) -> List[GateRow]:
     return [
         GateRow(
@@ -160,23 +161,26 @@ def headroom_gate_rows(
             prompt_path=prompt_path,
             gate_role="descriptive_headroom",
         )
-        for family in PRIMARY_GATE_FAMILIES
+        for family in families
     ]
 
 
 def frozen_sentinel_rows(
     prompt_path: Path = matrix.GENERAL_PROMPT_PATH,
     prompt_label: str = matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+    *,
+    model: matrix.ModelSpec = matrix.QWEN_7B_Q4KM,
+    gate_role: str = "frozen_sentinel_floor",
 ) -> List[GateRow]:
     return [
         GateRow(
             family=MECHANISM_DIVERSE_HELDOUT,
             template_mix=TEMPLATE_MIX_FROZEN,
             scenarios=FROZEN_SENTINEL_SCENARIO_COUNT,
-            model=matrix.QWEN_7B_Q4KM,
+            model=model,
             prompt_label=prompt_label,
             prompt_path=prompt_path,
-            gate_role="frozen_sentinel_floor",
+            gate_role=gate_role,
         )
     ]
 
@@ -330,8 +334,11 @@ def run_gate_decision(
     per_scenario_timeout_seconds: float,
     general_prompt_path: Path = matrix.GENERAL_PROMPT_PATH,
     general_prompt_label: str = matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+    summary_label: Optional[str] = None,
     include_headroom: bool = False,
     include_frozen_sentinel: bool = False,
+    headroom_families: Sequence[str] = PRIMARY_GATE_FAMILIES,
+    include_headroom_frozen_sentinel: bool = False,
     force: bool = False,
 ) -> Path:
     matrix.run_prompt_regression(
@@ -371,11 +378,34 @@ def run_gate_decision(
                 per_scenario_timeout_seconds=per_scenario_timeout_seconds,
                 force=force,
             )
-            for row in headroom_gate_rows(general_prompt_path, general_prompt_label)
+            for row in headroom_gate_rows(
+                general_prompt_path,
+                general_prompt_label,
+                families=headroom_families,
+            )
         ]
         if include_headroom
         else []
     )
+    if include_headroom_frozen_sentinel:
+        headroom_results.extend(
+            [
+                run_or_reuse_gate_row(
+                    row,
+                    output_dir=output_dir,
+                    model_command=model_command,
+                    decoding_json=decoding_json,
+                    per_scenario_timeout_seconds=per_scenario_timeout_seconds,
+                    force=force,
+                )
+                for row in frozen_sentinel_rows(
+                    general_prompt_path,
+                    general_prompt_label,
+                    model=matrix.QWEN_32B_Q4KM,
+                    gate_role="descriptive_headroom_frozen_sentinel",
+                )
+            ]
+        )
     frozen_results = (
         [
             run_or_reuse_gate_row(
@@ -391,7 +421,10 @@ def run_gate_decision(
         if include_frozen_sentinel
         else []
     )
-    path = gate_summary_path(output_dir, general_prompt_label=general_prompt_label)
+    path = gate_summary_path(
+        output_dir,
+        general_prompt_label=summary_label or general_prompt_label,
+    )
     # These helpers raise StopConditionError on failure; reaching the summary write means both guards passed.
     _write_json(
         path,
@@ -923,10 +956,27 @@ def dry_run_plan(
     general_prompt_label: str = matrix.DEFAULT_GENERAL_PROMPT_LABEL,
     include_headroom: bool = False,
     include_frozen_sentinel: bool = False,
+    headroom_families: Sequence[str] = PRIMARY_GATE_FAMILIES,
+    include_headroom_frozen_sentinel: bool = False,
 ) -> Dict[str, object]:
     rows = primary_gate_rows(general_prompt_path, general_prompt_label)
     if include_headroom:
-        rows.extend(headroom_gate_rows(general_prompt_path, general_prompt_label))
+        rows.extend(
+            headroom_gate_rows(
+                general_prompt_path,
+                general_prompt_label,
+                families=headroom_families,
+            )
+        )
+    if include_headroom_frozen_sentinel:
+        rows.extend(
+            frozen_sentinel_rows(
+                general_prompt_path,
+                general_prompt_label,
+                model=matrix.QWEN_32B_Q4KM,
+                gate_role="descriptive_headroom_frozen_sentinel",
+            )
+        )
     if include_frozen_sentinel:
         rows.extend(frozen_sentinel_rows(general_prompt_path, general_prompt_label))
     return {
@@ -1272,15 +1322,28 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     )
     parser.add_argument("--general-prompt-path", type=Path, default=matrix.GENERAL_PROMPT_PATH)
     parser.add_argument("--general-prompt-label", default=matrix.DEFAULT_GENERAL_PROMPT_LABEL)
+    parser.add_argument("--summary-label", default=None)
     parser.add_argument("--include-headroom", action="store_true")
+    parser.add_argument(
+        "--headroom-family",
+        action="append",
+        dest="headroom_families",
+        choices=sorted(PRIMARY_GATE_FAMILIES),
+        default=None,
+    )
+    parser.add_argument("--include-headroom-frozen-sentinel", action="store_true")
     parser.add_argument("--include-frozen-sentinel", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.headroom_families and not args.include_headroom:
+        parser.error("--headroom-family requires --include-headroom")
+    return args
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parse_args(argv)
+    headroom_families = tuple(args.headroom_families or PRIMARY_GATE_FAMILIES)
     if args.dry_run:
         print(
             json.dumps(
@@ -1293,6 +1356,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     general_prompt_label=args.general_prompt_label,
                     include_headroom=args.include_headroom,
                     include_frozen_sentinel=args.include_frozen_sentinel,
+                    headroom_families=headroom_families,
+                    include_headroom_frozen_sentinel=args.include_headroom_frozen_sentinel,
                 ),
                 indent=2,
                 sort_keys=True,
@@ -1307,8 +1372,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             per_scenario_timeout_seconds=args.per_scenario_timeout_seconds,
             general_prompt_path=args.general_prompt_path,
             general_prompt_label=args.general_prompt_label,
+            summary_label=args.summary_label,
             include_headroom=args.include_headroom,
             include_frozen_sentinel=args.include_frozen_sentinel,
+            headroom_families=headroom_families,
+            include_headroom_frozen_sentinel=args.include_headroom_frozen_sentinel,
             force=args.force,
         )
     except matrix.StopConditionError as error:
