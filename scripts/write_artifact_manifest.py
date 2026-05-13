@@ -21,8 +21,9 @@ EXCLUDED_JSON_GLOBS = (
 
 def _repo_relative_path(path: Path) -> str:
     resolved = path.resolve()
+    repo_root = Path(_git_output(["rev-parse", "--show-toplevel"])).resolve()
     try:
-        return resolved.relative_to(Path.cwd().resolve()).as_posix()
+        return resolved.relative_to(repo_root).as_posix()
     except ValueError:
         return resolved.as_posix()
 

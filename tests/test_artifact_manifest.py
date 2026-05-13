@@ -1,9 +1,10 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.write_artifact_manifest import build_manifest, write_manifest
+from scripts.write_artifact_manifest import _repo_relative_path, build_manifest, write_manifest
 
 
 class ArtifactManifestTests(unittest.TestCase):
@@ -125,6 +126,19 @@ class ArtifactManifestTests(unittest.TestCase):
             self.assertEqual(written["run_name"], "custom")
             self.assertEqual(written["artifacts"][0]["runner_command"], "RUNNER_CMD")
             self.assertEqual(written["artifacts"][0]["archive_status"], "uploaded:s3://bucket/key")
+
+    def test_repo_relative_path_is_independent_of_cwd(self) -> None:
+        original_cwd = Path.cwd()
+        try:
+            os.chdir(original_cwd / "docs")
+            path = original_cwd / "data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed_manifest.json"
+
+            self.assertEqual(
+                _repo_relative_path(path),
+                "data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed_manifest.json",
+            )
+        finally:
+            os.chdir(original_cwd)
 
 
 if __name__ == "__main__":
