@@ -814,6 +814,21 @@ class ComponentGateDecisionTests(unittest.TestCase):
     def test_locked_7b_anchor_summary_counts_are_pinned(self) -> None:
         self.assertTrue(gate.locked_baseline_anchor_matches())
 
+    def test_anchor_verification_uses_pinned_counts_when_static_artifact_is_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "fresh_anchor_summary.json"
+            summary_path.write_text(
+                json.dumps({"unlock_checks": gate.LOCKED_BASELINE_UNLOCK_CHECKS}),
+                encoding="utf-8",
+            )
+
+            error = gate.verify_anchor_against_locked_baseline(
+                summary_path,
+                locked_summary_path=Path(tmpdir) / "absent_locked_summary.json",
+            )
+
+        self.assertIsNone(error)
+
     def test_anchor_verification_rejects_count_drift(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             summary_path = Path(tmpdir) / "fresh_anchor_summary.json"

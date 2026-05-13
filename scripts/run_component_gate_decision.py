@@ -807,6 +807,10 @@ def write_gate_manifest(
 
 
 def locked_baseline_anchor_matches(summary_path: Path = LOCKED_BASELINE_SUMMARY_PATH) -> bool:
+    # The static result artifact is ignored in clean CI checkouts; pinned
+    # constants remain the authoritative baseline when the artifact is absent.
+    if not summary_path.exists():
+        return True
     try:
         payload = _read_json(summary_path)
     except (OSError, ValueError, json.JSONDecodeError):
@@ -849,22 +853,32 @@ def verify_anchor_against_locked_baseline(
 ) -> Optional[matrix.StopConditionError]:
     try:
         new_payload = _read_json(new_summary_path)
-        locked_payload = _read_json(locked_summary_path)
     except (OSError, ValueError, json.JSONDecodeError) as error:
         return matrix.StopConditionError(
             "anchor_summary_unreadable",
             {
                 "new_summary_path": str(new_summary_path),
-                "locked_summary_path": str(locked_summary_path),
                 "message": str(error),
             },
         )
+    locked_checks: Optional[Dict[str, object]] = None
+    if locked_summary_path.exists():
+        try:
+            locked_payload = _read_json(locked_summary_path)
+        except (OSError, ValueError, json.JSONDecodeError) as error:
+            return matrix.StopConditionError(
+                "locked_baseline_summary_unreadable",
+                {
+                    "locked_summary_path": str(locked_summary_path),
+                    "message": str(error),
+                },
+            )
+        locked_checks = _mapping(locked_payload.get("unlock_checks"))
     new_checks = _mapping(new_payload.get("unlock_checks"))
-    locked_checks = _mapping(locked_payload.get("unlock_checks"))
     mismatches = []
     for key, expected in LOCKED_BASELINE_UNLOCK_CHECKS.items():
         observed = new_checks.get(key)
-        locked_observed = locked_checks.get(key)
+        locked_observed = locked_checks.get(key) if locked_checks is not None else expected
         if observed != expected or locked_observed != expected:
             mismatches.append(
                 {
@@ -881,6 +895,7 @@ def verify_anchor_against_locked_baseline(
         {
             "new_summary_path": str(new_summary_path),
             "locked_summary_path": str(locked_summary_path),
+            "locked_summary_present": locked_checks is not None,
             "mismatches": mismatches,
         },
     )
