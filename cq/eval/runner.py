@@ -6,6 +6,13 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
+from cq.eval.abstention import (
+    PRIMARY_HARMFUL_MECHANISMS,
+    PRIMARY_USEFUL_MECHANISMS,
+    abstention_decision_from_record,
+    stratified_bucket_comparison,
+    useful_mechanism_comparison,
+)
 from cq.eval.bootstrap import paired_bootstrap_confidence_result
 from cq.eval.end_to_end_eval import execute_scenario, failure_example_sort_key, summarize_runs
 from cq.eval.preregistration_lock import (
@@ -28,6 +35,7 @@ from cq.memory.scope_blind_transcript_rag import ScopeBlindTranscriptRAGLite
 from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import (
     generate_adversarial_upstream_noise_scenarios,
+    generate_evidence_conflict_spectrum_scenarios,
     generate_false_corroboration_scenarios,
     generate_forced_contradiction_scenarios,
     generate_memory_poisoning_scenarios,
@@ -45,6 +53,7 @@ USEFUL_PENDING_MEMORY = "useful_pending_memory"
 FALSE_CORROBORATION = "false_corroboration"
 MEMORY_POISONING = "memory_poisoning"
 ADVERSARIAL_UPSTREAM_NOISE = "adversarial_upstream_noise"
+EVIDENCE_CONFLICT_SPECTRUM = "evidence_conflict_spectrum"
 MECHANISM_DIVERSE_HELDOUT = "mechanism_diverse_heldout"
 POLICY_SET_DEFAULT = "default"
 POLICY_SET_PHASE_2_5 = "phase2_5"
@@ -63,6 +72,7 @@ TEMPLATE_MIXES_BY_FAMILY = {
     FALSE_CORROBORATION: ("mixed", "clean", "dirty", "heldout"),
     MEMORY_POISONING: ("mixed", "clean", "dirty", "heldout"),
     ADVERSARIAL_UPSTREAM_NOISE: ("mixed", "dirty", "heldout"),
+    EVIDENCE_CONFLICT_SPECTRUM: ("mixed", "heldout"),
     MECHANISM_DIVERSE_HELDOUT: ("frozen",),
 }
 COMPONENT_EVAL_FAMILIES = (
@@ -80,6 +90,7 @@ SUMMARY_METRIC_FORMAT = (
     "poison_promotion={poison:.2f} clean_displacement={clean_displacement:.2f} "
     "retraction_demotion={retraction_demotion:.2f} stale_promotion={stale_promotion:.2f} "
     "narrow_override={narrow_override:.2f} pending_competition={pending_competition:.2f}"
+    " useful_abstention={useful_abstention:.2f} harmful_abstention={harmful_abstention:.2f}"
 )
 OVERALL_SUMMARY_FORMAT = (
     "{policy_name}: useful_recall={useful:.2f} pending_use={pending:.2f} "
@@ -103,6 +114,8 @@ def _summary_metric_values(summary: dict) -> Dict[str, float]:
         "stale_promotion": summary.get("stale_evidence_promotion_rate", 0.0),
         "narrow_override": summary.get("narrow_scope_override_success_rate", 0.0),
         "pending_competition": summary.get("pending_competition_resolution_rate", 0.0),
+        "useful_abstention": summary.get("useful_abstention_rate", 0.0),
+        "harmful_abstention": summary.get("harmful_abstention_rate", 0.0),
     }
 
 
@@ -224,6 +237,8 @@ def generate_scenarios(
         return generate_memory_poisoning_scenarios(scenario_count, template_mix=template_mix)
     if family == ADVERSARIAL_UPSTREAM_NOISE:
         return generate_adversarial_upstream_noise_scenarios(scenario_count, template_mix=template_mix)
+    if family == EVIDENCE_CONFLICT_SPECTRUM:
+        return generate_evidence_conflict_spectrum_scenarios(scenario_count, template_mix=template_mix)
     raise ValueError("Unsupported family: {}".format(family))
 
 
@@ -268,6 +283,7 @@ def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
         FALSE_CORROBORATION,
         MEMORY_POISONING,
         ADVERSARIAL_UPSTREAM_NOISE,
+        EVIDENCE_CONFLICT_SPECTRUM,
         MECHANISM_DIVERSE_HELDOUT,
     }:
         policies.append(ScopeBlindTranscriptRAGLite)
@@ -347,6 +363,11 @@ def build_run_artifact(
             run_records_by_policy,
             policy_set=policy_set,
         ),
+        "primary_abstention_comparisons": _build_primary_abstention_comparisons(
+            run_records_by_policy,
+            family=family,
+            policy_set=policy_set,
+        ),
         "policies": policy_runs,
     }
 
@@ -374,6 +395,63 @@ def _build_pairwise_comparisons(
     return comparisons
 
 
+def _decisions_for_policy(policy_name: str, run_records: List[dict], family: str):
+    return [
+        abstention_decision_from_record(policy_name, record, family)
+        for record in run_records
+    ]
+
+
+def _build_primary_abstention_comparisons(
+    run_records_by_policy: Dict[str, List[dict]],
+    *,
+    family: str,
+    policy_set: str,
+) -> Dict[str, dict]:
+    if family != EVIDENCE_CONFLICT_SPECTRUM or policy_set != POLICY_SET_PHASE_2_5:
+        return {}
+    cq_records = run_records_by_policy.get(ConsolidationQueueLite.policy_name)
+    mem0_records = run_records_by_policy.get(Mem0Lite.policy_name)
+    if cq_records is None or mem0_records is None:
+        return {}
+    cq = _decisions_for_policy(ConsolidationQueueLite.policy_name, cq_records, family)
+    mem0 = _decisions_for_policy(Mem0Lite.policy_name, mem0_records, family)
+    useful_rows = {}
+    for mechanism in PRIMARY_USEFUL_MECHANISMS:
+        if any(decision.mechanism == mechanism for decision in cq):
+            useful_rows[mechanism] = useful_mechanism_comparison(cq, mem0, mechanism=mechanism)
+    harmful_mechanisms = [
+        mechanism
+        for mechanism in PRIMARY_HARMFUL_MECHANISMS
+        if any(decision.mechanism == mechanism for decision in cq)
+    ]
+    harmful_row = None
+    if harmful_mechanisms:
+        harmful = stratified_bucket_comparison(
+            cq,
+            mem0,
+            mechanisms=harmful_mechanisms,
+            metric_name="harmful_abstention",
+        )
+        harmful_row = {
+            "metric_name": "harmful_abstention_rate",
+            "mechanisms": list(harmful_mechanisms),
+            "point_estimate_delta": harmful.point_estimate_delta,
+            "one_sided_95_lcb": harmful.lower_confidence_bound,
+            "one_sided_95_ucb": harmful.upper_confidence_bound,
+            "resamples": harmful.resamples,
+            "seed": harmful.seed,
+        }
+    return {
+        "consolidation_queue_vs_mem0_primary_abstention": {
+            "reference_policy_name": ConsolidationQueueLite.policy_name,
+            "comparator_policy_name": Mem0Lite.policy_name,
+            "useful_mechanism_rows": useful_rows,
+            "harmful_bucket_row": harmful_row,
+        }
+    }
+
+
 def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> None:
     output_json.parent.mkdir(parents=True, exist_ok=True)
     output_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -399,6 +477,12 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                 "stale_evidence_promotion_rate",
                 "narrow_scope_override_success_rate",
                 "pending_competition_resolution_rate",
+                "useful_abstention_rate",
+                "useful_abstention_count",
+                "useful_abstention_applicable_count",
+                "harmful_abstention_rate",
+                "harmful_abstention_count",
+                "harmful_abstention_applicable_count",
                 "useful_recall",
                 "used_pending",
                 "durable_commit",
@@ -415,6 +499,7 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                 "comparison_comparator_policy_name",
                 "comparison_point_estimate_delta",
                 "comparison_one_sided_95_lcb",
+                "comparison_one_sided_95_ucb",
             ],
         )
         writer.writeheader()
@@ -485,6 +570,12 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                         "stale_evidence_promotion_rate": "",
                         "narrow_scope_override_success_rate": "",
                         "pending_competition_resolution_rate": "",
+                        "useful_abstention_rate": "",
+                        "useful_abstention_count": "",
+                        "useful_abstention_applicable_count": "",
+                        "harmful_abstention_rate": "",
+                        "harmful_abstention_count": "",
+                        "harmful_abstention_applicable_count": "",
                         "useful_recall": "",
                         "used_pending": "",
                         "durable_commit": "",
@@ -501,6 +592,97 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                         "comparison_comparator_policy_name": comparison["comparator_policy_name"],
                         "comparison_point_estimate_delta": comparison["point_estimate_delta"],
                         "comparison_one_sided_95_lcb": comparison["one_sided_95_lcb"],
+                        "comparison_one_sided_95_ucb": comparison.get("one_sided_95_ucb", ""),
+                    }
+                )
+        for comparison_name, comparison in run_artifact.get("primary_abstention_comparisons", {}).items():
+            for mechanism, useful in comparison.get("useful_mechanism_rows", {}).items():
+                writer.writerow(
+                    {
+                        "policy_name": "",
+                        "summary_scope": "abstention_comparison",
+                        "template_id": mechanism,
+                        "template_kind": "",
+                        "template_split": "",
+                        "scenario_count": useful["scenario_count"],
+                        "answer_correctness": "",
+                        "false_assertion_rate": "",
+                        "leakage_rate": "",
+                        "premature_promotion_rate": "",
+                        "poison_promotion_rate": "",
+                        "clean_durable_displacement_rate": "",
+                        "retraction_demotion_rate": "",
+                        "stale_evidence_promotion_rate": "",
+                        "narrow_scope_override_success_rate": "",
+                        "pending_competition_resolution_rate": "",
+                        "useful_abstention_rate": "",
+                        "useful_abstention_count": "",
+                        "useful_abstention_applicable_count": "",
+                        "harmful_abstention_rate": "",
+                        "harmful_abstention_count": "",
+                        "harmful_abstention_applicable_count": "",
+                        "useful_recall": "",
+                        "used_pending": "",
+                        "durable_commit": "",
+                        "useful_recall_before_contradiction": "",
+                        "used_pending_before_contradiction": "",
+                        "durable_commit_before_contradiction": "",
+                        "false_assertion_after_contradiction": "",
+                        "contradiction_recovery_rate": "",
+                        "answer_correctness_after_contradiction": "",
+                        "average_time_to_demotion": "",
+                        "comparison_name": comparison_name,
+                        "comparison_metric_name": useful["metric_name"],
+                        "comparison_reference_policy_name": comparison["reference_policy_name"],
+                        "comparison_comparator_policy_name": comparison["comparator_policy_name"],
+                        "comparison_point_estimate_delta": useful["point_estimate_delta"],
+                        "comparison_one_sided_95_lcb": useful["one_sided_95_lcb"],
+                        "comparison_one_sided_95_ucb": "",
+                    }
+                )
+            harmful = comparison.get("harmful_bucket_row")
+            if harmful:
+                writer.writerow(
+                    {
+                        "policy_name": "",
+                        "summary_scope": "abstention_comparison",
+                        "template_id": "+".join(harmful["mechanisms"]),
+                        "template_kind": "",
+                        "template_split": "",
+                        "scenario_count": "",
+                        "answer_correctness": "",
+                        "false_assertion_rate": "",
+                        "leakage_rate": "",
+                        "premature_promotion_rate": "",
+                        "poison_promotion_rate": "",
+                        "clean_durable_displacement_rate": "",
+                        "retraction_demotion_rate": "",
+                        "stale_evidence_promotion_rate": "",
+                        "narrow_scope_override_success_rate": "",
+                        "pending_competition_resolution_rate": "",
+                        "useful_abstention_rate": "",
+                        "useful_abstention_count": "",
+                        "useful_abstention_applicable_count": "",
+                        "harmful_abstention_rate": "",
+                        "harmful_abstention_count": "",
+                        "harmful_abstention_applicable_count": "",
+                        "useful_recall": "",
+                        "used_pending": "",
+                        "durable_commit": "",
+                        "useful_recall_before_contradiction": "",
+                        "used_pending_before_contradiction": "",
+                        "durable_commit_before_contradiction": "",
+                        "false_assertion_after_contradiction": "",
+                        "contradiction_recovery_rate": "",
+                        "answer_correctness_after_contradiction": "",
+                        "average_time_to_demotion": "",
+                        "comparison_name": comparison_name,
+                        "comparison_metric_name": harmful["metric_name"],
+                        "comparison_reference_policy_name": comparison["reference_policy_name"],
+                        "comparison_comparator_policy_name": comparison["comparator_policy_name"],
+                        "comparison_point_estimate_delta": harmful["point_estimate_delta"],
+                        "comparison_one_sided_95_lcb": harmful["one_sided_95_lcb"],
+                        "comparison_one_sided_95_ucb": harmful["one_sided_95_ucb"],
                     }
                 )
 
@@ -517,6 +699,7 @@ def main(argv: List[str] = None) -> int:
             FALSE_CORROBORATION,
             MEMORY_POISONING,
             ADVERSARIAL_UPSTREAM_NOISE,
+            EVIDENCE_CONFLICT_SPECTRUM,
             MECHANISM_DIVERSE_HELDOUT,
         ],
         default=FORCED_CONTRADICTION,

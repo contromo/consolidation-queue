@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Type
 
+from cq.eval.abstention import abstained_from_trace, asserted_candidate_ids, scenario_intent
 from cq.eval.metrics import iso_to_datetime, minutes_between
 from cq.schemas.memory import MemoryState, jsonable
 from cq.schemas.metrics import PolicyScenarioMetrics, PolicySummaryMetrics
@@ -67,6 +68,13 @@ def compute_policy_metrics(
             question_traces,
             store_snapshot,
         )
+    if scenario.task_family == TaskFamily.EVIDENCE_CONFLICT_SPECTRUM:
+        return compute_evidence_conflict_spectrum_metrics(
+            policy_name,
+            scenario,
+            question_traces,
+            store_snapshot,
+        )
     raise ValueError("Unsupported task family: {}".format(scenario.task_family))
 
 
@@ -78,6 +86,7 @@ DIAGNOSTIC_PHASE_BY_FAMILY = {
     TaskFamily.FALSE_CORROBORATION: "corroboration_probe",
     TaskFamily.MEMORY_POISONING: "poison_probe",
     TaskFamily.ADVERSARIAL_UPSTREAM_NOISE: "adversarial_probe",
+    TaskFamily.EVIDENCE_CONFLICT_SPECTRUM: "evidence_conflict_probe",
 }
 
 
@@ -110,6 +119,10 @@ ASSERTION_FAILURE_BY_FAMILY = {
         "false_assertion",
         "forbidden_adversarial_candidate_asserted",
     ),
+    TaskFamily.EVIDENCE_CONFLICT_SPECTRUM: (
+        "false_assertion",
+        "forbidden_conflict_candidate_asserted",
+    ),
 }
 
 
@@ -121,6 +134,7 @@ PREMATURE_PROMOTION_REASON_BY_FAMILY = {
     TaskFamily.FALSE_CORROBORATION: "false_corroboration_stack_promoted",
     TaskFamily.MEMORY_POISONING: "poison_candidate_promoted",
     TaskFamily.ADVERSARIAL_UPSTREAM_NOISE: "forbidden_adversarial_candidate_promoted",
+    TaskFamily.EVIDENCE_CONFLICT_SPECTRUM: "forbidden_conflict_candidate_promoted",
 }
 
 
@@ -581,7 +595,7 @@ def compute_adversarial_upstream_noise_metrics(
         )
         asserted_ids = _asserted_candidate_ids(probe_trace, store_snapshot)
         abstention_ok = bool(scenario.expected_lifecycle.get("abstention_ok", False))
-        abstained = not asserted_ids and not list(getattr(probe_trace, "resolved_candidate_ids", []))
+        abstained = abstained_from_trace(probe_trace, store_snapshot)
         answer_correctness = 1.0 if abstention_ok and abstained else 0.0
         false_assertion = 1.0 if asserted_ids else 0.0
 
@@ -643,6 +657,51 @@ def compute_adversarial_upstream_noise_metrics(
     )
 
 
+def compute_evidence_conflict_spectrum_metrics(
+    policy_name: str,
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+) -> PolicyScenarioMetrics:
+    probe_question, probe_trace = _probe_question_and_trace(
+        scenario,
+        question_traces,
+        "evidence_conflict_probe",
+    )
+    asserted_ids = _asserted_candidate_ids(probe_trace, store_snapshot)
+    abstention_ok, commit_required, _, _ = scenario_intent(
+        family=scenario.task_family.value,
+        template_id=scenario.template_id,
+        expected_lifecycle=scenario.expected_lifecycle,
+    )
+    abstained = abstained_from_trace(probe_trace, store_snapshot)
+    resolved_gold = _contains_any(probe_trace.resolved_candidate_ids, probe_question.gold_candidate_ids)
+    answer_correctness = 1.0 if (abstention_ok and abstained) or (commit_required and resolved_gold) else 0.0
+    false_assertion = 1.0 if _contains_any(asserted_ids, probe_question.forbidden_candidate_ids) else 0.0
+    return PolicyScenarioMetrics(
+        scenario_id=scenario.scenario_id,
+        policy_name=policy_name,
+        useful_recall_before_contradiction=0.0,
+        used_pending_before_contradiction=0.0,
+        durable_commit_before_contradiction=0.0,
+        false_assertion_after_contradiction=0.0,
+        contradiction_recovery_rate=0.0,
+        answer_correctness_after_contradiction=0.0,
+        time_to_demotion=None,
+        answer_correctness=answer_correctness,
+        false_assertion_rate=false_assertion,
+        leakage_rate=0.0,
+        premature_promotion_rate=_premature_promotion_rate(store_snapshot, scenario),
+        useful_recall=answer_correctness,
+        used_pending=1.0 if probe_trace.used_pending else 0.0,
+        durable_commit=1.0 if getattr(probe_trace, "used_memory_ids", []) else 0.0,
+        useful_abstention=1.0 if abstention_ok and abstained else 0.0,
+        useful_abstention_applicable=1.0 if abstention_ok else 0.0,
+        harmful_abstention=1.0 if commit_required and abstained else 0.0,
+        harmful_abstention_applicable=1.0 if commit_required else 0.0,
+    )
+
+
 def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics:
     metrics = []
     policy_name = ""
@@ -679,6 +738,10 @@ def summarize_runs(run_records: List[Dict[str, object]]) -> PolicySummaryMetrics
                     "pending_competition_resolution_rate",
                     0.0,
                 ),
+                useful_abstention=metric.get("useful_abstention", 0.0),
+                useful_abstention_applicable=metric.get("useful_abstention_applicable", 0.0),
+                harmful_abstention=metric.get("harmful_abstention", 0.0),
+                harmful_abstention_applicable=metric.get("harmful_abstention_applicable", 0.0),
                 useful_recall=metric.get(
                     "useful_recall",
                     metric["useful_recall_before_contradiction"],
@@ -821,34 +884,7 @@ def _durable_claims(
 
 
 def _asserted_candidate_ids(trace: object, store_snapshot: Dict[str, object]) -> List[str]:
-    used_memory_ids = getattr(trace, "used_memory_ids", [])
-    resolved_candidate_ids = list(getattr(trace, "resolved_candidate_ids", []))
-    if not used_memory_ids:
-        return resolved_candidate_ids
-
-    asserted_ids = []
-    unresolved_used_ids = []
-    durable_by_id = {
-        durable["memory_id"]: durable
-        for durable in store_snapshot.get("durable_memories", [])
-    }
-    for memory_id in used_memory_ids:
-        durable = durable_by_id.get(memory_id)
-        if durable is None:
-            unresolved_used_ids.append(memory_id)
-            continue
-        created_from_ids = durable.get("created_from_candidate_ids", [])
-        if created_from_ids:
-            # A reinforced durable asserts its original durable claim, not every corroborating source.
-            asserted_ids.append(created_from_ids[0])
-        else:
-            unresolved_used_ids.append(memory_id)
-    if asserted_ids:
-        for candidate_id in resolved_candidate_ids:
-            if candidate_id in unresolved_used_ids and candidate_id not in asserted_ids:
-                asserted_ids.append(candidate_id)
-        return asserted_ids
-    return resolved_candidate_ids
+    return asserted_candidate_ids(trace, store_snapshot)
 
 
 def _old_claim_invalidated(store_snapshot: Dict[str, object], old_candidate_id: str) -> bool:

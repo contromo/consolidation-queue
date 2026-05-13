@@ -28,6 +28,10 @@ class PolicyScenarioMetrics:
     stale_evidence_promotion_rate: float = 0.0
     narrow_scope_override_success_rate: float = 0.0
     pending_competition_resolution_rate: float = 0.0
+    useful_abstention: float = 0.0
+    useful_abstention_applicable: float = 0.0
+    harmful_abstention: float = 0.0
+    harmful_abstention_applicable: float = 0.0
     useful_recall: float = _UNSET_FLOAT
     used_pending: float = _UNSET_FLOAT
     durable_commit: float = _UNSET_FLOAT
@@ -66,6 +70,12 @@ class PolicySummaryMetrics:
     stale_evidence_promotion_rate: float = 0.0
     narrow_scope_override_success_rate: float = 0.0
     pending_competition_resolution_rate: float = 0.0
+    useful_abstention_rate: float = 0.0
+    useful_abstention_count: float = 0.0
+    useful_abstention_applicable_count: float = 0.0
+    harmful_abstention_rate: float = 0.0
+    harmful_abstention_count: float = 0.0
+    harmful_abstention_applicable_count: float = 0.0
     useful_recall: float = 0.0
     used_pending: float = 0.0
     durable_commit: float = 0.0
@@ -94,12 +104,22 @@ class PolicySummaryMetrics:
                 stale_evidence_promotion_rate=0.0,
                 narrow_scope_override_success_rate=0.0,
                 pending_competition_resolution_rate=0.0,
+                useful_abstention_rate=0.0,
+                useful_abstention_count=0.0,
+                useful_abstention_applicable_count=0.0,
+                harmful_abstention_rate=0.0,
+                harmful_abstention_count=0.0,
+                harmful_abstention_applicable_count=0.0,
                 useful_recall=0.0,
                 used_pending=0.0,
                 durable_commit=0.0,
             )
         demotions = [metric.time_to_demotion for metric in metrics if metric.time_to_demotion is not None]
         average_time = sum(demotions) / len(demotions) if demotions else 0.0
+        useful_applicable = sum(metric.useful_abstention_applicable for metric in metrics)
+        useful_count = sum(metric.useful_abstention for metric in metrics)
+        harmful_applicable = sum(metric.harmful_abstention_applicable for metric in metrics)
+        harmful_count = sum(metric.harmful_abstention for metric in metrics)
         return cls(
             policy_name=policy_name,
             scenario_count=count,
@@ -145,6 +165,12 @@ class PolicySummaryMetrics:
                 metric.pending_competition_resolution_rate for metric in metrics
             )
             / count,
+            useful_abstention_rate=(useful_count / useful_applicable if useful_applicable else 0.0),
+            useful_abstention_count=useful_count,
+            useful_abstention_applicable_count=useful_applicable,
+            harmful_abstention_rate=(harmful_count / harmful_applicable if harmful_applicable else 0.0),
+            harmful_abstention_count=harmful_count,
+            harmful_abstention_applicable_count=harmful_applicable,
             useful_recall=sum(metric.useful_recall for metric in metrics) / count,
             used_pending=sum(metric.used_pending for metric in metrics) / count,
             durable_commit=sum(metric.durable_commit for metric in metrics) / count,

@@ -16,6 +16,7 @@ class TaskFamily(str, Enum):
     FALSE_CORROBORATION = "false_corroboration"
     MEMORY_POISONING = "memory_poisoning"
     ADVERSARIAL_UPSTREAM_NOISE = "adversarial_upstream_noise"
+    EVIDENCE_CONFLICT_SPECTRUM = "evidence_conflict_spectrum"
 
 
 class EventKind(str, Enum):

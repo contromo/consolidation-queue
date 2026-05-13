@@ -1,5 +1,51 @@
 # Product Progress
 
+## 2026-05-13 — Abstention-calibration benchmark implementation staged
+
+### What shipped
+
+- added the oracle-only `evidence_conflict_spectrum` family for the Phase 2.6
+  abstention-calibration benchmark
+- added denominator-aware abstention replay/scoring, including primary
+  CQ-vs-`Mem0Lite` useful-mechanism rows and harmful-bucket comparison rows
+- added structure-summary and CQ-vs-`Mem0Lite` non-degeneracy probe scripts
+- wrote the Phase 2.6 preregistration in
+  `docs/abstention_quality_preregistration.md`
+- generated pre-run artifacts:
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_structure_mixed.json`
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_structure_heldout.json`
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_nondegeneracy_mixed.json`
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_nondegeneracy_heldout.json`
+- replayed recorded abstention metrics into `data/results/abstention/`
+
+### Why it matters
+
+- the witness-conflict finding is now isolated as a stricter abstention-axis
+  test rather than being folded into generic answer correctness
+- the primary gate requires CQ to win both abstain-required mechanisms and stay
+  non-inferior on commit-required mechanisms, so over-abstention cannot pass as
+  calibration
+- the non-degeneracy probe checks that `conflict_moderate` and
+  `conflict_witness` actually exercise different CQ and `Mem0Lite` actions
+  before the full sweeps run
+
+### Evidence
+
+- focused tests:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_abstention tests.test_evidence_conflict_spectrum tests.test_runner_policy_sets -q`
+- broader verification:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_abstention tests.test_evidence_conflict_spectrum tests.test_runner_policy_sets tests.test_bootstrap tests.test_metrics tests.test_adversarial_upstream_noise tests.test_component_eval tests.test_local_extractor -q`
+- dry-run replay preflight:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_abstention_replay.py --dry-run`
+- pre-run structure/probe artifacts listed above
+
+### Open issues / next
+
+- commit the Phase 2.6 preregistration and pre-run artifacts before running the
+  full mixed/held-out `evidence_conflict_spectrum` sweeps
+- after sweeps, write `docs/abstention_quality_results.md` from saved artifacts
+  only
+
 ## 2026-05-12 — Adversarial upstream-noise headline runs recorded
 
 ### What shipped

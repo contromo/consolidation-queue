@@ -1,0 +1,172 @@
+{
+  "family": "evidence_conflict_spectrum",
+  "template_mix": "heldout",
+  "scenario_count": 600,
+  "summary_by_mechanism": {
+    "conflict_mild": {
+      "scenario_count": 120,
+      "abstention_ok_rate": 0.0,
+      "commit_required_rate": 1.0,
+      "gray_zone_rate": 0.0,
+      "gold_candidate_count_distribution": {
+        "1": 120
+      },
+      "conflict_candidate_count_distribution": {
+        "2": 40,
+        "3": 40,
+        "4": 40
+      },
+      "distinct_source_count_distribution": {
+        "2": 40,
+        "3": 40,
+        "4": 40
+      },
+      "candidate_strength_distribution": {
+        "0.32": 160,
+        "0.33": 80,
+        "0.76": 120
+      },
+      "top_strength_rank_distribution": {
+        "2": 40,
+        "3": 40,
+        "4": 40
+      },
+      "top_strength_side_distribution": {
+        "correct": 120
+      }
+    },
+    "conflict_moderate": {
+      "scenario_count": 120,
+      "abstention_ok_rate": 1.0,
+      "commit_required_rate": 0.0,
+      "gray_zone_rate": 0.0,
+      "gold_candidate_count_distribution": {
+        "0": 120
+      },
+      "conflict_candidate_count_distribution": {
+        "3": 40,
+        "4": 40,
+        "5": 40
+      },
+      "distinct_source_count_distribution": {
+        "3": 40,
+        "4": 40,
+        "5": 40
+      },
+      "candidate_strength_distribution": {
+        "0.33": 160,
+        "0.34": 80,
+        "0.59": 40,
+        "0.60": 200
+      },
+      "top_strength_rank_distribution": {
+        "1": 80,
+        "2": 40
+      },
+      "top_strength_side_distribution": {
+        "strong": 120
+      }
+    },
+    "conflict_polluted": {
+      "scenario_count": 120,
+      "abstention_ok_rate": 0.0,
+      "commit_required_rate": 1.0,
+      "gray_zone_rate": 0.0,
+      "gold_candidate_count_distribution": {
+        "1": 120
+      },
+      "conflict_candidate_count_distribution": {
+        "4": 40,
+        "5": 40,
+        "6": 40
+      },
+      "distinct_source_count_distribution": {
+        "4": 40,
+        "5": 40,
+        "6": 40
+      },
+      "candidate_strength_distribution": {
+        "0.28": 200,
+        "0.30": 160,
+        "0.32": 120,
+        "0.78": 120
+      },
+      "top_strength_rank_distribution": {
+        "4": 40,
+        "5": 40,
+        "6": 40
+      },
+      "top_strength_side_distribution": {
+        "correct": 120
+      }
+    },
+    "conflict_witness": {
+      "scenario_count": 120,
+      "abstention_ok_rate": 1.0,
+      "commit_required_rate": 0.0,
+      "gray_zone_rate": 0.0,
+      "gold_candidate_count_distribution": {
+        "0": 120
+      },
+      "conflict_candidate_count_distribution": {
+        "4": 60,
+        "5": 60
+      },
+      "distinct_source_count_distribution": {
+        "4": 60,
+        "5": 60
+      },
+      "candidate_strength_distribution": {
+        "0.33": 180,
+        "0.34": 120,
+        "0.59": 60,
+        "0.60": 180
+      },
+      "top_strength_rank_distribution": {
+        "1": 60,
+        "2": 60
+      },
+      "top_strength_side_distribution": {
+        "strong": 120
+      }
+    },
+    "conflict_zero": {
+      "scenario_count": 120,
+      "abstention_ok_rate": 0.0,
+      "commit_required_rate": 1.0,
+      "gray_zone_rate": 0.0,
+      "gold_candidate_count_distribution": {
+        "1": 120
+      },
+      "conflict_candidate_count_distribution": {
+        "1": 120
+      },
+      "distinct_source_count_distribution": {
+        "1": 120
+      },
+      "candidate_strength_distribution": {
+        "0.76": 120
+      },
+      "top_strength_rank_distribution": {
+        "1": 120
+      },
+      "top_strength_side_distribution": {
+        "correct": 120
+      }
+    }
+  },
+  "variance_checks": {
+    "conflict_moderate": {
+      "conflict_or_gold_cardinality_distinct_values": 3,
+      "source_count_distinct_values": 3,
+      "top_strength_rank_or_side_distinct_values": 2,
+      "passed": true
+    },
+    "conflict_polluted": {
+      "conflict_or_gold_cardinality_distinct_values": 3,
+      "source_count_distinct_values": 3,
+      "top_strength_rank_or_side_distinct_values": 3,
+      "passed": true
+    }
+  }
+}

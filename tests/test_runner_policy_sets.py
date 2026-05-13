@@ -6,6 +6,7 @@ import unittest
 from cq.eval.runner import (
     ADVERSARIAL_UPSTREAM_NOISE,
     CQ_ABLATION_POLICIES,
+    EVIDENCE_CONFLICT_SPECTRUM,
     FALSE_CORROBORATION,
     FORCED_CONTRADICTION,
     MEMORY_POISONING,
@@ -28,6 +29,7 @@ class RunnerPolicySetTests(unittest.TestCase):
             FALSE_CORROBORATION,
             MEMORY_POISONING,
             ADVERSARIAL_UPSTREAM_NOISE,
+            EVIDENCE_CONFLICT_SPECTRUM,
         ]:
             with self.subTest(family=family):
                 artifact = build_run_artifact(1, template_mix="mixed", family=family)
@@ -47,6 +49,7 @@ class RunnerPolicySetTests(unittest.TestCase):
             FALSE_CORROBORATION,
             MEMORY_POISONING,
             ADVERSARIAL_UPSTREAM_NOISE,
+            EVIDENCE_CONFLICT_SPECTRUM,
         ]:
             with self.subTest(family=family):
                 artifact = build_run_artifact(
@@ -87,6 +90,19 @@ class RunnerPolicySetTests(unittest.TestCase):
             "scope_blind_transcript_rag_lite",
             [policy["policy_name"] for policy in scoped["policies"]],
         )
+
+    def test_evidence_conflict_spectrum_is_runner_only_not_component_family(self) -> None:
+        artifact = build_run_artifact(
+            5,
+            template_mix="mixed",
+            family=EVIDENCE_CONFLICT_SPECTRUM,
+            policy_set=POLICY_SET_PHASE_2_5,
+        )
+        policy_names = [policy["policy_name"] for policy in artifact["policies"]]
+
+        self.assertIn("mem0_lite", policy_names)
+        self.assertIn("scope_blind_transcript_rag_lite", policy_names)
+        self.assertIn("primary_abstention_comparisons", artifact)
 
     def test_adversarial_family_rejects_clean_mix(self) -> None:
         with self.assertRaisesRegex(ValueError, "Template mix 'clean' is not supported"):

@@ -7,6 +7,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 from cq.schemas.memory import CandidateUpdate, ClaimType, ProvenanceRecord, ScopeLevel
 from cq.schemas.scenario import EventKind, QuestionSpec, Scenario, ScenarioEvent, TaskFamily
 from cq.simulator.adversarial_upstream_noise import generate_adversarial_upstream_noise_scenarios
+from cq.simulator.evidence_conflict_spectrum import generate_evidence_conflict_spectrum_scenarios
 
 
 COMPANY_PAIRS: Sequence[Tuple[str, str]] = (
