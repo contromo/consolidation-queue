@@ -4,9 +4,11 @@ import random
 
 from cq.eval.bootstrap import (
     one_sided_lower_confidence_bound,
+    one_sided_upper_confidence_bound,
     paired_bootstrap_confidence_result,
     paired_bootstrap_sample_means,
     paired_delta_point_estimate,
+    stratified_paired_bootstrap_sample_means,
 )
 
 
@@ -26,6 +28,22 @@ class BootstrapTests(unittest.TestCase):
             one_sided_lower_confidence_bound(samples, confidence_level=0.80),
             0.2,
         )
+
+    def test_upper_confidence_bound_uses_one_sided_quantile(self) -> None:
+        samples = [0.1, 0.2, 0.3, 0.4, 0.5]
+        self.assertEqual(
+            one_sided_upper_confidence_bound(samples, confidence_level=0.80),
+            0.4,
+        )
+
+    def test_stratified_bootstrap_keeps_strata_separate(self) -> None:
+        samples = stratified_paired_bootstrap_sample_means(
+            [[1.0, 1.0], [-1.0, -1.0, -1.0]],
+            resamples=10,
+            seed=3,
+        )
+
+        self.assertEqual(samples, [0.0] * 10)
 
     def test_confidence_result_exposes_point_estimate_and_lcb(self) -> None:
         result = paired_bootstrap_confidence_result(

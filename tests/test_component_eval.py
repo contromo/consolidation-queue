@@ -846,6 +846,14 @@ class ComponentEvalTests(unittest.TestCase):
         for gate in artifact["quality_gates"].values():
             self.assertTrue(gate["passed"])
 
+    def test_evidence_conflict_spectrum_is_not_component_eval_eligible(self) -> None:
+        with self.assertRaisesRegex(ValueError, "not component-eval eligible"):
+            build_oracle_component_eval_artifact(
+                family="evidence_conflict_spectrum",
+                scenario_count=5,
+                template_mix="mixed",
+            )
+
     def test_oracle_upper_bound_reference_matrix_still_scores_one_for_applicable_gates(self) -> None:
         for family in COMPONENT_EVAL_FAMILIES:
             template_mixes = TEMPLATE_MIXES_BY_FAMILY[family]

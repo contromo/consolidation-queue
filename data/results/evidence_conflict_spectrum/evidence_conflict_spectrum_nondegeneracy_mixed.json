@@ -1,0 +1,63 @@
+{
+  "family": "evidence_conflict_spectrum",
+  "template_mix": "mixed",
+  "scenarios_per_mechanism": 20,
+  "policies": [
+    "consolidation_queue_lite",
+    "mem0_lite"
+  ],
+  "summary_by_mechanism": {
+    "conflict_mild": {
+      "joint_action_counts": {
+        "commit__commit": 20
+      },
+      "disagreement_count": 0,
+      "agreement_count": 20,
+      "has_disagreement": false,
+      "has_agreement": true,
+      "has_commit_agreement": true
+    },
+    "conflict_moderate": {
+      "joint_action_counts": {
+        "abstain__commit": 20
+      },
+      "disagreement_count": 20,
+      "agreement_count": 0,
+      "has_disagreement": true,
+      "has_agreement": false,
+      "has_commit_agreement": false
+    },
+    "conflict_polluted": {
+      "joint_action_counts": {
+        "commit__commit": 20
+      },
+      "disagreement_count": 0,
+      "agreement_count": 20,
+      "has_disagreement": false,
+      "has_agreement": true,
+      "has_commit_agreement": true
+    },
+    "conflict_witness": {
+      "joint_action_counts": {
+        "abstain__commit": 20
+      },
+      "disagreement_count": 20,
+      "agreement_count": 0,
+      "has_disagreement": true,
+      "has_agreement": false,
+      "has_commit_agreement": false
+    },
+    "conflict_zero": {
+      "joint_action_counts": {
+        "commit__commit": 20
+      },
+      "disagreement_count": 0,
+      "agreement_count": 20,
+      "has_disagreement": false,
+      "has_agreement": true,
+      "has_commit_agreement": true
+    }
+  },
+  "abstain_required_mechanisms_have_disagreement": true,
+  "commit_required_mechanisms_have_commit_agreement": true
+}

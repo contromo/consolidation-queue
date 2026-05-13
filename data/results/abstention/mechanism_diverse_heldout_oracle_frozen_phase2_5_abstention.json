@@ -1,0 +1,606 @@
+{
+  "experiment": "mechanism_diverse_heldout_oracle",
+  "family": "mechanism_diverse_heldout",
+  "template_mix": "frozen",
+  "policy_set": "phase2_5",
+  "policies": [
+    {
+      "policy_name": "consolidation_queue_lite",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "cq_no_contestation_demotion",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "cq_no_pending_lookup_use",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 2,
+        "useful_abstention_count": 1,
+        "harmful_abstention_count": 1,
+        "useful_abstention_rate": 1.0,
+        "harmful_abstention_rate": 0.5,
+        "abstain_rate": 0.6666666666666666
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 1,
+          "useful_abstention_count": 1,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 1,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 1,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 1.0,
+          "abstain_rate": 1.0
+        }
+      }
+    },
+    {
+      "policy_name": "cq_no_source_independence_gate",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "cq_no_wider_scope_pending_override",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "mem0_lite",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "naive_eager_write_lite",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "no_memory_lite",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 3,
+        "useful_abstention_count": 1,
+        "harmful_abstention_count": 2,
+        "useful_abstention_rate": 1.0,
+        "harmful_abstention_rate": 1.0,
+        "abstain_rate": 1.0
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 1,
+          "useful_abstention_count": 1,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 1,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 1,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 1.0,
+          "abstain_rate": 1.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 1,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 1,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 1.0,
+          "abstain_rate": 1.0
+        }
+      }
+    },
+    {
+      "policy_name": "reflection_eager_write_lite",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "scope_blind_transcript_rag_lite",
+      "summary": {
+        "scenario_count": 3,
+        "abstention_ok_count": 1,
+        "commit_required_count": 2,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "false_corroboration_adversarial_mixed_source": {
+          "scenario_count": 1,
+          "abstention_ok_count": 1,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "memory_poisoning_scope_laundered": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "preference_drift_long_horizon_corrections": {
+          "scenario_count": 1,
+          "abstention_ok_count": 0,
+          "commit_required_count": 1,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    }
+  ],
+  "pairwise_abstention_comparisons": {
+    "consolidation_queue_vs_mem0": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "mem0_lite",
+      "useful_abstention_rows": {
+        "false_corroboration_adversarial_mixed_source": {
+          "metric_name": "useful_abstention",
+          "mechanism": "false_corroboration_adversarial_mixed_source",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "scenario_count": 1
+        }
+      },
+      "harmful_abstention_rows": {
+        "memory_poisoning_scope_laundered": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "memory_poisoning_scope_laundered",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "scenario_count": 1
+        },
+        "preference_drift_long_horizon_corrections": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "preference_drift_long_horizon_corrections",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "scenario_count": 1
+        }
+      }
+    },
+    "consolidation_queue_vs_reflection_eager_write": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "reflection_eager_write_lite",
+      "useful_abstention_rows": {
+        "false_corroboration_adversarial_mixed_source": {
+          "metric_name": "useful_abstention",
+          "mechanism": "false_corroboration_adversarial_mixed_source",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "scenario_count": 1
+        }
+      },
+      "harmful_abstention_rows": {
+        "memory_poisoning_scope_laundered": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "memory_poisoning_scope_laundered",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "scenario_count": 1
+        },
+        "preference_drift_long_horizon_corrections": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "preference_drift_long_horizon_corrections",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "scenario_count": 1
+        }
+      }
+    }
+  },
+  "primary_comparisons": {
+    "consolidation_queue_vs_mem0_primary_abstention": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "mem0_lite",
+      "useful_mechanism_rows": {},
+      "harmful_bucket_row": null
+    }
+  }
+}

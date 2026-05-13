@@ -6,6 +6,13 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
+from cq.eval.abstention import (
+    PRIMARY_HARMFUL_MECHANISMS,
+    PRIMARY_USEFUL_MECHANISMS,
+    abstention_decision_from_record,
+    stratified_bucket_comparison,
+    useful_mechanism_comparison,
+)
 from cq.eval.bootstrap import paired_bootstrap_confidence_result
 from cq.eval.end_to_end_eval import execute_scenario, failure_example_sort_key, summarize_runs
 from cq.eval.preregistration_lock import (
@@ -28,6 +35,7 @@ from cq.memory.scope_blind_transcript_rag import ScopeBlindTranscriptRAGLite
 from cq.schemas.memory import jsonable
 from cq.simulator.scenario_generator import (
     generate_adversarial_upstream_noise_scenarios,
+    generate_evidence_conflict_spectrum_scenarios,
     generate_false_corroboration_scenarios,
     generate_forced_contradiction_scenarios,
     generate_memory_poisoning_scenarios,
@@ -45,6 +53,7 @@ USEFUL_PENDING_MEMORY = "useful_pending_memory"
 FALSE_CORROBORATION = "false_corroboration"
 MEMORY_POISONING = "memory_poisoning"
 ADVERSARIAL_UPSTREAM_NOISE = "adversarial_upstream_noise"
+EVIDENCE_CONFLICT_SPECTRUM = "evidence_conflict_spectrum"
 MECHANISM_DIVERSE_HELDOUT = "mechanism_diverse_heldout"
 POLICY_SET_DEFAULT = "default"
 POLICY_SET_PHASE_2_5 = "phase2_5"
@@ -63,6 +72,7 @@ TEMPLATE_MIXES_BY_FAMILY = {
     FALSE_CORROBORATION: ("mixed", "clean", "dirty", "heldout"),
     MEMORY_POISONING: ("mixed", "clean", "dirty", "heldout"),
     ADVERSARIAL_UPSTREAM_NOISE: ("mixed", "dirty", "heldout"),
+    EVIDENCE_CONFLICT_SPECTRUM: ("mixed", "heldout"),
     MECHANISM_DIVERSE_HELDOUT: ("frozen",),
 }
 COMPONENT_EVAL_FAMILIES = (
@@ -80,6 +90,7 @@ SUMMARY_METRIC_FORMAT = (
     "poison_promotion={poison:.2f} clean_displacement={clean_displacement:.2f} "
     "retraction_demotion={retraction_demotion:.2f} stale_promotion={stale_promotion:.2f} "
     "narrow_override={narrow_override:.2f} pending_competition={pending_competition:.2f}"
+    " useful_abstention={useful_abstention:.2f} harmful_abstention={harmful_abstention:.2f}"
 )
 OVERALL_SUMMARY_FORMAT = (
     "{policy_name}: useful_recall={useful:.2f} pending_use={pending:.2f} "
@@ -88,6 +99,47 @@ OVERALL_SUMMARY_FORMAT = (
     + " avg_time_to_demotion={demotion:.2f}"
 )
 SCOPED_SUMMARY_FORMAT = "  {scope_name}={scope_value}: " + SUMMARY_METRIC_FORMAT + " count={count}"
+SUMMARY_CSV_FIELDNAMES = [
+    "policy_name",
+    "summary_scope",
+    "template_id",
+    "template_kind",
+    "template_split",
+    "scenario_count",
+    "answer_correctness",
+    "false_assertion_rate",
+    "leakage_rate",
+    "premature_promotion_rate",
+    "poison_promotion_rate",
+    "clean_durable_displacement_rate",
+    "retraction_demotion_rate",
+    "stale_evidence_promotion_rate",
+    "narrow_scope_override_success_rate",
+    "pending_competition_resolution_rate",
+    "useful_abstention_rate",
+    "useful_abstention_count",
+    "useful_abstention_applicable_count",
+    "harmful_abstention_rate",
+    "harmful_abstention_count",
+    "harmful_abstention_applicable_count",
+    "useful_recall",
+    "used_pending",
+    "durable_commit",
+    "useful_recall_before_contradiction",
+    "used_pending_before_contradiction",
+    "durable_commit_before_contradiction",
+    "false_assertion_after_contradiction",
+    "contradiction_recovery_rate",
+    "answer_correctness_after_contradiction",
+    "average_time_to_demotion",
+    "comparison_name",
+    "comparison_metric_name",
+    "comparison_reference_policy_name",
+    "comparison_comparator_policy_name",
+    "comparison_point_estimate_delta",
+    "comparison_one_sided_95_lcb",
+    "comparison_one_sided_95_ucb",
+]
 
 
 def _summary_metric_values(summary: dict) -> Dict[str, float]:
@@ -103,6 +155,8 @@ def _summary_metric_values(summary: dict) -> Dict[str, float]:
         "stale_promotion": summary.get("stale_evidence_promotion_rate", 0.0),
         "narrow_override": summary.get("narrow_scope_override_success_rate", 0.0),
         "pending_competition": summary.get("pending_competition_resolution_rate", 0.0),
+        "useful_abstention": summary.get("useful_abstention_rate", 0.0),
+        "harmful_abstention": summary.get("harmful_abstention_rate", 0.0),
     }
 
 
@@ -130,6 +184,41 @@ def _format_scoped_summary(scope_name: str, scope_value: str, summary: dict) -> 
         }
     )
     return SCOPED_SUMMARY_FORMAT.format(**values)
+
+
+def _blank_summary_csv_row() -> Dict[str, object]:
+    return {field_name: "" for field_name in SUMMARY_CSV_FIELDNAMES}
+
+
+def _comparison_csv_row(
+    *,
+    summary_scope: str,
+    template_id: str,
+    comparison_name: str,
+    metric_name: str,
+    reference_policy_name: str,
+    comparator_policy_name: str,
+    point_estimate_delta: float,
+    one_sided_95_lcb: float,
+    scenario_count: object = "",
+    one_sided_95_ucb: object = "",
+) -> Dict[str, object]:
+    row = _blank_summary_csv_row()
+    row.update(
+        {
+            "summary_scope": summary_scope,
+            "template_id": template_id,
+            "scenario_count": scenario_count,
+            "comparison_name": comparison_name,
+            "comparison_metric_name": metric_name,
+            "comparison_reference_policy_name": reference_policy_name,
+            "comparison_comparator_policy_name": comparator_policy_name,
+            "comparison_point_estimate_delta": point_estimate_delta,
+            "comparison_one_sided_95_lcb": one_sided_95_lcb,
+            "comparison_one_sided_95_ucb": one_sided_95_ucb,
+        }
+    )
+    return row
 
 
 def _summaries_by_field(run_records: List[dict], field_name: str) -> Dict[str, dict]:
@@ -224,6 +313,8 @@ def generate_scenarios(
         return generate_memory_poisoning_scenarios(scenario_count, template_mix=template_mix)
     if family == ADVERSARIAL_UPSTREAM_NOISE:
         return generate_adversarial_upstream_noise_scenarios(scenario_count, template_mix=template_mix)
+    if family == EVIDENCE_CONFLICT_SPECTRUM:
+        return generate_evidence_conflict_spectrum_scenarios(scenario_count, template_mix=template_mix)
     raise ValueError("Unsupported family: {}".format(family))
 
 
@@ -268,6 +359,7 @@ def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
         FALSE_CORROBORATION,
         MEMORY_POISONING,
         ADVERSARIAL_UPSTREAM_NOISE,
+        EVIDENCE_CONFLICT_SPECTRUM,
         MECHANISM_DIVERSE_HELDOUT,
     }:
         policies.append(ScopeBlindTranscriptRAGLite)
@@ -326,6 +418,11 @@ def build_run_artifact(
                 ],
             }
         )
+    primary_abstention_comparisons, primary_abstention_warnings = _build_primary_abstention_comparisons(
+        run_records_by_policy,
+        family=family,
+        policy_set=policy_set,
+    )
     return {
         "experiment": "{}_oracle".format(family),
         "family": family,
@@ -347,6 +444,8 @@ def build_run_artifact(
             run_records_by_policy,
             policy_set=policy_set,
         ),
+        "primary_abstention_comparisons": primary_abstention_comparisons,
+        "primary_abstention_comparison_warnings": primary_abstention_warnings,
         "policies": policy_runs,
     }
 
@@ -374,6 +473,77 @@ def _build_pairwise_comparisons(
     return comparisons
 
 
+def _decisions_for_policy(policy_name: str, run_records: List[dict], family: str):
+    return [
+        abstention_decision_from_record(policy_name, record, family)
+        for record in run_records
+    ]
+
+
+def _build_primary_abstention_comparisons(
+    run_records_by_policy: Dict[str, List[dict]],
+    *,
+    family: str,
+    policy_set: str,
+) -> tuple[Dict[str, dict], List[str]]:
+    if family != EVIDENCE_CONFLICT_SPECTRUM:
+        return {}, []
+    if policy_set != POLICY_SET_PHASE_2_5:
+        return {}, [
+            "Primary abstention comparisons require policy_set='{}' so Mem0Lite is present.".format(
+                POLICY_SET_PHASE_2_5,
+            )
+        ]
+    cq_records = run_records_by_policy.get(ConsolidationQueueLite.policy_name)
+    mem0_records = run_records_by_policy.get(Mem0Lite.policy_name)
+    if cq_records is None or mem0_records is None:
+        return {}, [
+            "Primary abstention comparisons require both {} and {} records.".format(
+                ConsolidationQueueLite.policy_name,
+                Mem0Lite.policy_name,
+            )
+        ]
+    cq = _decisions_for_policy(ConsolidationQueueLite.policy_name, cq_records, family)
+    mem0 = _decisions_for_policy(Mem0Lite.policy_name, mem0_records, family)
+    useful_rows = {}
+    for mechanism in PRIMARY_USEFUL_MECHANISMS:
+        if any(decision.mechanism == mechanism for decision in cq):
+            useful_rows[mechanism] = useful_mechanism_comparison(cq, mem0, mechanism=mechanism)
+    harmful_mechanisms = [
+        mechanism
+        for mechanism in PRIMARY_HARMFUL_MECHANISMS
+        if any(decision.mechanism == mechanism for decision in cq)
+    ]
+    harmful_row = None
+    if harmful_mechanisms:
+        harmful = stratified_bucket_comparison(
+            cq,
+            mem0,
+            mechanisms=harmful_mechanisms,
+            metric_name="harmful_abstention",
+        )
+        harmful_row = {
+            "metric_name": "harmful_abstention_rate",
+            "mechanisms": list(harmful_mechanisms),
+            "point_estimate_delta": harmful.point_estimate_delta,
+            "one_sided_95_lcb": harmful.lower_confidence_bound,
+            "one_sided_95_ucb": harmful.upper_confidence_bound,
+            "resamples": harmful.resamples,
+            "seed": harmful.seed,
+        }
+    return (
+        {
+            "consolidation_queue_vs_mem0_primary_abstention": {
+                "reference_policy_name": ConsolidationQueueLite.policy_name,
+                "comparator_policy_name": Mem0Lite.policy_name,
+                "useful_mechanism_rows": useful_rows,
+                "harmful_bucket_row": harmful_row,
+            }
+        },
+        [],
+    )
+
+
 def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> None:
     output_json.parent.mkdir(parents=True, exist_ok=True)
     output_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -382,40 +552,7 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
     with output_csv.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(
             handle,
-            fieldnames=[
-                "policy_name",
-                "summary_scope",
-                "template_id",
-                "template_kind",
-                "template_split",
-                "scenario_count",
-                "answer_correctness",
-                "false_assertion_rate",
-                "leakage_rate",
-                "premature_promotion_rate",
-                "poison_promotion_rate",
-                "clean_durable_displacement_rate",
-                "retraction_demotion_rate",
-                "stale_evidence_promotion_rate",
-                "narrow_scope_override_success_rate",
-                "pending_competition_resolution_rate",
-                "useful_recall",
-                "used_pending",
-                "durable_commit",
-                "useful_recall_before_contradiction",
-                "used_pending_before_contradiction",
-                "durable_commit_before_contradiction",
-                "false_assertion_after_contradiction",
-                "contradiction_recovery_rate",
-                "answer_correctness_after_contradiction",
-                "average_time_to_demotion",
-                "comparison_name",
-                "comparison_metric_name",
-                "comparison_reference_policy_name",
-                "comparison_comparator_policy_name",
-                "comparison_point_estimate_delta",
-                "comparison_one_sided_95_lcb",
-            ],
+            fieldnames=SUMMARY_CSV_FIELDNAMES,
         )
         writer.writeheader()
         for policy in run_artifact["policies"]:
@@ -468,40 +605,48 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
         ).items():
             for template_id, comparison in comparison_rows.items():
                 writer.writerow(
-                    {
-                        "policy_name": "",
-                        "summary_scope": "template_id_comparison",
-                        "template_id": template_id,
-                        "template_kind": "",
-                        "template_split": "",
-                        "scenario_count": comparison["scenario_count"],
-                        "answer_correctness": "",
-                        "false_assertion_rate": "",
-                        "leakage_rate": "",
-                        "premature_promotion_rate": "",
-                        "poison_promotion_rate": "",
-                        "clean_durable_displacement_rate": "",
-                        "retraction_demotion_rate": "",
-                        "stale_evidence_promotion_rate": "",
-                        "narrow_scope_override_success_rate": "",
-                        "pending_competition_resolution_rate": "",
-                        "useful_recall": "",
-                        "used_pending": "",
-                        "durable_commit": "",
-                        "useful_recall_before_contradiction": "",
-                        "used_pending_before_contradiction": "",
-                        "durable_commit_before_contradiction": "",
-                        "false_assertion_after_contradiction": "",
-                        "contradiction_recovery_rate": "",
-                        "answer_correctness_after_contradiction": "",
-                        "average_time_to_demotion": "",
-                        "comparison_name": comparison_name,
-                        "comparison_metric_name": comparison["metric_name"],
-                        "comparison_reference_policy_name": comparison["reference_policy_name"],
-                        "comparison_comparator_policy_name": comparison["comparator_policy_name"],
-                        "comparison_point_estimate_delta": comparison["point_estimate_delta"],
-                        "comparison_one_sided_95_lcb": comparison["one_sided_95_lcb"],
-                    }
+                    _comparison_csv_row(
+                        summary_scope="template_id_comparison",
+                        template_id=template_id,
+                        scenario_count=comparison["scenario_count"],
+                        comparison_name=comparison_name,
+                        metric_name=comparison["metric_name"],
+                        reference_policy_name=comparison["reference_policy_name"],
+                        comparator_policy_name=comparison["comparator_policy_name"],
+                        point_estimate_delta=comparison["point_estimate_delta"],
+                        one_sided_95_lcb=comparison["one_sided_95_lcb"],
+                        one_sided_95_ucb=comparison.get("one_sided_95_ucb", ""),
+                    )
+                )
+        for comparison_name, comparison in run_artifact.get("primary_abstention_comparisons", {}).items():
+            for mechanism, useful in comparison.get("useful_mechanism_rows", {}).items():
+                writer.writerow(
+                    _comparison_csv_row(
+                        summary_scope="abstention_comparison",
+                        template_id=mechanism,
+                        scenario_count=useful["scenario_count"],
+                        comparison_name=comparison_name,
+                        metric_name=useful["metric_name"],
+                        reference_policy_name=comparison["reference_policy_name"],
+                        comparator_policy_name=comparison["comparator_policy_name"],
+                        point_estimate_delta=useful["point_estimate_delta"],
+                        one_sided_95_lcb=useful["one_sided_95_lcb"],
+                    )
+                )
+            harmful = comparison.get("harmful_bucket_row")
+            if harmful:
+                writer.writerow(
+                    _comparison_csv_row(
+                        summary_scope="abstention_comparison",
+                        template_id="+".join(harmful["mechanisms"]),
+                        comparison_name=comparison_name,
+                        metric_name=harmful["metric_name"],
+                        reference_policy_name=comparison["reference_policy_name"],
+                        comparator_policy_name=comparison["comparator_policy_name"],
+                        point_estimate_delta=harmful["point_estimate_delta"],
+                        one_sided_95_lcb=harmful["one_sided_95_lcb"],
+                        one_sided_95_ucb=harmful["one_sided_95_ucb"],
+                    )
                 )
 
 
@@ -517,6 +662,7 @@ def main(argv: List[str] = None) -> int:
             FALSE_CORROBORATION,
             MEMORY_POISONING,
             ADVERSARIAL_UPSTREAM_NOISE,
+            EVIDENCE_CONFLICT_SPECTRUM,
             MECHANISM_DIVERSE_HELDOUT,
         ],
         default=FORCED_CONTRADICTION,
@@ -577,6 +723,8 @@ def main(argv: List[str] = None) -> int:
     print("Policy set: {}".format(args.policy_set))
     for policy_name, note in run_artifact.get("baseline_notes", {}).items():
         print("Baseline note ({}): {}".format(policy_name, note))
+    for warning in run_artifact.get("primary_abstention_comparison_warnings", []):
+        print("Warning: {}".format(warning))
     print("Wrote {}".format(output_json))
     print("Wrote {}".format(output_csv))
     return 0
