@@ -9,7 +9,8 @@
       "python_version": "3.9.6",
       "runner_command": "PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.runner --family evidence_conflict_spectrum --policy-set phase2_5 --template-mix heldout --scenarios 600 --output-json data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout.json --output-csv data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout_metrics.csv",
       "sha256": "3b7a8f9427f7614f8de5b54f233fb947f5bed316f094797bb1585c9a1013475d",
-      "working_tree_status": "dirty"
+      "working_tree_status": "dirty",
+      "working_tree_status_context": "manifest_write_time_after_runner_outputs"
     }
   ],
   "manifest_version": 1,

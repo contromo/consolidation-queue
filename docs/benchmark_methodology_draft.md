@@ -12,8 +12,11 @@ strong immediate-write baseline. The current answer is mode-specific:
 
 - in oracle mode, CQ has narrow policy support over `Mem0Lite` on the frozen
   Phase 2.5 set and a full-support internal abstention-axis result in Phase 2.6
+  ("full support" is the preregistered outcome bucket, not external validation)
 - in adversarial upstream-noise oracle mode, CQ clears four of five mechanisms
-  but exposes a named `temporal_skew` weakness
+  but exposes a named `temporal_skew` weakness; versus `Mem0Lite`, the unique
+  advantage is witness-conflict abstention because `Mem0Lite` matches the other
+  three CQ wins
 - in noisy local-model mode, the component gate remains locked, so no
   extracted-candidate policy comparison is publishable
 
@@ -62,7 +65,8 @@ deltas matched the observed deltas on the frozen mechanism-diverse sweep.
 The policy read is intentionally narrow:
 
 - CQ and `Mem0Lite` tie on aggregate answer correctness and false assertion
-- CQ improves aggregate premature promotion by 33 percentage points
+- CQ improves aggregate premature promotion by 33 percentage points, driven by
+  the single adversarial mixed-source false-corroboration scenario
 - oracle-mode support over `Mem0Lite` is therefore about reduced premature
   durable promotion, not broad answer-quality superiority
 

@@ -166,6 +166,9 @@ Durable artifact policy:
 - each manifest records the artifact path, byte size, SHA256, git commit,
   Python version, working-tree status, exact runner command, and
   `archive_status`
+- `working_tree_status` is recorded at manifest write time after runner outputs
+  have been generated; the preregistration-clean state is established by the
+  separate pre-sweep `git status` and pre-flight checks
 - the three existing large `adversarial_upstream_noise` JSONs are grandfathered
   and remain tracked; this policy applies prospectively
 

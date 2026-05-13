@@ -98,6 +98,7 @@ def build_manifest(
             "runner_command": runner_command,
             "sha256": sha256_file(path),
             "working_tree_status": status,
+            "working_tree_status_context": "manifest_write_time_after_runner_outputs",
         }
         for path in paths
     ]

@@ -46,6 +46,10 @@ class ArtifactManifestTests(unittest.TestCase):
             )
             self.assertRegex(row["sha256"], r"^[0-9a-f]{64}$")
             self.assertIn(row["working_tree_status"], {"clean", "dirty"})
+            self.assertEqual(
+                row["working_tree_status_context"],
+                "manifest_write_time_after_runner_outputs",
+            )
             self.assertRegex(row["python_version"], r"^\d+\.\d+\.\d+")
 
     def test_existing_manifest_is_excluded_on_rerun(self) -> None:

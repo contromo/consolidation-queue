@@ -11,6 +11,7 @@ __pycache__/
 .cursor/
 
 # Generated experiment artifacts
+# See PROJECT_PLAN.md "Artifact Policy" before changing these rules.
 data/runs/
 data/results/*
 !data/results/*/

@@ -38,8 +38,12 @@ The full per-scenario sweep JSONs are not tracked because they are about
 
 | Split | JSON path | Bytes | SHA256 |
 | --- | --- | ---: | --- |
-| `mixed` | `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed.json` | `182838865` | `afe24e5046948816e7546397eb53a7cdb54a6bb05c1cb36640a07b2a9844bfbd` |
-| `heldout` | `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout.json` | `182869137` | `3b7a8f9427f7614fe0e253aabf41e7ce8f1a22c160d0152de949b274dc2b78d9` |
+| `mixed` | `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed.json` | `182838865` | `afe24e50469488160e4527e3add303a3b2f3af65826cf0b3b0b8f34b5983609d` |
+| `heldout` | `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout.json` | `182869137` | `3b7a8f9427f7614f8de5b54f233fb947f5bed316f094797bb1585c9a1013475d` |
+
+The manifests record `working_tree_status=dirty` because they were written
+after the runner created the sweep JSON/CSV outputs. The preregistration-clean
+state is the pre-sweep `git status` check, not the mid-workflow manifest write.
 
 Pre-flight verification:
 
