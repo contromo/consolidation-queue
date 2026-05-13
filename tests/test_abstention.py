@@ -161,6 +161,31 @@ class AbstentionMetricTests(unittest.TestCase):
         self.assertIn("conflict_witness", comparison["useful_mechanism_rows"])
         self.assertIsNotNone(comparison["harmful_bucket_row"]["one_sided_95_ucb"])
 
+    def test_replay_emits_cq_ablation_pairwise_rows(self) -> None:
+        artifact = build_run_artifact(
+            10,
+            template_mix="mixed",
+            family=EVIDENCE_CONFLICT_SPECTRUM,
+            policy_set=POLICY_SET_PHASE_2_5,
+        )
+
+        abstention = abstention_artifact_for_run(artifact)
+        comparisons = abstention["pairwise_abstention_comparisons"]
+
+        for comparator in (
+            "cq_no_contestation_demotion",
+            "cq_no_wider_scope_pending_override",
+            "cq_no_pending_lookup_use",
+            "cq_no_source_independence_gate",
+        ):
+            comparison_name = "consolidation_queue_vs_{}".format(comparator)
+            self.assertIn(comparison_name, comparisons)
+            comparison = comparisons[comparison_name]
+            self.assertIn("conflict_moderate", comparison["useful_abstention_rows"])
+            self.assertIn("one_sided_95_ucb", comparison["useful_abstention_rows"]["conflict_moderate"])
+            self.assertIn("conflict_zero", comparison["harmful_abstention_rows"])
+            self.assertIn("one_sided_95_ucb", comparison["harmful_abstention_rows"]["conflict_zero"])
+
 
 if __name__ == "__main__":
     unittest.main()

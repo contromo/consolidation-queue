@@ -89,6 +89,7 @@ def _write_csv(artifact: Dict[str, object], output_csv: Path) -> None:
                             "comparison_comparator_policy_name": comparison["comparator_policy_name"],
                             "comparison_point_estimate_delta": comparison_row["point_estimate_delta"],
                             "comparison_one_sided_95_lcb": comparison_row["one_sided_95_lcb"],
+                            "comparison_one_sided_95_ucb": comparison_row.get("one_sided_95_ucb", ""),
                         }
                     )
         for comparison_name, comparison in artifact.get("primary_comparisons", {}).items():
@@ -103,6 +104,7 @@ def _write_csv(artifact: Dict[str, object], output_csv: Path) -> None:
                         "comparison_comparator_policy_name": comparison["comparator_policy_name"],
                         "comparison_point_estimate_delta": useful["point_estimate_delta"],
                         "comparison_one_sided_95_lcb": useful["one_sided_95_lcb"],
+                        "comparison_one_sided_95_ucb": useful.get("one_sided_95_ucb", ""),
                     }
                 )
             harmful = comparison.get("harmful_bucket_row")

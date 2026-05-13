@@ -18,6 +18,14 @@ ABSTAIN_REQUIRED_INTENSITIES = ("moderate", "witness")
 COMMIT_REQUIRED_INTENSITIES = ("zero", "mild", "polluted")
 PRIMARY_USEFUL_MECHANISMS = ("conflict_moderate", "conflict_witness")
 PRIMARY_HARMFUL_MECHANISMS = ("conflict_zero", "conflict_mild", "conflict_polluted")
+ABSTENTION_PAIRWISE_COMPARATOR_POLICIES = (
+    "mem0_lite",
+    "reflection_eager_write_lite",
+    "cq_no_contestation_demotion",
+    "cq_no_wider_scope_pending_override",
+    "cq_no_pending_lookup_use",
+    "cq_no_source_independence_gate",
+)
 
 PROBE_PHASE_BY_FAMILY = {
     "forced_contradiction": "after_contradiction",
@@ -364,6 +372,7 @@ def useful_mechanism_comparison(
         "mechanism": mechanism,
         "point_estimate_delta": bootstrap.point_estimate_delta,
         "one_sided_95_lcb": bootstrap.lower_confidence_bound,
+        "one_sided_95_ucb": bootstrap.upper_confidence_bound,
         "scenario_count": bootstrap.scenario_count,
     }
 
@@ -390,6 +399,7 @@ def mechanism_indicator_comparison(
         "mechanism": mechanism,
         "point_estimate_delta": bootstrap.point_estimate_delta,
         "one_sided_95_lcb": bootstrap.lower_confidence_bound,
+        "one_sided_95_ucb": bootstrap.upper_confidence_bound,
         "scenario_count": bootstrap.scenario_count,
     }
 
@@ -453,7 +463,7 @@ def abstention_artifact_for_run(run_artifact: Mapping[str, object]) -> Dict[str,
     mem0 = by_policy.get("mem0_lite")
     pairwise_comparisons: Dict[str, object] = {}
     if cq is not None:
-        for comparator_name in ("mem0_lite", "reflection_eager_write_lite"):
+        for comparator_name in ABSTENTION_PAIRWISE_COMPARATOR_POLICIES:
             comparator = by_policy.get(comparator_name)
             if comparator is None:
                 continue

@@ -134,6 +134,24 @@ Not implemented yet:
 - `tests/`: focused behavioral tests
 - `data/runs/`, `data/results/`: saved experiment artifacts
 
+## Artifact Policy
+
+Keep headline-verification artifacts in git and keep large per-scenario JSON
+artifacts regeneratable unless a real external archive URI is recorded.
+
+- Track small artifacts needed for review: `*_metrics.csv`, structure summaries,
+  non-degeneracy probes, abstention replay JSON/CSV files, and
+  `*_manifest.json` files.
+- Do not track new per-scenario sweep JSON artifacts over about `5 MB` by
+  default. Record them in a manifest with path, byte size, SHA256, git commit,
+  Python version, working-tree status, exact runner command, and
+  `archive_status`.
+- Use `archive_status=regeneratable_only` unless an artifact has actually been
+  uploaded; use `uploaded:<uri>` only for real archive locations.
+- The existing large `adversarial_upstream_noise` JSON artifacts are
+  grandfathered and stay tracked; do not migrate or delete them as part of the
+  Phase 2.6 artifact-policy change.
+
 ## Phases
 
 ### Phase 1: Oracle Forced-Contradiction Slice

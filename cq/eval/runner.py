@@ -631,6 +631,7 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
                         comparator_policy_name=comparison["comparator_policy_name"],
                         point_estimate_delta=useful["point_estimate_delta"],
                         one_sided_95_lcb=useful["one_sided_95_lcb"],
+                        one_sided_95_ucb=useful.get("one_sided_95_ucb", ""),
                     )
                 )
             harmful = comparison.get("harmful_bucket_row")

@@ -1,5 +1,46 @@
 # Product Progress
 
+## 2026-05-13 — Phase 2.6 artifact policy locked before sweeps
+
+### What shipped
+
+- added a prospective large-artifact policy: small headline artifacts stay in
+  git, while new per-scenario sweep JSONs over about `5 MB` are recorded through
+  SHA256 manifests and treated as regeneratable unless an actual archive URI is
+  present
+- added the stdlib-only manifest helper planned for Phase 2.6 sweep artifacts
+- extended abstention replay pairwise comparisons to include the four named CQ
+  ablations when present, preserving the preregistered secondary table
+- amended the Phase 2.6 preregistration with the artifact policy, replay
+  extension, and a top-to-bottom outcome precedence list before running the
+  full `evidence_conflict_spectrum` sweeps
+
+### Why it matters
+
+- the full sweeps can proceed without forcing large per-scenario JSONs into git
+  while still leaving a verifiable SHA256 record and exact regeneration command
+- secondary ablation claims in the abstention readout now have a replay-artifact
+  source rather than requiring post-hoc hand derivation
+- outcome buckets are ordered before any full-sweep numbers are visible, so the
+  results doc can apply the preregistration mechanically
+
+### Evidence
+
+- focused pre-sweep bundle:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_abstention tests.test_evidence_conflict_spectrum tests.test_runner_policy_sets tests.test_bootstrap tests.test_metrics tests.test_adversarial_upstream_noise tests.test_component_eval tests.test_local_extractor tests.test_frozen_preregistration tests.test_artifact_manifest -q`
+- dry-run replay preflight:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_abstention_replay.py --dry-run`
+- ignore-rule checks:
+  - spectrum sweep JSONs remain ignored
+  - spectrum metrics/manifests and abstention replay outputs are explicitly
+    unignored and trackable
+  - old root-level generated metrics remain ignored
+
+### Open issues / next
+
+- commit this pre-sweep lock before running the mixed and held-out
+  `evidence_conflict_spectrum` sweeps
+
 ## 2026-05-13 — Abstention-calibration benchmark implementation staged
 
 ### What shipped
