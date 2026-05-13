@@ -396,6 +396,8 @@ def gate_cached_artifact_provenance_mismatches(
     diagnostics = predictions_payload.get("model_diagnostics")
     if not isinstance(diagnostics, dict):
         diagnostics = {}
+    # Missing preregistration intentionally mismatches any cached digest so new
+    # model rows cannot silently reuse artifacts.
     expected_digest = PREREGISTERED_MODEL_DIGESTS.get(row.model.model_id, "")
     checks = [
         ("predictions.model_command", predictions_payload.get("model_command"), model_command),
@@ -487,14 +489,17 @@ def run_gate_decision(
     runner_command: Optional[str] = None,
 ) -> Path:
     primary_model = model_spec_for_tag(primary_model_tag)
-    if primary_model != matrix.QWEN_7B_Q4KM:
-        anchor_error = verify_required_anchor_before_probe(output_dir)
-        if anchor_error is not None:
-            raise anchor_error
     backend = verify_primary_model_backend(
         primary_model_tag,
         runner_command=runner_command,
     )
+    if primary_model != matrix.QWEN_7B_Q4KM:
+        anchor_error = verify_required_anchor_before_probe(
+            output_dir,
+            live_ollama_server_version=backend.ollama_server_version,
+        )
+        if anchor_error is not None:
+            raise anchor_error
     pre_run_working_tree_status = working_tree_status()
     effective_model_command = model_command_for_schema_profile(
         model_command,
@@ -623,6 +628,8 @@ def run_gate_decision(
         path,
         summary_payload,
     )
+    # Keep a drifted anchor summary inspectable, but withhold the manifest
+    # because the anchor did not reproduce the locked preregistered baseline.
     if is_locked_7b_anchor_run(
         primary_model_tag=primary_model_tag,
         schema_profile=schema_profile,
@@ -811,7 +818,11 @@ def locked_baseline_anchor_matches(summary_path: Path = LOCKED_BASELINE_SUMMARY_
     )
 
 
-def verify_required_anchor_before_probe(output_dir: Path) -> Optional[matrix.StopConditionError]:
+def verify_required_anchor_before_probe(
+    output_dir: Path,
+    *,
+    live_ollama_server_version: str = "",
+) -> Optional[matrix.StopConditionError]:
     anchor_path = default_anchor_summary_path(output_dir)
     if not anchor_path.exists():
         return matrix.StopConditionError(
@@ -822,7 +833,13 @@ def verify_required_anchor_before_probe(output_dir: Path) -> Optional[matrix.Sto
                 "message": "Run the preregistered 7B default-schema anchor before 32B scoring.",
             },
         )
-    return verify_anchor_against_locked_baseline(anchor_path)
+    anchor_error = verify_anchor_against_locked_baseline(anchor_path)
+    if anchor_error is not None:
+        return anchor_error
+    return verify_anchor_ollama_server_version(
+        anchor_path,
+        live_ollama_server_version=live_ollama_server_version,
+    )
 
 
 def verify_anchor_against_locked_baseline(
@@ -865,6 +882,50 @@ def verify_anchor_against_locked_baseline(
             "new_summary_path": str(new_summary_path),
             "locked_summary_path": str(locked_summary_path),
             "mismatches": mismatches,
+        },
+    )
+
+
+def verify_anchor_ollama_server_version(
+    anchor_summary_path: Path,
+    *,
+    live_ollama_server_version: str,
+) -> Optional[matrix.StopConditionError]:
+    try:
+        anchor_payload = _read_json(anchor_summary_path)
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        return matrix.StopConditionError(
+            "anchor_summary_unreadable",
+            {
+                "new_summary_path": str(anchor_summary_path),
+                "message": str(error),
+            },
+        )
+    anchor_version = anchor_payload.get("ollama_server_version")
+    if not isinstance(anchor_version, str) or not anchor_version:
+        return matrix.StopConditionError(
+            "anchor_ollama_server_version_missing",
+            {
+                "anchor_summary_path": str(anchor_summary_path),
+                "live_ollama_server_version": live_ollama_server_version,
+            },
+        )
+    if not live_ollama_server_version:
+        return matrix.StopConditionError(
+            "live_ollama_server_version_missing",
+            {
+                "anchor_summary_path": str(anchor_summary_path),
+                "anchor_ollama_server_version": anchor_version,
+            },
+        )
+    if anchor_version == live_ollama_server_version:
+        return None
+    return matrix.StopConditionError(
+        "anchor_ollama_server_version_mismatch",
+        {
+            "anchor_summary_path": str(anchor_summary_path),
+            "anchor_ollama_server_version": anchor_version,
+            "live_ollama_server_version": live_ollama_server_version,
         },
     )
 

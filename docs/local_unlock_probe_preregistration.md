@@ -108,7 +108,8 @@ Do not silently apply a plus-or-minus tolerance.
 
 The runner enforces this mechanically: the 7B anchor summary is compared
 against the locked baseline counts after the anchor run, and 32B scoring aborts
-if the expected 7B anchor summary is absent or mismatched.
+if the expected 7B anchor summary is absent, count-mismatched, or was produced
+under a different Ollama server version than the live 32B probe backend.
 
 ## Probe Commands
 

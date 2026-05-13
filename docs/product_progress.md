@@ -24,6 +24,9 @@
 - follow-up hardening after review added primary-model determinism replay,
   automated 7B anchor-count enforcement before 32B scoring, and model-digest
   cache provenance checks
+- second review hardening pass made 32B scoring abort when the required 7B
+  anchor summary was produced under a different Ollama server version than the
+  live probe backend
 
 ### Why it matters
 

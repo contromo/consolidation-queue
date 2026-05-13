@@ -837,10 +837,26 @@ class ComponentGateDecisionTests(unittest.TestCase):
         self.assertIsNotNone(error)
         self.assertEqual(error.reason, "anchor_summary_missing")
 
-    def test_run_gate_decision_writes_expected_32b_summary_path(self) -> None:
+    def test_32b_probe_rejects_anchor_ollama_server_version_drift(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
-            _write_anchor_summary(output_dir)
+            _write_anchor_summary(output_dir, ollama_server_version="0.23.1")
+
+            error = gate.verify_required_anchor_before_probe(
+                output_dir,
+                live_ollama_server_version="0.24.0",
+            )
+
+        self.assertIsNotNone(error)
+        self.assertEqual(error.reason, "anchor_ollama_server_version_mismatch")
+        self.assertEqual(error.details["anchor_ollama_server_version"], "0.23.1")
+        self.assertEqual(error.details["live_ollama_server_version"], "0.24.0")
+
+    def test_run_gate_decision_writes_expected_32b_summary_path(self) -> None:
+        """Wiring test: collaborators are mocked to isolate path and model handoff."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            _write_anchor_summary(output_dir, ollama_server_version="0.23.1")
             original_verify_backend = gate.verify_primary_model_backend
             original_prompt_regression = gate.matrix.run_prompt_regression
             original_determinism = gate.matrix.run_determinism_check
@@ -930,11 +946,16 @@ def _oracle_row_result(row):
     )
 
 
-def _write_anchor_summary(output_dir: Path) -> Path:
+def _write_anchor_summary(output_dir: Path, *, ollama_server_version: str = "0.23.1") -> Path:
     path = gate.default_anchor_summary_path(output_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        json.dumps({"unlock_checks": gate.LOCKED_BASELINE_UNLOCK_CHECKS}),
+        json.dumps(
+            {
+                "ollama_server_version": ollama_server_version,
+                "unlock_checks": gate.LOCKED_BASELINE_UNLOCK_CHECKS,
+            }
+        ),
         encoding="utf-8",
     )
     return path
