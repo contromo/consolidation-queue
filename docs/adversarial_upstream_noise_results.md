@@ -5,16 +5,25 @@ Bucket D: on the preregistered `mixed` `phase2_5` artifact, CQ loses only `tempo
 ## Audit Trail
 
 - Original preregistration: `docs/adversarial_upstream_noise_preregistration.md`
-- Tracked headline artifacts:
-  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_default_mixed.json`
+- **Headline audit artifacts (small; these are what a review should expect in-repo):** the three metrics CSVs below hold the preregistered summary and comparison rows. They are sufficient to verify the headline table in this doc without the JSON blobs.
   - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_default_mixed_metrics.csv`
-  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_mixed.json`
   - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_mixed_metrics.csv`
-  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_heldout.json`
   - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_heldout_metrics.csv`
+- **Full run JSON (large; may be missing from a clone or PR):** per-scenario traces, store snapshots, and embedded blocks such as `pairwise_template_id_comparisons` live in:
+  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_default_mixed.json`
+  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_mixed.json`
+  - `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_heldout.json`
+  Together these are on the order of ~193 MB. Some PRs or branches may ship **CSV only** (or omit binaries from the diff) to keep review and clone weight manageable; **this repo does not use Git LFS for them yet**, so do not assume a bare `git clone` always materializes the JSON paths even when history contains them. Treat the JSONs as **reproducibility- and inspection-oriented**, not gate-deciding for the headline read. A durable storage policy (Git LFS, object storage with checksums, or manifests + archived JSON) is still an open decision before more families add similar weight.
+- **Regenerate JSON + CSV locally** (fixed paths matching the tree above; rerun if JSON is absent or you need per-scenario fields for ablations):
+
+  ```bash
+  PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.runner --family adversarial_upstream_noise --policy-set default --template-mix mixed --scenarios 300 --output-json data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_default_mixed.json --output-csv data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_default_mixed_metrics.csv
+  PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.runner --family adversarial_upstream_noise --policy-set phase2_5 --template-mix mixed --scenarios 300 --output-json data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_mixed.json --output-csv data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_mixed_metrics.csv
+  PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.runner --family adversarial_upstream_noise --policy-set phase2_5 --template-mix heldout --scenarios 300 --output-json data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_heldout.json --output-csv data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_heldout_metrics.csv
+  ```
+
 - Focused pre-flight bundle:
   - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_adversarial_upstream_noise tests.test_bootstrap tests.test_cq_ablations tests.test_runner_policy_sets tests.test_metrics -q`
-- Artifact bulk: the three headline JSON files together are on the order of ~193 MB (per-scenario traces and store snapshots); the paired metrics CSVs are tiny (~37 KB) and suffice for the preregistered headline read. The JSONs are reproducibility- and inspection-oriented, not gate-deciding. Before more families or follow-up runs land similar blobs in git, decide a storage policy (for example Git LFS, object storage with checksums, or committing manifests plus archiving JSON separately) so clone weight does not compound.
 - Dirty-sample inspection confirmed the preregistered structure on one `mixed` scenario per mechanism:
   - retraction includes explicit `contradicts` links from the retraction candidate
   - witness conflict uses four distinct `source_id` values and `abstention_ok=True`
@@ -22,7 +31,7 @@ Bucket D: on the preregistered `mixed` `phase2_5` artifact, CQ loses only `tempo
   - scope narrowing uses distinct workspace and project scope-key shapes
   - pending competition marks both candidates in `should_not_promote_candidate_ids`
 
-All CQ-versus-Reflection and Mem0-versus-Reflection deltas below are read directly from the persisted `pairwise_template_id_comparisons` blocks in the two `phase2_5` JSON artifacts. The ablation table is computed from the saved per-scenario `answer_correctness` values in the mixed `phase2_5` artifact.
+All CQ-versus-Reflection and Mem0-versus-Reflection deltas below match the persisted `pairwise_template_id_comparisons` blocks in the two `phase2_5` JSON artifacts (and the corresponding CSV comparison rows when those blocks are not checked out). The ablation table is computed from the saved per-scenario `answer_correctness` values in the mixed `phase2_5` JSON; regenerate that file with the commands above if it is missing.
 
 Polarized deltas (±1.00 for both point estimates and LCBs) reflect the family’s construction: for each mechanism, a given policy either always succeeds or always fails across scenarios, so paired bootstrap on zero-variance inputs returns the constant. The bootstrap LCBs equal point estimates on this run because per-mechanism correctness has zero per-scenario variance; the CI rule remains load-bearing for future families with mixed within-mechanism outcomes.
 
@@ -78,7 +87,7 @@ Against Reflection, `Mem0Lite` ties on `witness_conflict` (delta 0), loses `temp
 
 ## Other Preregistered Headline Run
 
-The preregistered `default` mixed run also landed and is preserved in the tracked artifact set. It is not the gate artifact, but it reproduces the same aggregate CQ-versus-Reflection separation at the policy-set default surface:
+The preregistered `default` mixed run also landed; its outputs are listed in the audit trail above (`default` mixed JSON/CSV). It is not the gate artifact, but it reproduces the same aggregate CQ-versus-Reflection separation at the policy-set default surface:
 
 - `reflection_eager_write_lite` mixed `answer_correctness`: `0.20`
 - `consolidation_queue_lite` mixed `answer_correctness`: `0.80`
