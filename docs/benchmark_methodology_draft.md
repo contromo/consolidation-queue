@@ -1,156 +1,226 @@
 # Benchmark Methodology Draft
 
-This draft consolidates the contribution the repo can defend today: a
-preregistered memory-governance benchmark, a gate methodology for noisy-mode
-claims, and an inspectable failure taxonomy. It is not a noisy-mode policy
-result.
+Target format: arXiv technical report first, with a workshop submission as a
+follow-up only if the narrative tightens after the local unlock probe lands.
 
-## 1. Framing
+This draft consolidates the contribution the repo can defend today:
 
-The project asks whether staged memory promotion improves reversibility over a
-strong immediate-write baseline. The current answer is mode-specific:
+1. a preregistered fair memory-policy benchmark,
+2. a component-gated noisy-mode discipline that prevents false policy unlocks,
+3. an inspectable failure taxonomy for local extractor limits, and
+4. a narrow positive oracle-policy claim around witness-conflict abstention.
 
-- in oracle mode, CQ has narrow policy support over `Mem0Lite` on the frozen
-  Phase 2.5 set and a full-support internal abstention-axis result in Phase 2.6
-  ("full support" is the preregistered outcome bucket, not external validation)
-- in adversarial upstream-noise oracle mode, CQ clears four of five mechanisms
-  but exposes a named `temporal_skew` weakness; versus `Mem0Lite`, the unique
-  advantage is witness-conflict abstention because `Mem0Lite` matches the other
-  three CQ wins
-- in noisy local-model mode, the component gate remains locked, so no
-  extracted-candidate policy comparison is publishable
+It is not yet a noisy-mode policy result.
 
-Primary sources: `PROJECT_PLAN.md`, `docs/predictions_vs_results.md`,
-`docs/adversarial_upstream_noise_results.md`,
-`docs/abstention_quality_results.md`, and
-`docs/component_gate_followup_benchmark_memo.md`.
+## 1. Contributions
 
-## 2. Shared Substrate And Fair Comparison
+The central methodological contribution is the gate structure:
 
-The load-bearing invariants are the experiment, not implementation details:
+- aggregate CI-supported gates are necessary but not sufficient
+- per-family observed gates catch concentrated family failures
+- a frozen mechanism-diverse sentinel catches failures on the exact scenarios
+  used for mechanism-generalization claims
+- Phase A prompt regression and deterministic replay block unstable extractor
+  rows before broader scoring
 
-- policies compare on the same upstream candidate stream
-- CQ and ReflectionEagerWrite share the same storage substrate
-- oracle-mode claims and noisy-mode claims stay separate
-- noisy-mode claims require component-quality gates first
-- saved artifacts and traces remain inspectable
+The locked 7B `general_v1` run is the clearest evidence that the design matters:
+`phase_a_passed=true`, `determinism_passed=true`,
+`aggregate_ci_gate_failure_count=0`, and
+`aggregate_observed_gate_failure_count=0`, but the gate still stayed locked
+because it found `45` primary scenario errors, `8` per-family observed failures,
+and `3` frozen-sentinel observed failures. An aggregate-only rule would have
+unlocked Phase 4 incorrectly.
 
-These rules come from `AGENTS.md` and `PROJECT_PLAN.md`. Without them, CQ could
-appear to win because it received better inputs, richer storage, or easier
-scenarios than the eager baseline.
+Primary artifact: `data/results/component_gate_decision_general_v1_summary.json`.
+Interpretation note: `docs/component_gate_failure_taxonomy.md`.
 
-## 3. Preregistration Discipline
+## 2. Fair Policy Comparison
 
-The strongest reusable contribution is the evaluation discipline:
+The benchmark isolates memory governance rather than extraction advantage:
+
+- policies receive the same upstream candidate stream
+- CQ and ReflectionEagerWrite share the same scoped storage substrate
+- oracle-mode claims and noisy-mode claims are separated
+- noisy-mode policy claims require component-quality gates first
+- saved artifacts expose traces, lifecycle events, examples, and manifests
+
+These invariants are load-bearing. Without them, CQ could appear to win because
+it received better inputs, richer storage, or easier scenarios than the eager
+baseline.
+
+## 3. Related Work Positioning
+
+This work should not be pitched as simply another memory system or another
+memory benchmark.
+
+LongMemEval, MemoryAgentBench, and MemBench occupy the external benchmark lane:
+they stress long-horizon memory behavior and are useful future transfer checks,
+but they do not by themselves enforce this repo's fair same-candidate-stream
+policy comparison. Mem0 and A-MEM occupy the memory-system or write-policy
+lane: they motivate comparison targets, but the publishable claim here is not
+that CQ is a full replacement system.
+
+The lane for this project is narrower and more auditable:
+preregistered fair policy comparison plus component-gated noisy-mode discipline.
+LongMemEval belongs later as a transfer check after a noisy policy comparison
+unlocks, not as a current empirical claim.
+
+## 4. Preregistration Discipline
+
+The reusable discipline is spread across four locked documents:
 
 - `docs/preregistered_memory_governance_evaluation_template.md` defines the
-  reusable pattern: fixed scope, mechanism rows, win rules, outcome framings,
-  ablation attribution, and artifact expectations
+  general structure for mechanism rows, win rules, ablation attribution,
+  outcome buckets, and artifact expectations.
 - `docs/preregistration.md` locks the Phase 2.5 mechanism-diverse oracle
-  predictions before frozen policy execution
+  predictions before frozen policy execution.
 - `docs/adversarial_upstream_noise_preregistration.md` locks the adversarial
-  upstream-noise mechanism family and surprise-lane framing
+  upstream-noise family and the surprise-lane framing.
 - `docs/abstention_quality_preregistration.md` locks the Phase 2.6 abstention
-  assay, including the pre-run artifact policy and outcome precedence amendment
+  assay, including artifact policy and outcome precedence.
 
-The point is not to make positive results inevitable. The point is to make
-positive, mixed, and negative results all reportable without changing the
-contract after seeing the numbers.
+The new `docs/local_unlock_probe_preregistration.md` does not change any oracle
+contract. It only preregisters a minimal 32B component-gate unlock probe before
+any 32B primary unlock cell is scored.
 
-## 4. Phase 2.5 Frozen Oracle Readout
+## 5. Evidence Ledger
 
-`docs/predictions_vs_results.md` records that all 108 preregistered oracle-mode
-deltas matched the observed deltas on the frozen mechanism-diverse sweep.
+### Phase 2.5 Frozen Oracle Sweep
 
-The policy read is intentionally narrow:
+Source: `docs/predictions_vs_results.md`.
 
-- CQ and `Mem0Lite` tie on aggregate answer correctness and false assertion
-- CQ improves aggregate premature promotion by 33 percentage points, driven by
-  the single adversarial mixed-source false-corroboration scenario
-- oracle-mode support over `Mem0Lite` is therefore about reduced premature
-  durable promotion, not broad answer-quality superiority
+Specific cell:
 
-This keeps the published-family comparison useful without inflating it beyond
-what the frozen artifact supports.
+- frozen aggregate, `phase2_5` policy set,
+  `data/results/mechanism_diverse_heldout_oracle_frozen_phase2_5_metrics.csv`
 
-## 5. Adversarial Upstream-Noise Readout
+Readout:
 
-`docs/adversarial_upstream_noise_results.md` lands in Bucket D:
+- all `108` preregistered oracle-mode deltas matched observed deltas
+- CQ and `Mem0Lite` tie on aggregate `answer_correctness`,
+  `false_assertion_rate`, `poison_promotion_rate`,
+  `clean_durable_displacement_rate`, and `scope_leakage_rate`
+- CQ improves aggregate `premature_promotion_rate` by `33` percentage points
+  versus `Mem0Lite`, driven by
+  `false_corroboration_adversarial_mixed_source`
 
-- CQ wins `retraction`, `witness_conflict`, `scope_narrowing`, and
-  `pending_competition`
+Supported claim: narrow oracle-mode support for staged promotion reducing
+premature durable commitment. Unsupported claim: broad answer-quality
+superiority over `Mem0Lite`.
+
+### Adversarial Upstream-Noise Oracle Sweep
+
+Source: `docs/adversarial_upstream_noise_results.md`.
+
+Specific cells:
+
+- `phase2_5`, `mixed`, five preregistered mechanisms,
+  `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_mixed_metrics.csv`
+- `phase2_5`, `heldout`, direction check,
+  `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_heldout_metrics.csv`
+
+Readout:
+
+- Bucket D fires: CQ wins `retraction`, `witness_conflict`,
+  `scope_narrowing`, and `pending_competition`
 - CQ loses only `temporal_skew`
 - held-out does not reverse any mechanism direction
-- the unique CQ advantage versus `Mem0Lite`-style baselines is
-  witness-conflict abstention
+- versus `Mem0Lite`, CQ's unique advantage is witness-conflict abstention
 
-This supports a mechanism-level oracle result at the candidate-stream locus of
-noise. It does not support the broad claim that CQ fully governs adversarial
-upstream noise, because the dated-evidence weakness is still open.
+Supported claim: CQ has a named narrow advantage on witness conflict and a
+named dated-evidence weakness. Unsupported claim: CQ fully governs adversarial
+upstream noise.
 
-## 6. Abstention-Calibration Readout
+### Phase 2.6 Abstention Assay
 
-`docs/abstention_quality_results.md` records **full support** for the Phase 2.6
-oracle-only abstention axis:
+Source: `docs/abstention_quality_results.md`.
 
-- mixed and held-out pass useful `conflict_moderate`
-- mixed and held-out pass useful `conflict_witness`
-- mixed and held-out pass the single harmful bucket over `conflict_zero`,
-  `conflict_mild`, and `conflict_polluted`
+Specific cells:
 
-This result sharpens the witness-conflict claim from the adversarial family:
-CQ's abstention behavior separates from `Mem0Lite` where the designed evidence
-state is genuinely conflicted, without over-abstaining on commit-required rows.
+- mixed primary useful `conflict_moderate`: delta `+1.00`, LCB `+1.00`,
+  count `120`
+- mixed primary useful `conflict_witness`: delta `+1.00`, LCB `+1.00`,
+  count `120`
+- mixed harmful bucket over `conflict_zero`, `conflict_mild`,
+  `conflict_polluted`: delta `+0.00`, UCB `+0.00`
+- held-out repeats the same three primary gate outcomes
 
-This is a designed mechanism assay, not external validation. It is evidence
-that the abstention axis is internally coherent under oracle candidates; it is
-not transfer evidence to noisy extraction, LongMemEval, or real user histories.
+Supported claim: full support for the designed oracle-only abstention axis.
+Unsupported claim: external validation, noisy transfer, or LongMemEval
+performance.
 
-## 7. Component Gate And Failure Taxonomy
+### Phase 3 Component Gate
 
-`docs/component_gate_failure_taxonomy.md` and
-`docs/component_gate_followup_benchmark_memo.md` explain why Phase 4 remains on
-hold:
+Sources:
 
-- the locked 7B `general_v1` gate passed Phase A, determinism, and aggregate
-  gates
-- unlock still failed because per-family and frozen-sentinel checks caught
-  concentrated scenario errors and observed gate failures
-- schema-rescue removed primary scenario errors but did not unlock the 7B path
-- descriptive 32B rows cleared the selected common-surface measured failures,
-  which supports a capacity/schema decomposition rather than a noisy-policy
-  claim
+- `data/results/component_gate_decision_general_v1_summary.json`
+- `docs/component_gate_failure_taxonomy.md`
+- `docs/component_gate_followup_benchmark_memo.md`
 
-The methodology finding is that aggregate gates were insufficient. Per-family
-and frozen-sentinel checks prevented a false noisy-mode unlock.
+Locked 7B default-schema readout:
 
-## 8. Limits
+- Phase A and determinism pass
+- aggregate CI and aggregate observed gates pass
+- unlock remains false because of `45` primary scenario errors, `8`
+  per-family observed failures, and `3` frozen-sentinel observed failures
 
-The project does not yet show:
+Follow-up decomposition:
+
+- 7B `scenario_conditioned` schema rescue removes primary scenario errors
+  (`45` to `0`) but remains locked with `5` primary observed failures and `2`
+  frozen-sentinel observed failures
+- descriptive 32B default-schema rows clear the same common-surface measured
+  failures, supporting a capacity/schema decomposition rather than a noisy
+  policy claim
+
+Supported claim: the gate discipline prevents a false noisy-mode unlock.
+Unsupported claim: extracted-candidate CQ policy superiority.
+
+## 6. Local Unlock Probe
+
+The minimal empirical lift is now preregistered in
+`docs/local_unlock_probe_preregistration.md`.
+
+It tests `qwen2.5:32b-instruct-q4_K_M` as the primary unlocking model on the
+same held-out per-family rows plus frozen sentinel used by the locked 7B
+baseline, under both code-level schema profiles: `default` and
+`scenario_conditioned`.
+
+The probe has two allowed outcomes:
+
+- Bucket A: 32B unlocks under at least one schema profile, which triggers a new
+  preregistration for a noisy CQ-vs-Reflection-vs-`Mem0Lite` policy comparison.
+- Bucket C: 32B stays locked under both schema profiles, which strengthens the
+  gate-methodology result but does not retire the oracle-only policy objection.
+
+The draft does not wait for this probe. The probe only determines whether the
+paper can add a future noisy-policy-comparison section.
+
+## 7. Limits
+
+Current unsupported claims:
 
 - noisy-mode end-to-end CQ superiority
-- extracted-candidate policy comparison under the current 7B gate
+- extracted-candidate policy comparison under the current locked gate
 - LongMemEval or other external benchmark transfer
 - real-user long-horizon helpfulness
 - learned semantic scope inference
-- resolution of the `temporal_skew` weakness
+- repaired `temporal_skew`
 - spectrum-family evidence as external validation
 
 `CQDatedContestation` remains a separately preregistered follow-up. It must not
 retrofit the original `phase2_5` adversarial headline result.
 
-## 9. Open Follow-Ups
+## 8. Next Work
 
-Next work should stay sequenced:
-
-1. Keep Phase 4 on hold until a component gate explicitly unlocks policy
-   comparison.
-2. Treat `CQDatedContestation` as an optional, separately preregistered
-   dated-evidence repair.
-3. Use LongMemEval later as an external transfer check, not as a current claim.
-4. Add broader noisy pipeline evidence only after component outputs satisfy the
-   preregistered quality gates.
+1. Run the 7B anchor from `docs/local_unlock_probe_preregistration.md` on a
+   clean worktree and abort if exact locked counts do not reproduce.
+2. If the anchor passes, run the two 32B primary unlock cells and classify the
+   result as Bucket A or Bucket C.
+3. Keep Phase 4 policy comparisons on hold unless Bucket A fires and a separate
+   noisy-policy preregistration is written.
+4. Treat LongMemEval as future transfer work, not a current claim.
 
 The current shareable package is therefore a benchmark and methodology draft
-with honest oracle-policy results, not a completed persistent-agent memory
-system claim.
+with honest oracle-policy results and a clear noisy-mode gate, not a completed
+persistent-agent memory-system claim.

@@ -1,5 +1,59 @@
 # Product Progress
 
+## 2026-05-13 — Local unlock probe preregistered and runner parameterized
+
+### What shipped
+
+- parameterized `scripts/run_component_gate_decision.py` so the primary gate
+  model can be either `qwen2.5:7b-instruct-q4_K_M` or
+  `qwen2.5:32b-instruct-q4_K_M`
+- made schema profile a required runner-level argument (`default` or
+  `scenario_conditioned`) and included it in row artifact names, summaries, and
+  cache checks
+- added preregistered Ollama digest verification before scoring, with abort
+  reports on digest mismatch and per-cell summary manifests recording digest,
+  server version, prompt SHA, schema profile, pre-run git status, command, and
+  summary SHA
+- renamed gate stop reports from `component_gate_decision_phase_a_stop_*` to
+  `component_gate_decision_stop_*` because stop conditions now include anchor
+  and digest failures, not only Phase A
+- added `docs/local_unlock_probe_preregistration.md` and tightened
+  `docs/benchmark_methodology_draft.md` around the aggregate/per-family/frozen
+  sentinel gate contribution, related-work positioning, and arXiv technical
+  report target
+- follow-up hardening after review added primary-model determinism replay,
+  automated 7B anchor-count enforcement before 32B scoring, and model-digest
+  cache provenance checks
+- second review hardening pass made 32B scoring abort when the required 7B
+  anchor summary was produced under a different Ollama server version than the
+  live probe backend
+
+### Why it matters
+
+- 32B can now be tested as an actual primary unlock cell rather than only a
+  descriptive headroom row
+- schema-profile execution is explicit and auditable instead of hidden in the
+  model command string
+- the preregistration keeps the next noisy-mode step bounded: Bucket A opens a
+  separate noisy policy-comparison preregistration, while Bucket C strengthens
+  the gate-methodology result without retiring the oracle-only objection
+
+### Evidence
+
+- focused tests:
+  - `python3 -m unittest tests.test_component_gate_decision -q`
+- dry-run preview:
+  - `python3 scripts/run_component_gate_decision.py --dry-run --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile scenario_conditioned --include-frozen-sentinel`
+- syntax check:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m py_compile scripts/run_component_gate_decision.py tests/test_component_gate_decision.py`
+
+### Open issues / next
+
+- no 32B primary scoring was run in this change
+- next, run the preregistered 7B anchor on a clean worktree, then run the two
+  32B primary schema-profile cells only if the anchor reproduces exact locked
+  counts
+
 ## 2026-05-13 — Integrated benchmark/methodology draft added
 
 ### What shipped

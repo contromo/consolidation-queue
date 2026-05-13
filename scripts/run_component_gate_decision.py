@@ -11,10 +11,12 @@ locked.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import math
 import shlex
+import subprocess
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -45,6 +47,12 @@ from cq.eval.runner import (  # noqa: E402
     generate_scenarios,
 )
 from cq.pipeline.local_extractor import MODEL_MODE, build_extractor_output  # noqa: E402
+from cq.pipeline.ollama_component_extractor import (  # noqa: E402
+    OllamaCommandError,
+    OllamaHttpClient,
+    SCHEMA_PROFILE_DEFAULT,
+    SCHEMA_PROFILES,
+)
 from cq.schemas.memory import jsonable  # noqa: E402
 from cq.schemas.scenario import EventKind, Scenario  # noqa: E402
 
@@ -62,7 +70,7 @@ matrix = _load_matrix_module()
 
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "results"
 SUMMARY_PREFIX = "component_gate_decision"
-STOP_REPORT_PREFIX = "component_gate_decision_phase_a_stop"
+STOP_REPORT_PREFIX = "component_gate_decision_stop"
 PRIMARY_SCENARIO_COUNT = 60
 FROZEN_SENTINEL_SCENARIO_COUNT = 3
 TEMPLATE_MIX_HELDOUT = "heldout"
@@ -78,6 +86,28 @@ PRIMARY_GATE_FAMILIES: Tuple[str, ...] = (
     FALSE_CORROBORATION,
     MEMORY_POISONING,
 )
+PRIMARY_MODEL_SPECS: Dict[str, matrix.ModelSpec] = {
+    matrix.QWEN_7B_Q4KM.model_id: matrix.QWEN_7B_Q4KM,
+    matrix.QWEN_32B_Q4KM.model_id: matrix.QWEN_32B_Q4KM,
+}
+PREREGISTERED_MODEL_DIGESTS: Dict[str, str] = {
+    matrix.QWEN_7B_Q4KM.model_id: "sha256:845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+    matrix.QWEN_32B_Q4KM.model_id: "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+}
+LOCKED_BASELINE_SUMMARY_PATH = (
+    DEFAULT_OUTPUT_DIR / "component_gate_decision_general_v1_summary.json"
+)
+LOCKED_BASELINE_UNLOCK_CHECKS = {
+    "phase_a_passed": True,
+    "determinism_passed": True,
+    "primary_scenario_error_count": 45,
+    "primary_observed_gate_failure_count": 8,
+    "aggregate_observed_gate_failure_count": 0,
+    "aggregate_ci_gate_failure_count": 0,
+    "frozen_sentinel_included": True,
+    "frozen_sentinel_observed_gate_failure_count": 3,
+    "policy_comparison_unlocked": False,
+}
 
 
 @dataclass(frozen=True)
@@ -89,14 +119,16 @@ class GateRow:
     prompt_label: str
     prompt_path: Path
     gate_role: str
+    schema_profile: str = SCHEMA_PROFILE_DEFAULT
 
     @property
     def artifact_stem(self) -> str:
-        return "{}_{}_local_extractor_{}_{}_{}_n{}_{}".format(
+        return "{}_{}_local_extractor_{}_{}_{}_{}_n{}_{}".format(
             SUMMARY_PREFIX,
             self.family,
             self.model.artifact_label,
             self.prompt_label,
+            self.schema_profile,
             self.template_mix,
             self.scenarios,
             self.gate_role,
@@ -129,19 +161,31 @@ class GateRowResult:
     reused: bool
 
 
+@dataclass(frozen=True)
+class PrimaryModelBackend:
+    model_tag: str
+    expected_digest: str
+    resolved_digest: str
+    ollama_server_version: str
+
+
 def primary_gate_rows(
     prompt_path: Path = matrix.GENERAL_PROMPT_PATH,
     prompt_label: str = matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+    *,
+    primary_model: matrix.ModelSpec = matrix.QWEN_7B_Q4KM,
+    schema_profile: str = SCHEMA_PROFILE_DEFAULT,
 ) -> List[GateRow]:
     return [
         GateRow(
             family=family,
             template_mix=TEMPLATE_MIX_HELDOUT,
             scenarios=PRIMARY_SCENARIO_COUNT,
-            model=matrix.QWEN_7B_Q4KM,
+            model=primary_model,
             prompt_label=prompt_label,
             prompt_path=prompt_path,
-            gate_role="primary_floor",
+            gate_role=primary_gate_role(primary_model),
+            schema_profile=schema_profile,
         )
         for family in PRIMARY_GATE_FAMILIES
     ]
@@ -151,6 +195,7 @@ def headroom_gate_rows(
     prompt_path: Path = matrix.GENERAL_PROMPT_PATH,
     prompt_label: str = matrix.DEFAULT_GENERAL_PROMPT_LABEL,
     families: Sequence[str] = PRIMARY_GATE_FAMILIES,
+    schema_profile: str = SCHEMA_PROFILE_DEFAULT,
 ) -> List[GateRow]:
     return [
         GateRow(
@@ -161,6 +206,7 @@ def headroom_gate_rows(
             prompt_label=prompt_label,
             prompt_path=prompt_path,
             gate_role="descriptive_headroom",
+            schema_profile=schema_profile,
         )
         for family in families
     ]
@@ -172,6 +218,7 @@ def frozen_sentinel_rows(
     *,
     model: matrix.ModelSpec = matrix.QWEN_7B_Q4KM,
     gate_role: str = "frozen_sentinel_floor",
+    schema_profile: str = SCHEMA_PROFILE_DEFAULT,
 ) -> List[GateRow]:
     return [
         GateRow(
@@ -182,8 +229,15 @@ def frozen_sentinel_rows(
             prompt_label=prompt_label,
             prompt_path=prompt_path,
             gate_role=gate_role,
+            schema_profile=schema_profile,
         )
     ]
+
+
+def primary_gate_role(model: matrix.ModelSpec) -> str:
+    if model == matrix.QWEN_7B_Q4KM:
+        return "primary_floor"
+    return "primary_unlock_probe"
 
 
 def gate_artifact_paths(row: GateRow, output_dir: Path) -> GateArtifactPaths:
@@ -206,6 +260,7 @@ def run_or_reuse_gate_row(
     if not force and _paths_exist(paths) and cached_gate_artifacts_match_row(
         row,
         paths,
+        model_command=model_command,
         decoding_json=decoding_json,
         per_scenario_timeout_seconds=per_scenario_timeout_seconds,
     ):
@@ -244,7 +299,13 @@ def run_gate_row(
     _write_json(paths.predictions, extractor_output)
     predictions = load_predictions_by_scenario(paths.predictions)
     scenario_errors = load_scenario_errors(paths.predictions)
-    component_artifact = _build_row_component_artifact(row, predictions, scenario_errors)
+    component_artifact = _build_row_component_artifact(
+        row,
+        predictions,
+        scenario_errors,
+        model_digest=_model_digest_from_prediction_payload(extractor_output),
+        ollama_server_version=_ollama_version_from_prediction_payload(extractor_output),
+    )
     _write_json(paths.component_eval, component_artifact)
     return GateRowResult(
         row=row,
@@ -269,7 +330,13 @@ def _gate_result_from_paths(
     predictions = load_predictions_by_scenario(paths.predictions)
     scenario_errors = load_scenario_errors(paths.predictions)
     component_artifact = (
-        _build_row_component_artifact(row, predictions, scenario_errors)
+        _build_row_component_artifact(
+            row,
+            predictions,
+            scenario_errors,
+            model_digest=_model_digest_from_prediction_payload(payload),
+            ollama_server_version=_ollama_version_from_prediction_payload(payload),
+        )
         if changed
         else _read_json(paths.component_eval)
     )
@@ -289,6 +356,7 @@ def cached_gate_artifacts_match_row(
     row: GateRow,
     paths: GateArtifactPaths,
     *,
+    model_command: str,
     decoding_json: str,
     per_scenario_timeout_seconds: float,
 ) -> bool:
@@ -305,15 +373,71 @@ def cached_gate_artifacts_match_row(
             decoding_json=decoding_json,
             per_scenario_timeout_seconds=per_scenario_timeout_seconds,
         )
+        mismatches.extend(
+            gate_cached_artifact_provenance_mismatches(
+                row,
+                paths,
+                model_command=model_command,
+            )
+        )
     except (OSError, ValueError, json.JSONDecodeError):
         return False
     return not mismatches
+
+
+def gate_cached_artifact_provenance_mismatches(
+    row: GateRow,
+    paths: GateArtifactPaths,
+    *,
+    model_command: str,
+) -> List[Dict[str, object]]:
+    predictions_payload = _read_json(paths.predictions)
+    component_payload = _read_json(paths.component_eval)
+    diagnostics = predictions_payload.get("model_diagnostics")
+    if not isinstance(diagnostics, dict):
+        diagnostics = {}
+    # Missing preregistration intentionally mismatches any cached digest so new
+    # model rows cannot silently reuse artifacts.
+    expected_digest = PREREGISTERED_MODEL_DIGESTS.get(row.model.model_id, "")
+    checks = [
+        ("predictions.model_command", predictions_payload.get("model_command"), model_command),
+        (
+            "predictions.model_diagnostics.schema_profile",
+            diagnostics.get("schema_profile"),
+            row.schema_profile,
+        ),
+        ("predictions.model_digest", predictions_payload.get("model_digest"), expected_digest),
+        (
+            "predictions.model_diagnostics.model_digest",
+            diagnostics.get("model_digest"),
+            expected_digest,
+        ),
+        ("component.schema_profile", component_payload.get("schema_profile"), row.schema_profile),
+        ("component.model_id", component_payload.get("model_id"), row.model.model_id),
+        ("component.model_digest", component_payload.get("model_digest"), expected_digest),
+    ]
+    mismatches = []
+    for field, observed, expected in checks:
+        if not matrix._values_match(observed, expected):
+            mismatches.append(
+                {
+                    "field": field,
+                    "observed": observed,
+                    "expected": expected,
+                    "predictions_path": str(paths.predictions),
+                    "component_eval_path": str(paths.component_eval),
+                }
+            )
+    return mismatches
 
 
 def _build_row_component_artifact(
     row: GateRow,
     predictions_by_scenario: Dict[str, List[CandidateComponentPrediction]],
     scenario_errors: Dict[str, object],
+    *,
+    model_digest: str = "",
+    ollama_server_version: str = "",
 ) -> Dict[str, object]:
     scenarios = generate_scenarios(row.family, row.scenarios, row.template_mix)
     evaluation = evaluate_component_predictions(
@@ -321,12 +445,14 @@ def _build_row_component_artifact(
         predictions_by_scenario,
         scenario_errors=scenario_errors,
     )
-    return {
+    artifact = {
         "mode": "component_gate_decision_row",
         "family": row.family,
         "template_mix": row.template_mix,
         "requested_scenario_count": row.scenarios,
         "scenario_count": len(scenarios),
+        "model_id": row.model.model_id,
+        "schema_profile": row.schema_profile,
         "scenario_error_count": len(scenario_errors),
         "scenario_errors": jsonable(scenario_errors),
         "quality_gate_thresholds": QUALITY_GATES,
@@ -337,6 +463,11 @@ def _build_row_component_artifact(
         "failure_example_limits": evaluation["failure_example_limits"],
         "failure_example_overflow": evaluation["failure_example_overflow"],
     }
+    if model_digest:
+        artifact["model_digest"] = model_digest
+    if ollama_server_version:
+        artifact["ollama_server_version"] = ollama_server_version
+    return artifact
 
 
 def run_gate_decision(
@@ -348,45 +479,72 @@ def run_gate_decision(
     general_prompt_path: Path = matrix.GENERAL_PROMPT_PATH,
     general_prompt_label: str = matrix.DEFAULT_GENERAL_PROMPT_LABEL,
     summary_label: Optional[str] = None,
+    primary_model_tag: str = matrix.QWEN_7B_Q4KM.model_id,
+    schema_profile: str = SCHEMA_PROFILE_DEFAULT,
     include_headroom: bool = False,
     include_frozen_sentinel: bool = False,
     headroom_families: Sequence[str] = PRIMARY_GATE_FAMILIES,
     include_headroom_frozen_sentinel: bool = False,
     force: bool = False,
+    runner_command: Optional[str] = None,
 ) -> Path:
+    primary_model = model_spec_for_tag(primary_model_tag)
+    backend = verify_primary_model_backend(
+        primary_model_tag,
+        runner_command=runner_command,
+    )
+    if primary_model != matrix.QWEN_7B_Q4KM:
+        anchor_error = verify_required_anchor_before_probe(
+            output_dir,
+            live_ollama_server_version=backend.ollama_server_version,
+        )
+        if anchor_error is not None:
+            raise anchor_error
+    pre_run_working_tree_status = working_tree_status()
+    effective_model_command = model_command_for_schema_profile(
+        model_command,
+        schema_profile,
+    )
+    phase_a_force = force or schema_profile != SCHEMA_PROFILE_DEFAULT
     matrix.run_prompt_regression(
         output_dir=output_dir,
-        model_command=model_command,
+        model_command=effective_model_command,
         decoding_json=decoding_json,
         per_scenario_timeout_seconds=per_scenario_timeout_seconds,
         general_prompt_path=general_prompt_path,
         general_prompt_label=general_prompt_label,
-        force=force,
+        force=phase_a_force,
     )
     matrix.run_determinism_check(
-        model_command=model_command,
+        model_command=effective_model_command,
         decoding_json=decoding_json,
         per_scenario_timeout_seconds=per_scenario_timeout_seconds,
         general_prompt_path=general_prompt_path,
         general_prompt_label=general_prompt_label,
+        model=primary_model,
     )
     primary_results = [
         run_or_reuse_gate_row(
             row,
             output_dir=output_dir,
-            model_command=model_command,
+            model_command=effective_model_command,
             decoding_json=decoding_json,
             per_scenario_timeout_seconds=per_scenario_timeout_seconds,
             force=force,
         )
-        for row in primary_gate_rows(general_prompt_path, general_prompt_label)
+        for row in primary_gate_rows(
+            general_prompt_path,
+            general_prompt_label,
+            primary_model=primary_model,
+            schema_profile=schema_profile,
+        )
     ]
     headroom_results = (
         [
             run_or_reuse_gate_row(
                 row,
                 output_dir=output_dir,
-                model_command=model_command,
+                model_command=effective_model_command,
                 decoding_json=decoding_json,
                 per_scenario_timeout_seconds=per_scenario_timeout_seconds,
                 force=force,
@@ -395,6 +553,7 @@ def run_gate_decision(
                 general_prompt_path,
                 general_prompt_label,
                 families=headroom_families,
+                schema_profile=schema_profile,
             )
         ]
         if include_headroom
@@ -406,7 +565,7 @@ def run_gate_decision(
                 run_or_reuse_gate_row(
                     row,
                     output_dir=output_dir,
-                    model_command=model_command,
+                    model_command=effective_model_command,
                     decoding_json=decoding_json,
                     per_scenario_timeout_seconds=per_scenario_timeout_seconds,
                     force=force,
@@ -416,6 +575,7 @@ def run_gate_decision(
                     general_prompt_label,
                     model=matrix.QWEN_32B_Q4KM,
                     gate_role="descriptive_headroom_frozen_sentinel",
+                    schema_profile=schema_profile,
                 )
             ]
         )
@@ -424,12 +584,18 @@ def run_gate_decision(
             run_or_reuse_gate_row(
                 row,
                 output_dir=output_dir,
-                model_command=model_command,
+                model_command=effective_model_command,
                 decoding_json=decoding_json,
                 per_scenario_timeout_seconds=per_scenario_timeout_seconds,
                 force=force,
             )
-            for row in frozen_sentinel_rows(general_prompt_path, general_prompt_label)
+            for row in frozen_sentinel_rows(
+                general_prompt_path,
+                general_prompt_label,
+                model=primary_model,
+                gate_role="frozen_sentinel_primary",
+                schema_profile=schema_profile,
+            )
         ]
         if include_frozen_sentinel
         else []
@@ -437,30 +603,360 @@ def run_gate_decision(
     path = gate_summary_path(
         output_dir,
         general_prompt_label=summary_label or general_prompt_label,
+        primary_model_tag=primary_model_tag,
+        schema_profile=schema_profile,
+        summary_label=summary_label,
     )
     # These helpers raise StopConditionError on failure; reaching the summary write means both guards passed.
+    summary_payload = gate_summary_payload(
+        primary_results=primary_results,
+        headroom_results=headroom_results,
+        frozen_sentinel_results=frozen_results,
+        general_prompt_path=general_prompt_path,
+        general_prompt_label=general_prompt_label,
+        summary_label=summary_label,
+        decoding_json=decoding_json,
+        per_scenario_timeout_seconds=per_scenario_timeout_seconds,
+        phase_a_passed=True,
+        determinism_passed=True,
+        primary_model_backend=backend,
+        schema_profile=schema_profile,
+        runner_command=runner_command,
+        pre_run_working_tree_status=pre_run_working_tree_status,
+    )
     _write_json(
         path,
-        gate_summary_payload(
-            primary_results=primary_results,
-            headroom_results=headroom_results,
-            frozen_sentinel_results=frozen_results,
-            general_prompt_path=general_prompt_path,
-            general_prompt_label=general_prompt_label,
-            summary_label=summary_label,
-            decoding_json=decoding_json,
-            per_scenario_timeout_seconds=per_scenario_timeout_seconds,
-            phase_a_passed=True,
-            determinism_passed=True,
-        ),
+        summary_payload,
+    )
+    # Keep a drifted anchor summary inspectable, but withhold the manifest
+    # because the anchor did not reproduce the locked preregistered baseline.
+    if is_locked_7b_anchor_run(
+        primary_model_tag=primary_model_tag,
+        schema_profile=schema_profile,
+        include_frozen_sentinel=include_frozen_sentinel,
+        summary_label=summary_label,
+    ):
+        anchor_error = verify_anchor_against_locked_baseline(path)
+        if anchor_error is not None:
+            raise anchor_error
+    write_gate_manifest(
+        summary_path=path,
+        summary_payload=summary_payload,
+        runner_command=runner_command,
+        pre_run_working_tree_status=pre_run_working_tree_status,
     )
     return path
 
 
-def gate_summary_path(output_dir: Path, *, general_prompt_label: str) -> Path:
+def gate_summary_path(
+    output_dir: Path,
+    *,
+    general_prompt_label: str,
+    primary_model_tag: Optional[str] = None,
+    schema_profile: Optional[str] = None,
+    summary_label: Optional[str] = None,
+) -> Path:
+    """Return the summary path.
+
+    A custom summary_label is an explicit operator override and takes
+    precedence over cell-derived primary-model/schema labels.
+    """
+    if summary_label:
+        label = summary_label
+    elif primary_model_tag and schema_profile:
+        label = "{}_{}".format(primary_model_tag, schema_profile)
+    else:
+        label = general_prompt_label
     return output_dir / "{}_{}_summary.json".format(
         SUMMARY_PREFIX,
-        matrix._slug_for_filename(general_prompt_label),
+        matrix._slug_for_filename(label),
+    )
+
+
+def default_anchor_summary_path(output_dir: Path) -> Path:
+    return gate_summary_path(
+        output_dir,
+        general_prompt_label=matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+        primary_model_tag=matrix.QWEN_7B_Q4KM.model_id,
+        schema_profile=SCHEMA_PROFILE_DEFAULT,
+    )
+
+
+def model_spec_for_tag(model_tag: str) -> matrix.ModelSpec:
+    try:
+        return PRIMARY_MODEL_SPECS[model_tag]
+    except KeyError:
+        raise ValueError(
+            "Unsupported primary model tag '{}'. Allowed: {}".format(
+                model_tag,
+                ", ".join(sorted(PRIMARY_MODEL_SPECS)),
+            )
+        )
+
+
+def verify_primary_model_backend(
+    primary_model_tag: str,
+    *,
+    runner_command: Optional[str],
+    client: Optional[OllamaHttpClient] = None,
+) -> PrimaryModelBackend:
+    expected_digest = PREREGISTERED_MODEL_DIGESTS.get(primary_model_tag)
+    if expected_digest is None:
+        raise matrix.StopConditionError(
+            "unsupported_primary_model_tag",
+            {
+                "primary_model_tag": primary_model_tag,
+                "allowed_primary_model_tags": sorted(PREREGISTERED_MODEL_DIGESTS),
+                "runner_command": runner_command,
+            },
+        )
+    client = client or OllamaHttpClient()
+    try:
+        ollama_server_version = client.get_version()
+        resolved_digest = client.get_model_digest(primary_model_tag)
+    except OllamaCommandError as error:
+        raise matrix.StopConditionError(
+            "model_digest_verification_failed",
+            {
+                "primary_model_tag": primary_model_tag,
+                "expected_digest": expected_digest,
+                "observed_digest": None,
+                "ollama_server_version": None,
+                "message": str(error),
+                "runner_command": runner_command,
+            },
+        )
+    if resolved_digest != expected_digest:
+        raise matrix.StopConditionError(
+            "model_digest_mismatch",
+            {
+                "primary_model_tag": primary_model_tag,
+                "expected_digest": expected_digest,
+                "observed_digest": resolved_digest,
+                "ollama_server_version": ollama_server_version,
+                "runner_command": runner_command,
+            },
+        )
+    return PrimaryModelBackend(
+        model_tag=primary_model_tag,
+        expected_digest=expected_digest,
+        resolved_digest=resolved_digest,
+        ollama_server_version=ollama_server_version,
+    )
+
+
+def model_command_for_schema_profile(model_command: str, schema_profile: str) -> str:
+    if schema_profile not in SCHEMA_PROFILES:
+        raise ValueError(
+            "Unsupported schema profile '{}'. Allowed: {}".format(
+                schema_profile,
+                ", ".join(SCHEMA_PROFILES),
+            )
+        )
+    try:
+        argv = shlex.split(model_command)
+    except ValueError as error:
+        raise ValueError("--model-command could not be parsed: {}".format(error))
+    if not argv:
+        raise ValueError("--model-command is required")
+    for item in argv:
+        if item == "--schema-profile" or item.startswith("--schema-profile="):
+            raise ValueError(
+                "Pass schema profile with the runner-level --schema-profile argument, "
+                "not inside --model-command"
+            )
+    return shlex.join([*argv, "--schema-profile", schema_profile])
+
+
+def write_gate_manifest(
+    *,
+    summary_path: Path,
+    summary_payload: Mapping[str, object],
+    runner_command: Optional[str],
+    pre_run_working_tree_status: Optional[str],
+) -> Path:
+    summary_sha = sha256_file(summary_path)
+    manifest_path = summary_path.with_name(
+        "{}_manifest.json".format(summary_path.stem.removesuffix("_summary"))
+    )
+    artifact = {
+        "path": _repo_relative_path(summary_path),
+        "bytes": summary_path.stat().st_size,
+        "sha256": summary_sha,
+        "summary_json_sha256": summary_sha,
+        "git_commit": git_commit(),
+        "python_version": sys.version.split()[0],
+        "runner_command": runner_command,
+        "working_tree_status": pre_run_working_tree_status,
+        "working_tree_status_context": "pre_run_before_scored_rows",
+        "primary_model_tag": summary_payload.get("primary_model_tag"),
+        "primary_model_digest": summary_payload.get("primary_model_digest"),
+        "expected_primary_model_digest": summary_payload.get("expected_primary_model_digest"),
+        "ollama_server_version": summary_payload.get("ollama_server_version"),
+        "prompt_sha256": summary_payload.get("general_prompt_sha256"),
+        "schema_profile": summary_payload.get("schema_profile"),
+    }
+    manifest = {
+        "manifest_version": 1,
+        "run_name": summary_path.stem.removesuffix("_summary"),
+        "artifact_count": 1,
+        "artifacts": [artifact],
+    }
+    _write_json(manifest_path, manifest)
+    return manifest_path
+
+
+def locked_baseline_anchor_matches(summary_path: Path = LOCKED_BASELINE_SUMMARY_PATH) -> bool:
+    # The static result artifact is ignored in clean CI checkouts; pinned
+    # constants remain the authoritative baseline when the artifact is absent.
+    if not summary_path.exists():
+        return True
+    try:
+        payload = _read_json(summary_path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return False
+    checks = payload.get("unlock_checks")
+    return isinstance(checks, dict) and all(
+        checks.get(key) == expected
+        for key, expected in LOCKED_BASELINE_UNLOCK_CHECKS.items()
+    )
+
+
+def verify_required_anchor_before_probe(
+    output_dir: Path,
+    *,
+    live_ollama_server_version: str = "",
+) -> Optional[matrix.StopConditionError]:
+    anchor_path = default_anchor_summary_path(output_dir)
+    if not anchor_path.exists():
+        return matrix.StopConditionError(
+            "anchor_summary_missing",
+            {
+                "required_anchor_summary_path": str(anchor_path),
+                "locked_baseline_summary_path": str(LOCKED_BASELINE_SUMMARY_PATH),
+                "message": "Run the preregistered 7B default-schema anchor before 32B scoring.",
+            },
+        )
+    anchor_error = verify_anchor_against_locked_baseline(anchor_path)
+    if anchor_error is not None:
+        return anchor_error
+    return verify_anchor_ollama_server_version(
+        anchor_path,
+        live_ollama_server_version=live_ollama_server_version,
+    )
+
+
+def verify_anchor_against_locked_baseline(
+    new_summary_path: Path,
+    *,
+    locked_summary_path: Path = LOCKED_BASELINE_SUMMARY_PATH,
+) -> Optional[matrix.StopConditionError]:
+    try:
+        new_payload = _read_json(new_summary_path)
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        return matrix.StopConditionError(
+            "anchor_summary_unreadable",
+            {
+                "new_summary_path": str(new_summary_path),
+                "message": str(error),
+            },
+        )
+    locked_checks: Optional[Dict[str, object]] = None
+    if locked_summary_path.exists():
+        try:
+            locked_payload = _read_json(locked_summary_path)
+        except (OSError, ValueError, json.JSONDecodeError) as error:
+            return matrix.StopConditionError(
+                "locked_baseline_summary_unreadable",
+                {
+                    "locked_summary_path": str(locked_summary_path),
+                    "message": str(error),
+                },
+            )
+        locked_checks = _mapping(locked_payload.get("unlock_checks"))
+    new_checks = _mapping(new_payload.get("unlock_checks"))
+    mismatches = []
+    for key, expected in LOCKED_BASELINE_UNLOCK_CHECKS.items():
+        observed = new_checks.get(key)
+        locked_observed = locked_checks.get(key) if locked_checks is not None else expected
+        if observed != expected or locked_observed != expected:
+            mismatches.append(
+                {
+                    "field": "unlock_checks.{}".format(key),
+                    "observed": observed,
+                    "expected": expected,
+                    "locked_summary_observed": locked_observed,
+                }
+            )
+    if not mismatches:
+        return None
+    return matrix.StopConditionError(
+        "anchor_reproduction_mismatch",
+        {
+            "new_summary_path": str(new_summary_path),
+            "locked_summary_path": str(locked_summary_path),
+            "locked_summary_present": locked_checks is not None,
+            "mismatches": mismatches,
+        },
+    )
+
+
+def verify_anchor_ollama_server_version(
+    anchor_summary_path: Path,
+    *,
+    live_ollama_server_version: str,
+) -> Optional[matrix.StopConditionError]:
+    try:
+        anchor_payload = _read_json(anchor_summary_path)
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        return matrix.StopConditionError(
+            "anchor_summary_unreadable",
+            {
+                "new_summary_path": str(anchor_summary_path),
+                "message": str(error),
+            },
+        )
+    anchor_version = anchor_payload.get("ollama_server_version")
+    if not isinstance(anchor_version, str) or not anchor_version:
+        return matrix.StopConditionError(
+            "anchor_ollama_server_version_missing",
+            {
+                "anchor_summary_path": str(anchor_summary_path),
+                "live_ollama_server_version": live_ollama_server_version,
+            },
+        )
+    if not live_ollama_server_version:
+        return matrix.StopConditionError(
+            "live_ollama_server_version_missing",
+            {
+                "anchor_summary_path": str(anchor_summary_path),
+                "anchor_ollama_server_version": anchor_version,
+            },
+        )
+    if anchor_version == live_ollama_server_version:
+        return None
+    return matrix.StopConditionError(
+        "anchor_ollama_server_version_mismatch",
+        {
+            "anchor_summary_path": str(anchor_summary_path),
+            "anchor_ollama_server_version": anchor_version,
+            "live_ollama_server_version": live_ollama_server_version,
+        },
+    )
+
+
+def is_locked_7b_anchor_run(
+    *,
+    primary_model_tag: str,
+    schema_profile: str,
+    include_frozen_sentinel: bool,
+    summary_label: Optional[str],
+) -> bool:
+    return (
+        primary_model_tag == matrix.QWEN_7B_Q4KM.model_id
+        and schema_profile == SCHEMA_PROFILE_DEFAULT
+        and include_frozen_sentinel
+        and summary_label is None
     )
 
 
@@ -476,6 +972,10 @@ def gate_summary_payload(
     per_scenario_timeout_seconds: float,
     phase_a_passed: bool,
     determinism_passed: bool,
+    primary_model_backend: Optional[PrimaryModelBackend] = None,
+    schema_profile: str = SCHEMA_PROFILE_DEFAULT,
+    runner_command: Optional[str] = None,
+    pre_run_working_tree_status: Optional[str] = None,
 ) -> Dict[str, object]:
     aggregate = aggregate_gate_evaluation(primary_results)
     row_summaries = [row_summary(result) for result in primary_results]
@@ -522,6 +1022,21 @@ def gate_summary_payload(
     for failure in frozen_failures:
         blockers.append({"type": "frozen_sentinel_observed_gate_failed", **failure})
     policy_unlocked = not blockers
+    primary_model_tag = (
+        primary_model_backend.model_tag
+        if primary_model_backend is not None
+        else _primary_model_tag_from_results(primary_results)
+    )
+    primary_model_digest = (
+        primary_model_backend.resolved_digest
+        if primary_model_backend is not None
+        else _model_digest_from_results(primary_results)
+    )
+    ollama_server_version = (
+        primary_model_backend.ollama_server_version
+        if primary_model_backend is not None
+        else _ollama_server_version_from_results(primary_results)
+    )
 
     return {
         "mode": "ci_aware_component_gate_decision",
@@ -531,6 +1046,17 @@ def gate_summary_payload(
         "general_prompt_label": general_prompt_label,
         "summary_label": summary_label,
         "general_prompt_sha256": matrix.prompt_template_sha256(general_prompt_path),
+        "primary_model_tag": primary_model_tag,
+        "primary_model_digest": primary_model_digest,
+        "expected_primary_model_digest": (
+            primary_model_backend.expected_digest
+            if primary_model_backend is not None
+            else PREREGISTERED_MODEL_DIGESTS.get(primary_model_tag, "")
+        ),
+        "ollama_server_version": ollama_server_version,
+        "schema_profile": schema_profile,
+        "runner_command": runner_command,
+        "pre_run_working_tree_status": pre_run_working_tree_status,
         "decoding_params": _parse_decoding_json(decoding_json),
         "per_scenario_timeout_seconds": per_scenario_timeout_seconds,
         "policy_comparison_unlocked": policy_unlocked,
@@ -542,12 +1068,22 @@ def gate_summary_payload(
             phase_a_passed,
             general_prompt_label=general_prompt_label,
         ),
-        "determinism_contract": determinism_contract_payload(determinism_passed),
+        "determinism_contract": determinism_contract_payload(
+            determinism_passed,
+            model_tag=primary_model_tag,
+        ),
         "generation_contract": generation_contract_payload(),
         "statistical_contract": statistical_contract_payload(),
         "unlock_rule": {
-            "primary_model_role": "primary_floor",
-            "primary_model_id": matrix.QWEN_7B_Q4KM.model_id,
+            "primary_model_role": (
+                model_spec_for_tag(primary_model_tag).role
+                if primary_model_tag in PRIMARY_MODEL_SPECS
+                else "unknown"
+            ),
+            "primary_model_id": primary_model_tag,
+            "primary_model_tag": primary_model_tag,
+            "primary_model_digest": primary_model_digest,
+            "schema_profile": schema_profile,
             "requires_phase_a_pass": True,
             "requires_determinism_pass": True,
             "requires_primary_zero_scenario_errors": True,
@@ -947,6 +1483,11 @@ def row_summary(result: GateRowResult) -> Dict[str, object]:
         "model_role": result.row.model.role,
         "gate_role": result.row.gate_role,
         "prompt_label": result.row.prompt_label,
+        "schema_profile": result.row.schema_profile,
+        "model_digest": _model_digest_from_prediction_artifact(result.paths.predictions),
+        "ollama_server_version": _ollama_version_from_prediction_artifact(
+            result.paths.predictions
+        ),
         "reused": result.reused,
         "paths": {
             "predictions": str(result.paths.predictions),
@@ -962,6 +1503,64 @@ def row_summary(result: GateRowResult) -> Dict[str, object]:
     }
 
 
+def _primary_model_tag_from_results(results: Sequence[GateRowResult]) -> str:
+    if not results:
+        return ""
+    return results[0].row.model.model_id
+
+
+def _model_digest_from_results(results: Sequence[GateRowResult]) -> str:
+    for result in results:
+        digest = _model_digest_from_prediction_artifact(result.paths.predictions)
+        if digest:
+            return digest
+    return ""
+
+
+def _ollama_server_version_from_results(results: Sequence[GateRowResult]) -> str:
+    for result in results:
+        version = _ollama_version_from_prediction_artifact(result.paths.predictions)
+        if version:
+            return version
+    return ""
+
+
+def _model_digest_from_prediction_artifact(path: Path) -> str:
+    try:
+        payload = _read_json(path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return ""
+    return _model_digest_from_prediction_payload(payload)
+
+
+def _model_digest_from_prediction_payload(payload: Mapping[str, object]) -> str:
+    top_level = payload.get("model_digest")
+    if isinstance(top_level, str) and top_level:
+        return top_level
+    diagnostics = _prediction_payload_model_diagnostics(payload)
+    digest = diagnostics.get("model_digest")
+    return digest if isinstance(digest, str) else ""
+
+
+def _ollama_version_from_prediction_artifact(path: Path) -> str:
+    try:
+        payload = _read_json(path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return ""
+    return _ollama_version_from_prediction_payload(payload)
+
+
+def _ollama_version_from_prediction_payload(payload: Mapping[str, object]) -> str:
+    diagnostics = _prediction_payload_model_diagnostics(payload)
+    version = diagnostics.get("ollama_server_version")
+    return version if isinstance(version, str) else ""
+
+
+def _prediction_payload_model_diagnostics(payload: Mapping[str, object]) -> Dict[str, object]:
+    diagnostics = payload.get("model_diagnostics")
+    return diagnostics if isinstance(diagnostics, dict) else {}
+
+
 def dry_run_plan(
     *,
     output_dir: Path,
@@ -970,18 +1569,31 @@ def dry_run_plan(
     per_scenario_timeout_seconds: float,
     general_prompt_path: Path = matrix.GENERAL_PROMPT_PATH,
     general_prompt_label: str = matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+    primary_model_tag: str = matrix.QWEN_7B_Q4KM.model_id,
+    schema_profile: str = SCHEMA_PROFILE_DEFAULT,
     include_headroom: bool = False,
     include_frozen_sentinel: bool = False,
     headroom_families: Sequence[str] = PRIMARY_GATE_FAMILIES,
     include_headroom_frozen_sentinel: bool = False,
 ) -> Dict[str, object]:
-    rows = primary_gate_rows(general_prompt_path, general_prompt_label)
+    primary_model = model_spec_for_tag(primary_model_tag)
+    effective_model_command = model_command_for_schema_profile(
+        model_command,
+        schema_profile,
+    )
+    rows = primary_gate_rows(
+        general_prompt_path,
+        general_prompt_label,
+        primary_model=primary_model,
+        schema_profile=schema_profile,
+    )
     if include_headroom:
         rows.extend(
             headroom_gate_rows(
                 general_prompt_path,
                 general_prompt_label,
                 families=headroom_families,
+                schema_profile=schema_profile,
             )
         )
     if include_headroom_frozen_sentinel:
@@ -991,25 +1603,46 @@ def dry_run_plan(
                 general_prompt_label,
                 model=matrix.QWEN_32B_Q4KM,
                 gate_role="descriptive_headroom_frozen_sentinel",
+                schema_profile=schema_profile,
             )
         )
     if include_frozen_sentinel:
-        rows.extend(frozen_sentinel_rows(general_prompt_path, general_prompt_label))
+        rows.extend(
+            frozen_sentinel_rows(
+                general_prompt_path,
+                general_prompt_label,
+                model=primary_model,
+                gate_role="frozen_sentinel_primary",
+                schema_profile=schema_profile,
+            )
+        )
     return {
         "mode": "dry_run",
         "phase": "ci_aware_component_gate_decision",
         "general_prompt_path": str(general_prompt_path),
         "general_prompt_label": general_prompt_label,
+        "primary_model_tag": primary_model_tag,
+        "expected_primary_model_digest": PREREGISTERED_MODEL_DIGESTS[primary_model_tag],
+        "schema_profile": schema_profile,
+        "effective_model_command": effective_model_command,
         "policy_comparison_unlocked": "not_evaluated",
         "phase_a_contract": phase_a_contract_payload(
             False,
             general_prompt_label=general_prompt_label,
         )["contract"],
-        "determinism_contract": determinism_contract_payload(False)["contract"],
+        "determinism_contract": determinism_contract_payload(
+            False,
+            model_tag=primary_model_tag,
+        )["contract"],
         "generation_contract": generation_contract_payload(),
         "statistical_contract": statistical_contract_payload(),
         "expected_denominators_current_generator": expected_denominators_payload(
-            primary_gate_rows(general_prompt_path, general_prompt_label)
+            primary_gate_rows(
+                general_prompt_path,
+                general_prompt_label,
+                primary_model=primary_model,
+                schema_profile=schema_profile,
+            )
         ),
         "rows": [
             {
@@ -1020,6 +1653,7 @@ def dry_run_plan(
                 "model_role": row.model.role,
                 "gate_role": row.gate_role,
                 "prompt_label": row.prompt_label,
+                "schema_profile": row.schema_profile,
                 "paths": {
                     "predictions": str(gate_artifact_paths(row, output_dir).predictions),
                     "component_eval": str(gate_artifact_paths(row, output_dir).component_eval),
@@ -1028,7 +1662,7 @@ def dry_run_plan(
                 "commands": equivalent_commands(
                     row,
                     output_dir=output_dir,
-                    model_command=model_command,
+                    model_command=effective_model_command,
                     decoding_json=decoding_json,
                     per_scenario_timeout_seconds=per_scenario_timeout_seconds,
                 ),
@@ -1118,12 +1752,16 @@ def phase_a_contract_payload(
     }
 
 
-def determinism_contract_payload(passed: bool) -> Dict[str, object]:
+def determinism_contract_payload(
+    passed: bool,
+    *,
+    model_tag: str = matrix.QWEN_7B_Q4KM.model_id,
+) -> Dict[str, object]:
     return {
         "passed": passed,
         "contract": {
             "source": "scripts/run_component_scoring_matrix.py::run_determinism_check",
-            "model_id": matrix.QWEN_7B_Q4KM.model_id,
+            "model_id": model_tag,
             "family": FORCED_CONTRADICTION,
             "template_mix": "mixed",
             "scenarios": 6,
@@ -1332,8 +1970,40 @@ def _quality_gates(component_artifact: Mapping[str, object]) -> Dict[str, Dict[s
     }
 
 
+def _mapping(value: object) -> Dict[str, object]:
+    return value if isinstance(value, dict) else {}
+
+
 def _paths_exist(paths: GateArtifactPaths) -> bool:
     return paths.predictions.exists() and paths.component_eval.exists()
+
+
+def _repo_relative_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
+def git_commit() -> str:
+    return _git_output(["rev-parse", "HEAD"])
+
+
+def working_tree_status() -> str:
+    return "clean" if not _git_output(["status", "--short"]) else "dirty"
+
+
+def _git_output(args: Sequence[str]) -> str:
+    return subprocess.check_output(["git", *args], text=True, cwd=REPO_ROOT).strip()
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _read_json(path: Path) -> Dict[str, object]:
@@ -1370,6 +2040,12 @@ def write_stop_report(output_dir: Path, error: matrix.StopConditionError) -> Pat
     return path
 
 
+def runner_command_for_invocation(argv: Optional[Sequence[str]]) -> str:
+    if argv is None:
+        return shlex.join([sys.executable, str(Path(__file__)), *sys.argv[1:]])
+    return shlex.join([sys.executable, str(Path(__file__)), *argv])
+
+
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -1383,6 +2059,18 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--general-prompt-path", type=Path, default=matrix.GENERAL_PROMPT_PATH)
     parser.add_argument("--general-prompt-label", default=matrix.DEFAULT_GENERAL_PROMPT_LABEL)
     parser.add_argument("--summary-label", default=None)
+    parser.add_argument(
+        "--primary-model-tag",
+        required=True,
+        choices=sorted(PRIMARY_MODEL_SPECS),
+        help="Primary unlocking model tag. Exact resolved digest is checked before scoring.",
+    )
+    parser.add_argument(
+        "--schema-profile",
+        required=True,
+        choices=SCHEMA_PROFILES,
+        help="Ollama extractor schema profile. This is passed to the wrapper by the runner.",
+    )
     parser.add_argument("--include-headroom", action="store_true")
     parser.add_argument(
         "--headroom-family",
@@ -1398,11 +2086,16 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     args = parser.parse_args(argv)
     if args.headroom_families and not args.include_headroom:
         parser.error("--headroom-family requires --include-headroom")
+    try:
+        model_command_for_schema_profile(args.model_command, args.schema_profile)
+    except ValueError as error:
+        parser.error(str(error))
     return args
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parse_args(argv)
+    runner_command = runner_command_for_invocation(argv)
     headroom_families = tuple(args.headroom_families or PRIMARY_GATE_FAMILIES)
     if args.dry_run:
         print(
@@ -1414,6 +2107,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     per_scenario_timeout_seconds=args.per_scenario_timeout_seconds,
                     general_prompt_path=args.general_prompt_path,
                     general_prompt_label=args.general_prompt_label,
+                    primary_model_tag=args.primary_model_tag,
+                    schema_profile=args.schema_profile,
                     include_headroom=args.include_headroom,
                     include_frozen_sentinel=args.include_frozen_sentinel,
                     headroom_families=headroom_families,
@@ -1433,11 +2128,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             general_prompt_path=args.general_prompt_path,
             general_prompt_label=args.general_prompt_label,
             summary_label=args.summary_label,
+            primary_model_tag=args.primary_model_tag,
+            schema_profile=args.schema_profile,
             include_headroom=args.include_headroom,
             include_frozen_sentinel=args.include_frozen_sentinel,
             headroom_families=headroom_families,
             include_headroom_frozen_sentinel=args.include_headroom_frozen_sentinel,
             force=args.force,
+            runner_command=runner_command,
         )
     except matrix.StopConditionError as error:
         report_path = write_stop_report(args.output_dir, error)
