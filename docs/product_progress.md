@@ -1,5 +1,48 @@
 # Product Progress
 
+## 2026-05-13 — Phase 2.6 abstention-calibration sweeps recorded
+
+### What shipped
+
+- ran the preregistered `evidence_conflict_spectrum` mixed and held-out oracle
+  sweeps with `--policy-set phase2_5 --scenarios 600`
+- committed the small durable artifact set:
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed_metrics.csv`
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed_manifest.json`
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout_metrics.csv`
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout_manifest.json`
+  - `data/results/abstention/evidence_conflict_spectrum_oracle_phase2_5_mixed_abstention.json`
+  - `data/results/abstention/evidence_conflict_spectrum_oracle_phase2_5_heldout_abstention.json`
+- wrote `docs/abstention_quality_results.md` from committed CSV, manifest, and
+  replay artifacts only
+
+### Why it matters
+
+- the Phase 2.6 readout lands in **full support**: both mixed and held-out pass
+  `conflict_moderate` useful abstention, `conflict_witness` useful abstention,
+  and the single harmful bucket over `zero`, `mild`, and `polluted`
+- this strengthens the witness-conflict finding into a broader oracle-only
+  abstention-calibration axis under the designed mechanism assay
+- the result remains separated from noisy-mode claims; Phase 3 stays locked and
+  Phase 4 remains on hold
+
+### Evidence
+
+- primary CQ-vs-`Mem0Lite` gates on both splits:
+  - `conflict_moderate`: delta `+1.00`, one-sided 95% LCB `+1.00`
+  - `conflict_witness`: delta `+1.00`, one-sided 95% LCB `+1.00`
+  - harmful bucket: delta `+0.00`, one-sided 95% UCB `+0.00`
+- large JSON manifests verified against local SHA256 before the JSONs were left
+  untracked:
+  - mixed JSON: `182838865` bytes
+  - held-out JSON: `182869137` bytes
+
+### Open issues / next
+
+- fold the adversarial-upstream-noise result, the full-support abstention
+  readout, and the component-gate methodology into
+  `docs/benchmark_methodology_draft.md`
+
 ## 2026-05-13 — Phase 2.6 artifact policy locked before sweeps
 
 ### What shipped
