@@ -492,7 +492,12 @@ class ComponentGateDecisionTests(unittest.TestCase):
                 decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
                 per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             )
-            predictions_payload["model_diagnostics"] = {"schema_profile": row.schema_profile}
+            model_digest = gate.PREREGISTERED_MODEL_DIGESTS[row.model.model_id]
+            predictions_payload["model_digest"] = model_digest
+            predictions_payload["model_diagnostics"] = {
+                "schema_profile": row.schema_profile,
+                "model_digest": model_digest,
+            }
             paths.predictions.write_text(
                 json.dumps(jsonable(predictions_payload), indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
@@ -502,6 +507,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
                 row,
                 loaded_predictions,
                 gate.load_scenario_errors(paths.predictions),
+                model_digest=model_digest,
             )
             paths.component_eval.write_text(
                 json.dumps(jsonable(component_artifact), indent=2, sort_keys=True) + "\n",
@@ -545,7 +551,12 @@ class ComponentGateDecisionTests(unittest.TestCase):
                 decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
                 per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             )
-            predictions_payload["model_diagnostics"] = {"schema_profile": row.schema_profile}
+            model_digest = gate.PREREGISTERED_MODEL_DIGESTS[row.model.model_id]
+            predictions_payload["model_digest"] = model_digest
+            predictions_payload["model_diagnostics"] = {
+                "schema_profile": row.schema_profile,
+                "model_digest": model_digest,
+            }
             scenario_id = next(iter(predictions_payload["scenario_predictions"]))
             predictions_payload["scenario_predictions"][scenario_id] = [
                 {
@@ -568,6 +579,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
                 row,
                 gate.load_predictions_by_scenario(paths.predictions),
                 gate.load_scenario_errors(paths.predictions),
+                model_digest=model_digest,
             )
             paths.component_eval.write_text(
                 json.dumps(jsonable(component_artifact), indent=2, sort_keys=True) + "\n",
@@ -593,6 +605,62 @@ class ComponentGateDecisionTests(unittest.TestCase):
             result.component_artifact["scenario_errors"][scenario_id]["message"],
             "Prediction 0 must include non-vacuous string canonical_id",
         )
+
+    def test_cached_artifact_provenance_rejects_stale_model_digest(self) -> None:
+        row = gate.GateRow(
+            family=gate.FORCED_CONTRADICTION,
+            template_mix=gate.TEMPLATE_MIX_HELDOUT,
+            scenarios=1,
+            model=gate.matrix.QWEN_7B_Q4KM,
+            prompt_label=gate.matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+            prompt_path=gate.matrix.GENERAL_PROMPT_PATH,
+            gate_role="primary_floor",
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            paths = gate.gate_artifact_paths(row, output_dir)
+            script_path = _write_empty_prediction_model_script(output_dir)
+            predictions_payload = gate.build_extractor_output(
+                family=row.family,
+                scenario_count=row.scenarios,
+                template_mix=row.template_mix,
+                mode=gate.MODEL_MODE,
+                model_command=_fake_model_command(script_path),
+                model_id=row.model.model_id,
+                prompt_template_path=str(row.prompt_path),
+                decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
+                per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+            )
+            predictions_payload["model_digest"] = "sha256:stale"
+            predictions_payload["model_diagnostics"] = {
+                "schema_profile": row.schema_profile,
+                "model_digest": "sha256:stale",
+            }
+            paths.predictions.write_text(
+                json.dumps(jsonable(predictions_payload), indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            component_artifact = gate._build_row_component_artifact(
+                row,
+                gate.load_predictions_by_scenario(paths.predictions),
+                gate.load_scenario_errors(paths.predictions),
+                model_digest="sha256:stale",
+            )
+            paths.component_eval.write_text(
+                json.dumps(jsonable(component_artifact), indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+
+            mismatches = gate.gate_cached_artifact_provenance_mismatches(
+                row,
+                paths,
+                model_command=_fake_model_command(script_path),
+            )
+
+        fields = {item["field"] for item in mismatches}
+        self.assertIn("predictions.model_digest", fields)
+        self.assertIn("predictions.model_diagnostics.model_digest", fields)
+        self.assertIn("component.model_digest", fields)
 
     def test_main_uses_summary_label_for_output_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -633,7 +701,10 @@ class ComponentGateDecisionTests(unittest.TestCase):
             original_run_gate_decision = gate.run_gate_decision
 
             def stop_gate_decision(**_kwargs):
-                raise gate.matrix.StopConditionError("phase_a_failed", {"example": True})
+                raise gate.matrix.StopConditionError(
+                    "model_digest_mismatch",
+                    {"expected_digest": "sha256:locked", "observed_digest": "sha256:new"},
+                )
 
             try:
                 gate.run_gate_decision = stop_gate_decision
@@ -651,9 +722,12 @@ class ComponentGateDecisionTests(unittest.TestCase):
                 gate.run_gate_decision = original_run_gate_decision
 
             reports = list(Path(tmpdir).glob("component_gate_decision_stop_*.json"))
+            report = json.loads(reports[0].read_text(encoding="utf-8"))
 
         self.assertEqual(exit_code, 1)
         self.assertEqual(len(reports), 1)
+        self.assertEqual(report["reason"], "model_digest_mismatch")
+        self.assertEqual(report["details"]["observed_digest"], "sha256:new")
 
     def test_primary_model_digest_verification_records_backend(self) -> None:
         client = _FakeOllamaClient(
@@ -740,6 +814,87 @@ class ComponentGateDecisionTests(unittest.TestCase):
     def test_locked_7b_anchor_summary_counts_are_pinned(self) -> None:
         self.assertTrue(gate.locked_baseline_anchor_matches())
 
+    def test_anchor_verification_rejects_count_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "fresh_anchor_summary.json"
+            payload = {"unlock_checks": dict(gate.LOCKED_BASELINE_UNLOCK_CHECKS)}
+            payload["unlock_checks"]["primary_scenario_error_count"] = 44
+            summary_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            error = gate.verify_anchor_against_locked_baseline(summary_path)
+
+        self.assertIsNotNone(error)
+        self.assertEqual(error.reason, "anchor_reproduction_mismatch")
+        self.assertEqual(
+            error.details["mismatches"][0]["field"],
+            "unlock_checks.primary_scenario_error_count",
+        )
+
+    def test_32b_probe_requires_anchor_summary_before_scoring(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            error = gate.verify_required_anchor_before_probe(Path(tmpdir))
+
+        self.assertIsNotNone(error)
+        self.assertEqual(error.reason, "anchor_summary_missing")
+
+    def test_run_gate_decision_writes_expected_32b_summary_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            _write_anchor_summary(output_dir)
+            original_verify_backend = gate.verify_primary_model_backend
+            original_prompt_regression = gate.matrix.run_prompt_regression
+            original_determinism = gate.matrix.run_determinism_check
+            original_run_or_reuse = gate.run_or_reuse_gate_row
+            original_working_tree_status = gate.working_tree_status
+            determinism_calls = []
+
+            def fake_verify_backend(primary_model_tag, *, runner_command, client=None):
+                return gate.PrimaryModelBackend(
+                    model_tag=primary_model_tag,
+                    expected_digest=gate.PREREGISTERED_MODEL_DIGESTS[primary_model_tag],
+                    resolved_digest=gate.PREREGISTERED_MODEL_DIGESTS[primary_model_tag],
+                    ollama_server_version="0.23.1",
+                )
+
+            def fake_prompt_regression(**_kwargs):
+                return None
+
+            def fake_determinism(**kwargs):
+                determinism_calls.append(kwargs)
+
+            def fake_run_or_reuse(row, **_kwargs):
+                return _oracle_row_result(row)
+
+            try:
+                gate.verify_primary_model_backend = fake_verify_backend
+                gate.matrix.run_prompt_regression = fake_prompt_regression
+                gate.matrix.run_determinism_check = fake_determinism
+                gate.run_or_reuse_gate_row = fake_run_or_reuse
+                gate.working_tree_status = lambda: "clean"
+                summary_path = gate.run_gate_decision(
+                    output_dir=output_dir,
+                    model_command="python3 scripts/ollama_component_extractor.py",
+                    decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
+                    per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
+                    primary_model_tag=gate.matrix.QWEN_32B_Q4KM.model_id,
+                    schema_profile="default",
+                    include_frozen_sentinel=True,
+                    runner_command="python3 scripts/run_component_gate_decision.py",
+                )
+            finally:
+                gate.verify_primary_model_backend = original_verify_backend
+                gate.matrix.run_prompt_regression = original_prompt_regression
+                gate.matrix.run_determinism_check = original_determinism
+                gate.run_or_reuse_gate_row = original_run_or_reuse
+                gate.working_tree_status = original_working_tree_status
+
+            self.assertEqual(
+                summary_path.name,
+                "component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_summary.json",
+            )
+            self.assertTrue(summary_path.exists())
+            self.assertEqual(determinism_calls[0]["model"], gate.matrix.QWEN_32B_Q4KM)
+
 
 def _oracle_row_result(row):
     scenarios = generate_scenarios(row.family, row.scenarios, row.template_mix)
@@ -773,6 +928,16 @@ def _oracle_row_result(row):
         scenario_errors={},
         reused=False,
     )
+
+
+def _write_anchor_summary(output_dir: Path) -> Path:
+    path = gate.default_anchor_summary_path(output_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps({"unlock_checks": gate.LOCKED_BASELINE_UNLOCK_CHECKS}),
+        encoding="utf-8",
+    )
+    return path
 
 
 class _FakeOllamaClient:

@@ -59,6 +59,10 @@ Not parameterized:
 - determinism replay
 - aggregate gate logic
 
+Determinism replay is the fixed six-scenario `forced_contradiction` smoke row,
+but the row now uses the runner's primary model tag and schema profile. It does
+not rerun every held-out primary row for determinism.
+
 ## Runtime Guard
 
 Before scoring, `scripts/run_component_gate_decision.py` must query local
@@ -68,9 +72,10 @@ Ollama for:
 - resolved digest for the primary model tag
 
 The run aborts if the observed digest differs from the expected digest above.
-The abort report records the expected digest, observed digest, Ollama server
-version when available, and exact runner command. Ollama tag syntax is used for
-generation; `tag@digest` invocation is not assumed.
+The abort report uses the `component_gate_decision_stop_*` filename prefix and
+records the expected digest, observed digest, Ollama server version when
+available, and exact runner command. Ollama tag syntax is used for generation;
+`tag@digest` invocation is not assumed.
 
 The runner-level `--schema-profile` argument owns schema selection. Do not pass
 `--schema-profile` inside `--model-command`.
@@ -100,6 +105,10 @@ match this preregistration:
 
 If the anchor fails, abort before any 32B scoring and investigate runtime drift.
 Do not silently apply a plus-or-minus tolerance.
+
+The runner enforces this mechanically: the 7B anchor summary is compared
+against the locked baseline counts after the anchor run, and 32B scoring aborts
+if the expected 7B anchor summary is absent or mismatched.
 
 ## Probe Commands
 

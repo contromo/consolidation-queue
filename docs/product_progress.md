@@ -14,10 +14,16 @@
   reports on digest mismatch and per-cell summary manifests recording digest,
   server version, prompt SHA, schema profile, pre-run git status, command, and
   summary SHA
+- renamed gate stop reports from `component_gate_decision_phase_a_stop_*` to
+  `component_gate_decision_stop_*` because stop conditions now include anchor
+  and digest failures, not only Phase A
 - added `docs/local_unlock_probe_preregistration.md` and tightened
   `docs/benchmark_methodology_draft.md` around the aggregate/per-family/frozen
   sentinel gate contribution, related-work positioning, and arXiv technical
   report target
+- follow-up hardening after review added primary-model determinism replay,
+  automated 7B anchor-count enforcement before 32B scoring, and model-digest
+  cache provenance checks
 
 ### Why it matters
 

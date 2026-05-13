@@ -564,12 +564,13 @@ def run_determinism_check(
     per_scenario_timeout_seconds: float,
     general_prompt_path: Path = GENERAL_PROMPT_PATH,
     general_prompt_label: str = DEFAULT_GENERAL_PROMPT_LABEL,
+    model: ModelSpec = QWEN_7B_Q4KM,
 ) -> None:
     row = MatrixRow(
         FORCED_CONTRADICTION,
         "mixed",
         6,
-        QWEN_7B_Q4KM,
+        model,
         general_prompt_label,
         general_prompt_path,
     )

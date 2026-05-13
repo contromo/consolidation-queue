@@ -299,7 +299,13 @@ def run_gate_row(
     _write_json(paths.predictions, extractor_output)
     predictions = load_predictions_by_scenario(paths.predictions)
     scenario_errors = load_scenario_errors(paths.predictions)
-    component_artifact = _build_row_component_artifact(row, predictions, scenario_errors)
+    component_artifact = _build_row_component_artifact(
+        row,
+        predictions,
+        scenario_errors,
+        model_digest=_model_digest_from_prediction_payload(extractor_output),
+        ollama_server_version=_ollama_version_from_prediction_payload(extractor_output),
+    )
     _write_json(paths.component_eval, component_artifact)
     return GateRowResult(
         row=row,
@@ -324,7 +330,13 @@ def _gate_result_from_paths(
     predictions = load_predictions_by_scenario(paths.predictions)
     scenario_errors = load_scenario_errors(paths.predictions)
     component_artifact = (
-        _build_row_component_artifact(row, predictions, scenario_errors)
+        _build_row_component_artifact(
+            row,
+            predictions,
+            scenario_errors,
+            model_digest=_model_digest_from_prediction_payload(payload),
+            ollama_server_version=_ollama_version_from_prediction_payload(payload),
+        )
         if changed
         else _read_json(paths.component_eval)
     )
@@ -384,6 +396,7 @@ def gate_cached_artifact_provenance_mismatches(
     diagnostics = predictions_payload.get("model_diagnostics")
     if not isinstance(diagnostics, dict):
         diagnostics = {}
+    expected_digest = PREREGISTERED_MODEL_DIGESTS.get(row.model.model_id, "")
     checks = [
         ("predictions.model_command", predictions_payload.get("model_command"), model_command),
         (
@@ -391,8 +404,15 @@ def gate_cached_artifact_provenance_mismatches(
             diagnostics.get("schema_profile"),
             row.schema_profile,
         ),
+        ("predictions.model_digest", predictions_payload.get("model_digest"), expected_digest),
+        (
+            "predictions.model_diagnostics.model_digest",
+            diagnostics.get("model_digest"),
+            expected_digest,
+        ),
         ("component.schema_profile", component_payload.get("schema_profile"), row.schema_profile),
         ("component.model_id", component_payload.get("model_id"), row.model.model_id),
+        ("component.model_digest", component_payload.get("model_digest"), expected_digest),
     ]
     mismatches = []
     for field, observed, expected in checks:
@@ -413,6 +433,9 @@ def _build_row_component_artifact(
     row: GateRow,
     predictions_by_scenario: Dict[str, List[CandidateComponentPrediction]],
     scenario_errors: Dict[str, object],
+    *,
+    model_digest: str = "",
+    ollama_server_version: str = "",
 ) -> Dict[str, object]:
     scenarios = generate_scenarios(row.family, row.scenarios, row.template_mix)
     evaluation = evaluate_component_predictions(
@@ -420,7 +443,7 @@ def _build_row_component_artifact(
         predictions_by_scenario,
         scenario_errors=scenario_errors,
     )
-    return {
+    artifact = {
         "mode": "component_gate_decision_row",
         "family": row.family,
         "template_mix": row.template_mix,
@@ -438,6 +461,11 @@ def _build_row_component_artifact(
         "failure_example_limits": evaluation["failure_example_limits"],
         "failure_example_overflow": evaluation["failure_example_overflow"],
     }
+    if model_digest:
+        artifact["model_digest"] = model_digest
+    if ollama_server_version:
+        artifact["ollama_server_version"] = ollama_server_version
+    return artifact
 
 
 def run_gate_decision(
@@ -459,6 +487,10 @@ def run_gate_decision(
     runner_command: Optional[str] = None,
 ) -> Path:
     primary_model = model_spec_for_tag(primary_model_tag)
+    if primary_model != matrix.QWEN_7B_Q4KM:
+        anchor_error = verify_required_anchor_before_probe(output_dir)
+        if anchor_error is not None:
+            raise anchor_error
     backend = verify_primary_model_backend(
         primary_model_tag,
         runner_command=runner_command,
@@ -484,6 +516,7 @@ def run_gate_decision(
         per_scenario_timeout_seconds=per_scenario_timeout_seconds,
         general_prompt_path=general_prompt_path,
         general_prompt_label=general_prompt_label,
+        model=primary_model,
     )
     primary_results = [
         run_or_reuse_gate_row(
@@ -590,6 +623,15 @@ def run_gate_decision(
         path,
         summary_payload,
     )
+    if is_locked_7b_anchor_run(
+        primary_model_tag=primary_model_tag,
+        schema_profile=schema_profile,
+        include_frozen_sentinel=include_frozen_sentinel,
+        summary_label=summary_label,
+    ):
+        anchor_error = verify_anchor_against_locked_baseline(path)
+        if anchor_error is not None:
+            raise anchor_error
     write_gate_manifest(
         summary_path=path,
         summary_payload=summary_payload,
@@ -607,6 +649,11 @@ def gate_summary_path(
     schema_profile: Optional[str] = None,
     summary_label: Optional[str] = None,
 ) -> Path:
+    """Return the summary path.
+
+    A custom summary_label is an explicit operator override and takes
+    precedence over cell-derived primary-model/schema labels.
+    """
     if summary_label:
         label = summary_label
     elif primary_model_tag and schema_profile:
@@ -616,6 +663,15 @@ def gate_summary_path(
     return output_dir / "{}_{}_summary.json".format(
         SUMMARY_PREFIX,
         matrix._slug_for_filename(label),
+    )
+
+
+def default_anchor_summary_path(output_dir: Path) -> Path:
+    return gate_summary_path(
+        output_dir,
+        general_prompt_label=matrix.DEFAULT_GENERAL_PROMPT_LABEL,
+        primary_model_tag=matrix.QWEN_7B_Q4KM.model_id,
+        schema_profile=SCHEMA_PROFILE_DEFAULT,
     )
 
 
@@ -755,6 +811,79 @@ def locked_baseline_anchor_matches(summary_path: Path = LOCKED_BASELINE_SUMMARY_
     )
 
 
+def verify_required_anchor_before_probe(output_dir: Path) -> Optional[matrix.StopConditionError]:
+    anchor_path = default_anchor_summary_path(output_dir)
+    if not anchor_path.exists():
+        return matrix.StopConditionError(
+            "anchor_summary_missing",
+            {
+                "required_anchor_summary_path": str(anchor_path),
+                "locked_baseline_summary_path": str(LOCKED_BASELINE_SUMMARY_PATH),
+                "message": "Run the preregistered 7B default-schema anchor before 32B scoring.",
+            },
+        )
+    return verify_anchor_against_locked_baseline(anchor_path)
+
+
+def verify_anchor_against_locked_baseline(
+    new_summary_path: Path,
+    *,
+    locked_summary_path: Path = LOCKED_BASELINE_SUMMARY_PATH,
+) -> Optional[matrix.StopConditionError]:
+    try:
+        new_payload = _read_json(new_summary_path)
+        locked_payload = _read_json(locked_summary_path)
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        return matrix.StopConditionError(
+            "anchor_summary_unreadable",
+            {
+                "new_summary_path": str(new_summary_path),
+                "locked_summary_path": str(locked_summary_path),
+                "message": str(error),
+            },
+        )
+    new_checks = _mapping(new_payload.get("unlock_checks"))
+    locked_checks = _mapping(locked_payload.get("unlock_checks"))
+    mismatches = []
+    for key, expected in LOCKED_BASELINE_UNLOCK_CHECKS.items():
+        observed = new_checks.get(key)
+        locked_observed = locked_checks.get(key)
+        if observed != expected or locked_observed != expected:
+            mismatches.append(
+                {
+                    "field": "unlock_checks.{}".format(key),
+                    "observed": observed,
+                    "expected": expected,
+                    "locked_summary_observed": locked_observed,
+                }
+            )
+    if not mismatches:
+        return None
+    return matrix.StopConditionError(
+        "anchor_reproduction_mismatch",
+        {
+            "new_summary_path": str(new_summary_path),
+            "locked_summary_path": str(locked_summary_path),
+            "mismatches": mismatches,
+        },
+    )
+
+
+def is_locked_7b_anchor_run(
+    *,
+    primary_model_tag: str,
+    schema_profile: str,
+    include_frozen_sentinel: bool,
+    summary_label: Optional[str],
+) -> bool:
+    return (
+        primary_model_tag == matrix.QWEN_7B_Q4KM.model_id
+        and schema_profile == SCHEMA_PROFILE_DEFAULT
+        and include_frozen_sentinel
+        and summary_label is None
+    )
+
+
 def gate_summary_payload(
     *,
     primary_results: Sequence[GateRowResult],
@@ -863,7 +992,10 @@ def gate_summary_payload(
             phase_a_passed,
             general_prompt_label=general_prompt_label,
         ),
-        "determinism_contract": determinism_contract_payload(determinism_passed),
+        "determinism_contract": determinism_contract_payload(
+            determinism_passed,
+            model_tag=primary_model_tag,
+        ),
         "generation_contract": generation_contract_payload(),
         "statistical_contract": statistical_contract_payload(),
         "unlock_rule": {
@@ -1318,22 +1450,37 @@ def _ollama_server_version_from_results(results: Sequence[GateRowResult]) -> str
 
 
 def _model_digest_from_prediction_artifact(path: Path) -> str:
-    diagnostics = _prediction_artifact_model_diagnostics(path)
+    try:
+        payload = _read_json(path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return ""
+    return _model_digest_from_prediction_payload(payload)
+
+
+def _model_digest_from_prediction_payload(payload: Mapping[str, object]) -> str:
+    top_level = payload.get("model_digest")
+    if isinstance(top_level, str) and top_level:
+        return top_level
+    diagnostics = _prediction_payload_model_diagnostics(payload)
     digest = diagnostics.get("model_digest")
     return digest if isinstance(digest, str) else ""
 
 
 def _ollama_version_from_prediction_artifact(path: Path) -> str:
-    diagnostics = _prediction_artifact_model_diagnostics(path)
+    try:
+        payload = _read_json(path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return ""
+    return _ollama_version_from_prediction_payload(payload)
+
+
+def _ollama_version_from_prediction_payload(payload: Mapping[str, object]) -> str:
+    diagnostics = _prediction_payload_model_diagnostics(payload)
     version = diagnostics.get("ollama_server_version")
     return version if isinstance(version, str) else ""
 
 
-def _prediction_artifact_model_diagnostics(path: Path) -> Dict[str, object]:
-    try:
-        payload = _read_json(path)
-    except (OSError, ValueError, json.JSONDecodeError):
-        return {}
+def _prediction_payload_model_diagnostics(payload: Mapping[str, object]) -> Dict[str, object]:
     diagnostics = payload.get("model_diagnostics")
     return diagnostics if isinstance(diagnostics, dict) else {}
 
@@ -1407,7 +1554,10 @@ def dry_run_plan(
             False,
             general_prompt_label=general_prompt_label,
         )["contract"],
-        "determinism_contract": determinism_contract_payload(False)["contract"],
+        "determinism_contract": determinism_contract_payload(
+            False,
+            model_tag=primary_model_tag,
+        )["contract"],
         "generation_contract": generation_contract_payload(),
         "statistical_contract": statistical_contract_payload(),
         "expected_denominators_current_generator": expected_denominators_payload(
@@ -1526,12 +1676,16 @@ def phase_a_contract_payload(
     }
 
 
-def determinism_contract_payload(passed: bool) -> Dict[str, object]:
+def determinism_contract_payload(
+    passed: bool,
+    *,
+    model_tag: str = matrix.QWEN_7B_Q4KM.model_id,
+) -> Dict[str, object]:
     return {
         "passed": passed,
         "contract": {
             "source": "scripts/run_component_scoring_matrix.py::run_determinism_check",
-            "model_id": matrix.QWEN_7B_Q4KM.model_id,
+            "model_id": model_tag,
             "family": FORCED_CONTRADICTION,
             "template_mix": "mixed",
             "scenarios": 6,
@@ -1738,6 +1892,10 @@ def _quality_gates(component_artifact: Mapping[str, object]) -> Dict[str, Dict[s
         for name, gate in gates.items()
         if isinstance(gate, dict)
     }
+
+
+def _mapping(value: object) -> Dict[str, object]:
+    return value if isinstance(value, dict) else {}
 
 
 def _paths_exist(paths: GateArtifactPaths) -> bool:
