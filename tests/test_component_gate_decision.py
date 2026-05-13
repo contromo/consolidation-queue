@@ -41,14 +41,29 @@ class ComponentGateDecisionTests(unittest.TestCase):
         self.assertTrue(all(row.template_mix == "heldout" for row in rows))
         self.assertTrue(all(row.scenarios == 60 for row in rows))
         self.assertTrue(all(row.model == gate.matrix.QWEN_7B_Q4KM for row in rows))
+        self.assertTrue(all(row.schema_profile == "default" for row in rows))
 
         paths = gate.gate_artifact_paths(rows[0], Path("/tmp/cq-results"))
 
         self.assertEqual(
             paths.predictions.name,
-            "component_gate_decision_forced_contradiction_local_extractor_qwen2_5_7b_q4km_general_v1_heldout_n60_primary_floor_predictions.json",
+            "component_gate_decision_forced_contradiction_local_extractor_qwen2_5_7b_q4km_general_v1_default_heldout_n60_primary_floor_predictions.json",
         )
         self.assertIn("_n60_primary_floor_component_eval.json", paths.component_eval.name)
+
+    def test_primary_rows_can_promote_32b_to_unlocking_role(self) -> None:
+        rows = gate.primary_gate_rows(
+            primary_model=gate.matrix.QWEN_32B_Q4KM,
+            schema_profile="scenario_conditioned",
+        )
+
+        self.assertTrue(all(row.model == gate.matrix.QWEN_32B_Q4KM for row in rows))
+        self.assertTrue(all(row.gate_role == "primary_unlock_probe" for row in rows))
+        self.assertTrue(all(row.schema_profile == "scenario_conditioned" for row in rows))
+        self.assertIn(
+            "_general_v1_scenario_conditioned_heldout_n60_primary_unlock_probe_",
+            gate.gate_artifact_paths(rows[0], Path("/tmp/cq-results")).predictions.name,
+        )
 
     def test_headroom_rows_can_be_filtered_and_include_descriptive_frozen_sentinel(self) -> None:
         rows = gate.headroom_gate_rows(
@@ -139,6 +154,8 @@ class ComponentGateDecisionTests(unittest.TestCase):
 
         self.assertEqual(plan["mode"], "dry_run")
         self.assertEqual(plan["policy_comparison_unlocked"], "not_evaluated")
+        self.assertEqual(plan["primary_model_tag"], gate.matrix.QWEN_7B_Q4KM.model_id)
+        self.assertEqual(plan["schema_profile"], "default")
         self.assertEqual(len(plan["rows"]), 13)
         self.assertIn(
             'generate_scenarios(family, 60, "heldout")',
@@ -147,7 +164,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
         self.assertIn("template-rotation variants", plan["generation_contract"]["dependence_warning"])
         self.assertIn("run_prompt_regression", plan["phase_a_contract"]["source"])
         self.assertIn("run_determinism_check", plan["determinism_contract"]["source"])
-        self.assertIn("_n60_primary_floor_predictions.json", plan["rows"][0]["paths"]["predictions"])
+        self.assertIn("_default_heldout_n60_primary_floor_predictions.json", plan["rows"][0]["paths"]["predictions"])
 
     def test_dry_run_supports_selected_headroom_families_and_headroom_frozen_sentinel(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -156,6 +173,8 @@ class ComponentGateDecisionTests(unittest.TestCase):
                 model_command="python3 scripts/ollama_component_extractor.py",
                 decoding_json='{"temperature": 0}',
                 per_scenario_timeout_seconds=180.0,
+                primary_model_tag=gate.matrix.QWEN_32B_Q4KM.model_id,
+                schema_profile="scenario_conditioned",
                 include_headroom=True,
                 headroom_families=(gate.SCOPE_CONTAMINATION, gate.PREFERENCE_DRIFT),
                 include_headroom_frozen_sentinel=True,
@@ -163,6 +182,10 @@ class ComponentGateDecisionTests(unittest.TestCase):
 
         rows = plan["rows"]
         self.assertEqual(len(rows), 9)
+        primary_rows = [row for row in rows if row["gate_role"] == "primary_unlock_probe"]
+        self.assertEqual(len(primary_rows), 6)
+        self.assertTrue(all(row["model_id"] == gate.matrix.QWEN_32B_Q4KM.model_id for row in primary_rows))
+        self.assertTrue(all(row["schema_profile"] == "scenario_conditioned" for row in rows))
         headroom_rows = [row for row in rows if row["gate_role"].startswith("descriptive_headroom")]
         self.assertEqual(
             {(row["family"], row["gate_role"]) for row in headroom_rows},
@@ -190,6 +213,9 @@ class ComponentGateDecisionTests(unittest.TestCase):
         )
 
         self.assertTrue(summary["policy_comparison_unlocked"])
+        self.assertEqual(summary["primary_model_tag"], gate.matrix.QWEN_7B_Q4KM.model_id)
+        self.assertEqual(summary["schema_profile"], "default")
+        self.assertEqual(summary["unlock_rule"]["primary_model_tag"], gate.matrix.QWEN_7B_Q4KM.model_id)
         self.assertEqual(summary["blockers"], [])
         aggregate = summary["aggregate_primary"]
         self.assertEqual(
@@ -466,6 +492,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
                 decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
                 per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             )
+            predictions_payload["model_diagnostics"] = {"schema_profile": row.schema_profile}
             paths.predictions.write_text(
                 json.dumps(jsonable(predictions_payload), indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
@@ -484,7 +511,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
             result = gate.run_or_reuse_gate_row(
                 row,
                 output_dir=output_dir,
-                model_command="should not run",
+                model_command=_fake_model_command(script_path),
                 decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
                 per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             )
@@ -518,6 +545,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
                 decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
                 per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             )
+            predictions_payload["model_diagnostics"] = {"schema_profile": row.schema_profile}
             scenario_id = next(iter(predictions_payload["scenario_predictions"]))
             predictions_payload["scenario_predictions"][scenario_id] = [
                 {
@@ -549,7 +577,7 @@ class ComponentGateDecisionTests(unittest.TestCase):
             result = gate.run_or_reuse_gate_row(
                 row,
                 output_dir=output_dir,
-                model_command="should not run",
+                model_command=_fake_model_command(script_path),
                 decoding_json=gate.matrix.DEFAULT_DECODING_JSON,
                 per_scenario_timeout_seconds=gate.matrix.DEFAULT_TIMEOUT_SECONDS,
             )
@@ -584,6 +612,10 @@ class ComponentGateDecisionTests(unittest.TestCase):
                     [
                         "--output-dir",
                         tmpdir,
+                        "--primary-model-tag",
+                        gate.matrix.QWEN_7B_Q4KM.model_id,
+                        "--schema-profile",
+                        "default",
                         "--summary-label",
                         "custom_followup_label",
                     ]
@@ -593,6 +625,8 @@ class ComponentGateDecisionTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(called["summary_label"], "custom_followup_label")
+        self.assertEqual(called["primary_model_tag"], gate.matrix.QWEN_7B_Q4KM.model_id)
+        self.assertEqual(called["schema_profile"], "default")
 
     def test_main_returns_one_and_writes_stop_report_on_stop_condition(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -603,14 +637,108 @@ class ComponentGateDecisionTests(unittest.TestCase):
 
             try:
                 gate.run_gate_decision = stop_gate_decision
-                exit_code = gate.main(["--output-dir", tmpdir])
+                exit_code = gate.main(
+                    [
+                        "--output-dir",
+                        tmpdir,
+                        "--primary-model-tag",
+                        gate.matrix.QWEN_7B_Q4KM.model_id,
+                        "--schema-profile",
+                        "default",
+                    ]
+                )
             finally:
                 gate.run_gate_decision = original_run_gate_decision
 
-            reports = list(Path(tmpdir).glob("component_gate_decision_phase_a_stop_*.json"))
+            reports = list(Path(tmpdir).glob("component_gate_decision_stop_*.json"))
 
         self.assertEqual(exit_code, 1)
         self.assertEqual(len(reports), 1)
+
+    def test_primary_model_digest_verification_records_backend(self) -> None:
+        client = _FakeOllamaClient(
+            version="0.23.1",
+            digest=gate.PREREGISTERED_MODEL_DIGESTS[gate.matrix.QWEN_7B_Q4KM.model_id],
+        )
+
+        backend = gate.verify_primary_model_backend(
+            gate.matrix.QWEN_7B_Q4KM.model_id,
+            runner_command="python3 scripts/run_component_gate_decision.py",
+            client=client,
+        )
+
+        self.assertEqual(backend.model_tag, gate.matrix.QWEN_7B_Q4KM.model_id)
+        self.assertEqual(
+            backend.resolved_digest,
+            gate.PREREGISTERED_MODEL_DIGESTS[gate.matrix.QWEN_7B_Q4KM.model_id],
+        )
+        self.assertEqual(backend.ollama_server_version, "0.23.1")
+
+    def test_primary_model_digest_mismatch_aborts_with_details(self) -> None:
+        client = _FakeOllamaClient(version="0.23.1", digest="sha256:not-locked")
+
+        with self.assertRaises(gate.matrix.StopConditionError) as context:
+            gate.verify_primary_model_backend(
+                gate.matrix.QWEN_7B_Q4KM.model_id,
+                runner_command="python3 scripts/run_component_gate_decision.py --dry-run",
+                client=client,
+            )
+
+        self.assertEqual(context.exception.reason, "model_digest_mismatch")
+        self.assertEqual(
+            context.exception.details["expected_digest"],
+            gate.PREREGISTERED_MODEL_DIGESTS[gate.matrix.QWEN_7B_Q4KM.model_id],
+        )
+        self.assertEqual(context.exception.details["observed_digest"], "sha256:not-locked")
+        self.assertEqual(context.exception.details["ollama_server_version"], "0.23.1")
+
+    def test_model_command_schema_profile_is_runner_owned(self) -> None:
+        command = gate.model_command_for_schema_profile(
+            "python3 scripts/ollama_component_extractor.py",
+            "scenario_conditioned",
+        )
+
+        self.assertTrue(command.endswith("--schema-profile scenario_conditioned"))
+        with self.assertRaisesRegex(ValueError, "runner-level --schema-profile"):
+            gate.model_command_for_schema_profile(
+                "python3 scripts/ollama_component_extractor.py --schema-profile default",
+                "scenario_conditioned",
+            )
+
+    def test_manifest_records_summary_sha_and_unlock_probe_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "component_gate_decision_qwen_default_summary.json"
+            summary_payload = {
+                "primary_model_tag": gate.matrix.QWEN_7B_Q4KM.model_id,
+                "primary_model_digest": gate.PREREGISTERED_MODEL_DIGESTS[
+                    gate.matrix.QWEN_7B_Q4KM.model_id
+                ],
+                "expected_primary_model_digest": gate.PREREGISTERED_MODEL_DIGESTS[
+                    gate.matrix.QWEN_7B_Q4KM.model_id
+                ],
+                "ollama_server_version": "0.23.1",
+                "general_prompt_sha256": "prompt-sha",
+                "schema_profile": "default",
+            }
+            summary_path.write_text(json.dumps(summary_payload), encoding="utf-8")
+
+            manifest_path = gate.write_gate_manifest(
+                summary_path=summary_path,
+                summary_payload=summary_payload,
+                runner_command="python3 scripts/run_component_gate_decision.py",
+                pre_run_working_tree_status="clean",
+            )
+            expected_sha = gate.sha256_file(summary_path)
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        row = manifest["artifacts"][0]
+        self.assertEqual(row["summary_json_sha256"], expected_sha)
+        self.assertEqual(row["primary_model_tag"], gate.matrix.QWEN_7B_Q4KM.model_id)
+        self.assertEqual(row["schema_profile"], "default")
+        self.assertEqual(row["working_tree_status"], "clean")
+
+    def test_locked_7b_anchor_summary_counts_are_pinned(self) -> None:
+        self.assertTrue(gate.locked_baseline_anchor_matches())
 
 
 def _oracle_row_result(row):
@@ -645,6 +773,18 @@ def _oracle_row_result(row):
         scenario_errors={},
         reused=False,
     )
+
+
+class _FakeOllamaClient:
+    def __init__(self, *, version: str, digest: str) -> None:
+        self.version = version
+        self.digest = digest
+
+    def get_version(self) -> str:
+        return self.version
+
+    def get_model_digest(self, _model_id: str) -> str:
+        return self.digest
 
 
 def _fake_model_command(script_path: Path) -> str:
