@@ -105,6 +105,12 @@ non-degeneracy probes show
 mechanisms (`conflict_moderate`, `conflict_witness`) and `commit__commit` on
 the three commit-required mechanisms.
 
+`conflict_witness` is intentionally heavier than `conflict_moderate`: moderate
+scenarios vary across `3`, `4`, and `5` conflict candidates, while witness
+scenarios vary across `4`, `5`, and `6` conflict candidates. The witness row is
+therefore a multi-witness contestation anchor, not a relabeled copy of the
+moderate row.
+
 Mechanism intent table:
 
 | Mechanism | Intensity | `abstention_ok` | `commit_required` | Primary role |

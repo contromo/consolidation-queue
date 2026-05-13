@@ -532,7 +532,7 @@ def generate_evidence_conflict_spectrum_scenarios(
                 project,
                 side_a,
                 side_b,
-                weak_count=1 + (variant % 3),
+                weak_count=2 + (variant % 3),
                 strong_side="b" if variant % 2 == 0 else "a",
                 base_time=base_time,
                 mechanism="conflict_witness",

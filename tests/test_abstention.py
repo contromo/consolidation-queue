@@ -123,6 +123,7 @@ class AbstentionMetricTests(unittest.TestCase):
         )
 
         self.assertEqual(result.point_estimate_delta, -0.5)
+        self.assertEqual(result.scenario_count, 3)
 
     def test_replay_uses_tempfile_backed_runner_artifact(self) -> None:
         artifact = build_run_artifact(

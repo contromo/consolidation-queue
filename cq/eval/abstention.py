@@ -77,6 +77,7 @@ class BucketBootstrapResult:
     point_estimate_delta: float
     lower_confidence_bound: float
     upper_confidence_bound: float
+    scenario_count: int
     confidence_level: float
     resamples: int
     seed: int
@@ -363,9 +364,7 @@ def useful_mechanism_comparison(
         "mechanism": mechanism,
         "point_estimate_delta": bootstrap.point_estimate_delta,
         "one_sided_95_lcb": bootstrap.lower_confidence_bound,
-        "scenario_count": len(
-            _paired_deltas(reference, comparator, mechanism=mechanism, metric_name="useful_abstention")
-        ),
+        "scenario_count": bootstrap.scenario_count,
     }
 
 
@@ -391,7 +390,7 @@ def mechanism_indicator_comparison(
         "mechanism": mechanism,
         "point_estimate_delta": bootstrap.point_estimate_delta,
         "one_sided_95_lcb": bootstrap.lower_confidence_bound,
-        "scenario_count": len(_paired_deltas(reference, comparator, mechanism=mechanism, metric_name=metric_name)),
+        "scenario_count": bootstrap.scenario_count,
     }
 
 
@@ -424,6 +423,7 @@ def stratified_bucket_comparison(
         point_estimate_delta=point_estimate,
         lower_confidence_bound=one_sided_lower_confidence_bound(samples, confidence_level=0.95),
         upper_confidence_bound=one_sided_upper_confidence_bound(samples, confidence_level=0.95),
+        scenario_count=sum(len(deltas) for deltas in deltas_by_mechanism.values()),
         confidence_level=0.95,
         resamples=resamples,
         seed=seed,

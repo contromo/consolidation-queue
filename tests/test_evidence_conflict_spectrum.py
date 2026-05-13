@@ -70,6 +70,19 @@ class EvidenceConflictSpectrumTests(unittest.TestCase):
         self.assertTrue(summary["variance_checks"]["conflict_witness"]["passed"])
         self.assertTrue(summary["variance_checks"]["conflict_polluted"]["passed"])
 
+    def test_witness_preserves_heavier_multi_witness_structure(self) -> None:
+        summary = build_structure_summary(EVIDENCE_CONFLICT_SPECTRUM, 30, "mixed")
+        mechanisms = summary["summary_by_mechanism"]
+
+        self.assertEqual(
+            set(mechanisms["conflict_moderate"]["conflict_candidate_count_distribution"]),
+            {3, 4, 5},
+        )
+        self.assertEqual(
+            set(mechanisms["conflict_witness"]["conflict_candidate_count_distribution"]),
+            {4, 5, 6},
+        )
+
     def test_nondegeneracy_probe_detects_abstain_required_policy_disagreement(self) -> None:
         artifact = build_probe_artifact(scenarios_per_mechanism=4, template_mix="mixed")
 
