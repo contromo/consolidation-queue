@@ -1,0 +1,17 @@
+{
+  "artifact_count": 1,
+  "artifacts": [
+    {
+      "archive_status": "regeneratable_only",
+      "bytes": 182838865,
+      "git_commit": "e5281d4728b9ba9e6c4ff9a014b7e1f3fd564749",
+      "path": "data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed.json",
+      "python_version": "3.9.6",
+      "runner_command": "PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.runner --family evidence_conflict_spectrum --policy-set phase2_5 --template-mix mixed --scenarios 600 --output-json data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed.json --output-csv data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed_metrics.csv",
+      "sha256": "afe24e50469488160e4527e3add303a3b2f3af65826cf0b3b0b8f34b5983609d",
+      "working_tree_status": "dirty"
+    }
+  ],
+  "manifest_version": 1,
+  "run_name": "evidence_conflict_spectrum_oracle_phase2_5_mixed"
+}
