@@ -9,6 +9,11 @@
 - added denominator-aware abstention replay/scoring, including primary
   CQ-vs-`Mem0Lite` useful-mechanism rows and harmful-bucket comparison rows
 - added structure-summary and CQ-vs-`Mem0Lite` non-degeneracy probe scripts
+- hardened the preregistration contract and replay plumbing after review:
+  generator-owned mechanism-diverse abstention intents now fail fast for new
+  templates, witness gets the same structure-variance check as the load-bearing
+  mechanisms, and runner artifacts warn when primary abstention comparisons
+  cannot be computed because `Mem0Lite` is absent
 - wrote the Phase 2.6 preregistration in
   `docs/abstention_quality_preregistration.md`
 - generated pre-run artifacts:
@@ -35,6 +40,8 @@
   - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_abstention tests.test_evidence_conflict_spectrum tests.test_runner_policy_sets -q`
 - broader verification:
   - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_abstention tests.test_evidence_conflict_spectrum tests.test_runner_policy_sets tests.test_bootstrap tests.test_metrics tests.test_adversarial_upstream_noise tests.test_component_eval tests.test_local_extractor -q`
+- review-hardening verification:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_abstention tests.test_evidence_conflict_spectrum tests.test_runner_policy_sets tests.test_bootstrap tests.test_metrics tests.test_adversarial_upstream_noise tests.test_component_eval tests.test_local_extractor tests.test_frozen_preregistration -q`
 - dry-run replay preflight:
   - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_abstention_replay.py --dry-run`
 - pre-run structure/probe artifacts listed above

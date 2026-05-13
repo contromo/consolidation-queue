@@ -20,6 +20,29 @@ DEFAULT_INPUTS = [
     Path("data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_phase2_5_heldout.json"),
     Path("data/runs/mechanism_diverse_heldout_oracle_frozen_phase2_5.json"),
 ]
+REPLAY_CSV_FIELDNAMES = [
+    "policy_name",
+    "summary_scope",
+    "mechanism",
+    "scenario_count",
+    "abstention_ok_count",
+    "commit_required_count",
+    "gray_zone_count",
+    "abstain_count",
+    "useful_abstention_count",
+    "harmful_abstention_count",
+    "useful_abstention_rate",
+    "harmful_abstention_rate",
+    "abstain_rate",
+    "comparison_name",
+    "comparison_metric_name",
+    "comparison_mechanism",
+    "comparison_reference_policy_name",
+    "comparison_comparator_policy_name",
+    "comparison_point_estimate_delta",
+    "comparison_one_sided_95_lcb",
+    "comparison_one_sided_95_ucb",
+]
 
 
 def _write_csv(artifact: Dict[str, object], output_csv: Path) -> None:
@@ -27,29 +50,7 @@ def _write_csv(artifact: Dict[str, object], output_csv: Path) -> None:
     with output_csv.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(
             handle,
-            fieldnames=[
-                "policy_name",
-                "summary_scope",
-                "mechanism",
-                "scenario_count",
-                "abstention_ok_count",
-                "commit_required_count",
-                "gray_zone_count",
-                "abstain_count",
-                "useful_abstention_count",
-                "harmful_abstention_count",
-                "useful_abstention_rate",
-                "harmful_abstention_rate",
-                "abstain_rate",
-                "comparison_name",
-                "comparison_metric_name",
-                "comparison_mechanism",
-                "comparison_reference_policy_name",
-                "comparison_comparator_policy_name",
-                "comparison_point_estimate_delta",
-                "comparison_one_sided_95_lcb",
-                "comparison_one_sided_95_ucb",
-            ],
+            fieldnames=REPLAY_CSV_FIELDNAMES,
         )
         writer.writeheader()
         for policy in artifact.get("policies", []):

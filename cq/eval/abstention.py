@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-import math
-import random
 from dataclasses import dataclass
 from types import SimpleNamespace
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Dict, Iterable, List, Mapping, Sequence
 
-from cq.eval.bootstrap import paired_bootstrap_confidence_result, paired_delta_point_estimate
+from cq.eval.bootstrap import (
+    mean,
+    one_sided_lower_confidence_bound,
+    one_sided_upper_confidence_bound,
+    paired_delta_point_estimate,
+    stratified_paired_bootstrap_sample_means,
+)
+from cq.simulator.scenario_generator import MECHANISM_DIVERSE_ABSTENTION_INTENTS
 
 
 ABSTAIN_REQUIRED_INTENSITIES = ("moderate", "witness")
@@ -32,11 +37,6 @@ ADVERSARIAL_COMMIT_MECHANISMS = {
     "adversarial_scope_narrowing",
     "adversarial_pending_competition",
 }
-
-MECHANISM_DIVERSE_ABSTAIN_TEMPLATES = {
-    "false_corroboration_adversarial_mixed_source",
-}
-
 
 @dataclass(frozen=True)
 class AbstentionDecision:
@@ -67,9 +67,9 @@ class AbstentionSummary:
     abstain_count: int
     useful_abstention_count: int
     harmful_abstention_count: int
-    useful_abstention_rate: Optional[float]
-    harmful_abstention_rate: Optional[float]
-    abstain_rate: Optional[float]
+    useful_abstention_rate: float
+    harmful_abstention_rate: float
+    abstain_rate: float
 
 
 @dataclass(frozen=True)
@@ -127,7 +127,7 @@ def asserted_candidate_ids(trace: object, store_snapshot: Dict[str, object]) -> 
 
 def abstained_from_trace(trace: object, store_snapshot: Dict[str, object]) -> bool:
     asserted_ids = asserted_candidate_ids(trace, store_snapshot)
-    # Keep this expression in parity with cq/eval/end_to_end_eval.py:583-585.
+    # This is the source-of-truth abstention predicate used by runner metrics and replay.
     return not asserted_ids and not list(_trace_value(trace, "resolved_candidate_ids", []))
 
 
@@ -153,9 +153,15 @@ def scenario_intent(
         if mechanism in ADVERSARIAL_COMMIT_MECHANISMS:
             return False, True, mechanism, ""
     if family == "mechanism_diverse_heldout":
-        if template_id in MECHANISM_DIVERSE_ABSTAIN_TEMPLATES:
-            return True, False, template_id, ""
-        return False, True, template_id, ""
+        intent = MECHANISM_DIVERSE_ABSTENTION_INTENTS.get(template_id)
+        if intent is None:
+            raise ValueError(
+                "No mechanism-diverse abstention intent mapping for template '{}'".format(
+                    template_id,
+                )
+            )
+        abstention_ok, commit_required = intent
+        return abstention_ok, commit_required, template_id, ""
 
     raise ValueError(
         "No abstention intent mapping for family '{}' template '{}' mechanism '{}'".format(
@@ -197,14 +203,20 @@ def _probe_phase_for_record(scenario: Mapping[str, object], family: str) -> str:
 
 def _question_id_for_probe(scenario: Mapping[str, object], family: str) -> str:
     phase = _probe_phase_for_record(scenario, family)
+    fallback_question_id = ""
     for event in scenario.get("oracle_events", []):
         if not isinstance(event, Mapping):
             continue
         question = event.get("question")
         if not isinstance(question, Mapping):
             continue
-        if not phase or question.get("phase") == phase:
+        if not phase:
+            fallback_question_id = str(question["question_id"])
+            continue
+        if question.get("phase") == phase:
             return str(question["question_id"])
+    if fallback_question_id:
+        return fallback_question_id
     raise ValueError("Scenario {} is missing probe question phase {}".format(scenario.get("scenario_id"), phase))
 
 
@@ -264,9 +276,9 @@ def summarize_decisions(decisions: Sequence[AbstentionDecision]) -> AbstentionSu
         abstain_count=abstain_count,
         useful_abstention_count=useful_count,
         harmful_abstention_count=harmful_count,
-        useful_abstention_rate=(useful_count / abstention_ok_count if abstention_ok_count else None),
-        harmful_abstention_rate=(harmful_count / commit_required_count if commit_required_count else None),
-        abstain_rate=(abstain_count / count if count else None),
+        useful_abstention_rate=(useful_count / abstention_ok_count if abstention_ok_count else 0.0),
+        harmful_abstention_rate=(harmful_count / commit_required_count if commit_required_count else 0.0),
+        abstain_rate=(abstain_count / count if count else 0.0),
     )
 
 
@@ -338,19 +350,22 @@ def useful_mechanism_comparison(
     resamples: int = 10_000,
     seed: int = 0,
 ) -> Dict[str, object]:
-    deltas = _paired_deltas(reference, comparator, mechanism=mechanism, metric_name="useful_abstention")
-    bootstrap = paired_bootstrap_confidence_result(
-        deltas,
+    bootstrap = stratified_bucket_comparison(
+        reference,
+        comparator,
+        mechanisms=(mechanism,),
+        metric_name="useful_abstention",
         resamples=resamples,
-        confidence_level=0.95,
         seed=seed,
     )
     return {
         "metric_name": "useful_abstention_rate",
         "mechanism": mechanism,
-        "point_estimate_delta": bootstrap.point_estimate,
+        "point_estimate_delta": bootstrap.point_estimate_delta,
         "one_sided_95_lcb": bootstrap.lower_confidence_bound,
-        "scenario_count": len(deltas),
+        "scenario_count": len(
+            _paired_deltas(reference, comparator, mechanism=mechanism, metric_name="useful_abstention")
+        ),
     }
 
 
@@ -363,26 +378,25 @@ def mechanism_indicator_comparison(
     resamples: int = 10_000,
     seed: int = 0,
 ) -> Dict[str, object]:
-    deltas = _paired_deltas(reference, comparator, mechanism=mechanism, metric_name=metric_name)
-    bootstrap = paired_bootstrap_confidence_result(
-        deltas,
+    bootstrap = stratified_bucket_comparison(
+        reference,
+        comparator,
+        mechanisms=(mechanism,),
+        metric_name=metric_name,
         resamples=resamples,
-        confidence_level=0.95,
         seed=seed,
     )
     return {
         "metric_name": metric_name,
         "mechanism": mechanism,
-        "point_estimate_delta": bootstrap.point_estimate,
+        "point_estimate_delta": bootstrap.point_estimate_delta,
         "one_sided_95_lcb": bootstrap.lower_confidence_bound,
-        "scenario_count": len(deltas),
+        "scenario_count": len(_paired_deltas(reference, comparator, mechanism=mechanism, metric_name=metric_name)),
     }
 
 
 def _sample_mean(values: Sequence[float]) -> float:
-    if not values:
-        raise ValueError("mean requires at least one value")
-    return sum(values) / len(values)
+    return mean(values)
 
 
 def stratified_bucket_comparison(
@@ -401,22 +415,15 @@ def stratified_bucket_comparison(
     point_estimate = _sample_mean(
         [paired_delta_point_estimate(deltas) for deltas in deltas_by_mechanism.values()]
     )
-    rng = random.Random(seed)
-    samples = []
-    for _ in range(resamples):
-        mechanism_means = []
-        for deltas in deltas_by_mechanism.values():
-            mechanism_means.append(
-                _sample_mean([deltas[rng.randrange(len(deltas))] for _ in range(len(deltas))])
-            )
-        samples.append(_sample_mean(mechanism_means))
-    samples.sort()
-    lower_index = max(0, min(len(samples) - 1, math.ceil(0.05 * len(samples))))
-    upper_index = max(0, min(len(samples) - 1, math.ceil(0.95 * len(samples)) - 1))
+    samples = stratified_paired_bootstrap_sample_means(
+        list(deltas_by_mechanism.values()),
+        resamples=resamples,
+        seed=seed,
+    )
     return BucketBootstrapResult(
         point_estimate_delta=point_estimate,
-        lower_confidence_bound=samples[lower_index],
-        upper_confidence_bound=samples[upper_index],
+        lower_confidence_bound=one_sided_lower_confidence_bound(samples, confidence_level=0.95),
+        upper_confidence_bound=one_sided_upper_confidence_bound(samples, confidence_level=0.95),
         confidence_level=0.95,
         resamples=resamples,
         seed=seed,

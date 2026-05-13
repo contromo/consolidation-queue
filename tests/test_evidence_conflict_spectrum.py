@@ -67,6 +67,7 @@ class EvidenceConflictSpectrumTests(unittest.TestCase):
         summary = build_structure_summary(EVIDENCE_CONFLICT_SPECTRUM, 30, "mixed")
 
         self.assertTrue(summary["variance_checks"]["conflict_moderate"]["passed"])
+        self.assertTrue(summary["variance_checks"]["conflict_witness"]["passed"])
         self.assertTrue(summary["variance_checks"]["conflict_polluted"]["passed"])
 
     def test_nondegeneracy_probe_detects_abstain_required_policy_disagreement(self) -> None:
@@ -75,6 +76,9 @@ class EvidenceConflictSpectrumTests(unittest.TestCase):
         self.assertTrue(artifact["summary_by_mechanism"]["conflict_moderate"]["has_disagreement"])
         self.assertTrue(artifact["summary_by_mechanism"]["conflict_witness"]["has_disagreement"])
         self.assertTrue(artifact["abstain_required_mechanisms_have_disagreement"])
+        for mechanism in ("conflict_zero", "conflict_mild", "conflict_polluted"):
+            self.assertTrue(artifact["summary_by_mechanism"][mechanism]["has_commit_agreement"])
+        self.assertTrue(artifact["commit_required_mechanisms_have_commit_agreement"])
 
     def test_runner_computes_abstention_metrics_for_family(self) -> None:
         artifact = build_run_artifact(
@@ -88,6 +92,35 @@ class EvidenceConflictSpectrumTests(unittest.TestCase):
 
         self.assertEqual(moderate["useful_abstention_rate"], 1.0)
         self.assertIn("primary_abstention_comparisons", artifact)
+
+    def test_evidence_conflict_useful_recall_does_not_count_abstention_as_recall(self) -> None:
+        artifact = build_run_artifact(
+            5,
+            template_mix="mixed",
+            family=EVIDENCE_CONFLICT_SPECTRUM,
+            policy_set="phase2_5",
+        )
+        cq = [policy for policy in artifact["policies"] if policy["policy_name"] == "consolidation_queue_lite"][0]
+        moderate = [
+            record
+            for record in cq["scenarios"]
+            if record["scenario"]["expected_lifecycle"]["mechanism"] == "conflict_moderate"
+        ][0]
+
+        self.assertEqual(moderate["metrics"]["answer_correctness"], 1.0)
+        self.assertEqual(moderate["metrics"]["useful_abstention"], 1.0)
+        self.assertEqual(moderate["metrics"]["useful_recall"], 0.0)
+
+    def test_default_policy_set_records_missing_primary_comparison_warning(self) -> None:
+        artifact = build_run_artifact(
+            5,
+            template_mix="mixed",
+            family=EVIDENCE_CONFLICT_SPECTRUM,
+            policy_set="default",
+        )
+
+        self.assertEqual(artifact["primary_abstention_comparisons"], {})
+        self.assertTrue(artifact["primary_abstention_comparison_warnings"])
 
 
 if __name__ == "__main__":

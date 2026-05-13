@@ -14,8 +14,8 @@ reasoned abstention rationale.
 
 ## Metric Definitions
 
-The abstention predicate is pinned to the runner expression in
-`cq/eval/end_to_end_eval.py:583-585`:
+The abstention predicate is pinned to the shared runner/replay helper
+`cq/eval/abstention.py::abstained_from_trace`:
 
 ```python
 abstained = not asserted_ids and not list(getattr(probe_trace, "resolved_candidate_ids", []))
@@ -71,7 +71,12 @@ Intent mapping:
 | `adversarial_witness_conflict` | true | false | useful abstention |
 | other `adversarial_upstream_noise` mechanisms | false | true | harmful-abstention denominator |
 | `false_corroboration_adversarial_mixed_source` | true | false | useful abstention |
-| other `mechanism_diverse_heldout` templates | false | true | harmful-abstention denominator |
+| `memory_poisoning_scope_laundered` | false | true | harmful-abstention denominator |
+| `preference_drift_long_horizon_corrections` | false | true | harmful-abstention denominator |
+
+The mechanism-diverse replay mapping is owned by
+`cq/simulator/scenario_generator.py::MECHANISM_DIVERSE_ABSTENTION_INTENTS`; new
+frozen templates must be added there explicitly or replay fails fast.
 
 Descriptive predictions:
 
@@ -94,7 +99,8 @@ Pre-Section-B non-degeneracy probe artifacts:
 - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_nondegeneracy_heldout.json`
 
 The structure summaries pass the preregistered variance checks for
-`conflict_moderate` and `conflict_polluted`. The non-degeneracy probes show
+`conflict_moderate`, `conflict_witness`, and `conflict_polluted`. The
+non-degeneracy probes show
 `abstain__commit` CQ/`Mem0Lite` action disagreement on both abstain-required
 mechanisms (`conflict_moderate`, `conflict_witness`) and `commit__commit` on
 the three commit-required mechanisms.

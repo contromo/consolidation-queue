@@ -47,15 +47,23 @@ def build_probe_artifact(scenarios_per_mechanism: int, template_mix: str) -> Dic
             for key, count in counter.items()
             if key.split("__")[0] != key.split("__")[1]
         )
+        agreement_count = sum(counter.values()) - disagreement_count
         mechanism_rows[mechanism] = {
             "joint_action_counts": dict(sorted(counter.items())),
             "disagreement_count": disagreement_count,
+            "agreement_count": agreement_count,
             "has_disagreement": disagreement_count > 0,
+            "has_agreement": agreement_count > 0,
+            "has_commit_agreement": counter.get("commit__commit", 0) > 0,
         }
 
     abstain_required_passed = all(
         mechanism_rows.get(mechanism, {}).get("has_disagreement", False)
         for mechanism in ("conflict_moderate", "conflict_witness")
+    )
+    commit_required_passed = all(
+        mechanism_rows.get(mechanism, {}).get("has_commit_agreement", False)
+        for mechanism in ("conflict_zero", "conflict_mild", "conflict_polluted")
     )
     return {
         "family": EVIDENCE_CONFLICT_SPECTRUM,
@@ -64,6 +72,7 @@ def build_probe_artifact(scenarios_per_mechanism: int, template_mix: str) -> Dic
         "policies": [policy.policy_name for policy in policies],
         "summary_by_mechanism": mechanism_rows,
         "abstain_required_mechanisms_have_disagreement": abstain_required_passed,
+        "commit_required_mechanisms_have_commit_agreement": commit_required_passed,
     }
 
 
@@ -85,6 +94,9 @@ def main(argv: List[str] | None = None) -> int:
     print("Wrote {}".format(output_json))
     if not artifact["abstain_required_mechanisms_have_disagreement"]:
         print("Non-degeneracy probe failed: abstain-required mechanisms did not all disagree.")
+        return 1
+    if not artifact["commit_required_mechanisms_have_commit_agreement"]:
+        print("Non-degeneracy probe failed: commit-required mechanisms did not all include commit agreement.")
         return 1
     return 0
 

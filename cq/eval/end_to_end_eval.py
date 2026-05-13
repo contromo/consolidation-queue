@@ -692,7 +692,7 @@ def compute_evidence_conflict_spectrum_metrics(
         false_assertion_rate=false_assertion,
         leakage_rate=0.0,
         premature_promotion_rate=_premature_promotion_rate(store_snapshot, scenario),
-        useful_recall=answer_correctness,
+        useful_recall=1.0 if resolved_gold else 0.0,
         used_pending=1.0 if probe_trace.used_pending else 0.0,
         durable_commit=1.0 if getattr(probe_trace, "used_memory_ids", []) else 0.0,
         useful_abstention=1.0 if abstention_ok and abstained else 0.0,

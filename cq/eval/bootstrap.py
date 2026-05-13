@@ -47,6 +47,31 @@ def paired_bootstrap_sample_means(
     return samples
 
 
+def stratified_paired_bootstrap_sample_means(
+    strata: Sequence[Sequence[float]],
+    *,
+    resamples: int = 10_000,
+    seed: int = 0,
+) -> list[float]:
+    if not strata:
+        raise ValueError("stratified_paired_bootstrap_sample_means requires at least one stratum")
+    if any(not stratum for stratum in strata):
+        raise ValueError("stratified_paired_bootstrap_sample_means requires non-empty strata")
+    if resamples <= 0:
+        raise ValueError("resamples must be positive")
+    rng = random.Random(seed)
+    samples = []
+    for _ in range(resamples):
+        stratum_means = []
+        for deltas in strata:
+            count = len(deltas)
+            sample = [deltas[rng.randrange(count)] for _ in range(count)]
+            stratum_means.append(mean(sample))
+        samples.append(mean(stratum_means))
+    samples.sort()
+    return samples
+
+
 def one_sided_lower_confidence_bound(
     bootstrap_samples: Sequence[float],
     *,
@@ -58,6 +83,19 @@ def one_sided_lower_confidence_bound(
         raise ValueError("confidence_level must be between 0 and 1")
     alpha = 1.0 - confidence_level
     index = max(0, min(len(bootstrap_samples) - 1, math.ceil(alpha * len(bootstrap_samples))))
+    return bootstrap_samples[index]
+
+
+def one_sided_upper_confidence_bound(
+    bootstrap_samples: Sequence[float],
+    *,
+    confidence_level: float = 0.95,
+) -> float:
+    if not bootstrap_samples:
+        raise ValueError("one_sided_upper_confidence_bound requires at least one sample")
+    if not 0.0 < confidence_level < 1.0:
+        raise ValueError("confidence_level must be between 0 and 1")
+    index = max(0, min(len(bootstrap_samples) - 1, math.ceil(confidence_level * len(bootstrap_samples)) - 1))
     return bootstrap_samples[index]
 
 

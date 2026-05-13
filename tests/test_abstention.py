@@ -1,3 +1,4 @@
+import csv
 import json
 import tempfile
 import unittest
@@ -5,13 +6,16 @@ from pathlib import Path
 
 from cq.eval.abstention import (
     AbstentionDecision,
+    _paired_deltas,
+    _question_id_for_probe,
     abstained_from_trace,
     abstention_artifact_for_run,
+    scenario_intent,
     stratified_bucket_comparison,
     summarize_decisions,
 )
 from cq.eval.runner import EVIDENCE_CONFLICT_SPECTRUM, POLICY_SET_PHASE_2_5, build_run_artifact, write_outputs
-from scripts.run_abstention_replay import run_replay
+from scripts.run_abstention_replay import REPLAY_CSV_FIELDNAMES, run_replay
 
 
 class AbstentionMetricTests(unittest.TestCase):
@@ -47,6 +51,55 @@ class AbstentionMetricTests(unittest.TestCase):
         self.assertEqual(summary.gray_zone_count, 1)
         self.assertEqual(summary.useful_abstention_rate, 1.0)
         self.assertEqual(summary.harmful_abstention_rate, 1.0)
+
+    def test_zero_denominator_summary_rates_are_zero(self) -> None:
+        summary = summarize_decisions(
+            [
+                AbstentionDecision("s1", "p", "f", "m", "", False, False, True, 0.0, 0.0, 0.0, 0.0),
+            ]
+        )
+
+        self.assertEqual(summary.useful_abstention_rate, 0.0)
+        self.assertEqual(summary.harmful_abstention_rate, 0.0)
+
+    def test_missing_intent_mapping_fails_fast(self) -> None:
+        with self.assertRaisesRegex(ValueError, "No abstention intent mapping"):
+            scenario_intent(
+                family="new_family",
+                template_id="template",
+                expected_lifecycle={"mechanism": "new_mechanism"},
+            )
+
+    def test_unknown_mechanism_diverse_template_fails_fast(self) -> None:
+        with self.assertRaisesRegex(ValueError, "No mechanism-diverse abstention intent mapping"):
+            scenario_intent(
+                family="mechanism_diverse_heldout",
+                template_id="new_mechanism_diverse_template",
+                expected_lifecycle={},
+            )
+
+    def test_empty_phase_probe_fallback_uses_last_question(self) -> None:
+        scenario = {
+            "scenario_id": "s",
+            "expected_lifecycle": {},
+            "oracle_events": [
+                {"question": {"question_id": "q1", "phase": "first"}},
+                {"question": {"question_id": "q2", "phase": "second"}},
+            ],
+        }
+
+        self.assertEqual(_question_id_for_probe(scenario, "unknown_family"), "q2")
+
+    def test_paired_deltas_requires_matching_scenario_sets(self) -> None:
+        reference = [
+            AbstentionDecision("s1", "cq", "f", "m", "", True, False, True, 1.0, 1.0, 0.0, 0.0),
+        ]
+        comparator = [
+            AbstentionDecision("s2", "mem0", "f", "m", "", True, False, False, 0.0, 1.0, 0.0, 0.0),
+        ]
+
+        with self.assertRaisesRegex(ValueError, "Policy scenario sets differ"):
+            _paired_deltas(reference, comparator, mechanism="m", metric_name="useful_abstention")
 
     def test_stratified_bucket_comparison_averages_mechanisms_not_pooled_counts(self) -> None:
         reference = [
@@ -89,6 +142,9 @@ class AbstentionMetricTests(unittest.TestCase):
             self.assertEqual(len(written), 2)
             replay = json.loads((output_dir / "tiny_abstention.json").read_text(encoding="utf-8"))
             self.assertIn("consolidation_queue_vs_mem0_primary_abstention", replay["primary_comparisons"])
+            with (output_dir / "tiny_abstention.csv").open("r", encoding="utf-8", newline="") as handle:
+                reader = csv.DictReader(handle)
+                self.assertEqual(reader.fieldnames, REPLAY_CSV_FIELDNAMES)
 
     def test_runner_artifact_persists_primary_abstention_rows(self) -> None:
         artifact = build_run_artifact(

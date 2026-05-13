@@ -83,7 +83,7 @@ def build_structure_summary(family: str, scenarios: int, template_mix: str) -> D
         }
 
     variance_checks = {}
-    for mechanism in ("conflict_moderate", "conflict_polluted"):
+    for mechanism in ("conflict_moderate", "conflict_witness", "conflict_polluted"):
         row = mechanism_rows.get(mechanism, {})
         conflict_distinct = len(row.get("conflict_candidate_count_distribution", {}))
         source_distinct = len(row.get("distinct_source_count_distribution", {}))
