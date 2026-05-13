@@ -1,5 +1,41 @@
 # Product Progress
 
+## 2026-05-13 — Integrated benchmark/methodology draft added
+
+### What shipped
+
+- added `docs/benchmark_methodology_draft.md`, consolidating the current
+  shareable contribution across:
+  - Phase 2.5 frozen oracle results
+  - adversarial upstream-noise Bucket D readout
+  - Phase 2.6 full-support abstention-calibration assay
+  - component-gate failure taxonomy and follow-up decomposition
+- updated `PROJECT_PLAN.md` Phase 6 framing to point at the draft
+
+### Why it matters
+
+- the project now has a single in-repo methodology draft that can be reviewed
+  before any Phase 4 work resumes
+- the draft keeps the contribution bounded as benchmark, preregistration/gate
+  methodology, and failure taxonomy rather than noisy-mode policy superiority
+- `evidence_conflict_spectrum` is explicitly framed as a designed internal
+  mechanism assay, not external transfer evidence
+
+### Evidence
+
+- source docs cited by the draft:
+  - `docs/predictions_vs_results.md`
+  - `docs/adversarial_upstream_noise_results.md`
+  - `docs/abstention_quality_results.md`
+  - `docs/component_gate_failure_taxonomy.md`
+  - `docs/component_gate_followup_benchmark_memo.md`
+
+### Open issues / next
+
+- review the draft for publication style and target-audience fit
+- keep Phase 4 on hold while `policy_comparison_unlocked=false`
+- handle `CQDatedContestation` only as a separate optional follow-up
+
 ## 2026-05-13 — Phase 2.6 abstention-calibration sweeps recorded
 
 ### What shipped

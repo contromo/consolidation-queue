@@ -433,6 +433,7 @@ Current framing note:
 - frame the current noisy-mode outcome as a benchmark, gate-methodology, and failure-taxonomy contribution rather than a CQ noisy-policy contribution; the follow-up evidence now supports drafting that methodology story without reopening Phase 4
 - the separate oracle-only `adversarial_upstream_noise` comparison has now landed as a recorded policy result at the candidate-stream locus of noise, with extraction held constant and the locked Phase 3 / Phase 4 path unchanged
 - that family now carries a two-part story: four mechanism wins plus a named dated-evidence weakness on `temporal_skew`; any repair attempt belongs in the separately preregistered `CQDatedContestation` follow-up rather than the original headline artifact
+- `docs/benchmark_methodology_draft.md` now consolidates the Phase 2.5 frozen oracle readout, adversarial upstream-noise Bucket D result, Phase 2.6 full-support abstention-calibration assay, and locked component-gate taxonomy into a shareable benchmark/methodology draft
 
 ## Scenario Families
 
