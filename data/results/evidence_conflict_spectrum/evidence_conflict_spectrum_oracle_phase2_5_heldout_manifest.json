@@ -1,0 +1,18 @@
+{
+  "artifact_count": 1,
+  "artifacts": [
+    {
+      "archive_status": "regeneratable_only",
+      "bytes": 182869137,
+      "git_commit": "e5281d4728b9ba9e6c4ff9a014b7e1f3fd564749",
+      "path": "data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout.json",
+      "python_version": "3.9.6",
+      "runner_command": "PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m cq.eval.runner --family evidence_conflict_spectrum --policy-set phase2_5 --template-mix heldout --scenarios 600 --output-json data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout.json --output-csv data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout_metrics.csv",
+      "sha256": "3b7a8f9427f7614f8de5b54f233fb947f5bed316f094797bb1585c9a1013475d",
+      "working_tree_status": "dirty",
+      "working_tree_status_context": "manifest_write_time_after_runner_outputs"
+    }
+  ],
+  "manifest_version": 1,
+  "run_name": "evidence_conflict_spectrum_oracle_phase2_5_heldout"
+}

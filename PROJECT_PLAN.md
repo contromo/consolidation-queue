@@ -59,8 +59,8 @@ Implemented:
 - `Mem0Lite` as an opt-in Phase 2.5 external published-family baseline over the shared substrate
 - four named CQ ablation policy variants over the same shared substrate
 - oracle-only `adversarial_upstream_noise` family with retraction, witness-conflict, temporal-skew, scope-narrowing, and pending-competition mechanisms
-- oracle-only `evidence_conflict_spectrum` family implementation for the Phase 2.6 abstention-calibration benchmark, with structure summaries and non-degeneracy probe artifacts recorded before full sweeps
-- denominator-aware abstention replay and primary CQ-vs-`Mem0Lite` abstention comparison plumbing
+- oracle-only `evidence_conflict_spectrum` family implementation and completed Phase 2.6 abstention-calibration full-support readout, with structure summaries, non-degeneracy probes, mixed/held-out sweep CSVs, manifests, and replay artifacts
+- denominator-aware abstention replay and primary CQ-vs-`Mem0Lite` abstention comparison plumbing, plus secondary CQ-vs-ablation replay rows
 - recorded `adversarial_upstream_noise` headline artifacts plus result readout, with Bucket D triggered because CQ loses only the dated-evidence `temporal_skew` lane while clearing the four dedicated component lanes
 - a separate post-hoc follow-up preregistration for `CQDatedContestation`, kept out of the original `phase2_5` headline policy set
 - fixed-seed paired-bootstrap helper for preregistered per-mechanism CQ-versus-Reflection comparisons
@@ -114,7 +114,6 @@ Not implemented yet:
 
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the forced-contradiction smoke sample
-- full `evidence_conflict_spectrum` mixed/held-out oracle sweeps and `docs/abstention_quality_results.md`
 - optional 32B/70B routing
 - LongMemEval transfer check
 - final writeup docs
@@ -133,6 +132,27 @@ Not implemented yet:
 - `cq/dashboard/`: local trace inspection
 - `tests/`: focused behavioral tests
 - `data/runs/`, `data/results/`: saved experiment artifacts
+
+## Artifact Policy
+
+Keep headline-verification artifacts in git and keep large per-scenario JSON
+artifacts regeneratable unless a real external archive URI is recorded.
+
+- Track small artifacts needed for review: `*_metrics.csv`, structure summaries,
+  non-degeneracy probes, abstention replay JSON/CSV files, and
+  `*_manifest.json` files.
+- Do not track new per-scenario sweep JSON artifacts over about `5 MB` by
+  default. Record them in a manifest with path, byte size, SHA256, git commit,
+  Python version, working-tree status, exact runner command, and
+  `archive_status`.
+- Interpret manifest `working_tree_status` as manifest-write-time status after
+  generated outputs exist; preregistration-clean status must be verified before
+  the runner command starts.
+- Use `archive_status=regeneratable_only` unless an artifact has actually been
+  uploaded; use `uploaded:<uri>` only for real archive locations.
+- The existing large `adversarial_upstream_noise` JSON artifacts are
+  grandfathered and stay tracked; do not migrate or delete them as part of the
+  Phase 2.6 artifact-policy change.
 
 ## Phases
 
@@ -270,7 +290,7 @@ Required outcome:
 
 ### Phase 2.6: Abstention-Calibrated Memory Governance Axis
 
-Status: implementation and pre-run artifacts exist; full oracle sweeps are pending and must not be run until the preregistration plus pre-run artifacts are committed.
+Status: completed with **full support** in `docs/abstention_quality_results.md`. The mixed and held-out oracle sweeps both pass the useful `conflict_moderate`, useful `conflict_witness`, and harmful-bucket CQ-vs-`Mem0Lite` gates under the preregistered outcome precedence.
 
 This is a separate oracle-only benchmark-strengthening step. It does not reopen the Phase 2.5 frozen contract, the Phase 3 component gate, or Phase 4 noisy policy comparison.
 
@@ -291,11 +311,11 @@ Primary gate:
 - `conflict_moderate` useful abstention clears `delta >= 0.10` and one-sided 95% LCB `> 0`
 - `conflict_witness` useful abstention clears the same rule
 - harmful abstention over `conflict_zero`, `conflict_mild`, and `conflict_polluted` is non-inferior: CQ-Mem0 delta `<= 0.05` and UCB `<= 0.05`
-- held-out must pass the same gate for full support; otherwise downgrade to narrow support
+- held-out passed the same gate, so the Phase 2.6 readout lands in full support
 
 Required outcome:
 
-- the unique witness-conflict finding is either strengthened into an abstention-calibration axis or honestly narrowed to witness-only support
+- the unique witness-conflict finding is strengthened into a broader oracle-only abstention-calibration axis under the designed `evidence_conflict_spectrum` mechanism assay
 - commit-required rows prevent an over-abstaining CQ from passing through useful-side gains alone
 - all numeric claims trace to saved replay, structure, probe, and runner artifacts
 
@@ -416,6 +436,7 @@ Current framing note:
 - frame the current noisy-mode outcome as a benchmark, gate-methodology, and failure-taxonomy contribution rather than a CQ noisy-policy contribution; the follow-up evidence now supports drafting that methodology story without reopening Phase 4
 - the separate oracle-only `adversarial_upstream_noise` comparison has now landed as a recorded policy result at the candidate-stream locus of noise, with extraction held constant and the locked Phase 3 / Phase 4 path unchanged
 - that family now carries a two-part story: four mechanism wins plus a named dated-evidence weakness on `temporal_skew`; any repair attempt belongs in the separately preregistered `CQDatedContestation` follow-up rather than the original headline artifact
+- `docs/benchmark_methodology_draft.md` now consolidates the Phase 2.5 frozen oracle readout, adversarial upstream-noise Bucket D result, Phase 2.6 full-support abstention-calibration assay, and locked component-gate taxonomy into a shareable benchmark/methodology draft
 
 ## Scenario Families
 
@@ -505,10 +526,8 @@ These are the highest-priority implementation steps right now.
 The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. The real 7B `general_v1` CI-aware gate run with required frozen sentinel completed on 2026-05-11 and stayed locked (`policy_comparison_unlocked=false`) despite passing Phase A and determinism. The completed 2026-05-12 follow-up evidence block then ran the descriptive 32B blocker-surface sweep and the full 7B schema-rescue run. Both mandatory runs reduced the preregistered common-surface schema-shaped burden from `26` to `0`, so the conditional `32B + schema` quadrant did not trigger. The 7B schema-rescue run still remained locked on observed per-family/frozen failures (`5` primary, `2` frozen), while the 32B descriptive rows cleared the same common-surface measured failures. `docs/component_gate_publication_outline.md` maps the publication package, `docs/component_gate_failure_taxonomy.md` records the locked-gate interpretation, and `docs/component_gate_followup_benchmark_memo.md` records the follow-up decomposition and next-step recommendation. The separate oracle-only `adversarial_upstream_noise` headline runs are now also recorded: CQ clears four of five preregistered mechanisms on `mixed`, loses only `temporal_skew`, and therefore triggers the separately preregistered `CQDatedContestation` follow-up rather than a retrofit of the original `phase2_5` policy set. Phase 4 remains on hold. Next:
 
 1. Keep Phase 4 extracted-candidate policy comparisons on hold while `policy_comparison_unlocked=false`.
-2. Commit the Phase 2.6 abstention-calibration implementation, preregistration, replay artifacts, structure summaries, and non-degeneracy probes before running the full `evidence_conflict_spectrum` policy sweeps.
-3. Run the preregistered `evidence_conflict_spectrum` mixed and held-out oracle sweeps, then write `docs/abstention_quality_results.md` from saved artifacts only.
-4. Fold the recorded `adversarial_upstream_noise` result, the abstention-calibration readout, and the methodology template into the benchmark/methodology draft without upgrading any claim beyond its preregistered bucket.
-5. Treat `CQDatedContestation` as a separate optional follow-up; do not retrofit the original `phase2_5` headline result.
+2. Fold the recorded `adversarial_upstream_noise` result, the full-support abstention-calibration readout, and the methodology template into the benchmark/methodology draft without upgrading any claim beyond its preregistered bucket.
+3. Treat `CQDatedContestation` as a separate optional follow-up; do not retrofit the original `phase2_5` headline result.
 
 ## Working Rules
 

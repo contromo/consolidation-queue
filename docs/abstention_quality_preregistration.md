@@ -148,6 +148,56 @@ Outcome rules:
 - narrow support: mixed passes but held-out fails any primary gate
 - benchmark-axis contribution only: both abstain-required mechanisms fail
 
+## Amendment, 2026-05-13: Artifact Policy And Outcome Precedence
+
+This amendment is locked before the full `evidence_conflict_spectrum` sweeps.
+It changes artifact handling and reporting precedence only; it does not change
+scenario contracts, policy thresholds, storage substrate, extractor logic, or
+CQ policy behavior.
+
+Durable artifact policy:
+
+- small headline-verification artifacts are tracked in git:
+  `*_metrics.csv`, structure summaries, non-degeneracy probes, abstention
+  replay JSON/CSV files, and `*_manifest.json` files
+- per-scenario sweep JSON artifacts over about `5 MB` are not tracked by
+  default; they are recorded as `regeneratable_only` unless an actual uploaded
+  URI is present
+- each manifest records the artifact path, byte size, SHA256, git commit,
+  Python version, working-tree status, exact runner command, and
+  `archive_status`
+- `working_tree_status` is recorded at manifest write time after runner outputs
+  have been generated; the preregistration-clean state is established by the
+  separate pre-sweep `git status` and pre-flight checks
+- the three existing large `adversarial_upstream_noise` JSONs are grandfathered
+  and remain tracked; this policy applies prospectively
+
+Replay extension:
+
+- Section B secondary rows may use `pairwise_abstention_comparisons` for CQ vs
+  Reflection and CQ vs the four named CQ ablations when those policies are
+  present
+- the primary gate remains only the CQ-vs-`Mem0Lite`
+  `consolidation_queue_vs_mem0_primary_abstention` block
+- harmful primary non-inferiority is evaluated only on that block's single
+  `harmful_bucket_row` over `conflict_zero`, `conflict_mild`, and
+  `conflict_polluted`
+
+Outcome precedence is applied top-to-bottom; first match wins:
+
+1. **Unsupported abstention-axis claim.** The harmful bucket fails on `mixed` or
+   `heldout`: CQ-vs-`Mem0Lite` delta `> 0.05` or one-sided 95% UCB `> 0.05`.
+2. **Benchmark-axis contribution only.** Precedence 1 does not fire, and both
+   `conflict_moderate` and `conflict_witness` useful-side gates fail on
+   `mixed`.
+3. **Narrow witness-only support.** Precedence 1-2 do not fire, and on `mixed`,
+   `conflict_witness` passes while `conflict_moderate` fails. Held-out is
+   descriptive and cannot upgrade this bucket.
+4. **Narrow support.** Precedence 1-3 do not fire, both useful-side gates pass
+   on `mixed`, and any primary gate fails on `heldout`.
+5. **Full support.** Precedence 1-4 do not fire; all three primary gates pass on
+   both `mixed` and `heldout`.
+
 Full sweeps, to be run only after this preregistration is committed:
 
 ```bash

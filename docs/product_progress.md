@@ -1,5 +1,125 @@
 # Product Progress
 
+## 2026-05-13 — Integrated benchmark/methodology draft added
+
+### What shipped
+
+- added `docs/benchmark_methodology_draft.md`, consolidating the current
+  shareable contribution across:
+  - Phase 2.5 frozen oracle results
+  - adversarial upstream-noise Bucket D readout
+  - Phase 2.6 full-support abstention-calibration assay
+  - component-gate failure taxonomy and follow-up decomposition
+- updated `PROJECT_PLAN.md` Phase 6 framing to point at the draft
+
+### Why it matters
+
+- the project now has a single in-repo methodology draft that can be reviewed
+  before any Phase 4 work resumes
+- the draft keeps the contribution bounded as benchmark, preregistration/gate
+  methodology, and failure taxonomy rather than noisy-mode policy superiority
+- `evidence_conflict_spectrum` is explicitly framed as a designed internal
+  mechanism assay, not external transfer evidence
+
+### Evidence
+
+- source docs cited by the draft:
+  - `docs/predictions_vs_results.md`
+  - `docs/adversarial_upstream_noise_results.md`
+  - `docs/abstention_quality_results.md`
+  - `docs/component_gate_failure_taxonomy.md`
+  - `docs/component_gate_followup_benchmark_memo.md`
+
+### Open issues / next
+
+- review the draft for publication style and target-audience fit
+- keep Phase 4 on hold while `policy_comparison_unlocked=false`
+- handle `CQDatedContestation` only as a separate optional follow-up
+
+## 2026-05-13 — Phase 2.6 abstention-calibration sweeps recorded
+
+### What shipped
+
+- ran the preregistered `evidence_conflict_spectrum` mixed and held-out oracle
+  sweeps with `--policy-set phase2_5 --scenarios 600`
+- committed the small durable artifact set:
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed_metrics.csv`
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_mixed_manifest.json`
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout_metrics.csv`
+  - `data/results/evidence_conflict_spectrum/evidence_conflict_spectrum_oracle_phase2_5_heldout_manifest.json`
+  - `data/results/abstention/evidence_conflict_spectrum_oracle_phase2_5_mixed_abstention.json`
+  - `data/results/abstention/evidence_conflict_spectrum_oracle_phase2_5_heldout_abstention.json`
+- wrote `docs/abstention_quality_results.md` from committed CSV, manifest, and
+  replay artifacts only
+
+### Why it matters
+
+- the Phase 2.6 readout lands in **full support**: both mixed and held-out pass
+  `conflict_moderate` useful abstention, `conflict_witness` useful abstention,
+  and the single harmful bucket over `zero`, `mild`, and `polluted`
+- this strengthens the witness-conflict finding into a broader oracle-only
+  abstention-calibration axis under the designed mechanism assay
+- the result remains separated from noisy-mode claims; Phase 3 stays locked and
+  Phase 4 remains on hold
+
+### Evidence
+
+- primary CQ-vs-`Mem0Lite` gates on both splits:
+  - `conflict_moderate`: delta `+1.00`, one-sided 95% LCB `+1.00`
+  - `conflict_witness`: delta `+1.00`, one-sided 95% LCB `+1.00`
+  - harmful bucket: delta `+0.00`, one-sided 95% UCB `+0.00`
+- large JSON manifests verified against local SHA256 before the JSONs were left
+  untracked:
+  - mixed JSON: `182838865` bytes
+  - held-out JSON: `182869137` bytes
+
+### Open issues / next
+
+- fold the adversarial-upstream-noise result, the full-support abstention
+  readout, and the component-gate methodology into
+  `docs/benchmark_methodology_draft.md`
+
+## 2026-05-13 — Phase 2.6 artifact policy locked before sweeps
+
+### What shipped
+
+- added a prospective large-artifact policy: small headline artifacts stay in
+  git, while new per-scenario sweep JSONs over about `5 MB` are recorded through
+  SHA256 manifests and treated as regeneratable unless an actual archive URI is
+  present
+- added the stdlib-only manifest helper planned for Phase 2.6 sweep artifacts
+- extended abstention replay pairwise comparisons to include the four named CQ
+  ablations when present, preserving the preregistered secondary table
+- amended the Phase 2.6 preregistration with the artifact policy, replay
+  extension, and a top-to-bottom outcome precedence list before running the
+  full `evidence_conflict_spectrum` sweeps
+
+### Why it matters
+
+- the full sweeps can proceed without forcing large per-scenario JSONs into git
+  while still leaving a verifiable SHA256 record and exact regeneration command
+- secondary ablation claims in the abstention readout now have a replay-artifact
+  source rather than requiring post-hoc hand derivation
+- outcome buckets are ordered before any full-sweep numbers are visible, so the
+  results doc can apply the preregistration mechanically
+
+### Evidence
+
+- focused pre-sweep bundle:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_abstention tests.test_evidence_conflict_spectrum tests.test_runner_policy_sets tests.test_bootstrap tests.test_metrics tests.test_adversarial_upstream_noise tests.test_component_eval tests.test_local_extractor tests.test_frozen_preregistration tests.test_artifact_manifest -q`
+- dry-run replay preflight:
+  - `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_abstention_replay.py --dry-run`
+- ignore-rule checks:
+  - spectrum sweep JSONs remain ignored
+  - spectrum metrics/manifests and abstention replay outputs are explicitly
+    unignored and trackable
+  - old root-level generated metrics remain ignored
+
+### Open issues / next
+
+- commit this pre-sweep lock before running the mixed and held-out
+  `evidence_conflict_spectrum` sweeps
+
 ## 2026-05-13 — Abstention-calibration benchmark implementation staged
 
 ### What shipped

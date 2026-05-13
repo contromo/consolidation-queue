@@ -1,0 +1,1105 @@
+{
+  "experiment": "evidence_conflict_spectrum_oracle",
+  "family": "evidence_conflict_spectrum",
+  "template_mix": "heldout",
+  "policy_set": "phase2_5",
+  "policies": [
+    {
+      "policy_name": "consolidation_queue_lite",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 240,
+        "useful_abstention_count": 240,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 1.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.4
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "cq_no_contestation_demotion",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "cq_no_pending_lookup_use",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 240,
+        "useful_abstention_count": 240,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 1.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.4
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "cq_no_source_independence_gate",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 240,
+        "useful_abstention_count": 240,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 1.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.4
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "cq_no_wider_scope_pending_override",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 240,
+        "useful_abstention_count": 240,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 1.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.4
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "mem0_lite",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "naive_eager_write_lite",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "no_memory_lite",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 600,
+        "useful_abstention_count": 240,
+        "harmful_abstention_count": 360,
+        "useful_abstention_rate": 1.0,
+        "harmful_abstention_rate": 1.0,
+        "abstain_rate": 1.0
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 120,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 1.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 120,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 1.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 120,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 1.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 1.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 120,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 120,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 1.0,
+          "abstain_rate": 1.0
+        }
+      }
+    },
+    {
+      "policy_name": "reflection_eager_write_lite",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    },
+    {
+      "policy_name": "scope_blind_transcript_rag_lite",
+      "summary": {
+        "scenario_count": 600,
+        "abstention_ok_count": 240,
+        "commit_required_count": 360,
+        "gray_zone_count": 0,
+        "abstain_count": 0,
+        "useful_abstention_count": 0,
+        "harmful_abstention_count": 0,
+        "useful_abstention_rate": 0.0,
+        "harmful_abstention_rate": 0.0,
+        "abstain_rate": 0.0
+      },
+      "summary_by_mechanism": {
+        "conflict_mild": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_moderate": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_polluted": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_witness": {
+          "scenario_count": 120,
+          "abstention_ok_count": 120,
+          "commit_required_count": 0,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        },
+        "conflict_zero": {
+          "scenario_count": 120,
+          "abstention_ok_count": 0,
+          "commit_required_count": 120,
+          "gray_zone_count": 0,
+          "abstain_count": 0,
+          "useful_abstention_count": 0,
+          "harmful_abstention_count": 0,
+          "useful_abstention_rate": 0.0,
+          "harmful_abstention_rate": 0.0,
+          "abstain_rate": 0.0
+        }
+      }
+    }
+  ],
+  "pairwise_abstention_comparisons": {
+    "consolidation_queue_vs_mem0": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "mem0_lite",
+      "useful_abstention_rows": {
+        "conflict_moderate": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_moderate",
+          "point_estimate_delta": 1.0,
+          "one_sided_95_lcb": 1.0,
+          "one_sided_95_ucb": 1.0,
+          "scenario_count": 120
+        },
+        "conflict_witness": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_witness",
+          "point_estimate_delta": 1.0,
+          "one_sided_95_lcb": 1.0,
+          "one_sided_95_ucb": 1.0,
+          "scenario_count": 120
+        }
+      },
+      "harmful_abstention_rows": {
+        "conflict_mild": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_mild",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_polluted": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_polluted",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_zero": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_zero",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        }
+      }
+    },
+    "consolidation_queue_vs_reflection_eager_write": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "reflection_eager_write_lite",
+      "useful_abstention_rows": {
+        "conflict_moderate": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_moderate",
+          "point_estimate_delta": 1.0,
+          "one_sided_95_lcb": 1.0,
+          "one_sided_95_ucb": 1.0,
+          "scenario_count": 120
+        },
+        "conflict_witness": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_witness",
+          "point_estimate_delta": 1.0,
+          "one_sided_95_lcb": 1.0,
+          "one_sided_95_ucb": 1.0,
+          "scenario_count": 120
+        }
+      },
+      "harmful_abstention_rows": {
+        "conflict_mild": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_mild",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_polluted": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_polluted",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_zero": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_zero",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        }
+      }
+    },
+    "consolidation_queue_vs_cq_no_contestation_demotion": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "cq_no_contestation_demotion",
+      "useful_abstention_rows": {
+        "conflict_moderate": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_moderate",
+          "point_estimate_delta": 1.0,
+          "one_sided_95_lcb": 1.0,
+          "one_sided_95_ucb": 1.0,
+          "scenario_count": 120
+        },
+        "conflict_witness": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_witness",
+          "point_estimate_delta": 1.0,
+          "one_sided_95_lcb": 1.0,
+          "one_sided_95_ucb": 1.0,
+          "scenario_count": 120
+        }
+      },
+      "harmful_abstention_rows": {
+        "conflict_mild": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_mild",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_polluted": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_polluted",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_zero": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_zero",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        }
+      }
+    },
+    "consolidation_queue_vs_cq_no_wider_scope_pending_override": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "cq_no_wider_scope_pending_override",
+      "useful_abstention_rows": {
+        "conflict_moderate": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_moderate",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_witness": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_witness",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        }
+      },
+      "harmful_abstention_rows": {
+        "conflict_mild": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_mild",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_polluted": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_polluted",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_zero": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_zero",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        }
+      }
+    },
+    "consolidation_queue_vs_cq_no_pending_lookup_use": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "cq_no_pending_lookup_use",
+      "useful_abstention_rows": {
+        "conflict_moderate": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_moderate",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_witness": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_witness",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        }
+      },
+      "harmful_abstention_rows": {
+        "conflict_mild": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_mild",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_polluted": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_polluted",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_zero": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_zero",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        }
+      }
+    },
+    "consolidation_queue_vs_cq_no_source_independence_gate": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "cq_no_source_independence_gate",
+      "useful_abstention_rows": {
+        "conflict_moderate": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_moderate",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_witness": {
+          "metric_name": "useful_abstention",
+          "mechanism": "conflict_witness",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        }
+      },
+      "harmful_abstention_rows": {
+        "conflict_mild": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_mild",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_polluted": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_polluted",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        },
+        "conflict_zero": {
+          "metric_name": "harmful_abstention",
+          "mechanism": "conflict_zero",
+          "point_estimate_delta": 0.0,
+          "one_sided_95_lcb": 0.0,
+          "one_sided_95_ucb": 0.0,
+          "scenario_count": 120
+        }
+      }
+    }
+  },
+  "primary_comparisons": {
+    "consolidation_queue_vs_mem0_primary_abstention": {
+      "reference_policy_name": "consolidation_queue_lite",
+      "comparator_policy_name": "mem0_lite",
+      "useful_mechanism_rows": {
+        "conflict_moderate": {
+          "metric_name": "useful_abstention_rate",
+          "mechanism": "conflict_moderate",
+          "point_estimate_delta": 1.0,
+          "one_sided_95_lcb": 1.0,
+          "one_sided_95_ucb": 1.0,
+          "scenario_count": 120
+        },
+        "conflict_witness": {
+          "metric_name": "useful_abstention_rate",
+          "mechanism": "conflict_witness",
+          "point_estimate_delta": 1.0,
+          "one_sided_95_lcb": 1.0,
+          "one_sided_95_ucb": 1.0,
+          "scenario_count": 120
+        }
+      },
+      "harmful_bucket_row": {
+        "metric_name": "harmful_abstention_rate",
+        "mechanisms": [
+          "conflict_zero",
+          "conflict_mild",
+          "conflict_polluted"
+        ],
+        "point_estimate_delta": 0.0,
+        "one_sided_95_lcb": 0.0,
+        "one_sided_95_ucb": 0.0,
+        "resamples": 10000,
+        "seed": 0
+      }
+    }
+  }
+}
