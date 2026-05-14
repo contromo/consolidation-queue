@@ -1,5 +1,55 @@
 # Product Progress
 
+## 2026-05-14 — Phase 4 noisy policy-comparison path locked and staged
+
+### What shipped
+
+- rewrote `docs/noisy_policy_comparison_preregistration.md` from stub to a
+  locked Phase 4 contract with:
+  - explicit six-family held-out denominator plus frozen sentinel
+  - primary/replicate schema-profile rules
+  - sign-normalized metric gates and bucket precedence
+  - numeric primary-metric predictions
+  - the event-source proxy carve-out for noisy false corroboration
+- added `cq/eval/extracted_candidate_runner.py`, implementing the locked
+  `CandidateComponentPrediction` to `CandidateUpdate` adapter
+- pinned the adapter SHA in `docs/noisy_policy_comparison_adapter_pin.json`
+- extended `cq/eval/runner.py` with `--mode extracted`
+- added `scripts/run_noisy_policy_comparison.py` for the preregistered default
+  and `scenario_conditioned` policy-comparison cells
+- added focused fairness regression coverage for stream hashes, adapter
+  determinism, scenario-error propagation, substrate isolation, digest/pin
+  provenance, shared `MemoryStore` class, and corroboration round-trip
+
+### Why it matters
+
+- the comparison can now use cached 32B extracted candidates without giving CQ
+  richer inputs or a private storage substrate
+- same-stream hashes are recorded per scenario, making the key fairness
+  invariant auditable from artifacts
+- no policy scoring has been run yet; the script intentionally aborts on dirty
+  pre-run state, so the actual noisy policy result must happen after this patch
+  is committed
+
+### Evidence
+
+- focused adapter tests:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_extracted_candidate_runner -q`
+- full suite:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q`
+- syntax check:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m py_compile cq/eval/extracted_candidate_runner.py scripts/run_noisy_policy_comparison.py cq/eval/runner.py`
+- dry-run preflight for both 32B schema profiles:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_noisy_policy_comparison.py --dry-run --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --policy-set phase2_5`
+  and the same command with `--schema-profile scenario_conditioned`
+
+### Open issues / next
+
+- commit this preregistration/adapter-pin implementation
+- run the default Phase 4 noisy policy-comparison cell from a clean worktree
+- run the `scenario_conditioned` robustness replicate and write the
+  preregistered results readout
+
 ## 2026-05-14 — Local unlock probe reaches Bucket A on both 32B cells
 
 ### What shipped

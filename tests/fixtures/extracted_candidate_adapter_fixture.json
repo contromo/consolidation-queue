@@ -1,0 +1,83 @@
+{
+  "scenario_errors": {
+    "adapter_error": {
+      "message": "model wrapper failed"
+    }
+  },
+  "scenario_predictions": {
+    "adapter_fixture": [
+      {
+        "canonical_id": "project-alpha-deploy-command",
+        "claim_type": "project_convention",
+        "confidence": null,
+        "contradicts_event_ids": [],
+        "event_id": "adapter_fixture-event-1",
+        "raw_claim": "Project alpha deploys with make deploy.",
+        "scope_key": "project-alpha",
+        "scope_level": "project"
+      },
+      {
+        "canonical_id": "project-alpha-deploy-command",
+        "claim_type": "project_convention",
+        "confidence": 0.9,
+        "contradicts_event_ids": [],
+        "event_id": "adapter_fixture-event-1",
+        "raw_claim": "Duplicate deploy command.",
+        "scope_key": "project-alpha",
+        "scope_level": "project"
+      },
+      {
+        "canonical_id": "project-alpha-deploy-reviewer",
+        "claim_type": "project_convention",
+        "confidence": 0.8,
+        "contradicts_event_ids": [],
+        "event_id": "adapter_fixture-event-1",
+        "raw_claim": "Project alpha deploys need Morgan's review.",
+        "scope_key": "project-alpha",
+        "scope_level": "project"
+      },
+      {
+        "canonical_id": "project-alpha-bad-confidence",
+        "claim_type": "project_convention",
+        "confidence": 1.2,
+        "contradicts_event_ids": [],
+        "event_id": "adapter_fixture-event-1",
+        "raw_claim": "Bad confidence.",
+        "scope_key": "project-alpha",
+        "scope_level": "project"
+      },
+      {
+        "canonical_id": "project-alpha-deploy-command",
+        "claim_type": "project_convention",
+        "confidence": 0.7,
+        "contradicts_event_ids": [
+          "adapter_fixture-event-1"
+        ],
+        "event_id": "adapter_fixture-event-2",
+        "raw_claim": "Project alpha now deploys with ./ship.sh.",
+        "scope_key": "project-alpha",
+        "scope_level": "project"
+      },
+      {
+        "canonical_id": "project-alpha-empty-raw",
+        "claim_type": "project_convention",
+        "confidence": 0.5,
+        "contradicts_event_ids": [],
+        "event_id": "adapter_fixture-event-3",
+        "raw_claim": "",
+        "scope_key": "project-alpha",
+        "scope_level": "project"
+      },
+      {
+        "canonical_id": "project-alpha-non-observation",
+        "claim_type": "project_convention",
+        "confidence": 0.5,
+        "contradicts_event_ids": [],
+        "event_id": "adapter_fixture-question-1",
+        "raw_claim": "Question text should not emit a candidate.",
+        "scope_key": "project-alpha",
+        "scope_level": "project"
+      }
+    ]
+  }
+}

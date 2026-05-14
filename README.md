@@ -240,6 +240,18 @@ When a custom general prompt path/label is provided, the Phase A check and deter
 
 Cached artifacts are reused only when their saved prompt hash, model id, decoding params, timeout, family, split, and scenario count match the requested row. A forced-contradiction prompt-regression failure should be inspected manually; at `n=6`, a single changed scenario can move a metric sharply even when the failure is prompt-budget or extraction-shape related.
 
+Preview the preregistered Phase 4 noisy policy-comparison runner against cached
+32B component-gate artifacts:
+
+```bash
+python3 scripts/run_noisy_policy_comparison.py --dry-run --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --policy-set phase2_5
+python3 scripts/run_noisy_policy_comparison.py --dry-run --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile scenario_conditioned --include-frozen-sentinel --policy-set phase2_5
+```
+
+Run extracted-candidate policy scoring only after the preregistration and
+adapter pin are committed and the worktree is clean. The runner aborts on dirty
+pre-run state by design.
+
 Open the dashboard against the saved run:
 
 ```bash
