@@ -162,6 +162,7 @@ Sources:
 - `data/results/component_gate_decision_general_v1_summary.json`
 - `data/results/component_gate_decision_qwen2_5_7b-instruct-q4_K_M_default_summary.json`
 - `data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_summary.json`
+- `data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_scenario_conditioned_summary.json`
 - `docs/component_gate_failure_taxonomy.md`
 - `docs/component_gate_followup_benchmark_memo.md`
 
@@ -171,6 +172,9 @@ Locked 7B default-schema readout:
 - aggregate CI and aggregate observed gates pass
 - unlock remains false because of `45` primary scenario errors, `8`
   per-family observed failures, and `3` frozen-sentinel observed failures
+- the 2026-05-14 7B anchor is a clean-worktree reproduction of the older
+  `general_v1` locked summary under the preregistered primary-model tag, schema
+  profile, digest, and Ollama server-version checks
 
 Follow-up decomposition:
 

@@ -16,6 +16,8 @@ data/runs/
 data/results/*
 !data/results/*/
 data/results/**/*.json
+!data/results/component_gate_decision_*_summary.json
+!data/results/component_gate_decision_*_manifest.json
 !data/results/*/*_structure*.json
 !data/results/*/*_nondegeneracy*.json
 !data/results/*/*_manifest.json

@@ -108,7 +108,7 @@ Implemented:
 - first forced-contradiction local-model smoke artifacts through the transcript-only bridge, using matched Qwen 2.5 `Q4_K_M` 7B floor and 32B headroom runs with scored component outputs
 - CI-aware component gate-decision runner with 60-scenario held-out primary rows, Wilson event-assumption lower bounds, conservative F1 composites, observed-only B-cubed labeling, and pairwise canonicalization CI support
 - preregistered minimal 32B primary unlock-probe support in the gate runner, with explicit primary model tag allowlisting, required schema-profile selection, Ollama digest verification, abort reports, and per-cell manifests
-- preregistered local unlock probe execution through the 7B anchor and both 32B primary cells; the 7B anchor reproduced locked counts exactly, and both 32B cells unlocked the extracted-candidate policy-comparison gate under Bucket A
+- preregistered local unlock probe execution through the 7B anchor and both 32B primary cells; the 7B anchor reproduced locked counts exactly, and both 32B cells cleared the component gate under Bucket A, while extracted-candidate policy comparison still requires a separate preregistration
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -143,6 +143,9 @@ artifacts regeneratable unless a real external archive URI is recorded.
 - Track small artifacts needed for review: `*_metrics.csv`, structure summaries,
   non-degeneracy probes, abstention replay JSON/CSV files, and
   `*_manifest.json` files.
+- Track top-level `component_gate_decision_*_summary.json` and
+  `component_gate_decision_*_manifest.json` files when they are cited by
+  methodology or progress docs.
 - Do not track new per-scenario sweep JSON artifacts over about `5 MB` by
   default. Record them in a manifest with path, byte size, SHA256, git commit,
   Python version, working-tree status, exact runner command, and

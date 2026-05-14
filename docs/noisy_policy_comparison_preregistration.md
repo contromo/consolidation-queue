@@ -12,6 +12,10 @@ counts.
 This document is the required next preregistration before any extracted-candidate
 CQ-vs-Reflection-vs-`Mem0Lite` policy comparison starts.
 
+The locked version should follow
+`docs/preregistered_memory_governance_evaluation_template.md` rather than this
+stub's abbreviated structure.
+
 ## Scope To Lock Before Running
 
 - primary model, schema profile, prompt path, decoding JSON, and Ollama digest
@@ -47,6 +51,10 @@ CQ-vs-Reflection-vs-`Mem0Lite` policy comparison starts.
 - [ ] Specify the primary extracted-candidate policy-comparison cells.
 - [ ] Specify the exact component artifact inputs and cache/provenance checks.
 - [ ] Specify all CQ-vs-Reflection and CQ-vs-`Mem0Lite` primary gates.
+- [ ] Include per-mechanism, per-metric prediction rows.
+- [ ] Include ablation attribution rules.
+- [ ] Include oracle-vs-noisy delta predictions by policy.
+- [ ] Include outcome precedence and disconfirmation buckets.
 - [ ] Specify secondary ablation or sensitivity rows, if any.
 - [ ] Specify artifact retention and manifest policy.
 - [ ] Add focused regression or dry-run checks for same-stream enforcement.
