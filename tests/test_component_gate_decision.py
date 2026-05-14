@@ -779,6 +779,26 @@ class ComponentGateDecisionTests(unittest.TestCase):
                 "scenario_conditioned",
             )
 
+    def test_runner_command_for_invocation_is_portable(self) -> None:
+        prompt_path = gate.REPO_ROOT / "prompts" / "component_extractor_general_v1.txt"
+        output_dir = gate.REPO_ROOT / "data" / "results"
+
+        command = gate.runner_command_for_invocation(
+            [
+                "--general-prompt-path",
+                str(prompt_path),
+                "--output-dir={}".format(output_dir),
+                "--primary-model-tag",
+                gate.matrix.QWEN_32B_Q4KM.model_id,
+            ]
+        )
+
+        self.assertTrue(command.startswith("python3 scripts/run_component_gate_decision.py "))
+        self.assertIn("--general-prompt-path prompts/component_extractor_general_v1.txt", command)
+        self.assertIn("--output-dir=data/results", command)
+        self.assertNotIn(str(gate.REPO_ROOT), command)
+        self.assertNotIn(sys.executable, command)
+
     def test_manifest_records_summary_sha_and_unlock_probe_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             summary_path = Path(tmpdir) / "component_gate_decision_qwen_default_summary.json"

@@ -3304,8 +3304,8 @@
       "observed_quality_gate_failures": [],
       "ollama_server_version": "0.23.1",
       "paths": {
-        "component_eval": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_mechanism_diverse_heldout_local_extractor_qwen2_5_32b_q4km_general_v1_default_frozen_n3_frozen_sentinel_primary_component_eval.json",
-        "predictions": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_mechanism_diverse_heldout_local_extractor_qwen2_5_32b_q4km_general_v1_default_frozen_n3_frozen_sentinel_primary_predictions.json"
+        "component_eval": "data/results/component_gate_decision_mechanism_diverse_heldout_local_extractor_qwen2_5_32b_q4km_general_v1_default_frozen_n3_frozen_sentinel_primary_component_eval.json",
+        "predictions": "data/results/component_gate_decision_mechanism_diverse_heldout_local_extractor_qwen2_5_32b_q4km_general_v1_default_frozen_n3_frozen_sentinel_primary_predictions.json"
       },
       "prompt_label": "general_v1",
       "quality_gates": {
@@ -3366,7 +3366,7 @@
     }
   ],
   "general_prompt_label": "general_v1",
-  "general_prompt_path": "/Users/manav/code/consolidation-queue/prompts/component_extractor_general_v1.txt",
+  "general_prompt_path": "prompts/component_extractor_general_v1.txt",
   "general_prompt_sha256": "ca9ec418156b4cc12bcf5457683844f023684bbc5cee2b7460a6c5030a475633",
   "generated_at": "2026-05-14T09:21:03.365603Z",
   "generation_contract": {
@@ -3458,8 +3458,8 @@
       "observed_quality_gate_failures": [],
       "ollama_server_version": "0.23.1",
       "paths": {
-        "component_eval": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_forced_contradiction_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
-        "predictions": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_forced_contradiction_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
+        "component_eval": "data/results/component_gate_decision_forced_contradiction_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
+        "predictions": "data/results/component_gate_decision_forced_contradiction_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
       },
       "prompt_label": "general_v1",
       "quality_gates": {
@@ -5535,8 +5535,8 @@
       "observed_quality_gate_failures": [],
       "ollama_server_version": "0.23.1",
       "paths": {
-        "component_eval": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_scope_contamination_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
-        "predictions": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_scope_contamination_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
+        "component_eval": "data/results/component_gate_decision_scope_contamination_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
+        "predictions": "data/results/component_gate_decision_scope_contamination_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
       },
       "prompt_label": "general_v1",
       "quality_gates": {
@@ -8389,8 +8389,8 @@
       "observed_quality_gate_failures": [],
       "ollama_server_version": "0.23.1",
       "paths": {
-        "component_eval": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_preference_drift_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
-        "predictions": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_preference_drift_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
+        "component_eval": "data/results/component_gate_decision_preference_drift_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
+        "predictions": "data/results/component_gate_decision_preference_drift_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
       },
       "prompt_label": "general_v1",
       "quality_gates": {
@@ -8502,8 +8502,8 @@
       "observed_quality_gate_failures": [],
       "ollama_server_version": "0.23.1",
       "paths": {
-        "component_eval": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_useful_pending_memory_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
-        "predictions": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_useful_pending_memory_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
+        "component_eval": "data/results/component_gate_decision_useful_pending_memory_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
+        "predictions": "data/results/component_gate_decision_useful_pending_memory_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
       },
       "prompt_label": "general_v1",
       "quality_gates": {
@@ -8906,8 +8906,8 @@
       "observed_quality_gate_failures": [],
       "ollama_server_version": "0.23.1",
       "paths": {
-        "component_eval": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_false_corroboration_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
-        "predictions": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_false_corroboration_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
+        "component_eval": "data/results/component_gate_decision_false_corroboration_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
+        "predictions": "data/results/component_gate_decision_false_corroboration_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
       },
       "prompt_label": "general_v1",
       "quality_gates": {
@@ -9019,8 +9019,8 @@
       "observed_quality_gate_failures": [],
       "ollama_server_version": "0.23.1",
       "paths": {
-        "component_eval": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_memory_poisoning_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
-        "predictions": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_memory_poisoning_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
+        "component_eval": "data/results/component_gate_decision_memory_poisoning_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
+        "predictions": "data/results/component_gate_decision_memory_poisoning_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json"
       },
       "prompt_label": "general_v1",
       "quality_gates": {
@@ -9080,7 +9080,7 @@
       "template_mix": "heldout"
     }
   ],
-  "runner_command": "/Library/Developer/CommandLineTools/usr/bin/python3 /Users/manav/code/consolidation-queue/scripts/run_component_gate_decision.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --force",
+  "runner_command": "python3 scripts/run_component_gate_decision.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --force",
   "schema_profile": "default",
   "statistical_contract": {
     "binomial_interval_field": "wilson_lower_bound_event_assumption",

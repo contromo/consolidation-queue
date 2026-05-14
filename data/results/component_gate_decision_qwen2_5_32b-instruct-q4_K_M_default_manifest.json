@@ -2,7 +2,7 @@
   "artifact_count": 1,
   "artifacts": [
     {
-      "bytes": 400824,
+      "bytes": 400172,
       "expected_primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
       "git_commit": "4d6eb1cb6ca8d8f68fbd52b5276e10dba9fa7999",
       "ollama_server_version": "0.23.1",
@@ -11,10 +11,10 @@
       "primary_model_tag": "qwen2.5:32b-instruct-q4_K_M",
       "prompt_sha256": "ca9ec418156b4cc12bcf5457683844f023684bbc5cee2b7460a6c5030a475633",
       "python_version": "3.9.6",
-      "runner_command": "/Library/Developer/CommandLineTools/usr/bin/python3 /Users/manav/code/consolidation-queue/scripts/run_component_gate_decision.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --force",
+      "runner_command": "python3 scripts/run_component_gate_decision.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --force",
       "schema_profile": "default",
-      "sha256": "cdccfdf78aefef4aaf50f3e84c20bd1016e6279c20e847eb7ff42ea41d285134",
-      "summary_json_sha256": "cdccfdf78aefef4aaf50f3e84c20bd1016e6279c20e847eb7ff42ea41d285134",
+      "sha256": "b591909e777b1d22994b7395bb3675fff6a3ad3f716a3c2d85b87a79600e0481",
+      "summary_json_sha256": "b591909e777b1d22994b7395bb3675fff6a3ad3f716a3c2d85b87a79600e0481",
       "working_tree_status": "clean",
       "working_tree_status_context": "pre_run_before_scored_rows"
     }
