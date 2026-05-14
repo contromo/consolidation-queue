@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-13
+Last updated: 2026-05-14
 
 ## Goal
 
@@ -108,6 +108,7 @@ Implemented:
 - first forced-contradiction local-model smoke artifacts through the transcript-only bridge, using matched Qwen 2.5 `Q4_K_M` 7B floor and 32B headroom runs with scored component outputs
 - CI-aware component gate-decision runner with 60-scenario held-out primary rows, Wilson event-assumption lower bounds, conservative F1 composites, observed-only B-cubed labeling, and pairwise canonicalization CI support
 - preregistered minimal 32B primary unlock-probe support in the gate runner, with explicit primary model tag allowlisting, required schema-profile selection, Ollama digest verification, abort reports, and per-cell manifests
+- preregistered local unlock probe execution through the 7B anchor and both 32B primary cells; the 7B anchor reproduced locked counts exactly, and both 32B cells unlocked the extracted-candidate policy-comparison gate under Bucket A
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -322,7 +323,7 @@ Required outcome:
 
 ### Phase 3: Component Evaluation Harness
 
-Status: in progress; oracle upper-bound reference artifacts, event-aligned contradiction scoring, gate applicability metadata, a transcript-only extractor bridge, and a backend-neutral command-adapter transport now exist. The real 7B `general_v1` CI-aware gate run with required frozen sentinel stayed locked on 2026-05-11, and the 2026-05-12 follow-up evidence block completed: the 7B schema-rescue path removed all primary scenario errors but still stayed gate-locked on observed per-family/frozen failures, while the descriptive 32B blocker-surface sweep cleared the same common-surface failures. A minimal 32B primary unlock probe is now preregistered but not run.
+Status: in progress; oracle upper-bound reference artifacts, event-aligned contradiction scoring, gate applicability metadata, a transcript-only extractor bridge, and a backend-neutral command-adapter transport now exist. The real 7B `general_v1` CI-aware gate run with required frozen sentinel stayed locked on 2026-05-11, and the 2026-05-12 follow-up evidence block completed: the 7B schema-rescue path removed all primary scenario errors but still stayed gate-locked on observed per-family/frozen failures, while the descriptive 32B blocker-surface sweep cleared the same common-surface failures. The 2026-05-14 preregistered local unlock probe reproduced the 7B anchor exactly, then unlocked the gate with both 32B primary cells, classifying the probe as Bucket A.
 
 Implemented:
 
@@ -356,6 +357,9 @@ Implemented:
 - `docs/component_gate_followup_benchmark_memo.md`, recording the completed follow-up comparison, the common-surface burden reductions, the no-quadrant decision, and the draft-versus-expansion recommendation
 - parameterized gate-decision runner support for `qwen2.5:7b-instruct-q4_K_M` and `qwen2.5:32b-instruct-q4_K_M` as primary gate models, with required runner-level `--schema-profile`, preregistered Ollama digest checks, primary-model determinism replay, automated 7B anchor count/server-version enforcement before 32B scoring, model-digest cache provenance checks, summary/manifest metadata, and abort reports on digest mismatch
 - `docs/local_unlock_probe_preregistration.md`, locking the 7B anchor, two 32B schema-profile cells, expected digests, outcome buckets, and no-automatic-ladder rule before any 32B primary unlock scoring
+- completed preregistered 7B anchor rerun under `qwen2.5:7b-instruct-q4_K_M` / `default`; it matched the locked counts exactly: `45` primary scenario errors, `8` primary observed gate failures, `0` aggregate observed failures, `0` aggregate CI failures, `3` frozen-sentinel observed failures, and `policy_comparison_unlocked=false`
+- completed preregistered 32B default primary cell under `qwen2.5:32b-instruct-q4_K_M` / `default`; it recorded `0` primary scenario errors, `0` primary observed gate failures, `0` aggregate observed failures, `0` aggregate CI failures, `0` frozen-sentinel observed failures, and `policy_comparison_unlocked=true`, so the local unlock probe took the Bucket A branch
+- completed preregistered 32B scenario-conditioned primary cell under `qwen2.5:32b-instruct-q4_K_M` / `scenario_conditioned`; it recorded the same all-clear unlock checks and `policy_comparison_unlocked=true`
 
 Status notes:
 
@@ -363,7 +367,8 @@ Status notes:
 - the locked 7B baseline is dominated by invalid model outputs rather than aggregate CI math: empty `scope_key`, empty `canonical_id`, and invalid `contradicts_event_ids` targets drive the scenario-error burden across `scope_contamination`, `preference_drift`, `useful_pending_memory`, `false_corroboration`, `memory_poisoning`, and the frozen sentinel
 - the completed follow-up now splits that baseline burden into two effects: a stricter structured interface removes the schema-shaped blocker class on 7B without vacuous placeholder substitution, while larger-model capacity removes the remaining common-surface measured failures in the descriptive 32B rows
 - do not reopen `general_v2`, add prompt-only retries, loosen validators, lower thresholds, or otherwise make the component gate easier to pass; those are model-quality workarounds, not code fixes
-- do not make Phase 4 noisy policy-comparison claims from the current 7B path; the follow-up supports a benchmark/gate-methodology/failure-taxonomy writeup, not a noisy-policy unlock
+- do not make Phase 4 noisy policy-comparison claims from the current 7B path; the 32B unlock permits only a separate preregistered noisy policy-comparison run, not an automatic policy claim
+- because the local unlock probe reached Bucket A, do not implement the Bucket C cross-family abstention assay as part of this plan
 
 Required outcome:
 
@@ -373,7 +378,7 @@ Required outcome:
 
 ### Phase 4: Noisy Local-Model Pipeline
 
-Status: on hold. The 2026-05-11 real 7B `general_v1` component gate run stayed locked, so extracted-candidate policy comparison does not start under the current contract.
+Status: preregistration required before execution. The 2026-05-14 32B primary gates unlocked under the local unlock probe's Bucket A branch, but extracted-candidate policy comparison still does not start until a separate noisy policy-comparison preregistration is written and locked.
 
 Add:
 
@@ -436,7 +441,7 @@ LongMemEval positioning:
 
 Current framing note:
 
-- frame the current noisy-mode outcome as a benchmark, gate-methodology, and failure-taxonomy contribution rather than a CQ noisy-policy contribution; the follow-up evidence now supports drafting that methodology story without reopening Phase 4
+- frame the current noisy-mode outcome as a benchmark, gate-methodology, failure-taxonomy, and local-unlock-readiness contribution rather than a CQ noisy-policy contribution; the 32B unlock opens a future preregistered noisy policy comparison but does not itself compare memory policies
 - the separate oracle-only `adversarial_upstream_noise` comparison has now landed as a recorded policy result at the candidate-stream locus of noise, with extraction held constant and the locked Phase 3 / Phase 4 path unchanged
 - that family now carries a two-part story: four mechanism wins plus a named dated-evidence weakness on `temporal_skew`; any repair attempt belongs in the separately preregistered `CQDatedContestation` follow-up rather than the original headline artifact
 - `docs/benchmark_methodology_draft.md` now consolidates the Phase 2.5 frozen oracle readout, adversarial upstream-noise Bucket D result, Phase 2.6 full-support abstention-calibration assay, and locked component-gate taxonomy into a shareable benchmark/methodology draft
@@ -526,12 +531,11 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. The real 7B `general_v1` CI-aware gate run with required frozen sentinel completed on 2026-05-11 and stayed locked (`policy_comparison_unlocked=false`) despite passing Phase A and determinism. The completed 2026-05-12 follow-up evidence block then ran the descriptive 32B blocker-surface sweep and the full 7B schema-rescue run. Both mandatory runs reduced the preregistered common-surface schema-shaped burden from `26` to `0`, so the conditional `32B + schema` quadrant did not trigger. The 7B schema-rescue run still remained locked on observed per-family/frozen failures (`5` primary, `2` frozen), while the 32B descriptive rows cleared the same common-surface measured failures. `docs/component_gate_publication_outline.md` maps the publication package, `docs/component_gate_failure_taxonomy.md` records the locked-gate interpretation, and `docs/component_gate_followup_benchmark_memo.md` records the follow-up decomposition and next-step recommendation. The separate oracle-only `adversarial_upstream_noise` headline runs are now also recorded: CQ clears four of five preregistered mechanisms on `mixed`, loses only `temporal_skew`, and therefore triggers the separately preregistered `CQDatedContestation` follow-up rather than a retrofit of the original `phase2_5` policy set. `docs/local_unlock_probe_preregistration.md` now locks a minimal 32B primary unlock probe, but no 32B primary scoring has run. Phase 4 remains on hold. Next:
+The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. The real 7B `general_v1` CI-aware gate run with required frozen sentinel completed on 2026-05-11 and stayed locked (`policy_comparison_unlocked=false`) despite passing Phase A and determinism. The completed 2026-05-12 follow-up evidence block then ran the descriptive 32B blocker-surface sweep and the full 7B schema-rescue run. Both mandatory runs reduced the preregistered common-surface schema-shaped burden from `26` to `0`, so the conditional `32B + schema` quadrant did not trigger. The 7B schema-rescue run still remained locked on observed per-family/frozen failures (`5` primary, `2` frozen), while the 32B descriptive rows cleared the same common-surface measured failures. `docs/component_gate_publication_outline.md` maps the publication package, `docs/component_gate_failure_taxonomy.md` records the locked-gate interpretation, and `docs/component_gate_followup_benchmark_memo.md` records the follow-up decomposition and next-step recommendation. The separate oracle-only `adversarial_upstream_noise` headline runs are now also recorded: CQ clears four of five preregistered mechanisms on `mixed`, loses only `temporal_skew`, and therefore triggers the separately preregistered `CQDatedContestation` follow-up rather than a retrofit of the original `phase2_5` policy set. The 2026-05-14 local unlock probe reproduced the 7B anchor exactly and both 32B primary cells unlocked, so the probe is Bucket A. Phase 4 extracted-candidate policy comparison remains unstarted until a separate noisy policy-comparison preregistration is written and locked. Next:
 
-1. Keep Phase 4 extracted-candidate policy comparisons on hold while `policy_comparison_unlocked=false`.
-2. Run the preregistered 7B anchor on a clean worktree; abort before 32B scoring if exact locked counts do not reproduce under matching Ollama version and digest.
-3. If the anchor passes, run the two preregistered 32B primary unlock cells (`default` and `scenario_conditioned`) and classify the outcome as Bucket A or Bucket C without starting policy comparisons.
-4. Treat `CQDatedContestation` as a separate optional follow-up; do not retrofit the original `phase2_5` headline result.
+1. Write and lock `docs/noisy_policy_comparison_preregistration.md` before any extracted-candidate CQ-vs-Reflection-vs-`Mem0Lite` policy comparison.
+2. Keep the Bucket C cross-family abstention assay out of scope unless a future preregistered gate result actually lands in Bucket C.
+3. Treat `CQDatedContestation` as a separate optional follow-up; do not retrofit the original `phase2_5` headline result.
 
 ## Working Rules
 

@@ -1,7 +1,8 @@
 # Benchmark Methodology Draft
 
 Target format: arXiv technical report first, with a workshop submission as a
-follow-up only if the narrative tightens after the local unlock probe lands.
+follow-up only if the narrative tightens after the noisy policy-comparison
+preregistration lands.
 
 This draft consolidates the contribution the repo can defend today:
 
@@ -10,7 +11,10 @@ This draft consolidates the contribution the repo can defend today:
 3. an inspectable failure taxonomy for local extractor limits, and
 4. a narrow positive oracle-policy claim around witness-conflict abstention.
 
-It is not yet a noisy-mode policy result.
+It is not yet a noisy-mode policy result. The 2026-05-14 local unlock probe
+reached Bucket A under both 32B primary cells, so the next empirical step is a
+separately preregistered noisy policy comparison, not a post-hoc policy claim
+from the unlock probe itself.
 
 ## 1. Contributions
 
@@ -79,9 +83,11 @@ The reusable discipline is spread across four locked documents:
 - `docs/abstention_quality_preregistration.md` locks the Phase 2.6 abstention
   assay, including artifact policy and outcome precedence.
 
-The new `docs/local_unlock_probe_preregistration.md` does not change any oracle
-contract. It only preregisters a minimal 32B component-gate unlock probe before
-any 32B primary unlock cell is scored.
+The `docs/local_unlock_probe_preregistration.md` contract did not change any
+oracle contract. It preregistered a minimal 32B component-gate unlock probe
+before any 32B primary unlock cell was scored. Both 32B cells reached Bucket A
+on 2026-05-14, so `docs/noisy_policy_comparison_preregistration.md` is now the
+required next lock before extracted-candidate policy comparison.
 
 ## 5. Evidence Ledger
 
@@ -154,6 +160,8 @@ performance.
 Sources:
 
 - `data/results/component_gate_decision_general_v1_summary.json`
+- `data/results/component_gate_decision_qwen2_5_7b-instruct-q4_K_M_default_summary.json`
+- `data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_summary.json`
 - `docs/component_gate_failure_taxonomy.md`
 - `docs/component_gate_followup_benchmark_memo.md`
 
@@ -172,36 +180,55 @@ Follow-up decomposition:
 - descriptive 32B default-schema rows clear the same common-surface measured
   failures, supporting a capacity/schema decomposition rather than a noisy
   policy claim
+- preregistered 7B anchor rerun on 2026-05-14 reproduced the locked counts
+  exactly under the same Ollama server version and preregistered digest
+- preregistered 32B default primary cell cleared the gate with `0` primary
+  scenario errors, `0` primary observed failures, `0` aggregate observed
+  failures, `0` aggregate CI failures, `0` frozen-sentinel observed failures,
+  and `policy_comparison_unlocked=true`
+- preregistered 32B scenario-conditioned primary cell cleared the same unlock
+  checks and also recorded `policy_comparison_unlocked=true`
 
 Supported claim: the gate discipline prevents a false noisy-mode unlock.
-Unsupported claim: extracted-candidate CQ policy superiority.
+Supported follow-up claim: the 32B local extractor path is eligible for a
+separately preregistered noisy policy comparison. Unsupported claim:
+extracted-candidate CQ policy superiority.
 
 ## 6. Local Unlock Probe
 
-The minimal empirical lift is now preregistered in
-`docs/local_unlock_probe_preregistration.md`.
+The minimal empirical lift was preregistered in
+`docs/local_unlock_probe_preregistration.md` and both 32B cells reached Bucket A
+on 2026-05-14.
 
 It tests `qwen2.5:32b-instruct-q4_K_M` as the primary unlocking model on the
 same held-out per-family rows plus frozen sentinel used by the locked 7B
 baseline, under both code-level schema profiles: `default` and
 `scenario_conditioned`.
 
-The probe has two allowed outcomes:
+Recorded cells:
 
-- Bucket A: 32B unlocks under at least one schema profile, which triggers a new
-  preregistration for a noisy CQ-vs-Reflection-vs-`Mem0Lite` policy comparison.
-- Bucket C: 32B stays locked under both schema profiles, which strengthens the
-  gate-methodology result but does not retire the oracle-only policy objection.
+- 7B `default` anchor:
+  `data/results/component_gate_decision_qwen2_5_7b-instruct-q4_K_M_default_summary.json`
+  and matching manifest. It matched the locked baseline exactly.
+- 32B `default` primary:
+  `data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_summary.json`
+  and matching manifest. It unlocked the component gate and triggered Bucket A.
+- 32B `scenario_conditioned` primary:
+  `data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_scenario_conditioned_summary.json`
+  and matching manifest. It also unlocked the component gate.
 
-The draft does not wait for this probe. The probe only determines whether the
-paper can add a future noisy-policy-comparison section.
+Bucket A does not itself compare memory policies. It only opens the next
+preregistration step for a noisy CQ-vs-Reflection-vs-`Mem0Lite` policy
+comparison. The Bucket C cross-family abstention assay remains out of scope for
+this branch.
 
 ## 7. Limits
 
 Current unsupported claims:
 
 - noisy-mode end-to-end CQ superiority
-- extracted-candidate policy comparison under the current locked gate
+- extracted-candidate policy comparison before a separate noisy policy
+  preregistration is written and locked
 - LongMemEval or other external benchmark transfer
 - real-user long-horizon helpfulness
 - learned semantic scope inference
@@ -213,14 +240,12 @@ retrofit the original `phase2_5` adversarial headline result.
 
 ## 8. Next Work
 
-1. Run the 7B anchor from `docs/local_unlock_probe_preregistration.md` on a
-   clean worktree and abort if exact locked counts do not reproduce.
-2. If the anchor passes, run the two 32B primary unlock cells and classify the
-   result as Bucket A or Bucket C.
-3. Keep Phase 4 policy comparisons on hold unless Bucket A fires and a separate
-   noisy-policy preregistration is written.
-4. Treat LongMemEval as future transfer work, not a current claim.
+1. Write and lock `docs/noisy_policy_comparison_preregistration.md` before any
+   extracted-candidate policy comparison.
+2. Keep Phase 4 policy comparisons on hold until that separate noisy-policy
+   preregistration is complete.
+3. Treat LongMemEval as future transfer work, not a current claim.
 
 The current shareable package is therefore a benchmark and methodology draft
-with honest oracle-policy results and a clear noisy-mode gate, not a completed
-persistent-agent memory-system claim.
+with honest oracle-policy results, a clear noisy-mode gate, and a completed
+local unlock decision, not a completed persistent-agent memory-system claim.
