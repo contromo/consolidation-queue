@@ -4,7 +4,7 @@ Date: 2026-05-14
 
 Status: locked; adapter pin recorded.
 
-noisy_policy_comparison_lock_sha256: 2f5c1d6fc7dc626db920b3855f838c518abc4630e40f211d274108c9564e1b77
+noisy_policy_comparison_lock_sha256: 4bd2bbe64a542c6d8479c2c7c4b40b12c3c601fd35256a60b85bd1e30bfa9bff
 
 This preregistration defines the extracted-candidate policy comparison that is
 allowed by the 2026-05-14 local unlock probe. The probe reached Bucket A under
@@ -188,6 +188,11 @@ Adapter rules:
 - missing predictions emit zero candidates for that event.
 - scenario errors emit zero candidates for every observation in that scenario
   and are attributed to extraction, not policy.
+- the runner computes `input_prediction_count`, `adapter_drop_count`, and
+  `adapter_drop_rate` from the adapter audit. If the aggregate drop rate for a
+  family exceeds `0.05`, the run aborts before policy scoring. This ceiling
+  protects the policy comparison from silently degrading every policy's shared
+  candidate stream after the component gate has already passed.
 
 Known extraction limitation: the adapter uses event ids as the noisy source-id
 proxy. Oracle dirty false-corroboration templates intentionally reuse the same
@@ -217,7 +222,7 @@ Primary metric by family:
 | Family | Primary metric | Bucket role |
 | --- | --- | --- |
 | `forced_contradiction` | `false_assertion_rate` | countable |
-| `scope_contamination` | `scope_leakage_rate` | countable |
+| `scope_contamination` | `leakage_rate` | countable |
 | `preference_drift` | `answer_correctness` | countable |
 | `useful_pending_memory` | `answer_correctness` | countable |
 | `false_corroboration` | `false_assertion_rate` | descriptive only |
@@ -229,7 +234,12 @@ Frozen sentinel primary metrics:
 - `poison_promotion_rate`
 - `premature_promotion_rate`
 
-All other metrics are descriptive rows in the readout.
+The readout also emits a descriptive 6-family x 6-metric grid for
+`answer_correctness`, `false_assertion_rate`, `leakage_rate`,
+`premature_promotion_rate`, `poison_promotion_rate`, and
+`clean_durable_displacement_rate`. These rows use the same paired-bootstrap
+LCB/UCB contract but do not change bucket assignment unless one of the metrics
+is named above as a primary metric.
 
 ## 7. Decision Rules
 
@@ -278,7 +288,10 @@ Outcome precedence:
    superior to `Mem0Lite` on at least one frozen primary metric; the replicate
    contradicts none of the winning countable-family rows.
 3. Bucket C: CQ records at least three directional losses vs Reflection over
-   the five countable family primary metrics.
+   the five countable family primary metrics. This is intentionally
+   asymmetric with Bucket A: Bucket C uses directional losses as a
+   disconfirmation discipline, while Bucket A still requires both the
+   preregistered win-size threshold and positive LCB.
 4. Bucket B: every remaining completed result.
 
 ## 8. Ablation Attribution
@@ -309,12 +322,12 @@ beat the comparator on the metric.
 | `forced_contradiction` | `false_assertion_rate` | `cq_no_wider_scope_pending_override` | +0.00 | ablation |
 | `forced_contradiction` | `false_assertion_rate` | `cq_no_pending_lookup_use` | +0.00 | ablation |
 | `forced_contradiction` | `false_assertion_rate` | `cq_no_source_independence_gate` | +0.00 | ablation |
-| `scope_contamination` | `scope_leakage_rate` | `reflection_eager_write_lite` | +0.20 | countable |
-| `scope_contamination` | `scope_leakage_rate` | `mem0_lite` | +0.05 | countable |
-| `scope_contamination` | `scope_leakage_rate` | `cq_no_contestation_demotion` | +0.00 | ablation |
-| `scope_contamination` | `scope_leakage_rate` | `cq_no_wider_scope_pending_override` | +0.15 | ablation |
-| `scope_contamination` | `scope_leakage_rate` | `cq_no_pending_lookup_use` | +0.00 | ablation |
-| `scope_contamination` | `scope_leakage_rate` | `cq_no_source_independence_gate` | +0.00 | ablation |
+| `scope_contamination` | `leakage_rate` | `reflection_eager_write_lite` | +0.20 | countable |
+| `scope_contamination` | `leakage_rate` | `mem0_lite` | +0.05 | countable |
+| `scope_contamination` | `leakage_rate` | `cq_no_contestation_demotion` | +0.00 | ablation |
+| `scope_contamination` | `leakage_rate` | `cq_no_wider_scope_pending_override` | +0.15 | ablation |
+| `scope_contamination` | `leakage_rate` | `cq_no_pending_lookup_use` | +0.00 | ablation |
+| `scope_contamination` | `leakage_rate` | `cq_no_source_independence_gate` | +0.00 | ablation |
 | `preference_drift` | `answer_correctness` | `reflection_eager_write_lite` | +0.55 | countable |
 | `preference_drift` | `answer_correctness` | `mem0_lite` | +0.00 | countable |
 | `preference_drift` | `answer_correctness` | `cq_no_contestation_demotion` | +0.45 | ablation |
@@ -394,6 +407,7 @@ Abort before policy scoring if any of these hold:
 - schema-profile mismatch
 - component gate regression when cached predictions are re-evaluated
 - scenario errors in a cached prediction artifact
+- aggregate adapter drop rate above `0.05` for any family
 - preregistration lock mismatch
 - adapter source SHA mismatch with `docs/noisy_policy_comparison_adapter_pin.json`
 - candidate stream hash differs across policies within a scenario
@@ -407,11 +421,14 @@ For each family and schema profile, write:
 - a neighboring manifest with model tag, digest, prompt SHA, schema profile,
   prediction artifact SHA, preregistration lock SHA, adapter SHA, runner
   command, working-tree status, summary SHA, `archive_status`, and per-scenario
-  candidate stream hashes
+  candidate stream hashes plus adapter input/drop counts
 
 The top-level summary is:
 
 - `data/results/noisy_policy_comparison_summary.json`
+- includes primary metric comparisons, frozen primary comparisons, the
+  descriptive metric grid with paired-bootstrap bounds, and bucket-decision
+  details
 
 The readout is:
 

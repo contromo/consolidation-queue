@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import shlex
 import subprocess
@@ -25,6 +24,13 @@ from cq.eval.bootstrap import (  # noqa: E402
     paired_delta_point_estimate,
 )
 from cq.eval.component_eval import evaluate_component_predictions  # noqa: E402
+from cq.eval.component_gate_runtime import (  # noqa: E402
+    GateRuntimeError,
+    git_commit,
+    verify_primary_model_backend,
+    verify_required_anchor_before_probe,
+    working_tree_status,
+)
 from cq.eval.extracted_candidate_runner import (  # noqa: E402
     ADAPTER_PIN_PATH,
     FROZEN_SENTINEL_SCENARIO_COUNT,
@@ -33,6 +39,8 @@ from cq.eval.extracted_candidate_runner import (  # noqa: E402
     LOCKED_PROMPT_SHA256,
     PRIMARY_SCENARIO_COUNT,
     NoisyPolicyComparisonError,
+    adapt_predictions_for_scenarios,
+    candidate_stream_audit_for_adapted_scenarios,
     load_extracted_predictions,
     prediction_cell_paths,
     sha256_file,
@@ -56,21 +64,16 @@ from cq.eval.runner import (  # noqa: E402
 from cq.schemas.memory import jsonable  # noqa: E402
 
 
-def _load_gate_module():
-    module_path = REPO_ROOT / "scripts" / "run_component_gate_decision.py"
-    spec = importlib.util.spec_from_file_location("run_component_gate_decision", module_path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-gate = _load_gate_module()
-
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "results"
 DEFAULT_RUN_DIR = REPO_ROOT / "data" / "runs"
 STOP_REPORT_PREFIX = "noisy_policy_comparison_stop"
 SUMMARY_PATH = DEFAULT_OUTPUT_DIR / "noisy_policy_comparison_summary.json"
+MAX_ADAPTER_DROP_RATE = 0.05
+BUCKET_C_DIRECTIONAL_LOSS_NOTE = (
+    "Bucket C intentionally uses directional CQ-vs-Reflection losses before "
+    "statistical loss gating; Bucket A still requires preregistered win size "
+    "and LCB conditions."
+)
 COMPONENT_FAMILIES = (
     FORCED_CONTRADICTION,
     SCOPE_CONTAMINATION,
@@ -98,6 +101,14 @@ FROZEN_PRIMARY_METRICS = (
     "false_assertion_rate",
     "poison_promotion_rate",
     "premature_promotion_rate",
+)
+DESCRIPTIVE_METRICS = (
+    "answer_correctness",
+    "false_assertion_rate",
+    "leakage_rate",
+    "premature_promotion_rate",
+    "poison_promotion_rate",
+    "clean_durable_displacement_rate",
 )
 HIGHER_IS_BETTER = {"answer_correctness"}
 LOWER_IS_BETTER = {
@@ -143,16 +154,16 @@ def run_noisy_policy_comparison(
             "unsupported_primary_model_tag",
             {"observed": primary_model_tag, "expected": LOCKED_MODEL_TAG},
         )
-    if gate.working_tree_status() != "clean":
+    if working_tree_status() != "clean":
         raise StopConditionError(
             "dirty_pre_run_working_tree",
             {"working_tree_status": subprocess.check_output(["git", "status", "--short"], text=True, cwd=REPO_ROOT)},
         )
-    backend = gate.verify_primary_model_backend(
+    backend = verify_primary_model_backend(
         primary_model_tag,
         runner_command=runner_command,
     )
-    anchor_error = gate.verify_required_anchor_before_probe(
+    anchor_error = verify_required_anchor_before_probe(
         output_dir,
         live_ollama_server_version=backend.ollama_server_version,
     )
@@ -180,6 +191,12 @@ def run_noisy_policy_comparison(
             schema_profile=schema_profile,
         )
         _assert_component_gate_still_passes(
+            family=family,
+            scenario_count=scenario_count,
+            template_mix=template_mix,
+            predictions_path=paths.predictions,
+        )
+        _assert_adapter_drop_rate_before_policy_scoring(
             family=family,
             scenario_count=scenario_count,
             template_mix=template_mix,
@@ -282,6 +299,93 @@ def _assert_component_gate_still_passes(
         )
 
 
+def assert_adapter_drop_rate_within_limit(
+    run_artifact: Mapping[str, object],
+    *,
+    family: str,
+    max_drop_rate: float = MAX_ADAPTER_DROP_RATE,
+) -> None:
+    summary = adapter_drop_summary(run_artifact)
+    if summary["adapter_drop_rate"] <= max_drop_rate:
+        return
+    raise StopConditionError(
+        "adapter_drop_rate_exceeded",
+        {
+            "family": family,
+            "max_adapter_drop_rate": max_drop_rate,
+            **summary,
+        },
+    )
+
+
+def _assert_adapter_drop_rate_before_policy_scoring(
+    *,
+    family: str,
+    scenario_count: int,
+    template_mix: str,
+    predictions_path: Path,
+) -> None:
+    predictions_by_scenario, scenario_errors = load_extracted_predictions(predictions_path)
+    scenarios = generate_scenarios(family, scenario_count, template_mix)
+    adapted_by_scenario = adapt_predictions_for_scenarios(
+        scenarios,
+        predictions_by_scenario,
+        scenario_errors,
+    )
+    candidate_stream_audit = candidate_stream_audit_for_adapted_scenarios(
+        scenarios,
+        adapted_by_scenario,
+    )
+    assert_adapter_drop_rate_within_limit(
+        {"candidate_stream_audit": candidate_stream_audit},
+        family=family,
+    )
+
+
+def adapter_drop_summary(run_artifact: Mapping[str, object]) -> Dict[str, object]:
+    rows = []
+    total_predictions = 0
+    total_drops = 0
+    for audit_row in run_artifact.get("candidate_stream_audit", []):
+        if not isinstance(audit_row, dict):
+            continue
+        drops = audit_row.get("drops")
+        fallback_drop_count = len(drops) if isinstance(drops, list) else 0
+        drop_count = int(audit_row.get("adapter_drop_count", fallback_drop_count))
+        fallback_prediction_count = drop_count + int(audit_row.get("candidate_count", 0))
+        prediction_count = int(audit_row.get("input_prediction_count", fallback_prediction_count))
+        drop_rate = float(drop_count / prediction_count) if prediction_count else 0.0
+        total_predictions += prediction_count
+        total_drops += drop_count
+        rows.append(
+            {
+                "scenario_id": audit_row.get("scenario_id"),
+                "input_prediction_count": prediction_count,
+                "adapter_drop_count": drop_count,
+                "adapter_drop_rate": drop_rate,
+                "drop_reasons": _drop_reason_counts(drops if isinstance(drops, list) else []),
+            }
+        )
+    aggregate_rate = float(total_drops / total_predictions) if total_predictions else 0.0
+    return {
+        "input_prediction_count": total_predictions,
+        "adapter_drop_count": total_drops,
+        "adapter_drop_rate": aggregate_rate,
+        "scenario_count": len(rows),
+        "scenarios_with_drops": [row for row in rows if row["adapter_drop_count"]],
+    }
+
+
+def _drop_reason_counts(drops: Sequence[object]) -> Dict[str, int]:
+    counts: Dict[str, int] = {}
+    for drop in drops:
+        if not isinstance(drop, dict):
+            continue
+        reason = str(drop.get("reason") or "unknown")
+        counts[reason] = counts.get(reason, 0) + 1
+    return counts
+
+
 def aggregate_summary(
     *,
     run_dir: Path,
@@ -316,6 +420,10 @@ def aggregate_summary(
                 ),
                 "frozen_primary_comparisons": comparisons_by_profile.get(schema_profile, {}).get(
                     "frozen_primary_comparisons",
+                    {},
+                ),
+                "descriptive_metric_comparisons": comparisons_by_profile.get(schema_profile, {}).get(
+                    "descriptive_metric_comparisons",
                     {},
                 ),
             }
@@ -356,6 +464,7 @@ def _profile_complete(
 
 def _profile_comparisons(artifacts: Mapping[str, object]) -> Dict[str, object]:
     primary = {}
+    descriptive = {}
     for family in COMPONENT_FAMILIES:
         artifact = artifacts.get(family)
         if not isinstance(artifact, dict):
@@ -365,6 +474,14 @@ def _profile_comparisons(artifacts: Mapping[str, object]) -> Dict[str, object]:
             comparator: comparison_payload(artifact, metric, comparator)
             for comparator in COMPARATORS
             if _policy_present(artifact, comparator)
+        }
+        descriptive[family] = {
+            metric_name: {
+                comparator: comparison_payload(artifact, metric_name, comparator)
+                for comparator in COMPARATORS
+                if _policy_present(artifact, comparator)
+            }
+            for metric_name in DESCRIPTIVE_METRICS
         }
     frozen = {}
     artifact = artifacts.get(MECHANISM_DIVERSE_HELDOUT)
@@ -378,6 +495,7 @@ def _profile_comparisons(artifacts: Mapping[str, object]) -> Dict[str, object]:
     return {
         "primary_metric_comparisons": primary,
         "frozen_primary_comparisons": frozen,
+        "descriptive_metric_comparisons": descriptive,
     }
 
 
@@ -442,6 +560,7 @@ def _bucket_decision(comparisons_by_profile: Mapping[str, Mapping[str, object]])
         return {
             "bucket": "C",
             "reason": "CQ has at least three directional losses vs Reflection on countable primary metrics.",
+            "directional_loss_note": BUCKET_C_DIRECTIONAL_LOSS_NOTE,
             "reflection_directional_losses": reflection_directional_losses,
         }
     frozen_mem0 = {
@@ -494,6 +613,7 @@ def _bucket_decision(comparisons_by_profile: Mapping[str, Mapping[str, object]])
         "reason": "Completed result survived D/C but failed at least one Bucket A condition.",
         "primary_reflection_wins": reflection_wins,
         "reflection_directional_losses": reflection_directional_losses,
+        "directional_loss_note": BUCKET_C_DIRECTIONAL_LOSS_NOTE,
         "frozen_mem0_non_inferior": non_inferior,
         "frozen_mem0_superior": superior,
         "replicate_contradictions": contradictions,
@@ -545,7 +665,10 @@ def write_run_manifest(
         {
             "scenario_id": row["scenario_id"],
             "candidate_stream_sha256": row["candidate_stream_sha256"],
+            "input_prediction_count": row.get("input_prediction_count", 0),
             "candidate_count": row["candidate_count"],
+            "adapter_drop_count": row.get("adapter_drop_count", 0),
+            "adapter_drop_rate": row.get("adapter_drop_rate", 0.0),
         }
         for row in run_artifact.get("candidate_stream_audit", [])
     ]
@@ -558,8 +681,8 @@ def write_run_manifest(
             _artifact_manifest_row(output_csv),
         ],
         "runner_command": runner_command,
-        "git_commit": gate.git_commit(),
-        "working_tree_status": gate.working_tree_status(),
+        "git_commit": git_commit(),
+        "working_tree_status": working_tree_status(),
         "working_tree_status_context": "manifest_write_after_outputs",
         "primary_model_tag": getattr(model_backend, "model_tag", LOCKED_MODEL_TAG),
         "primary_model_digest": getattr(model_backend, "resolved_digest", LOCKED_MODEL_DIGEST),
@@ -734,11 +857,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             policy_set=args.policy_set,
             runner_command=runner_command,
         )
-    except gate.matrix.StopConditionError as error:
-        report_path = write_stop_report(args.output_dir, StopConditionError(error.reason, error.details))
-        print("Noisy policy comparison stopped: {}. Report: {}".format(error.reason, report_path))
-        return 1
-    except (NoisyPolicyComparisonError, StopConditionError, ValueError) as error:
+    except (NoisyPolicyComparisonError, StopConditionError, GateRuntimeError, ValueError) as error:
         reason = getattr(error, "reason", error.__class__.__name__)
         details = getattr(error, "details", {"message": str(error)})
         report_path = write_stop_report(args.output_dir, StopConditionError(reason, details))

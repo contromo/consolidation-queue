@@ -68,6 +68,7 @@ class AdaptedCandidateStream:
     candidate_stream_sha256: str
     candidate_ids_by_event_id: Dict[str, List[str]]
     candidate_ids_by_oracle_candidate_id: Dict[str, List[str]]
+    input_prediction_count: int
     drops: List[Dict[str, object]]
     scenario_error: Optional[object] = None
 
@@ -262,6 +263,7 @@ def adapt_predictions_for_scenario(
             candidate_stream_sha256=candidate_stream_sha256([]),
             candidate_ids_by_event_id={},
             candidate_ids_by_oracle_candidate_id=candidate_ids_by_oracle_candidate_id,
+            input_prediction_count=len(predictions),
             drops=[],
             scenario_error=scenario_error,
         )
@@ -350,9 +352,59 @@ def adapt_predictions_for_scenario(
         candidate_stream_sha256=candidate_stream_sha256(candidates),
         candidate_ids_by_event_id=emitted_ids_by_event,
         candidate_ids_by_oracle_candidate_id=candidate_ids_by_oracle_candidate_id,
+        input_prediction_count=len(predictions),
         drops=drops,
         scenario_error=None,
     )
+
+
+def adapt_predictions_for_scenarios(
+    scenarios: Sequence[Scenario],
+    predictions_by_scenario: Mapping[str, List[CandidateComponentPrediction]],
+    scenario_errors: Mapping[str, object],
+) -> Dict[str, AdaptedCandidateStream]:
+    return {
+        scenario.scenario_id: adapt_predictions_for_scenario(
+            scenario,
+            predictions_by_scenario.get(scenario.scenario_id, []),
+            scenario_error=scenario_errors.get(scenario.scenario_id),
+        )
+        for scenario in scenarios
+    }
+
+
+def candidate_stream_audit_for_adapted_scenarios(
+    scenarios: Sequence[Scenario],
+    adapted_by_scenario: Mapping[str, AdaptedCandidateStream],
+) -> List[Dict[str, object]]:
+    return [
+        _candidate_stream_audit_row(
+            scenario.scenario_id,
+            adapted_by_scenario[scenario.scenario_id],
+        )
+        for scenario in scenarios
+    ]
+
+
+def _candidate_stream_audit_row(
+    scenario_id: str,
+    adapted: AdaptedCandidateStream,
+) -> Dict[str, object]:
+    return {
+        "scenario_id": scenario_id,
+        "input_prediction_count": adapted.input_prediction_count,
+        "candidate_count": len(adapted.candidates),
+        "candidate_stream_sha256": adapted.candidate_stream_sha256,
+        "candidate_ids_by_event_id": adapted.candidate_ids_by_event_id,
+        "adapter_drop_count": len(adapted.drops),
+        "adapter_drop_rate": (
+            len(adapted.drops) / adapted.input_prediction_count
+            if adapted.input_prediction_count
+            else 0.0
+        ),
+        "drops": adapted.drops,
+        "scenario_error": adapted.scenario_error,
+    }
 
 
 def candidate_stream_sha256(candidates: Sequence[CandidateUpdate]) -> str:
@@ -459,27 +511,17 @@ def build_extracted_run_artifact(
     adapter_sha256: str = "",
     preregistration_lock_sha256: str = "",
 ) -> dict:
-    adapted_by_scenario = {
-        scenario.scenario_id: adapt_predictions_for_scenario(
-            scenario,
-            predictions_by_scenario.get(scenario.scenario_id, []),
-            scenario_error=scenario_errors.get(scenario.scenario_id),
-        )
-        for scenario in scenarios
-    }
+    adapted_by_scenario = adapt_predictions_for_scenarios(
+        scenarios,
+        predictions_by_scenario,
+        scenario_errors,
+    )
     policy_runs = []
     run_records_by_policy: Dict[str, List[dict]] = {}
-    candidate_stream_audit = [
-        {
-            "scenario_id": scenario.scenario_id,
-            "candidate_count": len(adapted_by_scenario[scenario.scenario_id].candidates),
-            "candidate_stream_sha256": adapted_by_scenario[scenario.scenario_id].candidate_stream_sha256,
-            "candidate_ids_by_event_id": adapted_by_scenario[scenario.scenario_id].candidate_ids_by_event_id,
-            "drops": adapted_by_scenario[scenario.scenario_id].drops,
-            "scenario_error": adapted_by_scenario[scenario.scenario_id].scenario_error,
-        }
-        for scenario in scenarios
-    ]
+    candidate_stream_audit = candidate_stream_audit_for_adapted_scenarios(
+        scenarios,
+        adapted_by_scenario,
+    )
 
     stream_hashes_by_policy: Dict[str, Dict[str, str]] = {}
     for policy_cls in policy_classes:
@@ -553,7 +595,8 @@ def build_extracted_run_artifact(
         "preregistration_lock_sha256": preregistration_lock_sha256,
         "candidate_stream_audit": candidate_stream_audit,
         "candidate_stream_sha256_by_policy": stream_hashes_by_policy,
-        "candidate_stream_hash_invariant_passed": True,
+        "candidate_stream_hash_mismatches": hash_mismatches,
+        "candidate_stream_hash_invariant_passed": not hash_mismatches,
         "policies": policy_runs,
     }
 

@@ -150,6 +150,7 @@ class ExtractedCandidateRunnerTests(unittest.TestCase):
                 "unknown_or_non_observation_event",
             ],
         )
+        self.assertEqual(adapted.input_prediction_count, 7)
 
         first, second, third = adapted.candidates
         self.assertEqual(first.raw_text, "First deploy statement.")
@@ -249,6 +250,7 @@ class ExtractedCandidateRunnerTests(unittest.TestCase):
 
         self.assertEqual(adapted.candidates, [])
         self.assertEqual(adapted.scenario_error, scenario_error)
+        self.assertEqual(adapted.input_prediction_count, 0)
 
     def test_stream_hash_equality_across_policies(self) -> None:
         scenario = generate_forced_contradiction_scenarios(1, template_mix="clean")[0]
@@ -278,6 +280,15 @@ class ExtractedCandidateRunnerTests(unittest.TestCase):
         )
 
         self.assertTrue(artifact["candidate_stream_hash_invariant_passed"])
+        self.assertEqual(artifact["candidate_stream_hash_mismatches"], [])
+        self.assertEqual(
+            artifact["candidate_stream_audit"][0]["adapter_drop_count"],
+            0,
+        )
+        self.assertEqual(
+            artifact["candidate_stream_audit"][0]["input_prediction_count"],
+            len(predictions_by_scenario[scenario.scenario_id]),
+        )
         self.assertEqual(
             candidate_stream_hash_mismatches(artifact["candidate_stream_sha256_by_policy"]),
             [],

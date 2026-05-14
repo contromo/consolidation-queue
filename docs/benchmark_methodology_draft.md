@@ -115,7 +115,7 @@ Readout:
 - all `108` preregistered oracle-mode deltas matched observed deltas
 - CQ and `Mem0Lite` tie on aggregate `answer_correctness`,
   `false_assertion_rate`, `poison_promotion_rate`,
-  `clean_durable_displacement_rate`, and `scope_leakage_rate`
+  `clean_durable_displacement_rate`, and `leakage_rate`
 - CQ improves aggregate `premature_promotion_rate` by `33` percentage points
   versus `Mem0Lite`, driven by
   `false_corroboration_adversarial_mixed_source`

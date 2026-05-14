@@ -250,7 +250,8 @@ python3 scripts/run_noisy_policy_comparison.py --dry-run --primary-model-tag qwe
 
 Run extracted-candidate policy scoring only after the preregistration and
 adapter pin are committed and the worktree is clean. The runner aborts on dirty
-pre-run state by design.
+pre-run state, component-gate drift, digest/pin mismatches, candidate-stream
+hash mismatches, or adapter drop rates above the preregistered ceiling.
 
 Open the dashboard against the saved run:
 

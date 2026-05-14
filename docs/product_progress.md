@@ -1,5 +1,42 @@
 # Product Progress
 
+## 2026-05-14 — Noisy policy-comparison review hardening
+
+### What shipped
+
+- corrected the locked noisy preregistration metric name from
+  `scope_leakage_rate` to the actual runner field, `leakage_rate`
+- added an adapter drop-rate abort condition with a preregistered `0.05`
+  ceiling, backed by per-scenario input/drop counts in the candidate-stream
+  audit and manifests
+- made the noisy comparison summary emit the promised six-family x six-metric
+  descriptive grid with paired-bootstrap LCB/UCB rows
+- moved the noisy runner off dynamic imports of the component-gate script by
+  adding reusable gate-runtime helpers under `cq/eval/`
+- made candidate-stream hash audits self-evidencing by recording the computed
+  `candidate_stream_hash_mismatches` list
+- added focused tests for bucket aggregation, component-gate rechecks, adapter
+  drop aborts, manifest shape, and descriptive-grid output
+
+### Why it matters
+
+- a policy win can no longer mask substantial adapter-level extraction loss
+  after the component gate passes
+- the readout contract now matches the planned descriptive evidence surface
+- external reviewers see the same metric identifiers in the preregistration,
+  code, and artifacts
+
+### Evidence
+
+- focused tests:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_extracted_candidate_runner tests.test_noisy_policy_comparison_runner -q`
+
+### Open issues / next
+
+- run the default Phase 4 noisy policy-comparison cell from a clean worktree
+- run the `scenario_conditioned` robustness replicate and write the
+  preregistered results readout
+
 ## 2026-05-14 — Phase 4 noisy policy-comparison path locked and staged
 
 ### What shipped
