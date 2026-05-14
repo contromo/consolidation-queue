@@ -1,0 +1,24 @@
+{
+  "artifact_count": 1,
+  "artifacts": [
+    {
+      "bytes": 400484,
+      "expected_primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+      "git_commit": "4d6eb1cb6ca8d8f68fbd52b5276e10dba9fa7999",
+      "ollama_server_version": "0.23.1",
+      "path": "data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_scenario_conditioned_summary.json",
+      "primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+      "primary_model_tag": "qwen2.5:32b-instruct-q4_K_M",
+      "prompt_sha256": "ca9ec418156b4cc12bcf5457683844f023684bbc5cee2b7460a6c5030a475633",
+      "python_version": "3.9.6",
+      "runner_command": "python3 scripts/run_component_gate_decision.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile scenario_conditioned --include-frozen-sentinel --force",
+      "schema_profile": "scenario_conditioned",
+      "sha256": "04b2121640c44ea1cf7384d28a93269a6bd3443db3e580a933c415ee0a606d57",
+      "summary_json_sha256": "04b2121640c44ea1cf7384d28a93269a6bd3443db3e580a933c415ee0a606d57",
+      "working_tree_status": "clean",
+      "working_tree_status_context": "pre_run_before_scored_rows"
+    }
+  ],
+  "manifest_version": 1,
+  "run_name": "component_gate_decision_qwen2_5_32b-instruct-q4_K_M_scenario_conditioned"
+}

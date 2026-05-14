@@ -1,5 +1,76 @@
 # Product Progress
 
+## 2026-05-14 — Local unlock probe reaches Bucket A on both 32B cells
+
+### What shipped
+
+- ran the preregistered 7B anchor from
+  `docs/local_unlock_probe_preregistration.md`
+- ran both 32B primary unlock cells after the anchor reproduced: `default` and
+  `scenario_conditioned`
+- left the Bucket C cross-family abstention assay unimplemented because the
+  32B cells took the preregistered Bucket A branch
+- opened `docs/noisy_policy_comparison_preregistration.md` as the next required
+  work item before any extracted-candidate CQ-vs-Reflection-vs-`Mem0Lite`
+  policy comparison
+- updated `PROJECT_PLAN.md` and `docs/benchmark_methodology_draft.md` so the
+  repo no longer lists the 7B anchor or 32B unlock cells as future work
+
+### Why it matters
+
+- the 7B anchor reproduced the locked gate baseline exactly, so the 32B cells
+  were allowed to run under the preregistered contract
+- both 32B primary cells cleared every component gate, which means the local
+  unlock probe is Bucket A rather than Bucket C
+- Bucket A is not a policy result; it only permits a separately preregistered
+  noisy policy comparison
+
+### Evidence
+
+- 7B anchor:
+  - summary:
+    `data/results/component_gate_decision_qwen2_5_7b-instruct-q4_K_M_default_summary.json`
+  - manifest:
+    `data/results/component_gate_decision_qwen2_5_7b-instruct-q4_K_M_default_manifest.json`
+  - locked-count checks:
+    `primary_scenario_error_count=45`,
+    `primary_observed_gate_failure_count=8`,
+    `aggregate_observed_gate_failure_count=0`,
+    `aggregate_ci_gate_failure_count=0`,
+    `frozen_sentinel_observed_gate_failure_count=3`,
+    `policy_comparison_unlocked=false`
+- 32B default:
+  - summary:
+    `data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_summary.json`
+  - manifest:
+    `data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_manifest.json`
+  - unlock checks:
+    `primary_scenario_error_count=0`,
+    `primary_observed_gate_failure_count=0`,
+    `aggregate_observed_gate_failure_count=0`,
+    `aggregate_ci_gate_failure_count=0`,
+    `frozen_sentinel_observed_gate_failure_count=0`,
+    `policy_comparison_unlocked=true`
+- 32B scenario-conditioned:
+  - summary:
+    `data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_scenario_conditioned_summary.json`
+  - manifest:
+    `data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_scenario_conditioned_manifest.json`
+  - unlock checks:
+    `primary_scenario_error_count=0`,
+    `primary_observed_gate_failure_count=0`,
+    `aggregate_observed_gate_failure_count=0`,
+    `aggregate_ci_gate_failure_count=0`,
+    `frozen_sentinel_observed_gate_failure_count=0`,
+    `policy_comparison_unlocked=true`
+
+### Open issues / next
+
+- write and lock the noisy policy-comparison preregistration before any
+  extracted-candidate policy run
+- do not implement the Bucket C abstention assay unless a future preregistered
+  result actually lands in Bucket C
+
 ## 2026-05-13 — Local unlock probe preregistered and runner parameterized
 
 ### What shipped
@@ -547,7 +618,7 @@
 - targeted dry-run completed with the Phase A rows plus 11 `general_v2` diagnostic rows
 - local Ollama tags were present: `qwen2.5:7b-instruct-q4_K_M` and `qwen2.5:32b-instruct-q4_K_M`; server version was `0.23.1`
 - an initial sandboxed run stopped because localhost Ollama access was blocked; the approved `--force` rerun completed and overwrote those placeholder Phase A artifacts
-- completed run output: `Wrote or reused 11 diagnostic rows in /Users/manav/code/consolidation-queue/data/results`
+- completed run output: `Wrote or reused 11 diagnostic rows in data/results`
 - summary artifact: `data/results/component_scoring_matrix_prompt_schema_diagnostic_general_v2_summary.json`
 - summary acceptance:
   - `branch_resolved=false`

@@ -1490,8 +1490,8 @@ def row_summary(result: GateRowResult) -> Dict[str, object]:
         ),
         "reused": result.reused,
         "paths": {
-            "predictions": str(result.paths.predictions),
-            "component_eval": str(result.paths.component_eval),
+            "predictions": _repo_relative_path(result.paths.predictions),
+            "component_eval": _repo_relative_path(result.paths.component_eval),
         },
         "expected_denominators_current_generator": expected_denominators_for_row(result.row),
         "scenario_error_count": int(result.component_artifact.get("scenario_error_count") or 0),
@@ -1619,7 +1619,7 @@ def dry_run_plan(
     return {
         "mode": "dry_run",
         "phase": "ci_aware_component_gate_decision",
-        "general_prompt_path": str(general_prompt_path),
+        "general_prompt_path": _repo_relative_path(general_prompt_path),
         "general_prompt_label": general_prompt_label,
         "primary_model_tag": primary_model_tag,
         "expected_primary_model_digest": PREREGISTERED_MODEL_DIGESTS[primary_model_tag],
@@ -2041,10 +2041,35 @@ def write_stop_report(output_dir: Path, error: matrix.StopConditionError) -> Pat
 
 
 def runner_command_for_invocation(argv: Optional[Sequence[str]]) -> str:
-    if argv is None:
-        return shlex.join([sys.executable, str(Path(__file__)), *sys.argv[1:]])
-    return shlex.join([sys.executable, str(Path(__file__)), *argv])
+    args = sys.argv[1:] if argv is None else argv
+    return shlex.join(
+        [
+            "python3",
+            _repo_relative_path(Path(__file__)),
+            *[_portable_command_argument(str(arg)) for arg in args],
+        ]
+    )
 
+
+def _portable_command_argument(arg: str) -> str:
+    if "=" in arg:
+        prefix, value = arg.split("=", 1)
+        portable_value = _portable_path_token(value)
+        if portable_value != value:
+            return "{}={}".format(prefix, portable_value)
+    return _portable_path_token(arg)
+
+
+def _portable_path_token(value: str) -> str:
+    if not value:
+        return value
+    try:
+        path = Path(value)
+    except (OSError, ValueError):
+        return value
+    if not path.is_absolute():
+        return value
+    return _repo_relative_path(path)
 
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
