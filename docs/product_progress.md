@@ -618,7 +618,7 @@
 - targeted dry-run completed with the Phase A rows plus 11 `general_v2` diagnostic rows
 - local Ollama tags were present: `qwen2.5:7b-instruct-q4_K_M` and `qwen2.5:32b-instruct-q4_K_M`; server version was `0.23.1`
 - an initial sandboxed run stopped because localhost Ollama access was blocked; the approved `--force` rerun completed and overwrote those placeholder Phase A artifacts
-- completed run output: `Wrote or reused 11 diagnostic rows in /Users/manav/code/consolidation-queue/data/results`
+- completed run output: `Wrote or reused 11 diagnostic rows in data/results`
 - summary artifact: `data/results/component_scoring_matrix_prompt_schema_diagnostic_general_v2_summary.json`
 - summary acceptance:
   - `branch_resolved=false`
