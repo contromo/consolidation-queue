@@ -54,6 +54,24 @@ Positive deltas are sign-normalized improvements for CQ.
 | `useful_pending_memory` | `answer_correctness` | +0.00 | +0.00 | +0.00 | no | +0.00 |
 | `memory_poisoning` | `poison_promotion_rate` | +0.00 | +0.00 | +0.00 | no | +0.00 |
 
+The forced-contradiction overshoot is the expected mechanism shape under this
+candidate stream: Reflection false-asserts on `56/60` held-out scenarios, while
+CQ holds false assertions at `0/60` through contestation/demotion.
+
+## Noisy Floor Discussion
+
+Source: `data/results/noisy_policy_comparison_summary.json` and the
+per-family `default` metrics CSVs.
+
+Three countable families collapse to exact CQ-vs-Reflection and CQ-vs-`Mem0Lite`
+ties: `scope_contamination`, `useful_pending_memory`, and `memory_poisoning`.
+The frozen sentinel also collapses to exact ties on all nine primary
+metric/comparator cells. This is not evidence that the policies are equivalent
+in oracle mode. It is an extraction-floor convergence result for the current
+noisy candidate stream: on these rows, the extracted candidates leave the
+policies with identical measured outcomes, so the policy comparison stops being
+informative before CQ-specific governance differences can surface.
+
 ## Descriptive-Only False Corroboration
 
 Source: `data/results/noisy_policy_comparison_summary.json`,
@@ -124,15 +142,20 @@ and
 
 The only saved Phase 2.5 oracle anchor in this repo for the Phase 4 frozen
 policy set is the frozen sentinel aggregate, so this gap table is intentionally
-limited to that anchor. Values are raw noisy metric minus raw oracle metric;
-negative is better for false assertion, poison promotion, and premature
+limited to that anchor and to the seven policies named in the preregistered
+oracle-vs-noisy gap predictions. Values are raw noisy metric minus raw oracle
+metric; negative is better for false assertion, poison promotion, and premature
 promotion, while positive is better for answer correctness.
 
 | Policy | false assertion gap | poison promotion gap | premature promotion gap | answer correctness gap |
 | --- | ---: | ---: | ---: | ---: |
-| `reflection_eager_write_lite` | -1.00 | +0.00 | +0.00 | +0.00 |
 | `consolidation_queue_lite` | -0.33 | +0.00 | +0.33 | -0.67 |
+| `reflection_eager_write_lite` | -1.00 | +0.00 | +0.00 | +0.00 |
 | `mem0_lite` | -0.33 | +0.00 | +0.00 | -0.67 |
+| `cq_no_contestation_demotion` | -0.67 | +0.00 | +0.33 | -0.33 |
+| `cq_no_wider_scope_pending_override` | -0.67 | +0.00 | +0.33 | -0.33 |
+| `cq_no_pending_lookup_use` | +0.00 | +0.00 | +0.33 | -0.33 |
+| `cq_no_source_independence_gate` | -0.33 | +0.00 | +0.13 | -0.67 |
 
 ## Writeup Direction
 
@@ -140,6 +163,8 @@ Bucket B fixes the noisy-mode interpretation as mixed, mechanism-local support:
 the extracted-candidate path preserves CQ's forced-contradiction advantage and
 a smaller preference-drift advantage, but it does not support broad noisy CQ
 superiority and it does not separate CQ from `Mem0Lite` on the frozen sentinel.
+The null rows should be read as current-extraction convergence first, not as a
+settled negative result about the underlying oracle policy mechanisms.
 
 The next research direction should be a focused Bucket B plan around the
 surviving countable mechanisms, especially forced contradiction and preference

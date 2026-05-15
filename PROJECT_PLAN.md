@@ -386,7 +386,7 @@ Required outcome:
 
 ### Phase 4: Noisy Local-Model Pipeline
 
-Status: completed locked noisy policy-comparison execution reached Bucket B on 2026-05-15. The 2026-05-14 32B primary gates unlocked under the local unlock probe's Bucket A branch, `docs/noisy_policy_comparison_preregistration.md` locked the extracted-candidate policy comparison, and both `default` and `scenario_conditioned` policy-comparison cells ran without preregistered aborts. CQ wins versus Reflection on forced contradiction and preference drift only, records no countable directional losses, ties `Mem0Lite` on all frozen sentinel primary metrics, and has no replicate contradictions. This is mechanism-local noisy support, not broad noisy CQ superiority.
+Status: completed locked noisy policy-comparison execution reached Bucket B on 2026-05-15. The 2026-05-14 32B primary gates unlocked under the local unlock probe's Bucket A branch, `docs/noisy_policy_comparison_preregistration.md` locked the extracted-candidate policy comparison, and both `default` and `scenario_conditioned` policy-comparison cells ran without preregistered aborts. CQ wins versus Reflection on forced contradiction and preference drift only, records no countable directional losses, ties `Mem0Lite` on all frozen sentinel primary metrics, and has no replicate contradictions. This is mechanism-local noisy support, not broad noisy CQ superiority. The exact-zero rows on scope contamination, useful pending memory, memory poisoning, and the frozen sentinel should be investigated as current-extraction convergence before being interpreted as policy-level negatives.
 
 Add:
 

@@ -241,6 +241,12 @@ def run_noisy_policy_comparison(
         schema_profiles=("default", "scenario_conditioned"),
         include_frozen_sentinel=include_frozen_sentinel,
     )
+    completed_runs = completed_cell_run_rows(
+        run_dir=run_dir,
+        output_dir=output_dir,
+        schema_profiles=("default", "scenario_conditioned"),
+        include_frozen_sentinel=include_frozen_sentinel,
+    )
     summary.update(
         {
             "mode": "noisy_policy_comparison_summary",
@@ -250,7 +256,9 @@ def run_noisy_policy_comparison(
             "prompt_sha256": LOCKED_PROMPT_SHA256,
             "runner_command": runner_command,
             "last_schema_profile_run": schema_profile,
-            "last_written_runs": written_runs,
+            "last_cell_runs": written_runs,
+            "last_written_runs": completed_runs,
+            "last_written_runs_scope": "all completed schema-profile cells currently present",
             "preregistration_lock_sha256": preregistration_lock_sha,
             "candidate_adapter_sha256": str(adapter_pin["candidate_adapter_sha256"]),
             "adapter_pin_path": _repo_relative_path(ADAPTER_PIN_PATH),
@@ -432,6 +440,41 @@ def aggregate_summary(
         },
         "bucket_decision": bucket,
     }
+
+
+def completed_cell_run_rows(
+    *,
+    run_dir: Path,
+    output_dir: Path,
+    schema_profiles: Sequence[str],
+    include_frozen_sentinel: bool,
+) -> List[Dict[str, str]]:
+    families = list(COMPONENT_FAMILIES)
+    if include_frozen_sentinel:
+        families.append(MECHANISM_DIVERSE_HELDOUT)
+    rows: List[Dict[str, str]] = []
+    for schema_profile in schema_profiles:
+        for family in families:
+            output_json = run_dir / "noisy_policy_comparison_{}_{}.json".format(
+                family,
+                schema_profile,
+            )
+            output_csv = output_dir / "noisy_policy_comparison_{}_{}_metrics.csv".format(
+                family,
+                schema_profile,
+            )
+            manifest = output_json.with_name("{}_manifest.json".format(output_json.stem))
+            if output_json.exists() and output_csv.exists() and manifest.exists():
+                rows.append(
+                    {
+                        "family": family,
+                        "schema_profile": schema_profile,
+                        "run_json": _repo_relative_path(output_json),
+                        "metrics_csv": _repo_relative_path(output_csv),
+                        "manifest": _repo_relative_path(manifest),
+                    }
+                )
+    return rows
 
 
 def _load_profile_artifacts(

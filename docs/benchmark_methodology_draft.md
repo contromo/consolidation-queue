@@ -227,8 +227,15 @@ Readout:
 - Bucket B fires under the preregistered precedence rules
 - CQ wins versus Reflection on `forced_contradiction` with delta `+0.93`,
   LCB `+0.88`, and on `preference_drift` with delta `+0.13`, LCB `+0.07`
+- the forced-contradiction headline reflects a stark mechanism split:
+  Reflection false-asserts on `56/60` noisy held-out scenarios while CQ records
+  `0/60` false assertions through contestation/demotion
 - CQ records no directional losses versus Reflection on the five countable
   primary metrics
+- `scope_contamination`, `useful_pending_memory`, `memory_poisoning`, and the
+  frozen sentinel collapse to exact policy ties on the primary metrics,
+  suggesting current-extraction convergence where the noisy candidate stream
+  stops exposing policy differences
 - CQ is non-inferior to `Mem0Lite` on the frozen sentinel primary metrics, but
   has no frozen superiority row because every CQ-vs-`Mem0Lite` frozen primary
   delta is `+0.00`
@@ -238,8 +245,10 @@ Readout:
 
 Supported claim: same-candidate-stream, same-substrate, component-gated policy
 isolation produces mechanism-local noisy support for CQ on forced contradiction
-and preference drift. Unsupported claim: broad noisy CQ superiority or noisy
-separation from `Mem0Lite` on the frozen sentinel.
+and preference drift. Secondary methodological claim: the null rows expose an
+extraction-floor convergence mode that makes some policy comparisons
+uninformative under the current noisy stream. Unsupported claim: broad noisy CQ
+superiority or noisy separation from `Mem0Lite` on the frozen sentinel.
 
 ## 6. Local Unlock Probe
 

@@ -25,10 +25,16 @@
   same-candidate-stream, same-substrate, component-gated isolation contract
 - the result is mixed rather than broadly positive: CQ wins versus Reflection
   on forced contradiction and preference drift only
+- the forced-contradiction win is stark because Reflection false-asserts on
+  `56/60` noisy held-out scenarios while CQ records `0/60`
+- the null rows are themselves informative: scope contamination, useful
+  pending memory, memory poisoning, and the frozen sentinel collapse to exact
+  primary-metric ties under the current extracted candidate stream
 - CQ records no countable directional losses and the replicate contradicts no
   primary win, but frozen sentinel superiority over `Mem0Lite` does not appear
-- Bucket B routes follow-up work toward mechanism-local analysis instead of
-  external transfer or new benchmark families
+- Bucket B routes follow-up work toward mechanism-local analysis and
+  extraction-floor diagnosis instead of external transfer or new benchmark
+  families
 
 ### Evidence
 
@@ -43,6 +49,9 @@
 - primary bucket:
   Bucket B; CQ wins versus Reflection on `forced_contradiction`
   (`+0.93`, LCB `+0.88`) and `preference_drift` (`+0.13`, LCB `+0.07`)
+- convergence rows:
+  `scope_contamination`, `useful_pending_memory`, `memory_poisoning`, and all
+  frozen sentinel primary metrics have exact `+0.00` CQ-vs-comparator deltas
 - adapter audit:
   14 manifests, 726 candidate-stream rows, max scenario adapter drop rate
   `0.00`
@@ -52,7 +61,8 @@
 - write a focused Bucket B follow-up plan around forced contradiction and
   preference drift
 - inspect noisy failure examples and frozen oracle-vs-noisy gaps for the tied
-  countable rows before proposing any new mechanism work
+  countable rows before proposing any new mechanism work or treating the nulls
+  as policy-level negatives
 - keep `CQDatedContestation`, Bucket C abstention, and transfer benchmarks out
   of scope until separately preregistered
 
