@@ -56,9 +56,16 @@ regenerated run JSON artifact hash differed:
 | Run JSON SHA | `342fc97d15c51f315347597a0f278de089e5961a2f7e3f32d06be71147a7f479` | `1ba32e009b1903b94989d4c1ef05d82575499fb40dcd44ce5d016c3992e7cbd9` |
 | Manifest SHA | `03d9715cae2e34ab639a9c17f638787aff3128ce56cb4eb21846c63c7ee5f8af` | `552b3c82fcc3073cfe98f6e1457d0bcfbb7d0b78a7d17731b1c0c8015618ec42` |
 
-This suggests that the locked CQR replay requires byte-identical run JSON
-regeneration even though the noisy run artifact includes volatile lifecycle
-detail. Under the locked audit rules, this remains Bucket D rather than a
+The root cause of the detached-worktree run JSON drift is path-sensitive
+artifact content: the run JSON embeds an absolute `predictions_path`. Replaying
+twice from the same detached path produced byte-identical forced-contradiction
+run JSONs, but the byte size differed from the committed manifest by the exact
+length difference between the original repository path and the detached
+worktree path. This explains the locked-worktree run JSON SHA mismatch. The
+current-`main` replay adds a separate mismatch source because the live adapter
+SHA and `git_commit` differ from the locked Phase 4 manifests.
+
+Under the locked audit rules, either mismatch remains Bucket D rather than a
 recoverable metric readout.
 
 ## Interpretation Boundary
@@ -69,6 +76,9 @@ recoverable metric readout.
   supported by 32B artifact evidence.
 - Do not update the methodology draft's Discussion or Limits as if CQR settled
   attribution.
-- Any future CQR attempt needs a separately documented deterministic-replay or
-  manifest-normalization fix before rerunning; it must not relock thresholds,
-  prompts, validators, adapters, policies, or the shared substrate.
+- Any future CQR attempt needs a separately documented path-normalization or
+  manifest-normalization fix before rerunning. The repair should normalize or
+  exclude absolute `predictions_path` from byte-stability checks while
+  preserving stable checks for metrics, candidate-stream hashes, adapter
+  identity, model digest, prompts, and preregistration locks. It must not relock
+  thresholds, prompts, validators, adapters, policies, or the shared substrate.

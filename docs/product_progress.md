@@ -20,10 +20,10 @@
 - the methodology draft promotion is blocked by the plan's own Bucket D branch;
   the draft should not claim canonical-id/query-resolution attribution until a
   valid non-abort audit result exists
-- investigation showed the current `main` replay changes locked manifest
-  metadata, while a detached locked-Phase-4 worktree preserves the adapter and
-  metric hashes but still differs on the regenerated run JSON hash; future CQR
-  work must address deterministic replay or manifest normalization explicitly
+- investigation showed the current `main` replay changes locked adapter/git
+  metadata, while a detached locked-Phase-4 worktree preserves the adapter,
+  metric, and candidate-stream hashes but still differs on the regenerated run
+  JSON hash because the artifact embeds an absolute `predictions_path`
 
 ### Evidence
 
@@ -38,8 +38,8 @@
 
 - do not promote `docs/benchmark_methodology_draft.md` to arXiv-report form
   until CQR emits Bucket A/B/C or the report explicitly treats CQR as an abort
-- preregister or narrowly document a deterministic-replay repair for CQR that
-  separates stable policy artifacts from volatile run JSON lifecycle details
+- preregister or narrowly document a path-normalization repair for CQR that
+  separates stable policy artifacts from absolute-path-sensitive run JSON fields
 - keep prompt, threshold, validator, adapter, policy, and substrate changes out
   of this repair unless they are separately preregistered as a new experiment
 
