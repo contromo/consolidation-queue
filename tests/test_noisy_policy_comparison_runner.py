@@ -178,6 +178,27 @@ class NoisyPolicyComparisonRunnerTests(unittest.TestCase):
         self.assertEqual(context.exception.reason, "adapter_drop_rate_exceeded")
         self.assertEqual(context.exception.details["adapter_drop_count"], 1)
 
+    def test_dirty_pre_run_status_uses_hardened_git_helper(self) -> None:
+        original = noisy.working_tree_status_short
+        noisy.working_tree_status_short = lambda: " M changed.py\n"
+        try:
+            with self.assertRaises(noisy.StopConditionError) as context:
+                noisy.run_noisy_policy_comparison(
+                    output_dir=Path("/tmp/cq-results"),
+                    run_dir=Path("/tmp/cq-runs"),
+                    predictions_dir=Path("/tmp/cq-predictions"),
+                    primary_model_tag=noisy.LOCKED_MODEL_TAG,
+                    schema_profile="default",
+                    include_frozen_sentinel=True,
+                    policy_set="phase2_5",
+                    runner_command="python3 scripts/run_noisy_policy_comparison.py",
+                )
+        finally:
+            noisy.working_tree_status_short = original
+
+        self.assertEqual(context.exception.reason, "dirty_pre_run_working_tree")
+        self.assertEqual(context.exception.details["working_tree_status"], " M changed.py\n")
+
     def test_component_gate_recheck_stops_on_quality_regression(self) -> None:
         originals = (
             noisy.load_extracted_predictions,

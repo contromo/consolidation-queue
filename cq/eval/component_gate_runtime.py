@@ -243,7 +243,11 @@ def git_commit() -> str:
 
 
 def working_tree_status() -> str:
-    return "clean" if not _git_output(["status", "--short"]) else "dirty"
+    return "clean" if not working_tree_status_short() else "dirty"
+
+
+def working_tree_status_short() -> str:
+    return _git_output(["status", "--short"])
 
 
 def _git_output(args: Sequence[str]) -> str:

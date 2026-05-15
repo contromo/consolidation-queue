@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import json
 import shlex
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,6 +29,7 @@ from cq.eval.component_gate_runtime import (  # noqa: E402
     verify_primary_model_backend,
     verify_required_anchor_before_probe,
     working_tree_status,
+    working_tree_status_short,
 )
 from cq.eval.extracted_candidate_runner import (  # noqa: E402
     ADAPTER_PIN_PATH,
@@ -154,10 +154,11 @@ def run_noisy_policy_comparison(
             "unsupported_primary_model_tag",
             {"observed": primary_model_tag, "expected": LOCKED_MODEL_TAG},
         )
-    if working_tree_status() != "clean":
+    pre_run_status = working_tree_status_short()
+    if pre_run_status:
         raise StopConditionError(
             "dirty_pre_run_working_tree",
-            {"working_tree_status": subprocess.check_output(["git", "status", "--short"], text=True, cwd=REPO_ROOT)},
+            {"working_tree_status": pre_run_status},
         )
     backend = verify_primary_model_backend(
         primary_model_tag,
