@@ -247,7 +247,36 @@ def working_tree_status() -> str:
 
 
 def _git_output(args: Sequence[str]) -> str:
-    return subprocess.check_output(["git", *args], text=True, cwd=REPO_ROOT).strip()
+    command = ["git", *args]
+    try:
+        completed = subprocess.run(
+            command,
+            text=True,
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+        )
+    except FileNotFoundError as error:
+        raise GateRuntimeError(
+            "git_unavailable",
+            {
+                "command": command,
+                "cwd": str(REPO_ROOT),
+                "message": str(error),
+            },
+        ) from error
+    except subprocess.CalledProcessError as error:
+        raise GateRuntimeError(
+            "git_command_failed",
+            {
+                "command": command,
+                "cwd": str(REPO_ROOT),
+                "returncode": error.returncode,
+                "stdout": error.stdout or "",
+                "stderr": error.stderr or "",
+            },
+        ) from error
+    return completed.stdout.strip()
 
 
 def _read_json(path: Path) -> Dict[str, object]:
