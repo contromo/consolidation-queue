@@ -1,5 +1,48 @@
 # Product Progress
 
+## 2026-05-15 — Canonical-id resolution audit aborts under locked replay
+
+### What happened
+
+- ran the locked CQR audit command after confirming the worktree was clean and
+  `qwen2.5:32b-instruct-q4_K_M` was installed locally
+- the first sandboxed attempt stopped before replay because localhost access to
+  Ollama was blocked for model digest verification
+- after local Ollama access was allowed, the official replay aborted with
+  Bucket D: `locked_input_sha_mismatch` on
+  `data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json`
+- recorded the abort in `docs/canonical_id_resolution_audit_results.md`
+
+### Why it matters
+
+- CQR did not emit an A/B/C result, so the Phase 4 null rows remain
+  unattributed as in `docs/noisy_policy_mechanism_audit.md`
+- the methodology draft promotion is blocked by the plan's own Bucket D branch;
+  the draft should not claim canonical-id/query-resolution attribution until a
+  valid non-abort audit result exists
+- investigation showed the current `main` replay changes locked manifest
+  metadata, while a detached locked-Phase-4 worktree preserves the adapter and
+  metric hashes but still differs on the regenerated run JSON hash; future CQR
+  work must address deterministic replay or manifest normalization explicitly
+
+### Evidence
+
+- lock check:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_canonical_id_resolution_audit.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --check-lock-only`
+- official stop report:
+  `data/results/canonical_id_resolution_audit_stop.json`
+- abort report:
+  `docs/canonical_id_resolution_audit_results.md`
+
+### Open issues / next
+
+- do not promote `docs/benchmark_methodology_draft.md` to arXiv-report form
+  until CQR emits Bucket A/B/C or the report explicitly treats CQR as an abort
+- preregister or narrowly document a deterministic-replay repair for CQR that
+  separates stable policy artifacts from volatile run JSON lifecycle details
+- keep prompt, threshold, validator, adapter, policy, and substrate changes out
+  of this repair unless they are separately preregistered as a new experiment
+
 ## 2026-05-15 — Canonical-id resolution audit locks CQR follow-up
 
 ### What shipped
@@ -37,10 +80,9 @@
 
 ### Open issues / next
 
-- run the full audit replay from a clean worktree with the locked 32B Ollama
-  cell available
-- publish `docs/canonical_id_resolution_audit_results.md` and the generated
-  result artifacts only after that clean replay
+- superseded by the later 2026-05-15 Bucket D abort entry above
+- do not treat the preregistered CQR follow-up as executed successfully until
+  the deterministic-replay issue is resolved and a non-abort result is emitted
 
 ## 2026-05-15 — Bucket B mechanism audit locks attribution
 
