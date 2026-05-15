@@ -51,6 +51,7 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
                 "useful-pending-project-command",
             )
         )
+        self.assertTrue(audit.alias_match("project-foo-bar", "foo-bar"))
 
     def test_family_metrics_cover_exact_scope_alias_and_cross_tab(self) -> None:
         run_data = {
@@ -103,6 +104,144 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
         self.assertEqual(cq_tab["hit_failure"], 1)
         self.assertEqual(cq_tab["miss_failure"], 1)
         self.assertAlmostEqual(cq_tab["lift"], 2 / 3)
+        self.assertEqual(
+            cq_tab["answer_success_definition"]["metric"],
+            "answer_correctness",
+        )
+
+    def test_multi_candidate_set_membership_counts_one_question_hit(self) -> None:
+        run_data = {
+            "family": "preference_drift",
+            "policies": [
+                self._policy(
+                    audit.CQ_POLICY,
+                    [
+                        self._scenario(
+                            "s1",
+                            ["other-slot", "target-slot"],
+                            "target-slot",
+                            "user",
+                            "user-a",
+                        )
+                    ],
+                )
+            ],
+        }
+
+        metrics = audit.compute_family_metrics("preference_drift", run_data)
+
+        self.assertEqual(metrics["question_traces_with_relevant_id"], 1)
+        self.assertEqual(metrics["cqr_exact_matches"], 1)
+        self.assertEqual(metrics["cqr_alias_matches"], 1)
+
+    def test_primary_metric_failures_are_family_specific(self) -> None:
+        scenario = self._scenario(
+            "s1",
+            "poison-alpha",
+            "poison-alpha",
+            "project",
+            "project-a",
+            failures=[
+                {
+                    "failure_type": "incorrect_answer",
+                    "reason": "gold_candidate_not_resolved",
+                },
+                {
+                    "failure_type": "premature_promotion",
+                    "reason": "poison_candidate_promoted",
+                },
+            ],
+        )
+        policy = self._policy(audit.CQ_POLICY, [scenario])
+
+        memory_failures = audit.policy_primary_metric_failures(
+            policy,
+            "memory_poisoning",
+        )
+        forced_failures = audit.policy_primary_metric_failures(
+            policy,
+            "forced_contradiction",
+        )
+
+        self.assertEqual(memory_failures, {"s1": {"s1-q"}})
+        self.assertEqual(forced_failures, {})
+
+    def test_cross_tab_aborts_on_policy_scenario_mismatch(self) -> None:
+        cq_scenarios = {
+            "cq-s1": self._scenario(
+                "cq-s1",
+                "slot-a",
+                "slot-a",
+                "project",
+                "project-a",
+            )
+        }
+        policy = self._policy(
+            audit.CQ_POLICY,
+            [
+                self._scenario(
+                    "other-s1",
+                    "slot-a",
+                    "slot-a",
+                    "project",
+                    "project-a",
+                )
+            ],
+        )
+
+        with self.assertRaises(audit.AuditAbort) as cm:
+            audit.policy_cross_tab("useful_pending_memory", policy, cq_scenarios)
+
+        self.assertEqual(cm.exception.reason, "policy_scenario_stream_mismatch")
+
+    def test_prediction_outcome_operators_and_bucket_b_path(self) -> None:
+        self.assertTrue(
+            audit.prediction_passes(
+                0.20,
+                audit.ALIAS_CQR_PREDICTIONS["useful_pending_memory"],
+            )
+        )
+        self.assertTrue(
+            audit.prediction_passes(
+                0.35,
+                audit.ALIAS_CQR_PREDICTIONS["scope_contamination"],
+            )
+        )
+        self.assertTrue(
+            audit.prediction_passes(
+                0.40,
+                audit.ALIAS_CQR_PREDICTIONS["preference_drift"],
+            )
+        )
+
+        families = {
+            "useful_pending_memory": {
+                "predictions": {
+                    "alias_prediction_pass": True,
+                    "false_positive_cap_pass": True,
+                    "cq_cross_tab_pass": True,
+                }
+            },
+            "memory_poisoning": {
+                "predictions": {
+                    "alias_prediction_pass": False,
+                    "false_positive_cap_pass": True,
+                    "cq_cross_tab_pass": True,
+                }
+            },
+        }
+
+        self.assertEqual(audit.classify_bucket(families)["bucket"], "B")
+
+    def test_prediction_dict_matches_preregistration_table_rows(self) -> None:
+        block = audit.extract_between(
+            audit.PREREGISTRATION_PATH.read_text(encoding="utf-8"),
+            audit.PREDICTIONS_BLOCK_START,
+            audit.PREDICTIONS_BLOCK_END,
+        )
+
+        self.assertIn("| `useful_pending_memory` | `>= 0.40` | +/- 0.20 | `<= 0.05` |", block)
+        self.assertIn("| `preference_drift` | `0.25-0.60` | inside band | `<= 0.10` |", block)
 
     def test_alias_false_positive_rate_uses_same_scenario_questions(self) -> None:
         scenarios = {
@@ -188,16 +327,19 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
         trace_scope_level=None,
         trace_scope_key=None,
         failure=False,
+        failures=None,
     ):
         question_id = f"{scenario_id}-q"
+        candidate_ids = candidate_id if isinstance(candidate_id, list) else [candidate_id]
         return {
             "scenario_id": scenario_id,
             "extracted_candidate_stream": [
                 {
-                    "canonical_id": candidate_id,
+                    "canonical_id": item,
                     "scope_level": candidate_scope_level,
                     "scope_key": candidate_scope_key,
                 }
+                for item in candidate_ids
             ],
             "question_traces": [
                 {
@@ -210,7 +352,16 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
             "failure_examples": (
                 [
                     {
+                        **failure_payload,
+                        "question_id": question_id,
+                    }
+                    for failure_payload in failures
+                ]
+                if failures is not None
+                else [
+                    {
                         "failure_type": "incorrect_answer",
+                        "reason": "gold_candidate_not_resolved",
                         "question_id": question_id,
                     }
                 ]

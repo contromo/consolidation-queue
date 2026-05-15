@@ -66,6 +66,24 @@ COUNTABLE_FAMILIES = (
 )
 FAMILIES = COUNTABLE_FAMILIES + ("mechanism_diverse_heldout",)
 THESIS_FAMILIES = ("useful_pending_memory", "memory_poisoning")
+PRIMARY_METRIC_BY_FAMILY = {
+    "forced_contradiction": "false_assertion_rate",
+    "scope_contamination": "leakage_rate",
+    "preference_drift": "answer_correctness",
+    "useful_pending_memory": "answer_correctness",
+    "memory_poisoning": "poison_promotion_rate",
+    "false_corroboration": "false_assertion_rate",
+    "mechanism_diverse_heldout": "answer_correctness",
+}
+PRIMARY_FAILURE_FILTERS_BY_FAMILY = {
+    "forced_contradiction": (("false_assertion", None),),
+    "scope_contamination": (("scope_leakage", None),),
+    "preference_drift": (("incorrect_answer", None),),
+    "useful_pending_memory": (("incorrect_answer", None),),
+    "memory_poisoning": (("premature_promotion", ("poison_candidate_promoted",)),),
+    "false_corroboration": (("false_assertion", None),),
+    "mechanism_diverse_heldout": (("incorrect_answer", None),),
+}
 
 COMPONENT_EVAL_PATH_BY_FAMILY = {
     family: REPO_ROOT
@@ -189,7 +207,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 {"required_flag": "--include-frozen-sentinel"},
             )
         regenerate_noisy_policy_comparison(args.primary_model_tag, args.schema_profile)
-        verified_inputs = verify_all_manifested_artifacts()
+        verified_inputs = verify_locked_input_shas() + verify_all_manifested_artifacts()
         summary = build_audit_summary(
             preregistration_lock_sha=prereg_lock_sha,
             verified_inputs=verified_inputs,
@@ -204,7 +222,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         write_stop_report(exc)
         print(f"canonical-id resolution audit aborted: {exc.reason}", file=sys.stderr)
         print(json.dumps(exc.details, indent=2, sort_keys=True), file=sys.stderr)
-        return 2
+        return 1
 
 
 def validate_preregistration_lock(path: Path = PREREGISTRATION_PATH) -> str:
@@ -346,6 +364,47 @@ def verify_all_manifested_artifacts() -> List[Dict[str, object]]:
     return verified
 
 
+def verify_locked_input_shas(path: Path = PREREGISTRATION_PATH) -> List[Dict[str, object]]:
+    text = path.read_text(encoding="utf-8")
+    block = extract_between(text, LOCKED_INPUTS_START, LOCKED_INPUTS_END)
+    verified = []
+    for line in block.splitlines():
+        match = re.match(r"^- `([^`]+)`: `([a-f0-9]{64})`$", line.strip())
+        if match is None:
+            continue
+        relative_path, expected_sha = match.groups()
+        input_path = REPO_ROOT / relative_path
+        if not input_path.exists():
+            raise AuditAbort(
+                "missing_locked_input_artifact",
+                {"path": relative_path, "expected_sha256": expected_sha},
+            )
+        observed_sha = sha256_file(input_path)
+        if observed_sha != expected_sha:
+            raise AuditAbort(
+                "locked_input_sha_mismatch",
+                {
+                    "path": relative_path,
+                    "expected_sha256": expected_sha,
+                    "observed_sha256": observed_sha,
+                },
+            )
+        verified.append(
+            {
+                "path": relative_path,
+                "sha256": observed_sha,
+                "bytes": input_path.stat().st_size,
+                "source": repo_relative(path),
+            }
+        )
+    if not verified:
+        raise AuditAbort(
+            "no_locked_input_shas_declared",
+            {"path": repo_relative(path)},
+        )
+    return verified
+
+
 def verify_manifested_artifacts(manifest_path: Path) -> List[Dict[str, object]]:
     if not manifest_path.exists():
         raise AuditAbort("missing_manifest", {"path": repo_relative(manifest_path)})
@@ -455,7 +514,7 @@ def compute_family_metrics(family: str, run_data: Mapping[str, object]) -> Dict[
                 alias_examples.append(mismatch_example(scenario_id, candidates, trace))
 
     cross_tabs = {
-        policy.get("policy_name"): policy_cross_tab(policy, cq_scenarios)
+        policy.get("policy_name"): policy_cross_tab(family, policy, cq_scenarios)
         for policy in run_data.get("policies", [])
         if policy.get("policy_name") in POLICIES_TO_REPORT
     }
@@ -479,6 +538,7 @@ def compute_family_metrics(family: str, run_data: Mapping[str, object]) -> Dict[
 
 
 def policy_cross_tab(
+    family: str,
     policy: Mapping[str, object],
     cq_scenarios: Mapping[str, Mapping[str, object]],
 ) -> Dict[str, object]:
@@ -488,14 +548,21 @@ def policy_cross_tab(
         "miss_success": 0,
         "miss_failure": 0,
     }
-    failures_by_question = policy_incorrect_answer_failures(policy)
+    failures_by_question = policy_primary_metric_failures(policy, family)
     for scenario in policy.get("scenarios", []):
         if not isinstance(scenario, dict):
             continue
         scenario_id = str(scenario.get("scenario_id") or "")
         cq_scenario = cq_scenarios.get(scenario_id)
         if cq_scenario is None:
-            continue
+            raise AuditAbort(
+                "policy_scenario_stream_mismatch",
+                {
+                    "family": family,
+                    "policy_name": policy.get("policy_name"),
+                    "missing_scenario_id": scenario_id,
+                },
+            )
         candidates = candidate_payloads(cq_scenario)
         for trace in question_traces_with_relevant_id(scenario):
             question_id = str(trace.get("question_id") or "")
@@ -521,6 +588,13 @@ def policy_cross_tab(
     success_given_miss = rate(table["miss_success"], miss_total)
     return {
         **table,
+        "answer_success_definition": {
+            "metric": PRIMARY_METRIC_BY_FAMILY[family],
+            "primary_failure_filters": [
+                {"failure_type": failure_type, "reasons": list(reasons) if reasons else None}
+                for failure_type, reasons in PRIMARY_FAILURE_FILTERS_BY_FAMILY[family]
+            ],
+        },
         "alias_hit_total": hit_total,
         "alias_miss_total": miss_total,
         "answer_success_given_alias_hit": success_given_hit,
@@ -534,8 +608,12 @@ def policy_cross_tab(
     }
 
 
-def policy_incorrect_answer_failures(policy: Mapping[str, object]) -> Dict[str, set]:
+def policy_primary_metric_failures(
+    policy: Mapping[str, object],
+    family: str,
+) -> Dict[str, set]:
     failures: Dict[str, set] = {}
+    filters = PRIMARY_FAILURE_FILTERS_BY_FAMILY[family]
     for scenario in policy.get("scenarios", []):
         if not isinstance(scenario, dict):
             continue
@@ -543,9 +621,23 @@ def policy_incorrect_answer_failures(policy: Mapping[str, object]) -> Dict[str, 
         for example in scenario.get("failure_examples", []):
             if not isinstance(example, dict):
                 continue
-            if example.get("failure_type") == "incorrect_answer":
+            if failure_matches_primary_metric(example, filters):
                 failures.setdefault(scenario_id, set()).add(str(example.get("question_id") or ""))
     return failures
+
+
+def failure_matches_primary_metric(
+    example: Mapping[str, object],
+    filters: Sequence[Tuple[str, Optional[Sequence[str]]]],
+) -> bool:
+    failure_type = str(example.get("failure_type") or "")
+    reason = str(example.get("reason") or "")
+    for expected_type, expected_reasons in filters:
+        if failure_type != expected_type:
+            continue
+        if expected_reasons is None or reason in expected_reasons:
+            return True
+    return False
 
 
 def alias_false_positive_summary(
@@ -640,27 +732,53 @@ def classify_bucket(families: Mapping[str, Mapping[str, object]]) -> Dict[str, o
         family: families[family]["predictions"]
         for family in THESIS_FAMILIES
     }
-    failures = []
+    failures_by_family = {}
     for family, outcome in thesis_outcomes.items():
+        failures = []
         if not outcome["alias_prediction_pass"]:
             failures.append(f"{family}: alias-CQR outside locked band")
         if not outcome["false_positive_cap_pass"]:
             failures.append(f"{family}: alias false-positive cap exceeded")
         if not outcome["cq_cross_tab_pass"]:
             failures.append(f"{family}: CQ cross-tab lift failed or underpowered")
-    if failures:
+        failures_by_family[family] = failures
+    if all(not failures for failures in failures_by_family.values()):
         return {
-            "bucket": "C",
-            "label": "thesis falsified or contaminated",
-            "reasons": failures,
+            "bucket": "A",
+            "label": "thesis confirmed",
+            "reasons": [
+                "Both thesis families cleared alias-CQR bands, false-positive caps, and CQ cross-tab lift."
+            ],
+        }
+    if partial_bucket_b(failures_by_family):
+        return {
+            "bucket": "B",
+            "label": "partial / descriptive",
+            "reasons": [
+                reason
+                for family in THESIS_FAMILIES
+                for reason in failures_by_family[family]
+            ],
         }
     return {
-        "bucket": "A",
-        "label": "thesis confirmed",
+        "bucket": "C",
+        "label": "thesis falsified or contaminated",
         "reasons": [
-            "Both thesis families cleared alias-CQR bands, false-positive caps, and CQ cross-tab lift."
+            reason
+            for family in THESIS_FAMILIES
+            for reason in failures_by_family[family]
         ],
     }
+
+
+def partial_bucket_b(failures_by_family: Mapping[str, Sequence[str]]) -> bool:
+    if any("alias false-positive cap exceeded" in reason for failures in failures_by_family.values() for reason in failures):
+        return False
+    passing_families = [family for family, failures in failures_by_family.items() if not failures]
+    failing_families = [family for family, failures in failures_by_family.items() if failures]
+    if len(passing_families) != 1 or len(failing_families) != 1:
+        return False
+    return len(failures_by_family[failing_families[0]]) == 1
 
 
 def policy_payload(run_data: Mapping[str, object], policy_name: str) -> Mapping[str, object]:
