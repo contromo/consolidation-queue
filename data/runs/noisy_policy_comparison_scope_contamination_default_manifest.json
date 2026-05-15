@@ -1,0 +1,513 @@
+{
+  "archive_status": "regeneratable_only",
+  "artifacts": [
+    {
+      "bytes": 15081724,
+      "path": "data/runs/noisy_policy_comparison_scope_contamination_default.json",
+      "sha256": "62cafcb495892b905aeba848070c517a5171bddeec69fa6c2abfdd9d0bef84b0"
+    },
+    {
+      "bytes": 15189,
+      "path": "data/results/noisy_policy_comparison_scope_contamination_default_metrics.csv",
+      "sha256": "4af49c088089c68b7a0361ad4de70ffc14ce4d3d3714e484f581d021d1b786d7"
+    }
+  ],
+  "candidate_adapter_sha256": "4f1fc0f8f67ea6246268933f14fb0f20b514475b37153b4af0d29a8178c34de9",
+  "candidate_stream_sha256": [
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "dc299309b9fc99b1ec94d684e22f8a0bbe019f4f3438dead56aebdc21a3da606",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_001"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "71cd16ccb9543b6efa1ca3a65b88c11a52600484a05f046d745c7cd6585860c9",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_002"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "ce68dec7fb03d5b75dc3f1bc3f2e911a959ca8335d7df6d14496499b9db840ef",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_003"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "c3212bd47f93c39d6c9f0b849aebc47d7d36822e541d660f37237095367f0ff8",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_004"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "24b51670578b2bcb756b6d14f451fc77672aa945710b8df7a967b7ac7774b0e3",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_005"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "9e9a2ee4c7171975ba03e3ae59fbf65cb078c47e37c7d9d776725cf1eba7cb86",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_006"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "bac3b702a37d2f81e72e72e578a1911ca5f996d10438e531ebb7553d24e69ced",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_007"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "84593fecaa8767b7fd0b041a8b7456cad882405c43b6057337fa027a1297d8d4",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_008"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "db080b18cea60e76b24d45c59b028709bea561e6f7968201177fea020112c5f2",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_009"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "8bf460ce2458127c1bce5741e75da28896cf2343f18e1c6f0a2ee1031c13da31",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_010"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "beff0daa3e3e59cf69bdea7e461bee9271602a07f22c0e8fa4b89baedbe9585b",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_011"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "1cfc9226621adcc11556024847661d2d7171fceed8feda0280aa387a59d0660e",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_012"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "32fc39192fb035ca453cd494273c5a92dce53466e697041eda5c104143309522",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_013"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "d5214efe000fb36e3db8179e79930f237a50672e2cdf5035ab8192e2ef72080c",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_014"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "16a111b63153429185f368a2b577334693346ad15cb806663485b1e06e025038",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_015"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "ac8ae016d1d591a6395a8304c05e4ca3ede97346841ceb0ba06c2d7fc48241d9",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_016"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "25abaf954da8b9b1a24e8b179ddfc151b6ebf07805b7249f9d9271f5231e55ad",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_017"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "7a03dd376a6e9c2001478d2d6d46d5d043e9207fe830da7c28bcf186a31d5500",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_018"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "aca9b5246c14857dcc40d79ff6aacdf352a960ccac3c1b905d13f96038add34d",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_019"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "fdfeb09e9e193a10a3d69efa62ddbaf985955bf31819451dbf955691a4ba454c",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_020"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "f2fbbc5668280ca47f0246b998a416681229a732491597b7e056ff71ba7522b8",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_021"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "411bf59a9ff68b693e84cff855aec84e63fb38d6bcca9e8a827ef43b3e34f1f8",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_022"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "fd19efa91e74387db4dd9275041ce7c5dd4836973b5daabe9a1cf79b57eb7116",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_023"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "d1e84141e6ccd9189e9a4bbc6f8e6e627bd129070294921d18989e1316c37e68",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_024"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "33a018539c0d89b8104b187e518e638ec634add771dcf7da3e8b8680a1b9124f",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_025"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "a07f4149206c1a92dc7dfac82ae8834f22c625d71d5115ccaccb3bdd3e342832",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_026"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "b75c1fab0a437bd3ef2f951e5d30dc1b32b692471286ef8df1a2c01cf203bc06",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_027"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "53ddd6e213056a88265794a7a9e11d00c406087c75d3b1a7e38fea540fd276e4",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_028"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "5f2b8426a85819f6fdaaae799444884130f71d12327eed6c2f6584ae3ae00a90",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_029"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "799edb462744dc28c703609f4eac61692b0e244823ca6e8707bad9d804e2d4a8",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_030"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "7f7384fc00be543df5f76e8b0591ceb7681225f2d1f22d949fe3b36e98c6aafa",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_031"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "e36fdf7fc9693a7f566f005d32721181ed099c1d3121361a5e646606adb1f8eb",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_032"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "0c2bb3efd4b6039f15cb99cc29296419bc48a4ad51fdb2e155733b819a33fd15",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_033"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "c9b89c876ac120b9c47d01a3630e567c506c9fd8d664b2d5baf4cc7ebad6d1d7",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_034"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "d9ec783b9d4d08f01208277f3f4c16ca1c443a1075ed1121ef93d5af65847e46",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_035"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "08d74f5eafbbb1e015deb1d1961e7ab70d685791976d2e5ab0fdc7971cae9384",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_036"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "dfcce159ce176517db4a374bb9cdf15b1c90aa38afc9d506d3ed89043c137ef7",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_037"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "458092ff52967367087ea2333ccd5aa81f7e01c70e6daa67dde0177e00e86140",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_038"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "67a3465b5baebe37db90a6872ffd0d763a1f892b837b47f098eb260ab7944841",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_039"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "3cda09759a9dc8de7f3d13f0f6579ee5a370fa3e7ca605b32ab291a4c511e912",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_040"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "c6ae774080c1f6c6248e3d9f74afd6413f650589e4f51ff6ba69967e64e8a2e6",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_041"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "c035aef952991afead8eb342d57b36f3d1a57e9ecfd2840dbee12b57e056b5d9",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_042"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "994ed3b185aa133481be2ea321f158a6c7c58ae682a4d33be886403b557c8942",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_043"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "09433abaaf347bf0bdcde9f15a51e04ea284af3a18bcc89832bbeae4f0b01095",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_044"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "5f701cac5fd1a3352270ecbeabe688c68c6422d5752b18c58aea1abb3acf1376",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_045"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "e208926d24ead3936ce51ef5101bba992d05e1e9bef5895ef75422a40c435f8a",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_046"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "88c4a26c658ca4e20b1689da3b4057d5ac071c2a3f64a35f7ca7e224f0ef54e8",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_047"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "7e43f17df1255ded9c236bd7d8baf2ec528b51d6710f2679c50d3a3c1519d2e5",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_048"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "f492690b8809d05bc7503cc27ddbf0e4972fbb81201c3fd8c46bf36d90baed45",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_049"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "1e1b2d3a55763393264b341f823d546633428ab840241c3ad1304e5f01e5ac03",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_050"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "dac4073aae73897aba5da33fe19342ac6cb232d3fe7d116ac311e70220604b68",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_051"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "8410c0809cb13bb682e82e9526593fe91f6baf6f8df00fe6287fd2bbe2fdf7c6",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_052"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "c97ad1df7d778e644f8c7988ebc7d4d82997edb2c7c9e46136d904d1b4631829",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_053"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "0bce6a6530dfd02a8a655f2b58a8597869c7397bbffa9814e4a6c666cfde9da8",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_054"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "35cf32785fe776f50d24534d7feb2488a1caa421a9488171d424b17a4babf76e",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_055"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "859d718b3a83e4850912cae5efd205976317c6cdc51f7abadd0b516a34ddffaf",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_056"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "8d220caedac524729a4c291fba93e84f417494be9ac4ec1a05b6e133816b0f5c",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_057"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "c48c0c100d55161b17d41b7844c9dfc2187d2778a7d5aebf8580970681c8ff8e",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_058"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "30e2263db3dccf586665725d1be1178a796a952e19049afe163644f3ca0a6db8",
+      "input_prediction_count": 1,
+      "scenario_id": "scope_contamination_059"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "fc816e741a88b5a2abbf7e484eb0ddbf3bf4e99502ed5e6a32f5e8fdb3f2dd69",
+      "input_prediction_count": 2,
+      "scenario_id": "scope_contamination_060"
+    }
+  ],
+  "expected_primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+  "git_commit": "7583d3cdbb9db84e5875157931df35beb666dd8a",
+  "manifest_version": 1,
+  "ollama_server_version": "0.23.1",
+  "predictions_path": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_scope_contamination_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json",
+  "predictions_sha256": "0dff716a5ecb6f71ee0de6d873027dd40f38b0fe87be58662121b3e573a37a51",
+  "preregistration_lock_sha256": "4bd2bbe64a542c6d8479c2c7c4b40b12c3c601fd35256a60b85bd1e30bfa9bff",
+  "primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+  "primary_model_tag": "qwen2.5:32b-instruct-q4_K_M",
+  "prompt_sha256": "ca9ec418156b4cc12bcf5457683844f023684bbc5cee2b7460a6c5030a475633",
+  "run_name": "noisy_policy_comparison_scope_contamination_default",
+  "runner_command": "python3 scripts/run_noisy_policy_comparison.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --policy-set phase2_5",
+  "schema_profile": "default",
+  "working_tree_status": "clean",
+  "working_tree_status_context": "manifest_write_after_outputs"
+}

@@ -9,12 +9,13 @@ This draft consolidates the contribution the repo can defend today:
 1. a preregistered fair memory-policy benchmark,
 2. a component-gated noisy-mode discipline that prevents false policy unlocks,
 3. an inspectable failure taxonomy for local extractor limits, and
-4. a narrow positive oracle-policy claim around witness-conflict abstention.
+4. a narrow positive oracle-policy claim around witness-conflict abstention,
+5. a mixed preregistered noisy policy comparison with mechanism-local support.
 
-It is not yet a noisy-mode policy result. The 2026-05-14 local unlock probe
-reached Bucket A under both 32B primary cells, so the next empirical step is a
-separately preregistered noisy policy comparison, not a post-hoc policy claim
-from the unlock probe itself.
+The 2026-05-15 noisy policy comparison fired Bucket B. That is a completed
+noisy-mode policy result, but it is not broad CQ superiority: CQ wins versus
+Reflection on forced contradiction and preference drift, ties the other
+countable rows, and does not separate from `Mem0Lite` on the frozen sentinel.
 
 ## 1. Contributions
 
@@ -66,8 +67,8 @@ that CQ is a full replacement system.
 
 The lane for this project is narrower and more auditable:
 preregistered fair policy comparison plus component-gated noisy-mode discipline.
-LongMemEval belongs later as a transfer check after a noisy policy comparison
-unlocks, not as a current empirical claim.
+LongMemEval belongs later as a transfer check only after a Bucket B follow-up
+justifies the mechanism-local bridge, not as a current empirical claim.
 
 ## 4. Preregistration Discipline
 
@@ -88,16 +89,15 @@ oracle contract. It preregistered a minimal 32B component-gate unlock probe
 before any 32B primary unlock cell was scored. Both 32B cells reached Bucket A
 on 2026-05-14.
 
-`docs/noisy_policy_comparison_preregistration.md` now locks the next evaluation
-contract before extracted-candidate policy scoring. It fixes the primary
-`default` cell, the `scenario_conditioned` robustness replicate, the six-family
-held-out denominator, the frozen sentinel metrics, the extracted-candidate
-adapter contract, numeric primary-metric predictions, and the event-source
-proxy carve-out for noisy false corroboration. The adapter source is separately
+`docs/noisy_policy_comparison_preregistration.md` locked the extracted-candidate
+policy comparison before scoring. It fixed the primary `default` cell, the
+`scenario_conditioned` robustness replicate, the six-family held-out
+denominator, the frozen sentinel metrics, the extracted-candidate adapter
+contract, numeric primary-metric predictions, and the event-source proxy
+carve-out for noisy false corroboration. The adapter source is separately
 pinned in `docs/noisy_policy_comparison_adapter_pin.json`, and
-`scripts/run_noisy_policy_comparison.py` dry-runs against the cached 32B
-prediction artifacts. Actual policy scoring is still not a completed result in
-this draft.
+`scripts/run_noisy_policy_comparison.py` executed both locked cells on
+2026-05-15.
 
 ## 5. Evidence Ledger
 
@@ -203,10 +203,43 @@ Follow-up decomposition:
 - preregistered 32B scenario-conditioned primary cell cleared the same unlock
   checks and also recorded `policy_comparison_unlocked=true`
 
-Supported claim: the gate discipline prevents a false noisy-mode unlock.
-Supported follow-up claim: the 32B local extractor path is eligible for a
-separately preregistered noisy policy comparison. Unsupported claim:
+Supported claim: the gate discipline prevents a false noisy-mode unlock. The
+32B local extractor path was eligible for the separately preregistered noisy
+policy comparison reported below. Unsupported claim from the gate alone:
 extracted-candidate CQ policy superiority.
+
+### Phase 4 Noisy Policy Comparison
+
+Source: `docs/noisy_policy_comparison_results.md`.
+
+Specific cells:
+
+- primary `default` profile:
+  `data/results/noisy_policy_comparison_summary.json` and
+  `data/results/noisy_policy_comparison_*_default_metrics.csv`
+- robustness `scenario_conditioned` profile:
+  `data/results/noisy_policy_comparison_*_scenario_conditioned_metrics.csv`
+- per-family manifests:
+  `data/runs/noisy_policy_comparison_*_manifest.json`
+
+Readout:
+
+- Bucket B fires under the preregistered precedence rules
+- CQ wins versus Reflection on `forced_contradiction` with delta `+0.93`,
+  LCB `+0.88`, and on `preference_drift` with delta `+0.13`, LCB `+0.07`
+- CQ records no directional losses versus Reflection on the five countable
+  primary metrics
+- CQ is non-inferior to `Mem0Lite` on the frozen sentinel primary metrics, but
+  has no frozen superiority row because every CQ-vs-`Mem0Lite` frozen primary
+  delta is `+0.00`
+- the `scenario_conditioned` replicate contradicts none of the primary wins
+- all adapter drop rates are `0.00`, preserving the same-candidate-stream
+  fairness surface
+
+Supported claim: same-candidate-stream, same-substrate, component-gated policy
+isolation produces mechanism-local noisy support for CQ on forced contradiction
+and preference drift. Unsupported claim: broad noisy CQ superiority or noisy
+separation from `Mem0Lite` on the frozen sentinel.
 
 ## 6. Local Unlock Probe
 
@@ -240,9 +273,8 @@ this branch.
 
 Current unsupported claims:
 
-- noisy-mode end-to-end CQ superiority
-- extracted-candidate policy comparison before a separate noisy policy
-  preregistration is written and locked
+- broad noisy-mode end-to-end CQ superiority
+- noisy separation from `Mem0Lite` on the frozen sentinel
 - LongMemEval or other external benchmark transfer
 - real-user long-horizon helpfulness
 - learned semantic scope inference
@@ -254,14 +286,14 @@ retrofit the original `phase2_5` adversarial headline result.
 
 ## 8. Next Work
 
-1. Commit the locked noisy policy-comparison preregistration, adapter pin, and
-   extracted-runner implementation.
-2. Run the primary `default` extracted-candidate policy-comparison cell from a
-   clean worktree, then run the `scenario_conditioned` robustness replicate.
-3. Write `docs/noisy_policy_comparison_results.md` from saved artifacts and
-   update this evidence ledger with the preregistered bucket.
-4. Treat LongMemEval as future transfer work, not a current claim.
+1. Write a focused Bucket B follow-up plan around the surviving countable
+   mechanisms, especially forced contradiction and preference drift.
+2. Inspect the noisy-vs-oracle gap and failure examples for the three countable
+   rows that tied, without changing thresholds, prompts, validators, or schema
+   profiles.
+3. Treat LongMemEval as future transfer work, not a current claim.
 
 The current shareable package is therefore a benchmark and methodology draft
 with honest oracle-policy results, a clear noisy-mode gate, and a completed
-local unlock decision, not a completed persistent-agent memory-system claim.
+mixed noisy policy comparison, not a completed persistent-agent memory-system
+claim.
