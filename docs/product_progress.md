@@ -1,5 +1,47 @@
 # Product Progress
 
+## 2026-05-15 — Canonical-id resolution audit locks CQR follow-up
+
+### What shipped
+
+- added `docs/canonical_id_resolution_audit_preregistration.md` with locked
+  Section B/C predictions, pre-lock disclosure, locked input SHAs, and the
+  byte-identical audit-time alias source
+- added `scripts/run_canonical_id_resolution_audit.py`, a standalone replay
+  runner that checks the preregistration lock, invokes the Phase 4 noisy policy
+  comparison, verifies regenerated artifacts against their manifests, computes
+  exact/scope/alias CQR, and emits summary/CSV/manifest/results artifacts
+- added `tests/test_canonical_id_resolution_audit.py` for alias-source lock
+  identity, exact-vs-scope-vs-alias CQR, negative-control false positives,
+  cross-tab marginals, manifest SHA aborts, and lock-only CLI behavior
+
+### Why it matters
+
+- the Bucket B null-row follow-up now stays in the allowed
+  canonical-id/query-resolution lane instead of reopening prompts, thresholds,
+  validators, or adapter semantics
+- the audit distinguishes cluster-oriented B-cubed F1 from exact lookup
+  evaluability, with `useful_pending_memory` and `memory_poisoning` as the only
+  thesis-gating families
+- the runner preserves preregistration discipline: full replay aborts from a
+  dirty pre-run worktree and must be run after the implementation is committed
+
+### Evidence
+
+- targeted tests:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_canonical_id_resolution_audit -q`
+- lock check:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_canonical_id_resolution_audit.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --check-lock-only`
+- preregistration:
+  `docs/canonical_id_resolution_audit_preregistration.md`
+
+### Open issues / next
+
+- run the full audit replay from a clean worktree with the locked 32B Ollama
+  cell available
+- publish `docs/canonical_id_resolution_audit_results.md` and the generated
+  result artifacts only after that clean replay
+
 ## 2026-05-15 — Bucket B mechanism audit locks attribution
 
 ### What shipped
