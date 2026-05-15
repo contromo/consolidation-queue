@@ -398,7 +398,7 @@ def _oracle_event_timestamp(event: Dict[str, object]) -> datetime:
 def _parse_timestamp(value: str) -> datetime:
     timestamp = datetime.fromisoformat(value)
     if timestamp.tzinfo is None:
-        return timestamp
+        timestamp = timestamp.replace(tzinfo=timezone.utc)
     return timestamp.astimezone(timezone.utc).replace(tzinfo=None)
 
 
