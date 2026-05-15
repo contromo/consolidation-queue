@@ -69,9 +69,9 @@ Positive deltas are sign-normalized CQ improvements versus Reflection.
 | `useful_pending_memory` | `answer_correctness` | +0.00 | +0.50 | -1.00 | unattributed-null |
 | `memory_poisoning` | `poison_promotion_rate` | +0.00 | +0.20 | +0.20 | unattributed-null |
 | `false_corroboration` | `false_assertion_rate` | +0.00 | +0.50 | +0.00 | descriptive-only event-source proxy |
-| `mechanism_diverse_heldout` | `false_assertion_rate` | +0.00 | mixed frozen oracle support | -0.33 | unattributed-null with one 32B defect trace |
+| `mechanism_diverse_heldout` | `false_assertion_rate` | +0.00 | mixed frozen oracle support | -0.33 (better) | unattributed-null with one 32B defect trace |
 | `mechanism_diverse_heldout` | `poison_promotion_rate` | +0.00 | mixed frozen oracle support | +0.00 | unattributed-null with one 32B defect trace |
-| `mechanism_diverse_heldout` | `premature_promotion_rate` | +0.00 | mixed frozen oracle support | +0.33 | unattributed-null with one 32B defect trace |
+| `mechanism_diverse_heldout` | `premature_promotion_rate` | +0.00 | mixed frozen oracle support | +0.33 (worse) | unattributed-null with one 32B defect trace |
 
 For lower-is-better metrics, the CQ gap is raw noisy minus raw oracle; positive
 is worse. For `answer_correctness`, the CQ gap is raw noisy minus raw oracle;

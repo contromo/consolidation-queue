@@ -4,6 +4,11 @@ This script is intentionally read-only with respect to experiment execution: it
 does not rerun extraction, policy scoring, thresholds, prompts, or validators.
 It derives the compact audit evidence file and focused dashboard traces from
 existing saved Phase 4 artifacts.
+
+Prerequisites:
+- oracle metrics CSVs for the families listed in ORACLE_METRICS_PATH_BY_FAMILY
+- the Phase 4 default noisy policy-comparison summary, metrics, and run JSONs
+- the 32B default component-eval JSONs from the local unlock probe
 """
 
 from __future__ import annotations
@@ -25,6 +30,15 @@ from cq.dashboard.app import render_dashboard
 
 GENERATOR_COMMAND = "python3 scripts/generate_noisy_policy_mechanism_audit.py"
 EVIDENCE_PATH = Path("data/results/noisy_policy_mechanism_audit_evidence.json")
+PREREQUISITES = """\
+Prerequisites:
+  1. Oracle metrics CSVs for the audited families.
+  2. Phase 4 default noisy policy-comparison artifacts.
+  3. 32B default component-eval artifacts from the local unlock probe.
+
+The script validates these inputs before writing outputs and prints the producer
+command family when an input is missing.
+"""
 
 COUNTABLE_FAMILIES = [
     "forced_contradiction",
@@ -98,7 +112,9 @@ TRACE_SPECS = {
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Generate noisy mechanism audit evidence and focused traces."
+        description="Generate noisy mechanism audit evidence and focused traces.",
+        epilog=PREREQUISITES,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--skip-html",
@@ -106,6 +122,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         help="Write evidence and filtered trace JSON only.",
     )
     args = parser.parse_args(argv)
+
+    missing = missing_required_artifacts()
+    if missing:
+        print("Cannot generate noisy mechanism audit artifacts.", file=sys.stderr)
+        print("Missing prerequisite artifacts:", file=sys.stderr)
+        for path, hint in missing:
+            print(f"- {path}", file=sys.stderr)
+            print(f"  first run: {hint}", file=sys.stderr)
+        return 2
 
     evidence = build_evidence()
     write_json(EVIDENCE_PATH, evidence)
@@ -120,11 +145,125 @@ def main(argv: Optional[List[str]] = None) -> int:
         write_json(spec["run_json"], trace)
         print(f"Wrote {spec['run_json']}")
         if not args.skip_html:
-            spec["html"].parent.mkdir(parents=True, exist_ok=True)
-            spec["html"].write_text(render_dashboard(trace), encoding="utf-8")
+            html_path = resolve_path(spec["html"])
+            html_path.parent.mkdir(parents=True, exist_ok=True)
+            html_path.write_text(render_dashboard(trace), encoding="utf-8")
             print(f"Wrote {spec['html']}")
 
     return 0
+
+
+def missing_required_artifacts() -> List[Tuple[Path, str]]:
+    missing = []
+    for path, hint in required_artifacts():
+        if not resolve_path(path).exists():
+            missing.append((path, hint))
+    return missing
+
+
+def required_artifacts() -> List[Tuple[Path, str]]:
+    requirements = [
+        (
+            Path("data/results/noisy_policy_comparison_summary.json"),
+            noisy_policy_comparison_command(),
+        ),
+        (
+            Path("data/results/mechanism_diverse_heldout_oracle_frozen_phase2_5_metrics.csv"),
+            "python3 -m cq.eval.runner --family mechanism_diverse_heldout "
+            "--template-mix frozen --policy-set phase2_5",
+        ),
+        (
+            Path("data/results/noisy_policy_comparison_mechanism_diverse_heldout_default_metrics.csv"),
+            noisy_policy_comparison_command(),
+        ),
+    ]
+    for family in COUNTABLE_FAMILIES:
+        requirements.append(
+            (
+                Path(f"data/results/noisy_policy_comparison_{family}_default_metrics.csv"),
+                noisy_policy_comparison_command(),
+            )
+        )
+        requirements.append(
+            (
+                NOISY_RUN_PATH_BY_FAMILY[family],
+                noisy_policy_comparison_command(),
+            )
+        )
+        requirements.append(
+            (
+                ORACLE_METRICS_PATH_BY_FAMILY[family],
+                oracle_metrics_command(family),
+            )
+        )
+    requirements.append(
+        (
+            NOISY_RUN_PATH_BY_FAMILY["mechanism_diverse_heldout"],
+            noisy_policy_comparison_command(),
+        )
+    )
+    for family, path in COMPONENT_EVAL_PATH_BY_FAMILY.items():
+        requirements.append((path, component_gate_command(family)))
+    return requirements
+
+
+def noisy_policy_comparison_command() -> str:
+    return (
+        "python3 scripts/run_noisy_policy_comparison.py "
+        "--primary-model-tag qwen2.5:32b-instruct-q4_K_M "
+        "--schema-profile default --include-frozen-sentinel --policy-set phase2_5"
+    )
+
+
+def component_gate_command(family: str) -> str:
+    del family
+    return (
+        "python3 scripts/run_component_gate_decision.py "
+        "--primary-model-tag qwen2.5:32b-instruct-q4_K_M "
+        "--schema-profile default --include-frozen-sentinel"
+    )
+
+
+def oracle_metrics_command(family: str) -> str:
+    commands = {
+        "forced_contradiction": (
+            "python3 -m cq.eval.runner --family forced_contradiction "
+            "--scenarios 4 --template-mix heldout "
+            "--output-json data/runs/forced_contradiction_oracle_heldout.json "
+            "--output-csv data/results/forced_contradiction_oracle_heldout_metrics.csv"
+        ),
+        "scope_contamination": (
+            "python3 -m cq.eval.runner --family scope_contamination "
+            "--scenarios 4 --template-mix heldout "
+            "--output-json data/runs/scope_contamination_oracle_heldout.json "
+            "--output-csv data/results/scope_contamination_oracle_heldout_metrics.csv"
+        ),
+        "preference_drift": (
+            "python3 -m cq.eval.runner --family preference_drift "
+            "--scenarios 4 --template-mix heldout "
+            "--output-json data/runs/preference_drift_oracle_heldout.json "
+            "--output-csv data/results/preference_drift_oracle_heldout_metrics.csv"
+        ),
+        "useful_pending_memory": (
+            "python3 -m cq.eval.runner --family useful_pending_memory "
+            "--scenarios 4 --template-mix heldout "
+            "--output-json data/runs/useful_pending_memory_oracle_heldout.json "
+            "--output-csv data/results/useful_pending_memory_oracle_heldout_metrics.csv"
+        ),
+        "memory_poisoning": (
+            "python3 -m cq.eval.runner --family memory_poisoning "
+            "--scenarios 10 --template-mix mixed "
+            "--output-json data/runs/memory_poisoning_oracle.json "
+            "--output-csv data/results/memory_poisoning_oracle_metrics.csv"
+        ),
+        "false_corroboration": (
+            "python3 -m cq.eval.runner --family false_corroboration "
+            "--scenarios 4 --template-mix mixed "
+            "--output-json data/runs/false_corroboration_oracle.json "
+            "--output-csv data/results/false_corroboration_oracle_metrics.csv"
+        ),
+    }
+    return commands[family]
 
 
 def build_evidence() -> Dict[str, object]:
@@ -246,7 +385,7 @@ def build_filtered_trace(
 
 
 def overall_metric_rows(path: Path) -> Dict[str, Dict[str, str]]:
-    with path.open("r", encoding="utf-8", newline="") as handle:
+    with resolve_path(path).open("r", encoding="utf-8", newline="") as handle:
         return {
             row["policy_name"]: row
             for row in csv.DictReader(handle)
@@ -406,12 +545,22 @@ def canonical_alignment(path: Path) -> Dict[str, object]:
 
 
 def read_json(path: Path) -> Dict[str, object]:
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(resolve_path(path).read_text(encoding="utf-8"))
 
 
 def write_json(path: Path, value: Dict[str, object]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    resolved = resolve_path(path)
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    resolved.write_text(
+        json.dumps(value, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def resolve_path(path: Path) -> Path:
+    if path.is_absolute():
+        return path
+    return REPO_ROOT / path
 
 
 if __name__ == "__main__":
