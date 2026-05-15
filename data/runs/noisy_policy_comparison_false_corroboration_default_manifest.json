@@ -499,7 +499,7 @@
   "git_commit": "7583d3cdbb9db84e5875157931df35beb666dd8a",
   "manifest_version": 1,
   "ollama_server_version": "0.23.1",
-  "predictions_path": "/Users/manav/code/consolidation-queue/data/results/component_gate_decision_false_corroboration_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json",
+  "predictions_path": "data/results/component_gate_decision_false_corroboration_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json",
   "predictions_sha256": "022052b9a996cede3f0be54904389e389f42fc3b3d0ed2f01249dfa1dcedee27",
   "preregistration_lock_sha256": "4bd2bbe64a542c6d8479c2c7c4b40b12c3c601fd35256a60b85bd1e30bfa9bff",
   "primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",

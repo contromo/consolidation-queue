@@ -312,8 +312,13 @@ class ExtractedCandidateRunnerTests(unittest.TestCase):
             template_mix="clean",
             policy_set="phase2_5",
             schema_profile="default",
+            predictions_path=FIXTURE_PATH,
         )
 
+        self.assertEqual(
+            artifact["predictions_path"],
+            "tests/fixtures/extracted_candidate_adapter_fixture.json",
+        )
         self.assertTrue(artifact["candidate_stream_hash_invariant_passed"])
         self.assertEqual(artifact["candidate_stream_hash_mismatches"], [])
         self.assertEqual(

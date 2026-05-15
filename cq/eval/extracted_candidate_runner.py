@@ -589,7 +589,7 @@ def build_extracted_run_artifact(
         "template_mix": template_mix,
         "policy_set": policy_set,
         "schema_profile": schema_profile,
-        "predictions_path": str(predictions_path) if predictions_path else "",
+        "predictions_path": _repo_relative_path(predictions_path) if predictions_path else "",
         "predictions_sha256": sha256_file(predictions_path) if predictions_path else "",
         "candidate_adapter_sha256": adapter_sha256,
         "preregistration_lock_sha256": preregistration_lock_sha256,
@@ -936,6 +936,14 @@ def _repo_path(path_text: str) -> Path:
     if path.is_absolute():
         return path
     return REPO_ROOT / path
+
+
+def _repo_relative_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return resolved.as_posix()
 
 
 def _read_json(path: Path) -> Dict[str, object]:
