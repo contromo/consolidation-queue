@@ -643,9 +643,11 @@ def _candidate_from_prediction(
     prediction_index: int,
     prediction_ordinal: int,
 ) -> Tuple[Optional[CandidateUpdate], Optional[Dict[str, object]]]:
-    if not prediction.raw_claim.strip():
+    raw_claim = _required_text(prediction.raw_claim)
+    if not raw_claim.strip():
         return None, _drop(event_id=event.event_id, prediction_index=prediction_index, reason="empty_raw_claim")
-    if not prediction.canonical_id.strip():
+    canonical_id = _required_text(prediction.canonical_id)
+    if not canonical_id.strip():
         return None, _drop(event_id=event.event_id, prediction_index=prediction_index, reason="empty_canonical_id")
     try:
         claim_type = ClaimType(prediction.claim_type)
@@ -665,7 +667,8 @@ def _candidate_from_prediction(
             reason="unrecognized_scope_level",
             value=prediction.scope_level,
         )
-    if not prediction.scope_key.strip():
+    scope_key = _required_text(prediction.scope_key)
+    if not scope_key.strip():
         return None, _drop(event_id=event.event_id, prediction_index=prediction_index, reason="empty_scope_key")
     confidence = prediction.confidence
     if confidence is None:
@@ -687,14 +690,14 @@ def _candidate_from_prediction(
             prediction_ordinal,
         ),
         raw_text=event.text,
-        raw_claim=prediction.raw_claim,
-        canonical_claim=prediction.canonical_id,
+        raw_claim=raw_claim,
+        canonical_claim=canonical_id,
         claim_type=claim_type,
         scope_level=scope_level,
-        scope_key=prediction.scope_key,
+        scope_key=scope_key,
         created_at=observed_at,
         updated_at=observed_at,
-        canonical_id=prediction.canonical_id,
+        canonical_id=canonical_id,
         provenance=[
             ProvenanceRecord(
                 source_kind="extractor",
@@ -708,6 +711,10 @@ def _candidate_from_prediction(
         supports=[],
     )
     return candidate, None
+
+
+def _required_text(value: object) -> str:
+    return value if isinstance(value, str) else ""
 
 
 def _apply_contradictions(

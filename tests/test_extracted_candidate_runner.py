@@ -3,7 +3,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from cq.eval.component_eval import load_predictions_by_scenario, oracle_component_predictions
+from cq.eval.component_eval import (
+    CandidateComponentPrediction,
+    load_predictions_by_scenario,
+    oracle_component_predictions,
+)
 from cq.eval.extracted_candidate_runner import (
     LOCKED_EPOCH,
     LOCKED_MODEL_DIGEST,
@@ -237,6 +241,37 @@ class ExtractedCandidateRunnerTests(unittest.TestCase):
             candidate_stream_canonical_json(second.candidates),
         )
         self.assertEqual(first.candidate_stream_sha256, second.candidate_stream_sha256)
+
+    def test_null_required_text_fields_drop_instead_of_raising(self) -> None:
+        base = {
+            "event_id": "adapter_fixture-event-1",
+            "candidate_id": "p1",
+            "canonical_id": "project-alpha-deploy-command",
+            "claim_type": ClaimType.PROJECT_CONVENTION.value,
+            "scope_level": ScopeLevel.PROJECT.value,
+            "scope_key": "project-alpha",
+            "raw_claim": "Project alpha deploys with make deploy.",
+            "confidence": 0.7,
+        }
+        cases = [
+            ("raw_claim", "empty_raw_claim"),
+            ("canonical_id", "empty_canonical_id"),
+            ("scope_key", "empty_scope_key"),
+        ]
+
+        for field_name, expected_reason in cases:
+            with self.subTest(field_name=field_name):
+                payload = dict(base)
+                payload[field_name] = None
+                prediction = CandidateComponentPrediction(**payload)
+
+                adapted = adapt_predictions_for_scenario(
+                    _adapter_fixture_scenario(),
+                    [prediction],
+                )
+
+                self.assertEqual(adapted.candidates, [])
+                self.assertEqual(adapted.drops[0]["reason"], expected_reason)
 
     def test_scenario_error_propagates_empty_stream(self) -> None:
         payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))

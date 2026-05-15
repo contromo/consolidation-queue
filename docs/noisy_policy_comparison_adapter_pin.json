@@ -1,6 +1,6 @@
 {
   "adapter_path": "cq/eval/extracted_candidate_runner.py",
-  "candidate_adapter_sha256": "9562f39325642b4f5b3bed05ece664350e79845bca9dcd044e8012b1c8dbab56",
+  "candidate_adapter_sha256": "4f1fc0f8f67ea6246268933f14fb0f20b514475b37153b4af0d29a8178c34de9",
   "pinned_at": "2026-05-14T00:00:00Z",
   "preregistration_lock_sha256": "4bd2bbe64a542c6d8479c2c7c4b40b12c3c601fd35256a60b85bd1e30bfa9bff"
 }
