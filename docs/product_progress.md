@@ -1,5 +1,92 @@
 # Product Progress
 
+## 2026-05-14 — Noisy policy-comparison review hardening
+
+### What shipped
+
+- corrected the locked noisy preregistration metric name from
+  `scope_leakage_rate` to the actual runner field, `leakage_rate`
+- added an adapter drop-rate abort condition with a preregistered `0.05`
+  ceiling, backed by per-scenario input/drop counts in the candidate-stream
+  audit and manifests
+- made the noisy comparison summary emit the promised six-family x six-metric
+  descriptive grid with paired-bootstrap LCB/UCB rows
+- moved the noisy runner off dynamic imports of the component-gate script by
+  adding reusable gate-runtime helpers under `cq/eval/`
+- made candidate-stream hash audits self-evidencing by recording the computed
+  `candidate_stream_hash_mismatches` list
+- added focused tests for bucket aggregation, component-gate rechecks, adapter
+  drop aborts, manifest shape, and descriptive-grid output
+
+### Why it matters
+
+- a policy win can no longer mask substantial adapter-level extraction loss
+  after the component gate passes
+- the readout contract now matches the planned descriptive evidence surface
+- external reviewers see the same metric identifiers in the preregistration,
+  code, and artifacts
+
+### Evidence
+
+- focused tests:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_extracted_candidate_runner tests.test_noisy_policy_comparison_runner -q`
+
+### Open issues / next
+
+- run the default Phase 4 noisy policy-comparison cell from a clean worktree
+- run the `scenario_conditioned` robustness replicate and write the
+  preregistered results readout
+
+## 2026-05-14 — Phase 4 noisy policy-comparison path locked and staged
+
+### What shipped
+
+- rewrote `docs/noisy_policy_comparison_preregistration.md` from stub to a
+  locked Phase 4 contract with:
+  - explicit six-family held-out denominator plus frozen sentinel
+  - primary/replicate schema-profile rules
+  - sign-normalized metric gates and bucket precedence
+  - numeric primary-metric predictions
+  - the event-source proxy carve-out for noisy false corroboration
+- added `cq/eval/extracted_candidate_runner.py`, implementing the locked
+  `CandidateComponentPrediction` to `CandidateUpdate` adapter
+- pinned the adapter SHA in `docs/noisy_policy_comparison_adapter_pin.json`
+- extended `cq/eval/runner.py` with `--mode extracted`
+- added `scripts/run_noisy_policy_comparison.py` for the preregistered default
+  and `scenario_conditioned` policy-comparison cells
+- added focused fairness regression coverage for stream hashes, adapter
+  determinism, scenario-error propagation, substrate isolation, digest/pin
+  provenance, shared `MemoryStore` class, and corroboration round-trip
+
+### Why it matters
+
+- the comparison can now use cached 32B extracted candidates without giving CQ
+  richer inputs or a private storage substrate
+- same-stream hashes are recorded per scenario, making the key fairness
+  invariant auditable from artifacts
+- no policy scoring has been run yet; the script intentionally aborts on dirty
+  pre-run state, so the actual noisy policy result must happen after this patch
+  is committed
+
+### Evidence
+
+- focused adapter tests:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest tests.test_extracted_candidate_runner -q`
+- full suite:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q`
+- syntax check:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m py_compile cq/eval/extracted_candidate_runner.py scripts/run_noisy_policy_comparison.py cq/eval/runner.py`
+- dry-run preflight for both 32B schema profiles:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_noisy_policy_comparison.py --dry-run --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --policy-set phase2_5`
+  and the same command with `--schema-profile scenario_conditioned`
+
+### Open issues / next
+
+- commit this preregistration/adapter-pin implementation
+- run the default Phase 4 noisy policy-comparison cell from a clean worktree
+- run the `scenario_conditioned` robustness replicate and write the
+  preregistered results readout
+
 ## 2026-05-14 — Local unlock probe reaches Bucket A on both 32B cells
 
 ### What shipped

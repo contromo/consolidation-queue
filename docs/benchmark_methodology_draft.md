@@ -86,8 +86,18 @@ The reusable discipline is spread across four locked documents:
 The `docs/local_unlock_probe_preregistration.md` contract did not change any
 oracle contract. It preregistered a minimal 32B component-gate unlock probe
 before any 32B primary unlock cell was scored. Both 32B cells reached Bucket A
-on 2026-05-14, so `docs/noisy_policy_comparison_preregistration.md` is now the
-required next lock before extracted-candidate policy comparison.
+on 2026-05-14.
+
+`docs/noisy_policy_comparison_preregistration.md` now locks the next evaluation
+contract before extracted-candidate policy scoring. It fixes the primary
+`default` cell, the `scenario_conditioned` robustness replicate, the six-family
+held-out denominator, the frozen sentinel metrics, the extracted-candidate
+adapter contract, numeric primary-metric predictions, and the event-source
+proxy carve-out for noisy false corroboration. The adapter source is separately
+pinned in `docs/noisy_policy_comparison_adapter_pin.json`, and
+`scripts/run_noisy_policy_comparison.py` dry-runs against the cached 32B
+prediction artifacts. Actual policy scoring is still not a completed result in
+this draft.
 
 ## 5. Evidence Ledger
 
@@ -105,7 +115,7 @@ Readout:
 - all `108` preregistered oracle-mode deltas matched observed deltas
 - CQ and `Mem0Lite` tie on aggregate `answer_correctness`,
   `false_assertion_rate`, `poison_promotion_rate`,
-  `clean_durable_displacement_rate`, and `scope_leakage_rate`
+  `clean_durable_displacement_rate`, and `leakage_rate`
 - CQ improves aggregate `premature_promotion_rate` by `33` percentage points
   versus `Mem0Lite`, driven by
   `false_corroboration_adversarial_mixed_source`
@@ -244,11 +254,13 @@ retrofit the original `phase2_5` adversarial headline result.
 
 ## 8. Next Work
 
-1. Write and lock `docs/noisy_policy_comparison_preregistration.md` before any
-   extracted-candidate policy comparison.
-2. Keep Phase 4 policy comparisons on hold until that separate noisy-policy
-   preregistration is complete.
-3. Treat LongMemEval as future transfer work, not a current claim.
+1. Commit the locked noisy policy-comparison preregistration, adapter pin, and
+   extracted-runner implementation.
+2. Run the primary `default` extracted-candidate policy-comparison cell from a
+   clean worktree, then run the `scenario_conditioned` robustness replicate.
+3. Write `docs/noisy_policy_comparison_results.md` from saved artifacts and
+   update this evidence ledger with the preregistered bucket.
+4. Treat LongMemEval as future transfer work, not a current claim.
 
 The current shareable package is therefore a benchmark and methodology draft
 with honest oracle-policy results, a clear noisy-mode gate, and a completed

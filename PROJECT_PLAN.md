@@ -109,13 +109,18 @@ Implemented:
 - CI-aware component gate-decision runner with 60-scenario held-out primary rows, Wilson event-assumption lower bounds, conservative F1 composites, observed-only B-cubed labeling, and pairwise canonicalization CI support
 - preregistered minimal 32B primary unlock-probe support in the gate runner, with explicit primary model tag allowlisting, required schema-profile selection, Ollama digest verification, abort reports, and per-cell manifests
 - preregistered local unlock probe execution through the 7B anchor and both 32B primary cells; the 7B anchor reproduced locked counts exactly, and both 32B cells cleared the component gate under Bucket A, while extracted-candidate policy comparison still requires a separate preregistration
+- locked Phase 4 noisy policy-comparison preregistration, including primary/replicate schema profiles, explicit scenario denominator, adapter contract, primary metrics, bucket rules, numeric prediction grid, and false-corroboration event-source proxy carve-out
+- deterministic extracted-candidate adapter and runner path for converting cached component predictions into shared `CandidateUpdate` streams, with same-stream hashes, explicit hash-mismatch audit rows, scenario-error propagation, metric-id remapping, adapter drop-rate guards, adapter pin verification, and focused fairness regression tests
+- shared noisy gate-runtime helpers and a noisy comparison summary path that emits the full six-family descriptive metric grid with paired-bootstrap bounds
+- `scripts/run_noisy_policy_comparison.py` dry-run preflight over the locked 32B default and scenario-conditioned prediction artifacts; execution remains pending until the preregistration/adapter-pin patch is committed and the pre-run worktree is clean
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
 Not implemented yet:
 
 - lexical or embedding-based `TranscriptRAG`
-- broader scored local-model noisy pipeline beyond the forced-contradiction smoke sample
+- completed extracted-candidate policy scoring and readout for the locked Phase 4 noisy comparison
+- broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
 - LongMemEval transfer check
 - final writeup docs
@@ -280,7 +285,7 @@ Preregistration requirements:
 
 - `docs/preregistration.md` must contain predictions, not only task lists.
 - Predictions must include numeric deltas for CQ vs `Mem0Lite`, CQ vs ReflectionEagerWrite, and full CQ vs each named CQ ablation.
-- Predictions must be specified per scenario family per primary metric: `false_assertion_rate`, `answer_correctness`, `poison_promotion_rate`, `premature_promotion_rate`, `clean_durable_displacement_rate`, and `scope_leakage_rate`.
+- Predictions must be specified per scenario family per primary metric: `false_assertion_rate`, `answer_correctness`, `poison_promotion_rate`, `premature_promotion_rate`, `clean_durable_displacement_rate`, and `leakage_rate`.
 - Aggregate deltas may be reported, but they cannot replace per-family commitments.
 - Predictions must include oracle-mode and noisy-mode expectations, including expected oracle-vs-noisy gaps by policy.
 - If results contradict the predictions, report the contradiction directly in the final writeup.
@@ -381,7 +386,7 @@ Required outcome:
 
 ### Phase 4: Noisy Local-Model Pipeline
 
-Status: preregistration required before execution. The 2026-05-14 32B primary gates unlocked under the local unlock probe's Bucket A branch, but extracted-candidate policy comparison still does not start until a separate noisy policy-comparison preregistration is written and locked.
+Status: preregistration, adapter, pin, runner integration, dry-run preflight, review hardening, and fairness tests are implemented. The 2026-05-14 32B primary gates unlocked under the local unlock probe's Bucket A branch, and `docs/noisy_policy_comparison_preregistration.md` now locks the extracted-candidate policy comparison with an adapter drop-rate stop condition and descriptive metric-grid output. Actual policy scoring remains unexecuted until this implementation is committed and the pre-run worktree is clean, because the preregistered runner aborts on dirty state.
 
 Add:
 
@@ -534,11 +539,11 @@ Without:
 
 These are the highest-priority implementation steps right now.
 
-The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. The real 7B `general_v1` CI-aware gate run with required frozen sentinel completed on 2026-05-11 and stayed locked (`policy_comparison_unlocked=false`) despite passing Phase A and determinism. The completed 2026-05-12 follow-up evidence block then ran the descriptive 32B blocker-surface sweep and the full 7B schema-rescue run. Both mandatory runs reduced the preregistered common-surface schema-shaped burden from `26` to `0`, so the conditional `32B + schema` quadrant did not trigger. The 7B schema-rescue run still remained locked on observed per-family/frozen failures (`5` primary, `2` frozen), while the 32B descriptive rows cleared the same common-surface measured failures. `docs/component_gate_publication_outline.md` maps the publication package, `docs/component_gate_failure_taxonomy.md` records the locked-gate interpretation, and `docs/component_gate_followup_benchmark_memo.md` records the follow-up decomposition and next-step recommendation. The separate oracle-only `adversarial_upstream_noise` headline runs are now also recorded: CQ clears four of five preregistered mechanisms on `mixed`, loses only `temporal_skew`, and therefore triggers the separately preregistered `CQDatedContestation` follow-up rather than a retrofit of the original `phase2_5` policy set. The 2026-05-14 local unlock probe reproduced the 7B anchor exactly and both 32B primary cells unlocked, so the probe is Bucket A. Phase 4 extracted-candidate policy comparison remains unstarted until a separate noisy policy-comparison preregistration is written and locked. Next:
+The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. The real 7B `general_v1` CI-aware gate run with required frozen sentinel completed on 2026-05-11 and stayed locked (`policy_comparison_unlocked=false`) despite passing Phase A and determinism. The completed 2026-05-12 follow-up evidence block then ran the descriptive 32B blocker-surface sweep and the full 7B schema-rescue run. Both mandatory runs reduced the preregistered common-surface schema-shaped burden from `26` to `0`, so the conditional `32B + schema` quadrant did not trigger. The 7B schema-rescue run still remained locked on observed per-family/frozen failures (`5` primary, `2` frozen), while the 32B descriptive rows cleared the same common-surface measured failures. `docs/component_gate_publication_outline.md` maps the publication package, `docs/component_gate_failure_taxonomy.md` records the locked-gate interpretation, and `docs/component_gate_followup_benchmark_memo.md` records the follow-up decomposition and next-step recommendation. The separate oracle-only `adversarial_upstream_noise` headline runs are now also recorded: CQ clears four of five preregistered mechanisms on `mixed`, loses only `temporal_skew`, and therefore triggers the separately preregistered `CQDatedContestation` follow-up rather than a retrofit of the original `phase2_5` policy set. The 2026-05-14 local unlock probe reproduced the 7B anchor exactly and both 32B primary cells unlocked, so the probe is Bucket A. The Phase 4 preregistration, adapter pin, extracted runner integration, noisy-comparison script, dry-run preflight, and review hardening now exist. Next:
 
-1. Write and lock `docs/noisy_policy_comparison_preregistration.md` before any extracted-candidate CQ-vs-Reflection-vs-`Mem0Lite` policy comparison.
-2. Keep the Bucket C cross-family abstention assay out of scope unless a future preregistered gate result actually lands in Bucket C.
-3. Treat `CQDatedContestation` as a separate optional follow-up; do not retrofit the original `phase2_5` headline result.
+1. Commit the preregistration/adapter-pin review-hardening implementation, then run the default noisy policy-comparison cell from a clean worktree.
+2. Run the `scenario_conditioned` robustness replicate from the same clean-state contract.
+3. Write `docs/noisy_policy_comparison_results.md`, update the methodology draft with the observed bucket, and keep Bucket C abstention and `CQDatedContestation` out of scope unless a future preregistered branch requires them.
 
 ## Working Rules
 

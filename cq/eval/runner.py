@@ -58,6 +58,9 @@ MECHANISM_DIVERSE_HELDOUT = "mechanism_diverse_heldout"
 POLICY_SET_DEFAULT = "default"
 POLICY_SET_PHASE_2_5 = "phase2_5"
 POLICY_SET_CHOICES = (POLICY_SET_DEFAULT, POLICY_SET_PHASE_2_5)
+MODE_ORACLE = "oracle"
+MODE_EXTRACTED = "extracted"
+MODE_CHOICES = (MODE_ORACLE, MODE_EXTRACTED)
 CQ_ABLATION_POLICIES = (
     CQNoContestationDemotion,
     CQNoWiderScopePendingOverride,
@@ -450,6 +453,72 @@ def build_run_artifact(
     }
 
 
+def build_extracted_candidate_run_artifact(
+    scenario_count: int,
+    template_mix: str,
+    family: str,
+    policy_set: str,
+    extracted_predictions_dir: Path,
+    schema_profile: str,
+    frozen_preregistration_path: Path = PREREGISTRATION_PATH,
+    noisy_preregistration_path: Path | None = None,
+    *,
+    verify_pin: bool = True,
+) -> dict:
+    if family not in COMPONENT_EVAL_FAMILIES:
+        raise ValueError(
+            "Extracted mode only supports component-eval families. Allowed: {}".format(
+                ", ".join(sorted(COMPONENT_EVAL_FAMILIES)),
+            )
+        )
+    from cq.eval.extracted_candidate_runner import (
+        build_extracted_run_artifact,
+        load_extracted_predictions,
+        policies_use_memory_store,
+        prediction_cell_paths,
+        PREREGISTRATION_PATH as NOISY_PREREGISTRATION_PATH,
+        validate_adapter_pin,
+        validate_noisy_preregistration_lock,
+    )
+
+    noisy_preregistration_path = noisy_preregistration_path or NOISY_PREREGISTRATION_PATH
+    lock_sha = validate_noisy_preregistration_lock(noisy_preregistration_path)
+    adapter_pin = (
+        validate_adapter_pin(preregistration_path=noisy_preregistration_path)
+        if verify_pin
+        else {}
+    )
+    scenarios = generate_scenarios(
+        family,
+        scenario_count,
+        template_mix,
+        preregistration_path=frozen_preregistration_path,
+    )
+    policies = _policies_for_family(family, policy_set=policy_set)
+    if not policies_use_memory_store(policies):
+        raise ValueError("All extracted-mode policies must use the shared MemoryStore class.")
+    paths = prediction_cell_paths(
+        predictions_dir=extracted_predictions_dir,
+        family=family,
+        schema_profile=schema_profile,
+    )
+    predictions_by_scenario, scenario_errors = load_extracted_predictions(paths.predictions)
+    return build_extracted_run_artifact(
+        scenarios=scenarios,
+        policy_classes=policies,
+        predictions_by_scenario=predictions_by_scenario,
+        scenario_errors=scenario_errors,
+        family=family,
+        requested_scenario_count=scenario_count,
+        template_mix=template_mix,
+        policy_set=policy_set,
+        schema_profile=schema_profile,
+        predictions_path=paths.predictions,
+        adapter_sha256=str(adapter_pin.get("candidate_adapter_sha256") or ""),
+        preregistration_lock_sha256=lock_sha,
+    )
+
+
 def _build_pairwise_comparisons(
     run_records_by_policy: Dict[str, List[dict]],
     *,
@@ -652,7 +721,13 @@ def write_outputs(run_artifact: dict, output_json: Path, output_csv: Path) -> No
 
 
 def main(argv: List[str] = None) -> int:
-    parser = argparse.ArgumentParser(description="Run oracle memory-governance experiments.")
+    parser = argparse.ArgumentParser(description="Run memory-governance experiments.")
+    parser.add_argument(
+        "--mode",
+        choices=MODE_CHOICES,
+        default=MODE_ORACLE,
+        help="Run oracle candidates or extracted-candidate predictions.",
+    )
     parser.add_argument(
         "--family",
         choices=[
@@ -692,21 +767,54 @@ def main(argv: List[str] = None) -> int:
         default=POLICY_SET_DEFAULT,
         help="Policy set to run. Use phase2_5 to include Mem0Lite.",
     )
+    parser.add_argument(
+        "--extracted-predictions-dir",
+        default="data/results",
+        help="Directory containing component gate prediction artifacts for --mode extracted.",
+    )
+    parser.add_argument(
+        "--schema-profile",
+        choices=["default", "scenario_conditioned"],
+        default="default",
+        help="Extractor schema profile to use in --mode extracted.",
+    )
     args = parser.parse_args(argv)
     try:
         _validate_template_mix(args.family, args.template_mix)
     except ValueError as error:
         parser.error(str(error))
 
-    output_json = args.output_json or "data/runs/{}_oracle.json".format(args.family)
-    output_csv = args.output_csv or "data/results/{}_oracle_metrics.csv".format(args.family)
-    try:
-        run_artifact = build_run_artifact(
-            args.scenarios,
-            template_mix=args.template_mix,
-            family=args.family,
-            policy_set=args.policy_set,
+    if args.mode == MODE_EXTRACTED and args.template_mix == "mixed":
+        parser.error("--mode extracted requires an explicit heldout or frozen template mix")
+    if args.mode == MODE_EXTRACTED:
+        output_json = args.output_json or "data/runs/noisy_policy_comparison_{}_{}.json".format(
+            args.family,
+            args.schema_profile,
         )
+        output_csv = args.output_csv or "data/results/noisy_policy_comparison_{}_{}_metrics.csv".format(
+            args.family,
+            args.schema_profile,
+        )
+    else:
+        output_json = args.output_json or "data/runs/{}_oracle.json".format(args.family)
+        output_csv = args.output_csv or "data/results/{}_oracle_metrics.csv".format(args.family)
+    try:
+        if args.mode == MODE_EXTRACTED:
+            run_artifact = build_extracted_candidate_run_artifact(
+                args.scenarios,
+                template_mix=args.template_mix,
+                family=args.family,
+                policy_set=args.policy_set,
+                extracted_predictions_dir=Path(args.extracted_predictions_dir),
+                schema_profile=args.schema_profile,
+            )
+        else:
+            run_artifact = build_run_artifact(
+                args.scenarios,
+                template_mix=args.template_mix,
+                family=args.family,
+                policy_set=args.policy_set,
+            )
     except ValueError as error:
         parser.error(str(error))
     write_outputs(run_artifact, Path(output_json), Path(output_csv))
