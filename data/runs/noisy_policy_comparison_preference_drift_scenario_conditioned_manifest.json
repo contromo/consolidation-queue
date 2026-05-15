@@ -1,0 +1,513 @@
+{
+  "archive_status": "regeneratable_only",
+  "artifacts": [
+    {
+      "bytes": 17602037,
+      "path": "data/runs/noisy_policy_comparison_preference_drift_scenario_conditioned.json",
+      "sha256": "5cb03163a74af73695dd8ded72f166b013956ef518214d7911a7b06eb258bffc"
+    },
+    {
+      "bytes": 12287,
+      "path": "data/results/noisy_policy_comparison_preference_drift_scenario_conditioned_metrics.csv",
+      "sha256": "d68099e53b4c2ef895c7fc5e3c993574d8d1e395a3dd12e8c23d91f657a965f8"
+    }
+  ],
+  "candidate_adapter_sha256": "4f1fc0f8f67ea6246268933f14fb0f20b514475b37153b4af0d29a8178c34de9",
+  "candidate_stream_sha256": [
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "6a7072726fed8f7d347865ac5366478581ba2f32f2714337d8cc89b08de04c78",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_001"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "144faaf4e50c40a194233eeb706ad3aaeac36020a310b0d01c0c6e2c7134f6e2",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_002"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "e6052daed7204df71409efb412366aedff03f40802ceca778613effd59983c09",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_003"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "97855f063935d8bc891c1522b2ce7a6ca435083ad478cf2bae7c4f94009d9521",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_004"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "d25137ca5244328b1f06645074fa7c4dc0b216e77c9400f601c6f53337b56067",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_005"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "4aaa116694b042259d385493666c445957d0b8b967b5a8687060e448deb02b60",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_006"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "46da13af18444adbbc645b5a7ba2442483e7dee6782c840202e1bd3a34cc315f",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_007"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "93140402da9658fe6f30fe4aca9e99e6c36bbef70310eaa40d07276583a2331a",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_008"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "3008f48000b5affe7d049573356866cd143bd802f1b403658ba4f7f0cb8a19ff",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_009"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "c16713df28db13f0ab7247e62b6452fe3e61f8d30da45e20df50730ad0da742d",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_010"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "d0c7dcd4d0c9353c7bea74c42d316a910058c3e352e42fcd0dbb29d886a07f67",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_011"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "1fe8c609895588ae14d62fc297465b5f6ce30e556687a1d55c17500172e54e94",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_012"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "b215af21e48a74fda7ceeeaf281a3c293312cc8b1922ad11d1cfb713235745ef",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_013"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "54ab74096c4146ff913b26db34df04eee4cada23e4b140b43a6e7a1393bbb299",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_014"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "2a879f8ef7632270c0f0453e99a4ea0088f04a594f9e316e2e91abddcd56da7a",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_015"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "6e786938f6a479165691b7ac8b18d6eb91af7a19f52ccd3e7149f6c6b7058c52",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_016"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "ee6d77783e0f6eb2086ab2442f68bea9ebdd50bb0207a31cc6e8dd5f84a24bd3",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_017"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "858e05b8b937a23990c96041d2db9d66dcce291d8b955f65950cda76321247b7",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_018"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "f97f86c25e65e2bf422183e0e5c9e2b9fb74f79067c61e6860a445e0cf52183e",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_019"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "d856231050cabf92a91e1296731c21a0c92f430ede480943ca0f7fd890823b15",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_020"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "86f56e873cd341554bd53a0529724f3c8cfa8d11b02a37e270950776dd595ac3",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_021"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "78ebd0d493b2448088efa78ad365a790719d22556851b6761d27b289a2440a36",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_022"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "c96ad97bcd5b06d9b72e351e7c0baa6ea85580415ca06add75ed2bc810a9b1f9",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_023"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "8a3b809a77460c2de494f53385c8bd7c8dd0ec609905cd84a6f923feac1b4e08",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_024"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "878aa42d29ba0e369242e475eb108e8f24cea489adac61ae9d10fc03b79e094f",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_025"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "dd55c0b1e608d118b7bb3a6c81b0be0b259e809b018c814c4c58b094c41591ba",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_026"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "3c71505f12c9772fad58e988226e79ce7b8e93c4ff78e956713e9eab1e49e940",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_027"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "de43bae303319b8fc21e7d05f13ce29f7b921c9b01e815638452f181a740ccb9",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_028"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "1a3693f24401ebe348b8541cbd3cbf4e7309f3b285923a6dc7f206e925ef1f3f",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_029"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "9bfac000b36b1a3a64bc5a6988d3b32f53566c4f2408cb763d453a5140a1af9d",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_030"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "5dd8f01a289c98365d4313b9180f5f39935ccbedf154ba7ad1175f88ed77286c",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_031"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "0fcea196b8f2b61bc3e2dd87075346831f05bd780745e6f9454dc45ef96da813",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_032"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "532eb4b1f73ca36ab9b859ca655df9b57505a18a9af9398bbc53b21d23637af4",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_033"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "2461e0bf45b92d5e8e70a758011ed73a241f9e22cd551b9bac1c5c7c93db0430",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_034"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "0f6f6144cf48ddd5421f738942fe410e3bdb8ee9eaef74045e8d4538e24126fc",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_035"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "1741e77836eab88c44ee473d0b0b7e19321ea4cc433a916b881e680371fc3d57",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_036"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "f2048e1e43e53ebf4623445e8b7efcd977de7b7b8297e179cc6dbaa2f3217b55",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_037"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "12ae22104d6d2c7446da7bb93ec92749ce693aa67425ebc671077e83f3466ec2",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_038"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "45ec23623228830fb649f8314ced59f99a6d1702e77a4d018773e5f643e51c5d",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_039"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "fc2b0d7271addff57d777d61e7988308fb026ff1191ded087ceaeea492910794",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_040"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "bd2c1695921ced1adf3d1300b662e660c44b31d4011a778c217faf86965fc258",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_041"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "a6ad287c2da9615683520ce2995d2d445609e400a144183f824ccf1e2faa77d0",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_042"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "daeb346c2d3f1fd981593179544bc234465b62d088efaa3588f9dc0421c81316",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_043"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "6a36f1f19c3eeef2f0359bd8a5974c4e119aef936899e2398f28b1f234ef3a1f",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_044"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "6fc867bbe98b6fde6bd26f3cf4361291131b509d55523e898bf0d49a465315bb",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_045"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "4f4f57ede71908f78ac9cc5e42757790ff664517edd2d2b17e50dad7907ce548",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_046"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "c8ec948f2ad4e1b1d26df6008bb3a381525f1dd9c0f60e8a37c0363614a9c636",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_047"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "9cc3012c7c016ccbed70b0804d96e34c1fa3dfb275c62082bd5b8a05d3916a6f",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_048"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "8d88710ac6998d50680f484465cba2d274b6e54208f23bd011e7c8fd91cfd3c6",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_049"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "4b6676a56b94a20aabce72814c0f8c42608b7d59d5959d4373827b7ea94425d5",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_050"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "7658a60dbb79934fc01aaf724af2f18f244f2b2489170d7b0e2b4b027ff4a3b9",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_051"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "f0ef68f58366ddcf7072aa967c130243c60d69c2f3f490d1ffcc70236def7b58",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_052"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "3db31feab911418e34ece81abda44e30a3061f177ef063259f8d491d4ace0238",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_053"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "51a0907bc59c6cc79952ef3cf331bf51a3e7ed52fd734318af3a346f541a4ff3",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_054"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "16ef63b52b8066e8aee4449f22fd5f65da49b95e3dcc6dfa09d5a954d4b7dacb",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_055"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "6d9c0a3b3c4681755395470edb8b191e448a7ad3628a5a5e440e5a1c698c7bda",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_056"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "eedabc8ece0009702f31799df5042ac4bcc6e559b8c8356cdaa3c5921e8c4431",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_057"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "340fc9d893ec874649c1e90dc974187a70070c739bc39369ca15946cc6fa8039",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_058"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "eda709ff995a7ba35c410e02b6a92569eaf13a30aa5cb0cec5a9cd854ec130e4",
+      "input_prediction_count": 1,
+      "scenario_id": "preference_drift_059"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 3,
+      "candidate_stream_sha256": "ffdef492d17a2743b4699ff1c0803cccce1f090d4fe624063d1742b9fe6b8c27",
+      "input_prediction_count": 3,
+      "scenario_id": "preference_drift_060"
+    }
+  ],
+  "expected_primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+  "git_commit": "7583d3cdbb9db84e5875157931df35beb666dd8a",
+  "manifest_version": 1,
+  "ollama_server_version": "0.23.1",
+  "predictions_path": "data/results/component_gate_decision_preference_drift_local_extractor_qwen2_5_32b_q4km_general_v1_scenario_conditioned_heldout_n60_primary_unlock_probe_predictions.json",
+  "predictions_sha256": "1e9a96abb756912ca5aabeba73febfa222109d53679c87b89b0ad6e45f1a38fa",
+  "preregistration_lock_sha256": "4bd2bbe64a542c6d8479c2c7c4b40b12c3c601fd35256a60b85bd1e30bfa9bff",
+  "primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+  "primary_model_tag": "qwen2.5:32b-instruct-q4_K_M",
+  "prompt_sha256": "ca9ec418156b4cc12bcf5457683844f023684bbc5cee2b7460a6c5030a475633",
+  "run_name": "noisy_policy_comparison_preference_drift_scenario_conditioned",
+  "runner_command": "python3 scripts/run_noisy_policy_comparison.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile scenario_conditioned --include-frozen-sentinel --policy-set phase2_5",
+  "schema_profile": "scenario_conditioned",
+  "working_tree_status": "clean",
+  "working_tree_status_context": "manifest_write_after_outputs"
+}

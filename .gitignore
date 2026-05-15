@@ -12,10 +12,14 @@ __pycache__/
 
 # Generated experiment artifacts
 # See PROJECT_PLAN.md "Artifact Policy" before changing these rules.
-data/runs/
+# Track only small noisy manifests from data/runs; keep large run JSONs ignored.
+data/runs/*
+!data/runs/noisy_policy_comparison_*_manifest.json
 data/results/*
 !data/results/*/
 data/results/**/*.json
+!data/results/noisy_policy_comparison_summary.json
+!data/results/noisy_policy_comparison_*_metrics.csv
 !data/results/component_gate_decision_*_summary.json
 !data/results/component_gate_decision_*_manifest.json
 !data/results/*/*_structure*.json

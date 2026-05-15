@@ -38,6 +38,7 @@ from cq.eval.extracted_candidate_runner import (  # noqa: E402
     LOCKED_MODEL_TAG,
     LOCKED_PROMPT_SHA256,
     PRIMARY_SCENARIO_COUNT,
+    SCHEMA_PROFILES,
     NoisyPolicyComparisonError,
     adapt_predictions_for_scenarios,
     candidate_stream_audit_for_adapted_scenarios,
@@ -236,9 +237,16 @@ def run_noisy_policy_comparison(
             }
         )
 
+    summary_profiles = summary_schema_profiles(schema_profile)
     summary = aggregate_summary(
         run_dir=run_dir,
-        schema_profiles=("default", "scenario_conditioned"),
+        schema_profiles=summary_profiles,
+        include_frozen_sentinel=include_frozen_sentinel,
+    )
+    completed_runs = completed_cell_run_rows(
+        run_dir=run_dir,
+        output_dir=output_dir,
+        schema_profiles=summary_profiles,
         include_frozen_sentinel=include_frozen_sentinel,
     )
     summary.update(
@@ -250,7 +258,10 @@ def run_noisy_policy_comparison(
             "prompt_sha256": LOCKED_PROMPT_SHA256,
             "runner_command": runner_command,
             "last_schema_profile_run": schema_profile,
-            "last_written_runs": written_runs,
+            **run_navigation_payload(
+                written_runs=written_runs,
+                completed_runs=completed_runs,
+            ),
             "preregistration_lock_sha256": preregistration_lock_sha,
             "candidate_adapter_sha256": str(adapter_pin["candidate_adapter_sha256"]),
             "adapter_pin_path": _repo_relative_path(ADAPTER_PIN_PATH),
@@ -258,6 +269,25 @@ def run_noisy_policy_comparison(
     )
     _write_json(SUMMARY_PATH, summary)
     return SUMMARY_PATH
+
+
+def summary_schema_profiles(current_schema_profile: str) -> Sequence[str]:
+    profiles = list(SCHEMA_PROFILES)
+    if current_schema_profile not in profiles:
+        profiles.append(current_schema_profile)
+    return tuple(profiles)
+
+
+def run_navigation_payload(
+    *,
+    written_runs: Sequence[Mapping[str, object]],
+    completed_runs: Sequence[Mapping[str, object]],
+) -> Dict[str, object]:
+    return {
+        "last_written_runs": list(written_runs),
+        "all_completed_runs": list(completed_runs),
+        "all_completed_runs_scope": "all completed schema-profile cells currently present",
+    }
 
 
 def _assert_component_gate_still_passes(
@@ -432,6 +462,41 @@ def aggregate_summary(
         },
         "bucket_decision": bucket,
     }
+
+
+def completed_cell_run_rows(
+    *,
+    run_dir: Path,
+    output_dir: Path,
+    schema_profiles: Sequence[str],
+    include_frozen_sentinel: bool,
+) -> List[Dict[str, str]]:
+    families = list(COMPONENT_FAMILIES)
+    if include_frozen_sentinel:
+        families.append(MECHANISM_DIVERSE_HELDOUT)
+    rows: List[Dict[str, str]] = []
+    for schema_profile in schema_profiles:
+        for family in families:
+            output_json = run_dir / "noisy_policy_comparison_{}_{}.json".format(
+                family,
+                schema_profile,
+            )
+            output_csv = output_dir / "noisy_policy_comparison_{}_{}_metrics.csv".format(
+                family,
+                schema_profile,
+            )
+            manifest = output_json.with_name("{}_manifest.json".format(output_json.stem))
+            if output_json.exists() and output_csv.exists() and manifest.exists():
+                rows.append(
+                    {
+                        "family": family,
+                        "schema_profile": schema_profile,
+                        "run_json": _repo_relative_path(output_json),
+                        "metrics_csv": _repo_relative_path(output_csv),
+                        "manifest": _repo_relative_path(manifest),
+                    }
+                )
+    return rows
 
 
 def _load_profile_artifacts(
@@ -818,7 +883,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--schema-profile",
         required=True,
-        choices=["default", "scenario_conditioned"],
+        choices=SCHEMA_PROFILES,
     )
     parser.add_argument("--include-frozen-sentinel", action="store_true")
     parser.add_argument(

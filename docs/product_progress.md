@@ -1,5 +1,71 @@
 # Product Progress
 
+## 2026-05-15 — Phase 4 noisy policy comparison lands Bucket B
+
+### What shipped
+
+- ran the locked Phase 4 noisy policy-comparison primary cell:
+  `qwen2.5:32b-instruct-q4_K_M` / `default`
+- ran the locked robustness replicate:
+  `qwen2.5:32b-instruct-q4_K_M` / `scenario_conditioned`
+- recorded `data/results/noisy_policy_comparison_summary.json`, 14
+  per-family metrics CSVs, and 14 per-family manifests
+- added `docs/noisy_policy_comparison_results.md` with the preregistered
+  Bucket B readout, audit trail, countable-family table, ablation attribution,
+  replicate check, frozen sentinel table, and frozen oracle-vs-noisy gap table
+- updated `docs/benchmark_methodology_draft.md`,
+  `docs/predictions_vs_results.md`, and `PROJECT_PLAN.md` so Phase 4 is no
+  longer described as unexecuted
+- updated `.gitignore` to track the small noisy-comparison summary, metrics,
+  and manifests while keeping large per-scenario run JSONs regeneratable
+
+### Why it matters
+
+- the repo now has a completed noisy-mode memory-policy result under the
+  same-candidate-stream, same-substrate, component-gated isolation contract
+- the result is mixed rather than broadly positive: CQ wins versus Reflection
+  on forced contradiction and preference drift only
+- the forced-contradiction win is stark because Reflection false-asserts on
+  `56/60` noisy held-out scenarios while CQ records `0/60`
+- the null rows are themselves informative: scope contamination, useful
+  pending memory, memory poisoning, and the frozen sentinel collapse to exact
+  primary-metric ties under the current extracted candidate stream
+- CQ records no countable directional losses and the replicate contradicts no
+  primary win, but frozen sentinel superiority over `Mem0Lite` does not appear
+- Bucket B routes follow-up work toward mechanism-local analysis and
+  extraction-floor diagnosis instead of external transfer or new benchmark
+  families
+
+### Evidence
+
+- full pre-run suite:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -p 'test_*.py' -q`
+- primary run:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_noisy_policy_comparison.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --policy-set phase2_5`
+- robustness replicate:
+  `PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_noisy_policy_comparison.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile scenario_conditioned --include-frozen-sentinel --policy-set phase2_5`
+- summary:
+  `data/results/noisy_policy_comparison_summary.json`
+- primary bucket:
+  Bucket B; CQ wins versus Reflection on `forced_contradiction`
+  (`+0.93`, LCB `+0.88`) and `preference_drift` (`+0.13`, LCB `+0.07`)
+- convergence rows:
+  `scope_contamination`, `useful_pending_memory`, `memory_poisoning`, and all
+  frozen sentinel primary metrics have exact `+0.00` CQ-vs-comparator deltas
+- adapter audit:
+  14 manifests, 726 candidate-stream rows, max scenario adapter drop rate
+  `0.00`
+
+### Open issues / next
+
+- write a focused Bucket B follow-up plan around forced contradiction and
+  preference drift
+- inspect noisy failure examples and frozen oracle-vs-noisy gaps for the tied
+  countable rows before proposing any new mechanism work or treating the nulls
+  as policy-level negatives
+- keep `CQDatedContestation`, Bucket C abstention, and transfer benchmarks out
+  of scope until separately preregistered
+
 ## 2026-05-14 — Noisy policy-comparison review hardening
 
 ### What shipped

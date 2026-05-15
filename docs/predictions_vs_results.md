@@ -1,5 +1,102 @@
 # Predictions vs Results
 
+## 2026-05-15 - Phase 4 Noisy Policy Comparison
+
+Artifacts:
+
+- Summary JSON: `data/results/noisy_policy_comparison_summary.json`
+- Primary metrics CSVs: `data/results/noisy_policy_comparison_*_default_metrics.csv`
+- Robustness metrics CSVs:
+  `data/results/noisy_policy_comparison_*_scenario_conditioned_metrics.csv`
+- Manifests: `data/runs/noisy_policy_comparison_*_manifest.json`
+- Result readout: `docs/noisy_policy_comparison_results.md`
+
+### Interpretation
+
+Bucket B fired. The completed noisy policy comparison survived all abort
+conditions and recorded no Bucket C directional-loss pattern, but it did not
+clear Bucket A. CQ won versus Reflection on two countable primary metrics:
+`forced_contradiction` false assertion and `preference_drift` answer
+correctness. It tied Reflection and `Mem0Lite` on the other countable primary
+metrics, tied `Mem0Lite` on all frozen sentinel primary metrics, and the
+`scenario_conditioned` replicate contradicted none of the primary wins.
+
+All observed values below are sign-normalized `improvement_delta` values from
+`data/results/noisy_policy_comparison_summary.json`; positive means CQ is
+better on the named metric.
+
+### Countable Primary-Family Predictions
+
+| Family | Metric | Comparator | Predicted | Observed |
+| --- | --- | --- | ---: | ---: |
+| `forced_contradiction` | `false_assertion_rate` | `reflection_eager_write_lite` | +0.55 | +0.93 |
+| `forced_contradiction` | `false_assertion_rate` | `mem0_lite` | +0.05 | +0.00 |
+| `forced_contradiction` | `false_assertion_rate` | `cq_no_contestation_demotion` | +0.45 | +0.17 |
+| `forced_contradiction` | `false_assertion_rate` | `cq_no_wider_scope_pending_override` | +0.00 | +0.00 |
+| `forced_contradiction` | `false_assertion_rate` | `cq_no_pending_lookup_use` | +0.00 | +0.00 |
+| `forced_contradiction` | `false_assertion_rate` | `cq_no_source_independence_gate` | +0.00 | +0.00 |
+| `scope_contamination` | `leakage_rate` | `reflection_eager_write_lite` | +0.20 | +0.00 |
+| `scope_contamination` | `leakage_rate` | `mem0_lite` | +0.05 | +0.00 |
+| `scope_contamination` | `leakage_rate` | `cq_no_contestation_demotion` | +0.00 | +0.00 |
+| `scope_contamination` | `leakage_rate` | `cq_no_wider_scope_pending_override` | +0.15 | +0.00 |
+| `scope_contamination` | `leakage_rate` | `cq_no_pending_lookup_use` | +0.00 | +0.00 |
+| `scope_contamination` | `leakage_rate` | `cq_no_source_independence_gate` | +0.00 | +0.00 |
+| `preference_drift` | `answer_correctness` | `reflection_eager_write_lite` | +0.55 | +0.13 |
+| `preference_drift` | `answer_correctness` | `mem0_lite` | +0.00 | +0.00 |
+| `preference_drift` | `answer_correctness` | `cq_no_contestation_demotion` | +0.45 | +0.00 |
+| `preference_drift` | `answer_correctness` | `cq_no_wider_scope_pending_override` | +0.00 | +0.00 |
+| `preference_drift` | `answer_correctness` | `cq_no_pending_lookup_use` | +0.15 | +0.00 |
+| `preference_drift` | `answer_correctness` | `cq_no_source_independence_gate` | +0.00 | +0.00 |
+| `useful_pending_memory` | `answer_correctness` | `reflection_eager_write_lite` | +0.30 | +0.00 |
+| `useful_pending_memory` | `answer_correctness` | `mem0_lite` | +0.30 | +0.00 |
+| `useful_pending_memory` | `answer_correctness` | `cq_no_contestation_demotion` | +0.00 | +0.00 |
+| `useful_pending_memory` | `answer_correctness` | `cq_no_wider_scope_pending_override` | +0.00 | +0.00 |
+| `useful_pending_memory` | `answer_correctness` | `cq_no_pending_lookup_use` | +0.30 | +0.00 |
+| `useful_pending_memory` | `answer_correctness` | `cq_no_source_independence_gate` | +0.00 | +0.00 |
+| `memory_poisoning` | `poison_promotion_rate` | `reflection_eager_write_lite` | +0.45 | +0.00 |
+| `memory_poisoning` | `poison_promotion_rate` | `mem0_lite` | +0.05 | +0.00 |
+| `memory_poisoning` | `poison_promotion_rate` | `cq_no_contestation_demotion` | +0.10 | +0.00 |
+| `memory_poisoning` | `poison_promotion_rate` | `cq_no_wider_scope_pending_override` | +0.15 | +0.00 |
+| `memory_poisoning` | `poison_promotion_rate` | `cq_no_pending_lookup_use` | +0.00 | +0.00 |
+| `memory_poisoning` | `poison_promotion_rate` | `cq_no_source_independence_gate` | +0.00 | +0.00 |
+
+### Descriptive-Only False Corroboration Predictions
+
+`false_corroboration` is excluded from bucket decisions because Phase 4 uses an
+event-id source proxy rather than extracted source identity.
+
+| Family | Metric | Comparator | Predicted | Observed |
+| --- | --- | --- | ---: | ---: |
+| `false_corroboration` | `false_assertion_rate` | `reflection_eager_write_lite` | -0.10 | +0.00 |
+| `false_corroboration` | `false_assertion_rate` | `mem0_lite` | -0.10 | +0.00 |
+| `false_corroboration` | `false_assertion_rate` | `cq_no_contestation_demotion` | +0.00 | +0.00 |
+| `false_corroboration` | `false_assertion_rate` | `cq_no_wider_scope_pending_override` | +0.00 | +0.00 |
+| `false_corroboration` | `false_assertion_rate` | `cq_no_pending_lookup_use` | +0.20 | +0.00 |
+| `false_corroboration` | `false_assertion_rate` | `cq_no_source_independence_gate` | +0.00 | +0.00 |
+
+### Frozen Sentinel Primary-Metric Predictions
+
+| Frozen metric | Comparator | Predicted | Observed |
+| --- | --- | ---: | ---: |
+| `false_assertion_rate` | `reflection_eager_write_lite` | +0.45 | +0.00 |
+| `false_assertion_rate` | `mem0_lite` | +0.00 | +0.00 |
+| `false_assertion_rate` | `cq_no_contestation_demotion` | +0.30 | +0.00 |
+| `false_assertion_rate` | `cq_no_wider_scope_pending_override` | +0.30 | +0.00 |
+| `false_assertion_rate` | `cq_no_pending_lookup_use` | -0.15 | +0.00 |
+| `false_assertion_rate` | `cq_no_source_independence_gate` | +0.00 | +0.00 |
+| `poison_promotion_rate` | `reflection_eager_write_lite` | +0.00 | +0.00 |
+| `poison_promotion_rate` | `mem0_lite` | +0.00 | +0.00 |
+| `poison_promotion_rate` | `cq_no_contestation_demotion` | +0.00 | +0.00 |
+| `poison_promotion_rate` | `cq_no_wider_scope_pending_override` | +0.00 | +0.00 |
+| `poison_promotion_rate` | `cq_no_pending_lookup_use` | +0.00 | +0.00 |
+| `poison_promotion_rate` | `cq_no_source_independence_gate` | +0.00 | +0.00 |
+| `premature_promotion_rate` | `reflection_eager_write_lite` | +0.20 | +0.00 |
+| `premature_promotion_rate` | `mem0_lite` | +0.15 | +0.00 |
+| `premature_promotion_rate` | `cq_no_contestation_demotion` | +0.00 | +0.00 |
+| `premature_promotion_rate` | `cq_no_wider_scope_pending_override` | +0.00 | +0.00 |
+| `premature_promotion_rate` | `cq_no_pending_lookup_use` | +0.00 | +0.00 |
+| `premature_promotion_rate` | `cq_no_source_independence_gate` | +0.10 | +0.00 |
+
 ## 2026-05-05 - Phase 2.5 Frozen Mechanism-Diverse Oracle Sweep
 
 Artifacts:

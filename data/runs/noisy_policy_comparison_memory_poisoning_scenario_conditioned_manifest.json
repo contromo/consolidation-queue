@@ -1,0 +1,513 @@
+{
+  "archive_status": "regeneratable_only",
+  "artifacts": [
+    {
+      "bytes": 12827129,
+      "path": "data/runs/noisy_policy_comparison_memory_poisoning_scenario_conditioned.json",
+      "sha256": "683e206f67097090fb6a178b0d6b072220ec7913b8239ebe813dabc5e7c4e9dc"
+    },
+    {
+      "bytes": 17325,
+      "path": "data/results/noisy_policy_comparison_memory_poisoning_scenario_conditioned_metrics.csv",
+      "sha256": "23b49a5216319c1645fb8df1131f11cf9fb20b37a10338c066e5ce697de4dcd5"
+    }
+  ],
+  "candidate_adapter_sha256": "4f1fc0f8f67ea6246268933f14fb0f20b514475b37153b4af0d29a8178c34de9",
+  "candidate_stream_sha256": [
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "974f9e6ad06449bc29c854b136e3e966492a97b1b61061a16a38f3fdc437a137",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_001"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "3d487237d8d402e08c458e3d2c6da54c56c3352b2a6feb57ad2665e250f22a4c",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_002"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "dd61285405cadf16e1a4b3fab45316a4b7ac6a91103ff119b07815aaa05cea28",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_003"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "8309ee4ee988a8f84b119f9ed4070c473cdfc93855e25667586bf2a470d852f2",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_004"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "768fca5e0e3c25712dd5cec36e5f66e98af9b71fc69e9a49adf9b487e17fdf8a",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_005"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "18451dc1bb446395654e6fc279b44d265b6e99377b36fa54d385d7cf1653a0d4",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_006"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "b2252edc5c3f8844fe2f80fd1b70d6823095b47da947519230e0dd0991758f9f",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_007"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "152b26ae3f6425d82f63d73c11a79d4a4e6d2dd0c7d24c1257060482a942b9b4",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_008"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "4179f01bdbad6028ff46b6de17cd903e8f8415f9f801d50d8d580040f5342dca",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_009"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "9fbed036e5c5f2037fc5945aa1488ba7bec99ef367618c94bd794af28dce02bc",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_010"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "8b272b6e568a7a051af885e9762802e8cf76240bac6ad470bbabdcb09285315a",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_011"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "5fb0ac1d538a9f38bc0f4574e4cf5c6f719c296d06549bd963258c47734abde1",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_012"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "e2a669f5c56d5996f9037026f63aaff143b1c7aa7251b9aaf09b842da7fc23b2",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_013"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "288ff451547217d256ec50f510733a7fd85868fc1c770ceb70870e4ee320ead8",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_014"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "c821bb9e3c619b70f5b085be79b3f6cee188faf1ce46d4172e20fc5949fa101f",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_015"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "47a852ddcf7b457fa94731a966c6f22a5d3b80f65754be807d694e5e88863f22",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_016"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "0d00dbda0d67f0762b96de8ab4fb4575bc6df1f83ffcd27bd1a213dffbdbf512",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_017"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "c4516c7f620f8e4be153121d376d9293571cc2d03acc72189bac6ce3e84cb2a6",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_018"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "0af91850f5eeb2143b69bea91cb4d79e079fd66659fc9d1a0188b3c5712b25b2",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_019"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "7e94c8b3b68279b654720db2d9852a6c4170ef61eb6a21ce4e7dba222b3f4422",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_020"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "57e77c26ed2f71aaa4d06f8798257eff6af95a32863773832d32f550f2a93c93",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_021"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "2bac89419402d6d1c89e658e6702b37ef63dca72f11c69743908e848385c0ebf",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_022"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "7a3dd06cf3d666b9b10cc2b719a1cf7c570c8a9e0a145d96ea9fd330b8c20d7d",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_023"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "6d6a3ec0bb299ece56f8dc463dfdc25b5b2b9910016cf8d69bd854235de04589",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_024"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "50a35d569e4aa9850869171ff38d71914a7affdeb53ec9e33a3d862b1ddc75f0",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_025"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "0c4ed57e0568878d68bc01693cd29947e589ef9f4430f5596bddcad824fcf7bc",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_026"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "f955cd1ef15a911e5076a92e8085c8288e241acd809e4909600cfa466eadea7a",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_027"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "5b1331ccaed358241cf5625354d8cc457fa4893c2e7a57c9ae427556949aa26f",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_028"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "9baef5cffd3eef8a6cf70a175b3c3ef634a7e3ab930810055472603f1b510434",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_029"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "54b110a74dd8e8e77b5b24981f5bf5dfe049c34b21a48de32058501c995a4355",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_030"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "234d5cef765b2ffefdac0862622ee473aa2f88f20ce74b810194fbfc94c72fa3",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_031"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "377c935be6b213922e96bcb7a914404e39b8fcac36ba3efadf03f24e919c560e",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_032"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "01d2719336aca58e5bdf97b378559ab0452b34e2df24c26023ab903d93f59c64",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_033"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "eb53d82061f3bd855c461d21abe053f465f24087abd735a22d2c502093240163",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_034"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "a378be972a07d316de13d8ba148fb90052fa1621db8171f3ad188bd2671e9a5d",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_035"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "f41e431080ac05f1b247b93be93b5245c7eab25d3b4f323c9377dc9cd7c8d2dd",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_036"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "a508037bd3c031b171126b246964e77b39339b683a251b9c23f811dc71a2f400",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_037"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "03d4e7b307a24751a797450f3b2fbdf504f8d000f27d00fb542b43594f44a808",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_038"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "787ae7ca3198aa3b829ce7bac5d8a6a1de28e8e959ada292dc3c3e495e0aa534",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_039"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "97102aad2bacd40bd368c31e27d9c5fc0998d4558ac7057295d030685404fcaa",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_040"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "303f3276bc629996ecb7d430bb3ef082f4bde8182ec288773be61f8b3c633d57",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_041"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "71a4a826d8e77f30a45298436bd0150a069ccc26d9acf3e6b34f8caf0fe3bc0f",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_042"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "a1b66154ec0c5499ff241c27756ec87ca603720977166fc0d3bc0e1bba5d72a2",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_043"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "a4af034b844dfc5758d6d641355686c08186d6d4b8d55b4b6db44c7795ed5317",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_044"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "e47822fd196a6a4e6bbfeb411dd351578a4513b6927c84432af4ea946f5d1f4c",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_045"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "cdb9412d5364c6c593a1937ce48b6647340078479569fc9116b03d9255231511",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_046"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "3bf123cefe20d8bbff6e9a14e2382a344fb4e90ddb4bb72447d9a3fe74b36d5a",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_047"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "0c52c38b8557ede29bcaaf3183f0a2609e4a8566c2ef972a5ac1985245e112dd",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_048"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "301a55e47bbdd21b999c48c0bab4fe8991c8892d7ed83ac3a011747cc1a16388",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_049"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "d37cf586719b6227838e87742b165add4f9a4c254de96389dd7d6267ce91509f",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_050"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "78f6762420b28d34a51ea5c7e2e4daa06cff19007c7ad705482944073f211039",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_051"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "948dd1e5d8e861daf7215fe42605d6d2f03487650c42d86e1268e53cb59c54cb",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_052"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "cb3d6f312becf334e2059ba49a575d167c9f9ed8a2dd10f7e6e4ef1b46ea6dc8",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_053"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "3b81c8bf4fbee27f7a6a0933a4d9b339bb9fbc978e8b577c0ec077666f2f185a",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_054"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "ab7fbfde963fcae26f0b96cce035e110a206f07865bdfc4adcde8c6bf923528d",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_055"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "1254bb241a2a63a5a3decfd298b2496ed7df709de0cb317d866808a342bdd543",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_056"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "da57c7d1acd9795ebb005c2d6d16ed5e1e9a008f6c2584c5183e1d3345a8312d",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_057"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 1,
+      "candidate_stream_sha256": "db17c1a75993fc160f46dae188a3a0c5714df6b5de9fc0b63448ff84d7fd386a",
+      "input_prediction_count": 1,
+      "scenario_id": "memory_poisoning_058"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "74b3175c2d609b0fe7316dbbe34704e431823e506ef931646d6f99385f686e97",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_059"
+    },
+    {
+      "adapter_drop_count": 0,
+      "adapter_drop_rate": 0.0,
+      "candidate_count": 2,
+      "candidate_stream_sha256": "670f0a58a72e0e2624462513f545c93d222041572e5c98f0947b0c011b437869",
+      "input_prediction_count": 2,
+      "scenario_id": "memory_poisoning_060"
+    }
+  ],
+  "expected_primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+  "git_commit": "7583d3cdbb9db84e5875157931df35beb666dd8a",
+  "manifest_version": 1,
+  "ollama_server_version": "0.23.1",
+  "predictions_path": "data/results/component_gate_decision_memory_poisoning_local_extractor_qwen2_5_32b_q4km_general_v1_scenario_conditioned_heldout_n60_primary_unlock_probe_predictions.json",
+  "predictions_sha256": "bbd436d84aea9881711d5a0a0b1340dde20e6d776d215e651420fa8287a06202",
+  "preregistration_lock_sha256": "4bd2bbe64a542c6d8479c2c7c4b40b12c3c601fd35256a60b85bd1e30bfa9bff",
+  "primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+  "primary_model_tag": "qwen2.5:32b-instruct-q4_K_M",
+  "prompt_sha256": "ca9ec418156b4cc12bcf5457683844f023684bbc5cee2b7460a6c5030a475633",
+  "run_name": "noisy_policy_comparison_memory_poisoning_scenario_conditioned",
+  "runner_command": "python3 scripts/run_noisy_policy_comparison.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile scenario_conditioned --include-frozen-sentinel --policy-set phase2_5",
+  "schema_profile": "scenario_conditioned",
+  "working_tree_status": "clean",
+  "working_tree_status_context": "manifest_write_after_outputs"
+}

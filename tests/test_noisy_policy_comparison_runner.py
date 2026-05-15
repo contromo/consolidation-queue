@@ -291,6 +291,60 @@ class NoisyPolicyComparisonRunnerTests(unittest.TestCase):
         self.assertEqual(manifest["working_tree_status"], "dirty")
         self.assertEqual(manifest["candidate_stream_sha256"][0]["adapter_drop_count"], 1)
 
+    def test_completed_cell_run_rows_include_each_finished_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            run_dir = tmp / "runs"
+            output_dir = tmp / "results"
+            run_dir.mkdir()
+            output_dir.mkdir()
+            for profile in ("default", "scenario_conditioned"):
+                stem = "noisy_policy_comparison_forced_contradiction_{}".format(profile)
+                (run_dir / "{}.json".format(stem)).write_text("{}\n", encoding="utf-8")
+                (run_dir / "{}_manifest.json".format(stem)).write_text("{}\n", encoding="utf-8")
+                (output_dir / "{}_metrics.csv".format(stem)).write_text(
+                    "policy_name,summary_scope\n",
+                    encoding="utf-8",
+                )
+
+            rows = noisy.completed_cell_run_rows(
+                run_dir=run_dir,
+                output_dir=output_dir,
+                schema_profiles=("default", "scenario_conditioned"),
+                include_frozen_sentinel=True,
+            )
+
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(
+            {row["schema_profile"] for row in rows},
+            {"default", "scenario_conditioned"},
+        )
+        self.assertTrue(all(row["family"] == noisy.FORCED_CONTRADICTION for row in rows))
+
+    def test_summary_schema_profiles_adds_current_profile_without_duplication(self) -> None:
+        self.assertEqual(
+            noisy.summary_schema_profiles("default"),
+            noisy.SCHEMA_PROFILES,
+        )
+        self.assertEqual(
+            noisy.summary_schema_profiles("future_profile"),
+            (*noisy.SCHEMA_PROFILES, "future_profile"),
+        )
+
+    def test_run_navigation_payload_preserves_last_written_semantics(self) -> None:
+        payload = noisy.run_navigation_payload(
+            written_runs=[{"family": "current"}],
+            completed_runs=[{"family": "current"}, {"family": "previous"}],
+        )
+
+        self.assertEqual(payload["last_written_runs"], [{"family": "current"}])
+        self.assertEqual(
+            payload["all_completed_runs"],
+            [{"family": "current"}, {"family": "previous"}],
+        )
+        self.assertIn("all completed", payload["all_completed_runs_scope"])
+        self.assertNotIn("last_written_runs_scope", payload)
+
 
 if __name__ == "__main__":
     unittest.main()
