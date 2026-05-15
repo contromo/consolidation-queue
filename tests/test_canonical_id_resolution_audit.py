@@ -233,6 +233,82 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
 
         self.assertEqual(audit.classify_bucket(families)["bucket"], "B")
 
+    def test_classify_bucket_c_when_false_positive_cap_fails(self) -> None:
+        families = {
+            "useful_pending_memory": {
+                "predictions": {
+                    "alias_prediction_pass": True,
+                    "false_positive_cap_pass": False,
+                    "cq_cross_tab_pass": True,
+                }
+            },
+            "memory_poisoning": {
+                "predictions": {
+                    "alias_prediction_pass": True,
+                    "false_positive_cap_pass": True,
+                    "cq_cross_tab_pass": True,
+                }
+            },
+        }
+
+        self.assertEqual(audit.classify_bucket(families)["bucket"], "C")
+
+    def test_mechanism_diverse_union_counts_premature_promotion(self) -> None:
+        scenario = {
+            "scenario_id": "frozen_x",
+            "question_traces": [
+                {
+                    "question_id": "q1",
+                    "relevant_canonical_id": "slot-a",
+                    "scope_level": "project",
+                    "scope_key": "p1",
+                }
+            ],
+            "failure_examples": [
+                {
+                    "failure_type": "premature_promotion",
+                    "reason": "false_corroboration_stack_promoted",
+                    "question_id": "q1",
+                }
+            ],
+        }
+        policy = {"policy_name": audit.CQ_POLICY, "scenarios": [scenario]}
+
+        failures = audit.policy_primary_metric_failures(
+            policy,
+            "mechanism_diverse_heldout",
+        )
+
+        self.assertEqual(failures, {"frozen_x": {"q1"}})
+
+    def test_mechanism_diverse_union_ignores_unmapped_failure_type(self) -> None:
+        scenario = {
+            "scenario_id": "frozen_x",
+            "question_traces": [
+                {
+                    "question_id": "q1",
+                    "relevant_canonical_id": "slot-a",
+                    "scope_level": "project",
+                    "scope_key": "p1",
+                }
+            ],
+            "failure_examples": [
+                {
+                    "failure_type": "clean_durable_displacement",
+                    "reason": "clean_durable_demoted_by_poison",
+                    "question_id": "q1",
+                }
+            ],
+        }
+        policy = {"policy_name": audit.CQ_POLICY, "scenarios": [scenario]}
+
+        failures = audit.policy_primary_metric_failures(
+            policy,
+            "mechanism_diverse_heldout",
+        )
+
+        self.assertEqual(failures, {})
+
     def test_prediction_dict_matches_preregistration_table_rows(self) -> None:
         block = audit.extract_between(
             audit.PREREGISTRATION_PATH.read_text(encoding="utf-8"),
