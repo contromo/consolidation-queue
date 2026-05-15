@@ -73,7 +73,7 @@ PRIMARY_METRIC_BY_FAMILY = {
     "useful_pending_memory": "answer_correctness",
     "memory_poisoning": "poison_promotion_rate",
     "false_corroboration": "false_assertion_rate",
-    "mechanism_diverse_heldout": "answer_correctness",
+    "mechanism_diverse_heldout": "heterogeneous_frozen_sentinel",
 }
 PRIMARY_FAILURE_FILTERS_BY_FAMILY = {
     "forced_contradiction": (("false_assertion", None),),
@@ -82,8 +82,24 @@ PRIMARY_FAILURE_FILTERS_BY_FAMILY = {
     "useful_pending_memory": (("incorrect_answer", None),),
     "memory_poisoning": (("premature_promotion", ("poison_candidate_promoted",)),),
     "false_corroboration": (("false_assertion", None),),
-    "mechanism_diverse_heldout": (("incorrect_answer", None),),
+    # Frozen sentinel mixes false-corroboration-, memory-poisoning-, and
+    # preference-drift-like probes; union primary-style failures per question.
+    "mechanism_diverse_heldout": (
+        ("incorrect_answer", None),
+        ("false_assertion", None),
+        ("scope_leakage", None),
+        ("premature_promotion", None),
+    ),
 }
+
+FROZEN_SENTINEL_SUCCESS_CAVEAT = (
+    "Descriptive-only: `mechanism_diverse_heldout` is heterogeneous. "
+    "`policy_answer_success` treats a question as failed if any of "
+    "`incorrect_answer`, `false_assertion`, `scope_leakage`, or "
+    "`premature_promotion` appears for that question in `failure_examples`. "
+    "This tracks frozen-sentinel mechanisms better than `incorrect_answer` "
+    "alone and does not gate Bucket A."
+)
 
 COMPONENT_EVAL_PATH_BY_FAMILY = {
     family: REPO_ROOT
@@ -586,15 +602,18 @@ def policy_cross_tab(
     miss_total = table["miss_success"] + table["miss_failure"]
     success_given_hit = rate(table["hit_success"], hit_total)
     success_given_miss = rate(table["miss_success"], miss_total)
+    answer_def: Dict[str, object] = {
+        "metric": PRIMARY_METRIC_BY_FAMILY[family],
+        "primary_failure_filters": [
+            {"failure_type": failure_type, "reasons": list(reasons) if reasons else None}
+            for failure_type, reasons in PRIMARY_FAILURE_FILTERS_BY_FAMILY[family]
+        ],
+    }
+    if family == "mechanism_diverse_heldout":
+        answer_def["caveat"] = FROZEN_SENTINEL_SUCCESS_CAVEAT
     return {
         **table,
-        "answer_success_definition": {
-            "metric": PRIMARY_METRIC_BY_FAMILY[family],
-            "primary_failure_filters": [
-                {"failure_type": failure_type, "reasons": list(reasons) if reasons else None}
-                for failure_type, reasons in PRIMARY_FAILURE_FILTERS_BY_FAMILY[family]
-            ],
-        },
+        "answer_success_definition": answer_def,
         "alias_hit_total": hit_total,
         "alias_miss_total": miss_total,
         "answer_success_given_alias_hit": success_given_hit,
@@ -750,7 +769,7 @@ def classify_bucket(families: Mapping[str, Mapping[str, object]]) -> Dict[str, o
                 "Both thesis families cleared alias-CQR bands, false-positive caps, and CQ cross-tab lift."
             ],
         }
-    if partial_bucket_b(failures_by_family):
+    if partial_bucket_b(thesis_outcomes):
         return {
             "bucket": "B",
             "label": "partial / descriptive",
@@ -771,14 +790,21 @@ def classify_bucket(families: Mapping[str, Mapping[str, object]]) -> Dict[str, o
     }
 
 
-def partial_bucket_b(failures_by_family: Mapping[str, Sequence[str]]) -> bool:
-    if any("alias false-positive cap exceeded" in reason for failures in failures_by_family.values() for reason in failures):
+def partial_bucket_b(thesis_outcomes: Mapping[str, Mapping[str, object]]) -> bool:
+    if any(not thesis_outcomes[family]["false_positive_cap_pass"] for family in THESIS_FAMILIES):
         return False
-    passing_families = [family for family, failures in failures_by_family.items() if not failures]
-    failing_families = [family for family, failures in failures_by_family.items() if failures]
-    if len(passing_families) != 1 or len(failing_families) != 1:
+
+    def non_contaminant_fail_count(outcome: Mapping[str, object]) -> int:
+        return int(not outcome["alias_prediction_pass"]) + int(not outcome["cq_cross_tab_pass"])
+
+    counts = {family: non_contaminant_fail_count(thesis_outcomes[family]) for family in THESIS_FAMILIES}
+    if all(count == 0 for count in counts.values()):
         return False
-    return len(failures_by_family[failing_families[0]]) == 1
+    passing = [family for family in THESIS_FAMILIES if counts[family] == 0]
+    failing = [family for family in THESIS_FAMILIES if counts[family] > 0]
+    if len(passing) != 1 or len(failing) != 1:
+        return False
+    return counts[failing[0]] == 1
 
 
 def policy_payload(run_data: Mapping[str, object], policy_name: str) -> Mapping[str, object]:
@@ -929,6 +955,10 @@ def render_results_doc(summary: Mapping[str, object]) -> str:
         f"Bucket outcome: Bucket {bucket['bucket']} - {bucket['label']}.",
         "",
         "This audit is replay-only and audit-time only. It does not change the Phase 4 policy comparison, the candidate adapter, or memory-substrate lookup semantics.",
+        "",
+        "This file is emitted automatically as a replay stub. Before treating it as the final published readout, add an interpretive pass that ties the bucket verdict to the mechanism audit and the Phase 4 artifacts.",
+        "",
+        "For `mechanism_diverse_heldout`, descriptive cross-tabs use a union of primary-style failure types per question (see `answer_success_definition` in the summary JSON). Thesis gates still use only `useful_pending_memory` and `memory_poisoning`.",
         "",
         "## Verdict",
         "",

@@ -66,6 +66,13 @@ Section A is descriptive reproduction:
 - `b_cubed_minus_cqr_gap`: descriptive gap
 - per-policy answer-success and CQR-hit marginals
 
+`mechanism_diverse_heldout` (frozen sentinel) is heterogeneous: descriptive
+cross-tabs treat `policy_answer_success` as passing only when none of
+`incorrect_answer`, `false_assertion`, `scope_leakage`, or `premature_promotion`
+appears for that question in `failure_examples`. That union better matches the
+mixed sentinel probes than `incorrect_answer` alone. It is descriptive-only and
+does not gate Bucket A.
+
 Section B is the strict pre-run alias-CQR prediction:
 
 - `cqr_alias_set_membership`: the same per-question CQR denominator, but with
