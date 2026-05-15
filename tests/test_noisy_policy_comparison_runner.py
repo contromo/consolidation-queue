@@ -331,6 +331,20 @@ class NoisyPolicyComparisonRunnerTests(unittest.TestCase):
             (*noisy.SCHEMA_PROFILES, "future_profile"),
         )
 
+    def test_run_navigation_payload_preserves_last_written_semantics(self) -> None:
+        payload = noisy.run_navigation_payload(
+            written_runs=[{"family": "current"}],
+            completed_runs=[{"family": "current"}, {"family": "previous"}],
+        )
+
+        self.assertEqual(payload["last_written_runs"], [{"family": "current"}])
+        self.assertEqual(
+            payload["all_completed_runs"],
+            [{"family": "current"}, {"family": "previous"}],
+        )
+        self.assertIn("all completed", payload["all_completed_runs_scope"])
+        self.assertNotIn("last_written_runs_scope", payload)
+
 
 if __name__ == "__main__":
     unittest.main()

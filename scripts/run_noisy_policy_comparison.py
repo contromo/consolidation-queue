@@ -258,9 +258,10 @@ def run_noisy_policy_comparison(
             "prompt_sha256": LOCKED_PROMPT_SHA256,
             "runner_command": runner_command,
             "last_schema_profile_run": schema_profile,
-            "last_cell_runs": written_runs,
-            "last_written_runs": completed_runs,
-            "last_written_runs_scope": "all completed schema-profile cells currently present",
+            **run_navigation_payload(
+                written_runs=written_runs,
+                completed_runs=completed_runs,
+            ),
             "preregistration_lock_sha256": preregistration_lock_sha,
             "candidate_adapter_sha256": str(adapter_pin["candidate_adapter_sha256"]),
             "adapter_pin_path": _repo_relative_path(ADAPTER_PIN_PATH),
@@ -275,6 +276,18 @@ def summary_schema_profiles(current_schema_profile: str) -> Sequence[str]:
     if current_schema_profile not in profiles:
         profiles.append(current_schema_profile)
     return tuple(profiles)
+
+
+def run_navigation_payload(
+    *,
+    written_runs: Sequence[Mapping[str, object]],
+    completed_runs: Sequence[Mapping[str, object]],
+) -> Dict[str, object]:
+    return {
+        "last_written_runs": list(written_runs),
+        "all_completed_runs": list(completed_runs),
+        "all_completed_runs_scope": "all completed schema-profile cells currently present",
+    }
 
 
 def _assert_component_gate_still_passes(

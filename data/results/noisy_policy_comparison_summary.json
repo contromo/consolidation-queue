@@ -15,7 +15,7 @@
   },
   "candidate_adapter_sha256": "4f1fc0f8f67ea6246268933f14fb0f20b514475b37153b4af0d29a8178c34de9",
   "generated_at": "2026-05-15T01:58:39.130772Z",
-  "last_cell_runs": [
+  "last_written_runs": [
     {
       "family": "forced_contradiction",
       "manifest": "data/runs/noisy_policy_comparison_forced_contradiction_scenario_conditioned_manifest.json",
@@ -60,7 +60,7 @@
     }
   ],
   "last_schema_profile_run": "scenario_conditioned",
-  "last_written_runs": [
+  "all_completed_runs": [
     {
       "family": "forced_contradiction",
       "manifest": "data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json",
@@ -160,7 +160,7 @@
       "schema_profile": "scenario_conditioned"
     }
   ],
-  "last_written_runs_scope": "all completed schema-profile cells currently present",
+  "all_completed_runs_scope": "all completed schema-profile cells currently present",
   "mode": "noisy_policy_comparison_summary",
   "preregistration_lock_sha256": "4bd2bbe64a542c6d8479c2c7c4b40b12c3c601fd35256a60b85bd1e30bfa9bff",
   "primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
