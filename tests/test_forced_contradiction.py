@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from cq.dashboard.app import render_dashboard
+from cq.dashboard.app import _parse_timestamp, render_dashboard
 from cq.eval.runner import build_run_artifact
 from cq.eval.end_to_end_eval import execute_scenario
 from cq.eval.runner import write_outputs
@@ -313,6 +313,20 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
         no_memory_turn_html = html_text[no_memory_turn_start:no_memory_turn_end]
         self.assertIn("observation_ignored", no_memory_turn_html)
         self.assertIn("ignored", no_memory_turn_html)
+
+    def test_dashboard_timestamp_parser_normalizes_timezone_offsets(self) -> None:
+        self.assertEqual(
+            _parse_timestamp("2026-01-01T00:00:01+00:00"),
+            _parse_timestamp("2026-01-01T00:00:01"),
+        )
+        self.assertEqual(
+            _parse_timestamp("2026-01-01T05:00:01+05:00"),
+            _parse_timestamp("2026-01-01T00:00:01"),
+        )
+        self.assertEqual(
+            _parse_timestamp("2025-12-31T20:00:01-04:00"),
+            _parse_timestamp("2026-01-01T00:00:01"),
+        )
 
 
 if __name__ == "__main__":

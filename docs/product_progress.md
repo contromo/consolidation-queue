@@ -1,5 +1,62 @@
 # Product Progress
 
+## 2026-05-15 — Bucket B mechanism audit locks attribution
+
+### What shipped
+
+- added `docs/noisy_policy_mechanism_audit_hypothesis.md` and committed it
+  before writing the audit body
+- added `docs/noisy_policy_mechanism_audit.md` with per-family attribution rows
+  for the five countable families, descriptive `false_corroboration`, and the
+  frozen sentinel
+- added `data/results/noisy_policy_mechanism_audit_evidence.json`, a compact
+  evidence extract generated from existing Phase 4 summary, metrics, run, and
+  32B component-eval artifacts
+- added `scripts/generate_noisy_policy_mechanism_audit.py` so the compact
+  evidence and focused traces can be regenerated from saved primary artifacts
+- added focused dashboard traces for `forced_contradiction_001`,
+  `scope_contamination_001`, and `useful_pending_001`
+- fixed dashboard timestamp sorting for noisy traces that mix naive oracle
+  question timestamps with timezone-aware extracted candidate timestamps
+- updated `docs/benchmark_methodology_draft.md` and `PROJECT_PLAN.md` so the
+  next writeup step starts from the audit result rather than the older follow-up
+  placeholder
+
+### Why it matters
+
+- the audit narrows Bucket B to a defensible mechanism-local thesis:
+  `forced_contradiction` is clean contestation/demotion survival, and
+  `preference_drift` is partial survival under residual claim-type/scope drift
+- the tied rows are not all extractor-floor convergence findings:
+  `useful_pending_memory` and `memory_poisoning` have perfect recorded 32B
+  component metrics in the audited artifacts, so their exact policy ties are
+  recorded as unattributed nulls rather than forced into the hypothesis
+- `scope_contamination` and the frozen sentinel retain real 32B residual defect
+  evidence, but the audit also names exact canonical-id/query-resolution
+  mismatch as a policy-facing failure mode that the current component gate does
+  not fully capture
+
+### Evidence
+
+- hypothesis commit:
+  `aa7219e`
+- audit:
+  `docs/noisy_policy_mechanism_audit.md`
+- compact evidence:
+  `data/results/noisy_policy_mechanism_audit_evidence.json`
+- rendered traces:
+  `data/results/audit_trace_forced_contradiction_default.html`,
+  `data/results/audit_trace_scope_contamination_default.html`, and
+  `data/results/audit_trace_useful_pending_memory_default.html`
+
+### Open issues / next
+
+- do not retune, rerun, or threshold-sweep Bucket B to rescue null rows
+- if null-row work is needed, preregister it as a canonical-id/query-resolution
+  or adapter-contract audit
+- LongMemEval remains future transfer work and should start only from the
+  contradiction-like mechanism that survived the audit
+
 ## 2026-05-15 — Phase 4 noisy policy comparison lands Bucket B
 
 ### What shipped
