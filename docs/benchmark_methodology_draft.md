@@ -268,6 +268,10 @@ Specific cells:
   `data/results/audit_trace_forced_contradiction_default.html`
 - representative null/convergence-pressure trace:
   `data/results/audit_trace_scope_contamination_default.html`
+- representative perfect-component null trace:
+  `data/results/audit_trace_useful_pending_memory_default.html`
+- generator:
+  `scripts/generate_noisy_policy_mechanism_audit.py`
 
 Readout:
 
@@ -280,8 +284,8 @@ Readout:
   32B artifacts show residual claim-type/scope/canonicalization drift
 - `scope_contamination` has real 32B residual defects, including
   canonicalization splits, scope mismatches, and missed contradiction edges, but
-  the exact policy tie is also dominated by canonical-id/query-resolution
-  mismatch
+  the exact policy tie is also consistent with adapter-contract or
+  query-resolution failure
 - `useful_pending_memory` and `memory_poisoning` should be recorded as
   unattributed nulls, not extractor-floor convergence rows, because their 32B
   component artifacts are perfect across the audited dimensions while exact
@@ -313,7 +317,9 @@ prevents the opposite error after the 32B unlock: it stops the paper from
 turning every exact tie into an extractor-floor convergence story. In
 particular, `useful_pending_memory` and `memory_poisoning` are unattributed
 nulls under the current evidence because the audited 32B component artifacts are
-perfect while exact canonical-id/query-resolution alignment fails.
+perfect while exact canonical-id/query-resolution alignment fails. That pattern
+is consistent with adapter-contract or query-resolution failure, but remains an
+open attribution until a follow-up audit tests it directly.
 
 The central claim for a memory-community writeup is therefore mechanism-local:
 same-candidate-stream evaluation can show when policy architecture remains

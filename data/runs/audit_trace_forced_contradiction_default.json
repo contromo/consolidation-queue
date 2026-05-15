@@ -1,4 +1,7 @@
 {
+  "audit_trace_filter_scenario_id": "forced_contradiction_001",
+  "audit_trace_generator_command": "python3 scripts/generate_noisy_policy_mechanism_audit.py",
+  "audit_trace_source_run": "data/runs/noisy_policy_comparison_forced_contradiction_default.json",
   "candidate_adapter_sha256": "4f1fc0f8f67ea6246268933f14fb0f20b514475b37153b4af0d29a8178c34de9",
   "candidate_stream_audit": [
     {

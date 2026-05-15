@@ -7,6 +7,9 @@ against the saved 32B noisy policy-comparison artifacts. It is descriptive
 interpretation, not a new statistical gate, threshold, or policy-comparison
 claim.
 
+Audit trail: this hypothesis was committed before the audit body; in git
+history, `aa7219e` precedes `5b6c71c`.
+
 ## Hypothesis
 
 CQ-vs-Reflection survival under noisy extraction tracks whether the policy

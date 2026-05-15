@@ -319,6 +319,14 @@ class ForcedContradictionScenarioTests(unittest.TestCase):
             _parse_timestamp("2026-01-01T00:00:01+00:00"),
             _parse_timestamp("2026-01-01T00:00:01"),
         )
+        self.assertEqual(
+            _parse_timestamp("2026-01-01T05:00:01+05:00"),
+            _parse_timestamp("2026-01-01T00:00:01"),
+        )
+        self.assertEqual(
+            _parse_timestamp("2025-12-31T20:00:01-04:00"),
+            _parse_timestamp("2026-01-01T00:00:01"),
+        )
 
 
 if __name__ == "__main__":

@@ -1,16 +1,28 @@
 {
   "date": "2026-05-15",
   "generated_from_existing_artifacts_only": true,
+  "generator_command": "python3 scripts/generate_noisy_policy_mechanism_audit.py",
   "representative_traces": {
     "forced_contradiction": {
+      "description": "survival trace",
+      "generator_command": "python3 scripts/generate_noisy_policy_mechanism_audit.py",
       "html": "data/results/audit_trace_forced_contradiction_default.html",
       "run_json": "data/runs/audit_trace_forced_contradiction_default.json",
       "scenario_id": "forced_contradiction_001"
     },
     "scope_contamination": {
+      "description": "null trace with residual 32B defects",
+      "generator_command": "python3 scripts/generate_noisy_policy_mechanism_audit.py",
       "html": "data/results/audit_trace_scope_contamination_default.html",
       "run_json": "data/runs/audit_trace_scope_contamination_default.json",
       "scenario_id": "scope_contamination_001"
+    },
+    "useful_pending_memory": {
+      "description": "perfect-component null trace",
+      "generator_command": "python3 scripts/generate_noisy_policy_mechanism_audit.py",
+      "html": "data/results/audit_trace_useful_pending_memory_default.html",
+      "run_json": "data/runs/audit_trace_useful_pending_memory_default.json",
+      "scenario_id": "useful_pending_001"
     }
   },
   "rows": {
@@ -477,6 +489,12 @@
         ],
         "scenario_error_count": 0,
         "source_path": "data/results/component_gate_decision_mechanism_diverse_heldout_local_extractor_qwen2_5_32b_q4km_general_v1_default_frozen_n3_frozen_sentinel_primary_component_eval.json"
+      },
+      "frozen_oracle_vs_noisy_gaps": {
+        "answer_correctness": -0.6666666666666666,
+        "false_assertion_rate": -0.3333333333333333,
+        "poison_promotion_rate": 0.0,
+        "premature_promotion_rate": 0.3333333333333333
       },
       "frozen_primary_comparisons": {
         "false_assertion_rate": {

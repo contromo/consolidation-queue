@@ -12,8 +12,10 @@
 - added `data/results/noisy_policy_mechanism_audit_evidence.json`, a compact
   evidence extract generated from existing Phase 4 summary, metrics, run, and
   32B component-eval artifacts
-- added focused dashboard traces for `forced_contradiction_001` and
-  `scope_contamination_001`
+- added `scripts/generate_noisy_policy_mechanism_audit.py` so the compact
+  evidence and focused traces can be regenerated from saved primary artifacts
+- added focused dashboard traces for `forced_contradiction_001`,
+  `scope_contamination_001`, and `useful_pending_001`
 - fixed dashboard timestamp sorting for noisy traces that mix naive oracle
   question timestamps with timezone-aware extracted candidate timestamps
 - updated `docs/benchmark_methodology_draft.md` and `PROJECT_PLAN.md` so the
@@ -43,8 +45,9 @@
 - compact evidence:
   `data/results/noisy_policy_mechanism_audit_evidence.json`
 - rendered traces:
-  `data/results/audit_trace_forced_contradiction_default.html` and
-  `data/results/audit_trace_scope_contamination_default.html`
+  `data/results/audit_trace_forced_contradiction_default.html`,
+  `data/results/audit_trace_scope_contamination_default.html`, and
+  `data/results/audit_trace_useful_pending_memory_default.html`
 
 ### Open issues / next
 
