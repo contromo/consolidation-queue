@@ -1,5 +1,44 @@
 # Predictions vs Results
 
+## 2026-05-15 - Canonical-Id Resolution Audit Preregistration
+
+Artifacts:
+
+- Preregistration: `docs/canonical_id_resolution_audit_preregistration.md`
+- Runner: `scripts/run_canonical_id_resolution_audit.py`
+- Target outputs after clean replay:
+  `data/results/canonical_id_resolution_audit_summary.json`,
+  `data/results/canonical_id_resolution_audit_family_metrics.csv`,
+  `data/runs/canonical_id_resolution_audit_manifest.json`, and
+  `docs/canonical_id_resolution_audit_results.md`
+
+### Interpretation
+
+The CQR audit is locked and implemented, but observed values are intentionally
+pending. The full runner enforces the preregistered Bucket D abort on a dirty
+pre-run worktree, so the replay and observed rows must be emitted after the
+implementation is committed and the locked 32B local model cell is available.
+
+### Section B Alias-CQR Predictions
+
+| Family | Role | Predicted alias CQR | False-positive cap | Observed |
+| --- | --- | --- | ---: | --- |
+| `useful_pending_memory` | thesis | `>= 0.40` +/- 0.20 | `<= 0.05` | pending clean replay |
+| `memory_poisoning` | thesis | `>= 0.40` +/- 0.20 | `<= 0.05` | pending clean replay |
+| `false_corroboration` | descriptive | `0.10-0.60` | `<= 0.10` | pending clean replay |
+| `scope_contamination` | descriptive | `<= 0.25` +/- 0.10 | `<= 0.05` | pending clean replay |
+| `forced_contradiction` | descriptive | `>= 0.85` +/- 0.10 | `<= 0.05` | pending clean replay |
+| `preference_drift` | descriptive | `0.25-0.60` | `<= 0.10` | pending clean replay |
+| `mechanism_diverse_heldout` | descriptive | `<= 0.40` +/- 0.20 | `<= 0.10` | pending clean replay |
+
+### Section C Cross-Tab Prediction
+
+For CQ on both thesis families, the locked prediction is:
+
+`P(policy_answer_success | alias_CQR_hit) - P(policy_answer_success | alias_CQR_miss) >= 0.30`
+
+Each thesis family must also have at least 5 alias-CQR hits.
+
 ## 2026-05-15 - Phase 4 Noisy Policy Comparison
 
 Artifacts:
