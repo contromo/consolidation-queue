@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Dict, List
@@ -396,7 +396,10 @@ def _oracle_event_timestamp(event: Dict[str, object]) -> datetime:
 
 
 def _parse_timestamp(value: str) -> datetime:
-    return datetime.fromisoformat(value)
+    timestamp = datetime.fromisoformat(value)
+    if timestamp.tzinfo is None:
+        return timestamp
+    return timestamp.astimezone(timezone.utc).replace(tzinfo=None)
 
 
 def main(argv: List[str] = None) -> int:

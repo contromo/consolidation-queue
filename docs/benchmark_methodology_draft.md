@@ -10,12 +10,18 @@ This draft consolidates the contribution the repo can defend today:
 2. a component-gated noisy-mode discipline that prevents false policy unlocks,
 3. an inspectable failure taxonomy for local extractor limits, and
 4. a narrow positive oracle-policy claim around witness-conflict abstention,
-5. a mixed preregistered noisy policy comparison with mechanism-local support.
+5. a mixed preregistered noisy policy comparison with mechanism-local support,
+6. a mechanism audit that separates attributable survival from unattributed
+   noisy nulls.
 
 The 2026-05-15 noisy policy comparison fired Bucket B. That is a completed
 noisy-mode policy result, but it is not broad CQ superiority: CQ wins versus
 Reflection on forced contradiction and preference drift, ties the other
 countable rows, and does not separate from `Mem0Lite` on the frozen sentinel.
+The follow-on mechanism audit narrows the claim further: forced contradiction
+is the clean survival row; preference drift is partial survival; the remaining
+ties should not be promoted into extractor-floor convergence claims unless the
+32B artifacts directly support that attribution.
 
 ## 1. Contributions
 
@@ -250,7 +256,73 @@ extraction-floor convergence mode that makes some policy comparisons
 uninformative under the current noisy stream. Unsupported claim: broad noisy CQ
 superiority or noisy separation from `Mem0Lite` on the frozen sentinel.
 
-## 6. Local Unlock Probe
+### Bucket B Mechanism Audit
+
+Source: `docs/noisy_policy_mechanism_audit.md`.
+
+Specific cells:
+
+- compact audit evidence:
+  `data/results/noisy_policy_mechanism_audit_evidence.json`
+- representative survival trace:
+  `data/results/audit_trace_forced_contradiction_default.html`
+- representative null/convergence-pressure trace:
+  `data/results/audit_trace_scope_contamination_default.html`
+
+Readout:
+
+- `forced_contradiction` is a clean mechanism-survival row: the 32B default
+  component artifact has perfect contradiction, scope, claim-type, and
+  canonicalization scores, and the noisy ablation identifies
+  `cq_no_contestation_demotion` as the carrying component
+- `preference_drift` is partial survival: the noisy CQ-vs-Reflection win
+  remains, but absolute CQ answer correctness drops by `0.67` from oracle and
+  32B artifacts show residual claim-type/scope/canonicalization drift
+- `scope_contamination` has real 32B residual defects, including
+  canonicalization splits, scope mismatches, and missed contradiction edges, but
+  the exact policy tie is also dominated by canonical-id/query-resolution
+  mismatch
+- `useful_pending_memory` and `memory_poisoning` should be recorded as
+  unattributed nulls, not extractor-floor convergence rows, because their 32B
+  component artifacts are perfect across the audited dimensions while exact
+  policy-query canonical-id alignment is `0/60`
+- `false_corroboration` remains descriptive-only because Phase 4 does not
+  extract source identity
+- the frozen sentinel contains one real 32B defect trace, but the exact policy
+  tie is not enough to support broad noisy mechanism-generalization
+
+Supported claim: contradiction-edge-driven contestation/demotion remains
+visible under the current 32B noisy stream. Unsupported claim:
+scope-aware pending override, source-independence gating, and poisoning defense
+survive noisy extraction in this Phase 4 run.
+
+## 6. Discussion
+
+The audit thesis should lead the writeup: the completed Bucket B result is a
+contingency map, not a broad noisy-mode CQ win. Contestation/demotion survives
+when 32B noisy extraction preserves contradiction edges, with
+`forced_contradiction` as the clean row and `preference_drift` as a partial row.
+The remaining countable rows and the frozen sentinel should be treated as
+current-stream nulls unless a specific 32B artifact supports a stronger
+attribution.
+
+This is where the upstream component gate and downstream mechanism audit meet.
+The gate prevented a 7B false unlock by catching concentrated per-family and
+frozen-sentinel failures that aggregate gates smoothed over. The audit then
+prevents the opposite error after the 32B unlock: it stops the paper from
+turning every exact tie into an extractor-floor convergence story. In
+particular, `useful_pending_memory` and `memory_poisoning` are unattributed
+nulls under the current evidence because the audited 32B component artifacts are
+perfect while exact canonical-id/query-resolution alignment fails.
+
+The central claim for a memory-community writeup is therefore mechanism-local:
+same-candidate-stream evaluation can show when policy architecture remains
+visible after noisy extraction, and it can also identify when the noisy stream
+has stopped exposing the policy distinction. That makes the contribution a
+preregistered benchmark plus attribution discipline, not a replacement memory
+system or a claim of broad noisy CQ superiority.
+
+## 7. Local Unlock Probe
 
 The minimal empirical lift was preregistered in
 `docs/local_unlock_probe_preregistration.md` and both 32B cells reached Bucket A
@@ -278,7 +350,7 @@ preregistration step for a noisy CQ-vs-Reflection-vs-`Mem0Lite` policy
 comparison. The Bucket C cross-family abstention assay remains out of scope for
 this branch.
 
-## 7. Limits
+## 8. Limits
 
 Current unsupported claims:
 
@@ -289,18 +361,22 @@ Current unsupported claims:
 - learned semantic scope inference
 - repaired `temporal_skew`
 - spectrum-family evidence as external validation
+- extractor-floor convergence for `useful_pending_memory` or
+  `memory_poisoning` under the current 32B artifacts
 
 `CQDatedContestation` remains a separately preregistered follow-up. It must not
 retrofit the original `phase2_5` adversarial headline result.
 
-## 8. Next Work
+## 9. Next Work
 
-1. Write a focused Bucket B follow-up plan around the surviving countable
-   mechanisms, especially forced contradiction and preference drift.
-2. Inspect the noisy-vs-oracle gap and failure examples for the three countable
-   rows that tied, without changing thresholds, prompts, validators, or schema
-   profiles.
-3. Treat LongMemEval as future transfer work, not a current claim.
+1. Treat the Bucket B audit as the writeup anchor: clean survival on forced
+   contradiction, partial survival on preference drift, and unattributed nulls
+   elsewhere unless directly supported by 32B artifacts.
+2. If future work addresses null rows, preregister it as a policy-facing
+   canonical-id/query-resolution or adapter-contract audit, not as a threshold
+   sweep that rescues Bucket B.
+3. Treat LongMemEval as future transfer work, not a current claim, and base any
+   transfer hypothesis only on the contradiction-like mechanism that survived.
 
 The current shareable package is therefore a benchmark and methodology draft
 with honest oracle-policy results, a clear noisy-mode gate, and a completed
