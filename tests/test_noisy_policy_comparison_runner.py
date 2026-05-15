@@ -321,6 +321,16 @@ class NoisyPolicyComparisonRunnerTests(unittest.TestCase):
         )
         self.assertTrue(all(row["family"] == noisy.FORCED_CONTRADICTION for row in rows))
 
+    def test_summary_schema_profiles_adds_current_profile_without_duplication(self) -> None:
+        self.assertEqual(
+            noisy.summary_schema_profiles("default"),
+            noisy.SCHEMA_PROFILES,
+        )
+        self.assertEqual(
+            noisy.summary_schema_profiles("future_profile"),
+            (*noisy.SCHEMA_PROFILES, "future_profile"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

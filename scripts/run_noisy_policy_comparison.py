@@ -38,6 +38,7 @@ from cq.eval.extracted_candidate_runner import (  # noqa: E402
     LOCKED_MODEL_TAG,
     LOCKED_PROMPT_SHA256,
     PRIMARY_SCENARIO_COUNT,
+    SCHEMA_PROFILES,
     NoisyPolicyComparisonError,
     adapt_predictions_for_scenarios,
     candidate_stream_audit_for_adapted_scenarios,
@@ -236,15 +237,16 @@ def run_noisy_policy_comparison(
             }
         )
 
+    summary_profiles = summary_schema_profiles(schema_profile)
     summary = aggregate_summary(
         run_dir=run_dir,
-        schema_profiles=("default", "scenario_conditioned"),
+        schema_profiles=summary_profiles,
         include_frozen_sentinel=include_frozen_sentinel,
     )
     completed_runs = completed_cell_run_rows(
         run_dir=run_dir,
         output_dir=output_dir,
-        schema_profiles=("default", "scenario_conditioned"),
+        schema_profiles=summary_profiles,
         include_frozen_sentinel=include_frozen_sentinel,
     )
     summary.update(
@@ -266,6 +268,13 @@ def run_noisy_policy_comparison(
     )
     _write_json(SUMMARY_PATH, summary)
     return SUMMARY_PATH
+
+
+def summary_schema_profiles(current_schema_profile: str) -> Sequence[str]:
+    profiles = list(SCHEMA_PROFILES)
+    if current_schema_profile not in profiles:
+        profiles.append(current_schema_profile)
+    return tuple(profiles)
 
 
 def _assert_component_gate_still_passes(
@@ -861,7 +870,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--schema-profile",
         required=True,
-        choices=["default", "scenario_conditioned"],
+        choices=SCHEMA_PROFILES,
     )
     parser.add_argument("--include-frozen-sentinel", action="store_true")
     parser.add_argument(
