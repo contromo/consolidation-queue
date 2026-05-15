@@ -21,6 +21,7 @@ data/results/**/*.json
 !data/results/noisy_policy_comparison_summary.json
 !data/results/noisy_policy_comparison_*_metrics.csv
 !data/results/noisy_policy_mechanism_audit_evidence.json
+!data/results/canonical_id_resolution_audit_stop.json
 !data/results/audit_trace_*_default.html
 !data/runs/audit_trace_*_default.json
 !data/results/component_gate_decision_*_summary.json

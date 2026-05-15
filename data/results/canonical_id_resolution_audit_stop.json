@@ -1,0 +1,11 @@
+{
+  "bucket": "D",
+  "details": {
+    "expected_sha256": "03d9715cae2e34ab639a9c17f638787aff3128ce56cb4eb21846c63c7ee5f8af",
+    "observed_sha256": "1a2dbd7c1c9e65121f2a2482e57e78c1ca9541de18038ca9da91bd9fcadc76b2",
+    "path": "data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json"
+  },
+  "generated_at": "2026-05-15T16:11:49.628925Z",
+  "mode": "canonical_id_resolution_audit_stop",
+  "reason": "locked_input_sha_mismatch"
+}
