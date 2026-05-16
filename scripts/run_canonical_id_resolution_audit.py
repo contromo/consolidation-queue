@@ -1157,16 +1157,7 @@ def build_audit_summary(
         family_metrics["predictions"] = prediction_outcome_for_family(family, family_metrics)
         families[family] = family_metrics
     bucket = classify_bucket(families)
-    runner_command = (
-        "python3 scripts/run_canonical_id_resolution_audit.py "
-        "--primary-model-tag qwen2.5:32b-instruct-q4_K_M "
-        "--schema-profile default --include-frozen-sentinel"
-    )
-    if context.equivalence_mode != EQUIVALENCE_MODE_STRICT or context.is_split_root:
-        runner_command += (
-            f" --replay-root {context.replay_root} "
-            f"--equivalence-mode {context.equivalence_mode}"
-        )
+    runner_command = audit_runner_command(context)
     return {
         "mode": "canonical_id_resolution_audit",
         "generated_at": utc_now(),
@@ -1182,6 +1173,20 @@ def build_audit_summary(
         "verified_inputs": list(verified_inputs),
         "runner_command": runner_command,
     }
+
+
+def audit_runner_command(context: AuditContext) -> str:
+    runner_command = (
+        "python3 scripts/run_canonical_id_resolution_audit.py "
+        "--primary-model-tag qwen2.5:32b-instruct-q4_K_M "
+        "--schema-profile default --include-frozen-sentinel"
+    )
+    if context.equivalence_mode != EQUIVALENCE_MODE_STRICT or context.is_split_root:
+        runner_command += (
+            f" --replay-root {shlex.quote(str(context.replay_root))} "
+            f"--equivalence-mode {context.equivalence_mode}"
+        )
+    return runner_command
 
 
 def compute_family_metrics(family: str, run_data: Mapping[str, object]) -> Dict[str, object]:

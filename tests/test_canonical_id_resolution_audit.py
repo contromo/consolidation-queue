@@ -942,6 +942,18 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
                     f"{output_const} must write under REPO_ROOT",
                 )
 
+    def test_runner_command_quotes_replay_root(self) -> None:
+        context = audit.AuditContext(
+            replay_root=Path("/tmp/replay root/locked worktree"),
+            output_root=Path("/tmp/output-root"),
+            equivalence_mode=audit.EQUIVALENCE_MODE_PATH_NORMALIZED,
+        )
+
+        command = audit.audit_runner_command(context)
+
+        self.assertIn("--replay-root '/tmp/replay root/locked worktree'", command)
+        self.assertIn("--equivalence-mode path_normalized", command)
+
     def test_strict_sha_default_with_split_root_still_byte_exact(self) -> None:
         # In strict_sha mode, even with a split replay/output root, byte-exact
         # comparison must still fire on raw SHA mismatch.
