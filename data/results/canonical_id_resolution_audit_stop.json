@@ -1,11 +1,13 @@
 {
   "bucket": "D",
   "details": {
-    "expected_sha256": "03d9715cae2e34ab639a9c17f638787aff3128ce56cb4eb21846c63c7ee5f8af",
-    "observed_sha256": "1a2dbd7c1c9e65121f2a2482e57e78c1ca9541de18038ca9da91bd9fcadc76b2",
-    "path": "data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json"
+    "expected_sha256": "342fc97d15c51f315347597a0f278de089e5961a2f7e3f32d06be71147a7f479",
+    "family": "forced_contradiction",
+    "manifest": ".claude/worktrees/cqr-replay-98959788/data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json",
+    "observed_sha256": "fa738ab89084b34440305ccb452046f5e343f1bf618f2152b6833a60edc1fb1c",
+    "path": "data/runs/noisy_policy_comparison_forced_contradiction_default.json"
   },
-  "generated_at": "2026-05-15T16:11:49.628925Z",
+  "generated_at": "2026-05-16T20:15:54.435916Z",
   "mode": "canonical_id_resolution_audit_stop",
-  "reason": "locked_input_sha_mismatch"
+  "reason": "locked_run_json_sha_mismatch"
 }
