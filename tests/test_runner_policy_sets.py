@@ -10,6 +10,7 @@ from cq.eval.runner import (
     FALSE_CORROBORATION,
     FORCED_CONTRADICTION,
     MEMORY_POISONING,
+    POLICY_SET_FOLLOWUP,
     POLICY_SET_PHASE_2_5,
     PREFERENCE_DRIFT,
     SCOPE_CONTAMINATION,
@@ -17,6 +18,7 @@ from cq.eval.runner import (
     build_run_artifact,
     write_outputs,
 )
+from cq.memory.consolidation_queue import CQDatedContestation
 
 
 class RunnerPolicySetTests(unittest.TestCase):
@@ -112,6 +114,41 @@ class RunnerPolicySetTests(unittest.TestCase):
                 family=ADVERSARIAL_UPSTREAM_NOISE,
                 policy_set=POLICY_SET_PHASE_2_5,
             )
+
+    def test_followup_policy_set_rejected_outside_adversarial_upstream_noise(self) -> None:
+        for family in [
+            FORCED_CONTRADICTION,
+            SCOPE_CONTAMINATION,
+            PREFERENCE_DRIFT,
+            USEFUL_PENDING_MEMORY,
+            FALSE_CORROBORATION,
+            MEMORY_POISONING,
+            EVIDENCE_CONFLICT_SPECTRUM,
+        ]:
+            with self.subTest(family=family):
+                with self.assertRaises(ValueError):
+                    build_run_artifact(
+                        1,
+                        template_mix="mixed",
+                        family=family,
+                        policy_set=POLICY_SET_FOLLOWUP,
+                    )
+
+    def test_followup_includes_dated_contestation_and_phase2_5_policies(self) -> None:
+        artifact = build_run_artifact(
+            1,
+            template_mix="mixed",
+            family=ADVERSARIAL_UPSTREAM_NOISE,
+            policy_set=POLICY_SET_FOLLOWUP,
+        )
+        policy_names = [policy["policy_name"] for policy in artifact["policies"]]
+        self.assertIn(CQDatedContestation.policy_name, policy_names)
+        self.assertIn("mem0_lite", policy_names)
+        for ablation in CQ_ABLATION_POLICIES:
+            self.assertIn(ablation.policy_name, policy_names)
+        self.assertEqual(artifact["policy_set"], POLICY_SET_FOLLOWUP)
+        self.assertIn(CQDatedContestation.policy_name, artifact["ablation_notes"])
+        self.assertIn("mem0_lite", artifact["baseline_notes"])
 
     def test_phase2_5_csv_includes_mem0_bootstrap_comparison_rows(self) -> None:
         artifact = build_run_artifact(
