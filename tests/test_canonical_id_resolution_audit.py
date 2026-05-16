@@ -546,6 +546,46 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
                 )
         self.assertEqual(cm.exception.reason, "run_json_unapproved_path_field_drift")
 
+    def test_path_normalized_blocks_expected_only_nested_path_leak(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            replay_root = Path(tmpdir) / "replay-root"
+            output_root = Path(tmpdir) / "output-root"
+            replay_root.mkdir()
+            output_root.mkdir()
+            observed_payload = {
+                "experiment": "noisy_policy_comparison_forced_contradiction_default",
+                "predictions_path": f"{replay_root}/predictions.json",
+            }
+            expected_payload = {
+                "experiment": "noisy_policy_comparison_forced_contradiction_default",
+                "predictions_path": "data/results/locked_predictions.json",
+                "metadata": {
+                    "runner_command": f"python3 scripts/run.py --input {replay_root}/foo"
+                },
+            }
+            observed_path = replay_root / "observed_run.json"
+            observed_path.write_text(json.dumps(observed_payload), encoding="utf-8")
+            manifest_path = replay_root / "fake_manifest.json"
+            manifest_path.write_text("{}", encoding="utf-8")
+            context = audit.AuditContext(
+                replay_root=replay_root,
+                output_root=output_root,
+                equivalence_mode=audit.EQUIVALENCE_MODE_PATH_NORMALIZED,
+            )
+
+            with self.assertRaises(audit.AuditAbort) as cm:
+                audit.compare_run_json_path_normalized(
+                    observed_path=observed_path,
+                    expected_payload=expected_payload,
+                    expected_sha="ignored",
+                    manifest_path=manifest_path,
+                    context=context,
+                )
+
+        self.assertEqual(cm.exception.reason, "run_json_unapproved_path_field_drift")
+        leaks = cm.exception.details["leaks"]
+        self.assertTrue(any("metadata/runner_command" in leak["json_pointer"] for leak in leaks))
+
     def test_path_normalized_aborts_without_locked_run_json_snapshot(self) -> None:
         observed_payload = {
             "experiment": "noisy_policy_comparison_forced_contradiction_default",

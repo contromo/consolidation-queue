@@ -1037,8 +1037,8 @@ def _walk_path_leaks(
         and prefix[0] in APPROVED_PATH_NORMALIZED_RUN_FIELDS
     ):
         return
-    if isinstance(observed, Mapping):
-        keys = set(observed.keys())
+    if isinstance(observed, Mapping) or isinstance(expected, Mapping):
+        keys = set(observed.keys()) if isinstance(observed, Mapping) else set()
         if isinstance(expected, Mapping):
             keys |= set(expected.keys())
         for key in sorted(keys, key=str):
