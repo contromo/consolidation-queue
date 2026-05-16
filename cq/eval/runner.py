@@ -21,6 +21,7 @@ from cq.eval.preregistration_lock import (
     validate_frozen_eval_lock,
 )
 from cq.memory.consolidation_queue import (
+    CQDatedContestation,
     CQNoContestationDemotion,
     CQNoPendingLookupUse,
     CQNoSourceIndependenceGate,
@@ -57,7 +58,8 @@ EVIDENCE_CONFLICT_SPECTRUM = "evidence_conflict_spectrum"
 MECHANISM_DIVERSE_HELDOUT = "mechanism_diverse_heldout"
 POLICY_SET_DEFAULT = "default"
 POLICY_SET_PHASE_2_5 = "phase2_5"
-POLICY_SET_CHOICES = (POLICY_SET_DEFAULT, POLICY_SET_PHASE_2_5)
+POLICY_SET_FOLLOWUP = "followup"
+POLICY_SET_CHOICES = (POLICY_SET_DEFAULT, POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP)
 MODE_ORACLE = "oracle"
 MODE_EXTRACTED = "extracted"
 MODE_CHOICES = (MODE_ORACLE, MODE_EXTRACTED)
@@ -343,11 +345,19 @@ def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
                 ", ".join(POLICY_SET_CHOICES),
             )
         )
+    if policy_set == POLICY_SET_FOLLOWUP and family != ADVERSARIAL_UPSTREAM_NOISE:
+        raise ValueError(
+            "Policy set '{}' is only valid for family '{}'; received family '{}'.".format(
+                POLICY_SET_FOLLOWUP,
+                ADVERSARIAL_UPSTREAM_NOISE,
+                family,
+            )
+        )
     policies = [
         ReflectionEagerWriteLite,
         ConsolidationQueueLite,
     ]
-    if policy_set == POLICY_SET_PHASE_2_5:
+    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP):
         policies.extend(CQ_ABLATION_POLICIES)
     policies.extend(
         [
@@ -366,8 +376,10 @@ def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
         MECHANISM_DIVERSE_HELDOUT,
     }:
         policies.append(ScopeBlindTranscriptRAGLite)
-    if policy_set == POLICY_SET_PHASE_2_5:
+    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP):
         policies.append(Mem0Lite)
+    if policy_set == POLICY_SET_FOLLOWUP:
+        policies.append(CQDatedContestation)
     return policies
 
 
@@ -426,23 +438,22 @@ def build_run_artifact(
         family=family,
         policy_set=policy_set,
     )
+    baseline_notes: Dict[str, str] = {}
+    ablation_notes: Dict[str, str] = {}
+    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP):
+        baseline_notes[Mem0Lite.policy_name] = Mem0Lite.partial_baseline_caveat
+        for policy in CQ_ABLATION_POLICIES:
+            ablation_notes[policy.policy_name] = policy.ablation_note
+    if policy_set == POLICY_SET_FOLLOWUP:
+        ablation_notes[CQDatedContestation.policy_name] = CQDatedContestation.ablation_note
     return {
         "experiment": "{}_oracle".format(family),
         "family": family,
         "scenario_count": len(scenarios),
         "template_mix": template_mix,
         "policy_set": policy_set,
-        "baseline_notes": {
-            Mem0Lite.policy_name: Mem0Lite.partial_baseline_caveat,
-        }
-        if policy_set == POLICY_SET_PHASE_2_5
-        else {},
-        "ablation_notes": {
-            policy.policy_name: policy.ablation_note
-            for policy in CQ_ABLATION_POLICIES
-        }
-        if policy_set == POLICY_SET_PHASE_2_5
-        else {},
+        "baseline_notes": baseline_notes,
+        "ablation_notes": ablation_notes,
         "pairwise_template_id_comparisons": _build_pairwise_comparisons(
             run_records_by_policy,
             policy_set=policy_set,
@@ -532,7 +543,7 @@ def _build_pairwise_comparisons(
             cq,
             reflection,
         )
-    if policy_set == POLICY_SET_PHASE_2_5:
+    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP):
         mem0 = run_records_by_policy.get(Mem0Lite.policy_name)
         if reflection is not None and mem0 is not None:
             comparisons["mem0_vs_reflection_by_template_id"] = _pairwise_metric_comparisons(
@@ -765,7 +776,10 @@ def main(argv: List[str] = None) -> int:
         "--policy-set",
         choices=POLICY_SET_CHOICES,
         default=POLICY_SET_DEFAULT,
-        help="Policy set to run. Use phase2_5 to include Mem0Lite.",
+        help=(
+            "Policy set to run. Use phase2_5 to include Mem0Lite. Use followup to add "
+            "CQDatedContestation on adversarial_upstream_noise only."
+        ),
     )
     parser.add_argument(
         "--extracted-predictions-dir",
