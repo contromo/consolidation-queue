@@ -320,6 +320,18 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
         self.assertIn("| `useful_pending_memory` | `>= 0.40` | +/- 0.20 | `<= 0.05` |", block)
         self.assertIn("| `preference_drift` | `0.25-0.60` | inside band | `<= 0.10` |", block)
 
+    def test_repair_preregistration_targets_artifact_lock_commit(self) -> None:
+        repair_path = (
+            audit.REPO_ROOT
+            / "docs"
+            / "canonical_id_resolution_audit_repair_preregistration.md"
+        )
+        text = repair_path.read_text(encoding="utf-8")
+
+        self.assertIn("98959788f318e84347216aa8b8b5bd52b6a86e1a", text)
+        self.assertIn("<path-at-98959788>", text)
+        self.assertNotIn("<path-at-7583d3cd>", text)
+
     def test_alias_false_positive_rate_uses_same_scenario_questions(self) -> None:
         scenarios = {
             "s1": {
@@ -502,9 +514,9 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
         self.assertTrue(any("runner_command" in leak["json_pointer"] for leak in leaks))
 
     def test_path_normalized_no_expected_payload_still_blocks_path_leak(self) -> None:
-        # Production fallback: no locked run JSON snapshot is available, so
-        # only the observed payload is loaded. A path leak in a non-approved
-        # field of the observed payload must still abort.
+        # Even without a locked run JSON snapshot, the path-leak guard should
+        # fire before the missing-snapshot abort when there is unapproved path
+        # drift in the observed payload.
         with tempfile.TemporaryDirectory() as tmpdir:
             replay_root = Path(tmpdir) / "replay-root"
             output_root = Path(tmpdir) / "output-root"
@@ -534,6 +546,39 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
                 )
         self.assertEqual(cm.exception.reason, "run_json_unapproved_path_field_drift")
 
+    def test_path_normalized_aborts_without_locked_run_json_snapshot(self) -> None:
+        observed_payload = {
+            "experiment": "noisy_policy_comparison_forced_contradiction_default",
+            "predictions_path": "data/results/locked_predictions.json",
+            "candidate_adapter_sha256": "abc",
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            replay_root = Path(tmpdir) / "replay-root"
+            output_root = Path(tmpdir) / "output-root"
+            replay_root.mkdir()
+            output_root.mkdir()
+            observed_path = replay_root / "observed_run.json"
+            observed_path.write_text(json.dumps(observed_payload), encoding="utf-8")
+            manifest_path = replay_root / "fake_manifest.json"
+            manifest_path.write_text("{}", encoding="utf-8")
+            context = audit.AuditContext(
+                replay_root=replay_root,
+                output_root=output_root,
+                equivalence_mode=audit.EQUIVALENCE_MODE_PATH_NORMALIZED,
+            )
+
+            with self.assertRaises(audit.AuditAbort) as cm:
+                audit.compare_run_json_path_normalized(
+                    observed_path=observed_path,
+                    expected_payload=None,
+                    expected_sha="ignored",
+                    manifest_path=manifest_path,
+                    context=context,
+                )
+
+        self.assertEqual(cm.exception.reason, "missing_locked_run_json_snapshot")
+
     def test_path_normalized_aborts_on_metrics_csv_drift(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             replay_root = Path(tmpdir) / "replay-root"
@@ -542,8 +587,34 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
             output_root.mkdir()
             metrics_path = replay_root / "noisy_policy_comparison_forced_contradiction_default_metrics.csv"
             metrics_path.write_text("family,value\nforced_contradiction,1.0\n", encoding="utf-8")
+            observed_metrics_sha = audit.sha256_file(metrics_path)
+            stable_fields = {
+                "candidate_stream_sha256": [],
+                "candidate_adapter_sha256": "x",
+                "primary_model_digest": "y",
+                "prompt_sha256": "z",
+                "schema_profile": "default",
+                "preregistration_lock_sha256": "w",
+                "predictions_sha256": "v",
+            }
             manifest_path = replay_root / "noisy_policy_comparison_forced_contradiction_default_manifest.json"
             manifest_path.write_text(
+                json.dumps(
+                    {
+                        "artifacts": [
+                            {
+                                "path": str(metrics_path.relative_to(replay_root)),
+                                "sha256": observed_metrics_sha,
+                                "bytes": metrics_path.stat().st_size,
+                            }
+                        ],
+                        **stable_fields,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            expected_manifest_path = output_root / "locked_manifest.json"
+            expected_manifest_path.write_text(
                 json.dumps(
                     {
                         "artifacts": [
@@ -553,13 +624,7 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
                                 "bytes": metrics_path.stat().st_size,
                             }
                         ],
-                        "candidate_stream_sha256": [],
-                        "candidate_adapter_sha256": "x",
-                        "primary_model_digest": "y",
-                        "prompt_sha256": "z",
-                        "schema_profile": "default",
-                        "preregistration_lock_sha256": "w",
-                        "predictions_sha256": "v",
+                        **stable_fields,
                     }
                 ),
                 encoding="utf-8",
@@ -574,10 +639,97 @@ class CanonicalIdResolutionAuditTests(unittest.TestCase):
                 audit.verify_manifested_artifacts(
                     manifest_path,
                     context=context,
-                    expected_manifest_path=None,
+                    expected_manifest_path=expected_manifest_path,
                 )
 
         self.assertEqual(cm.exception.reason, "manifest_sha_mismatch")
+
+    def test_snapshot_locked_manifests_requires_materialized_locked_run_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            replay_root = Path(tmpdir) / "replay-root"
+            output_root = Path(tmpdir) / "output-root"
+            snapshot_root = Path(tmpdir) / "snapshot"
+            (replay_root / "data" / "runs").mkdir(parents=True)
+            output_root.mkdir()
+            manifest_path = replay_root / "data" / "runs" / "noisy_policy_comparison_forced_contradiction_default_manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "artifacts": [
+                            {
+                                "path": "data/runs/noisy_policy_comparison_forced_contradiction_default.json",
+                                "sha256": "0" * 64,
+                                "bytes": 2,
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            context = audit.AuditContext(
+                replay_root=replay_root,
+                output_root=output_root,
+                equivalence_mode=audit.EQUIVALENCE_MODE_PATH_NORMALIZED,
+            )
+
+            with self.assertRaises(audit.AuditAbort) as cm:
+                audit._snapshot_locked_manifests(
+                    context=context,
+                    snapshot_root=snapshot_root,
+                )
+
+        self.assertEqual(cm.exception.reason, "missing_locked_run_json_artifact")
+
+    def test_path_normalized_aborts_on_missing_manifest_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            replay_root = Path(tmpdir) / "replay-root"
+            output_root = Path(tmpdir) / "output-root"
+            replay_root.mkdir()
+            output_root.mkdir()
+            stable_fields = {
+                "candidate_stream_sha256": [],
+                "candidate_adapter_sha256": "x",
+                "primary_model_digest": "y",
+                "prompt_sha256": "z",
+                "schema_profile": "default",
+                "preregistration_lock_sha256": "w",
+                "predictions_sha256": "v",
+            }
+            observed_manifest_path = replay_root / "observed_manifest.json"
+            observed_manifest_path.write_text(
+                json.dumps({"artifacts": [], **stable_fields}),
+                encoding="utf-8",
+            )
+            expected_manifest_path = output_root / "locked_manifest.json"
+            expected_manifest_path.write_text(
+                json.dumps(
+                    {
+                        "artifacts": [
+                            {
+                                "path": "data/results/locked_metrics.csv",
+                                "sha256": "0" * 64,
+                                "bytes": 1,
+                            }
+                        ],
+                        **stable_fields,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            context = audit.AuditContext(
+                replay_root=replay_root,
+                output_root=output_root,
+                equivalence_mode=audit.EQUIVALENCE_MODE_PATH_NORMALIZED,
+            )
+
+            with self.assertRaises(audit.AuditAbort) as cm:
+                audit.verify_manifested_artifacts(
+                    observed_manifest_path,
+                    context=context,
+                    expected_manifest_path=expected_manifest_path,
+                )
+
+        self.assertEqual(cm.exception.reason, "manifest_artifact_list_drift")
 
     def test_path_normalized_aborts_on_stable_manifest_field_drift(self) -> None:
         for field, expected_value, observed_value in [

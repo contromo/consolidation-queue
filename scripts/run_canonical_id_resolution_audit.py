@@ -18,6 +18,7 @@ import re
 import shlex
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
@@ -304,8 +305,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         help=(
             "Root path to read replay artifacts from. Defaults to the repo "
             "root, preserving strict byte-stable replay behavior. Use a "
-            "detached worktree checked out at the locked Phase 4 commit for "
-            "the official repaired command."
+            "detached worktree checked out at the artifact-lock commit, with "
+            "locked run JSON artifacts materialized, for the official "
+            "repaired command."
         ),
     )
     parser.add_argument(
@@ -360,26 +362,43 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     "hint": (
                         "--equivalence-mode path_normalized only applies to the"
                         " locked replay scenario; pass --replay-root pointing"
-                        " at a detached worktree at the locked Phase 4 commit."
+                        " at a detached worktree at the artifact-lock commit."
                     ),
                 },
             )
-        locked_manifest_snapshots = (
-            _snapshot_locked_manifests(context=context)
-            if context.equivalence_mode == EQUIVALENCE_MODE_PATH_NORMALIZED
-            else None
-        )
-        regenerate_noisy_policy_comparison(
-            args.primary_model_tag,
-            args.schema_profile,
-            context=context,
-        )
-        verified_inputs = verify_locked_input_shas(
-            context=context,
-        ) + verify_all_manifested_artifacts(
-            context=context,
-            locked_manifests=locked_manifest_snapshots,
-        )
+        locked_manifest_snapshots = None
+        verified_locked_inputs: List[Dict[str, object]] = []
+        if context.equivalence_mode == EQUIVALENCE_MODE_PATH_NORMALIZED:
+            ensure_clean_pre_run_worktrees(context)
+            verified_locked_inputs = verify_locked_input_shas(context=context)
+            with tempfile.TemporaryDirectory(
+                prefix="canonical_id_resolution_audit_locked_snapshot_"
+            ) as snapshot_dir:
+                locked_manifest_snapshots = _snapshot_locked_manifests(
+                    context=context,
+                    snapshot_root=Path(snapshot_dir),
+                )
+                regenerate_noisy_policy_comparison(
+                    args.primary_model_tag,
+                    args.schema_profile,
+                    context=context,
+                )
+                verified_inputs = verified_locked_inputs + verify_all_manifested_artifacts(
+                    context=context,
+                    locked_manifests=locked_manifest_snapshots,
+                )
+        else:
+            regenerate_noisy_policy_comparison(
+                args.primary_model_tag,
+                args.schema_profile,
+                context=context,
+            )
+            verified_inputs = verify_locked_input_shas(
+                context=context,
+            ) + verify_all_manifested_artifacts(
+                context=context,
+                locked_manifests=locked_manifest_snapshots,
+            )
         summary = build_audit_summary(
             preregistration_lock_sha=prereg_lock_sha,
             verified_inputs=verified_inputs,
@@ -479,23 +498,7 @@ def regenerate_noisy_policy_comparison(
         output_root=REPO_ROOT,
         equivalence_mode=EQUIVALENCE_MODE_STRICT,
     )
-    status = working_tree_status_short(context.output_root)
-    if status:
-        raise AuditAbort(
-            "dirty_pre_run_working_tree",
-            {"working_tree_status": status, "root": str(context.output_root)},
-        )
-    if context.is_split_root:
-        replay_status = working_tree_status_short(context.replay_root)
-        if replay_status:
-            raise AuditAbort(
-                "dirty_pre_run_working_tree",
-                {
-                    "working_tree_status": replay_status,
-                    "root": str(context.replay_root),
-                    "root_kind": "replay_root",
-                },
-            )
+    ensure_clean_pre_run_worktrees(context)
     command = [
         sys.executable,
         "scripts/run_noisy_policy_comparison.py",
@@ -528,6 +531,26 @@ def regenerate_noisy_policy_comparison(
         )
 
 
+def ensure_clean_pre_run_worktrees(context: AuditContext) -> None:
+    status = working_tree_status_short(context.output_root)
+    if status:
+        raise AuditAbort(
+            "dirty_pre_run_working_tree",
+            {"working_tree_status": status, "root": str(context.output_root)},
+        )
+    if context.is_split_root:
+        replay_status = working_tree_status_short(context.replay_root)
+        if replay_status:
+            raise AuditAbort(
+                "dirty_pre_run_working_tree",
+                {
+                    "working_tree_status": replay_status,
+                    "root": str(context.replay_root),
+                    "root_kind": "replay_root",
+                },
+            )
+
+
 def working_tree_status_short(root: Path = REPO_ROOT) -> str:
     result = subprocess.run(
         ["git", "status", "--short"],
@@ -548,37 +571,60 @@ def working_tree_status_short(root: Path = REPO_ROOT) -> str:
 def _snapshot_locked_manifests(
     *,
     context: AuditContext,
+    snapshot_root: Path,
 ) -> Dict[str, Path]:
     """Snapshot the locked manifests to a side directory before regeneration.
 
-    The replay regenerates manifests at the same paths, overwriting the
-    locked Phase 4 copies. To compare stable fields and locked run JSON
-    payloads after regeneration we copy the locked manifests and any sibling
-    locked run JSONs into ``<output_root>/data/results/canonical_id_resolution_audit_locked_snapshot``
-    before invoking the noisy comparison.
+    The replay regenerates manifests at the same paths, overwriting the locked
+    Phase 4 copies. To compare stable fields and locked run JSON payloads after
+    regeneration, copy the locked manifests and locked run JSONs into the
+    caller-provided temporary snapshot directory before invoking the noisy
+    comparison.
     """
-    snapshot_root = (
-        context.output_root
-        / "data"
-        / "results"
-        / "canonical_id_resolution_audit_locked_snapshot"
-    )
     snapshot_root.mkdir(parents=True, exist_ok=True)
     locked_manifests: Dict[str, Path] = {}
     for family in FAMILIES:
         manifest_path = context.replay_manifest_path(family)
         if not manifest_path.exists():
-            continue
+            raise AuditAbort(
+                "missing_locked_manifest_snapshot_source",
+                {"family": family, "path": repo_relative(manifest_path)},
+            )
+        manifest = read_json(manifest_path)
         snapshot_manifest = snapshot_root / manifest_path.name
         snapshot_manifest.write_bytes(manifest_path.read_bytes())
         locked_manifests[family] = snapshot_manifest
-        # Also snapshot the run JSON if it happens to be present at the
-        # locked commit (it usually is not, since run JSONs are
-        # regeneratable_only).
-        run_json = context.run_path(family)
-        if run_json.exists():
-            snapshot_run = snapshot_root / run_json.name
-            snapshot_run.write_bytes(run_json.read_bytes())
+        for artifact in manifest.get("artifacts", []):
+            if not isinstance(artifact, dict):
+                continue
+            relative = str(artifact.get("path") or "")
+            artifact_path = context.replay_root / relative
+            if not _is_run_json_artifact(artifact_path):
+                continue
+            if not artifact_path.exists():
+                raise AuditAbort(
+                    "missing_locked_run_json_artifact",
+                    {
+                        "family": family,
+                        "manifest": repo_relative(manifest_path),
+                        "path": relative,
+                    },
+                )
+            expected_sha = str(artifact.get("sha256") or "")
+            observed_sha = sha256_file(artifact_path)
+            if observed_sha != expected_sha:
+                raise AuditAbort(
+                    "locked_run_json_sha_mismatch",
+                    {
+                        "family": family,
+                        "manifest": repo_relative(manifest_path),
+                        "path": relative,
+                        "expected_sha256": expected_sha,
+                        "observed_sha256": observed_sha,
+                    },
+                )
+            snapshot_run = snapshot_root / artifact_path.name
+            snapshot_run.write_bytes(artifact_path.read_bytes())
     return locked_manifests
 
 
@@ -678,11 +724,10 @@ def verify_manifested_artifacts(
     In ``path_normalized`` mode the runner also compares the regenerated
     manifest's stable fields against an ``expected_manifest_path``, runs a
     path-leak guard against any non-approved field, and accepts a regenerated
-    run JSON whose path-normalized SHA matches the locked run JSON's
-    path-normalized SHA (loaded from ``expected_manifest_path``'s sibling run
-    JSON, or from the run JSON file pointed at by the observed manifest itself
-    when no locked snapshot is available). The metrics CSV is still compared
-    byte-exact.
+    run JSON only when its path-normalized SHA matches the locked run JSON's
+    path-normalized SHA from the pre-replay snapshot. Non-run artifacts such as
+    metrics CSVs are still compared against the locked manifest SHA, not the
+    regenerated manifest's self-reported SHA.
     """
     context = context or AuditContext(
         replay_root=REPO_ROOT,
@@ -706,15 +751,28 @@ def verify_manifested_artifacts(
             expected_manifest=expected_manifest,
             expected_manifest_path=expected_manifest_path,
         )
+        _verify_manifest_artifact_paths(
+            manifest_path=manifest_path,
+            observed_manifest=manifest,
+            expected_manifest=expected_manifest,
+            expected_manifest_path=expected_manifest_path,
+        )
     verified = []
     for artifact in manifest.get("artifacts", []):
         if not isinstance(artifact, dict):
             continue
+        expected_artifact = _expected_manifest_artifact(
+            observed_artifact=artifact,
+            expected_manifest=expected_manifest,
+            manifest_path=manifest_path,
+            expected_manifest_path=expected_manifest_path,
+            context=context,
+        )
         # Artifact paths in the manifest are stored repo-relative; resolve
         # them against the replay root in case it differs from the current
         # repo.
         path = context.replay_root / str(artifact.get("path") or "")
-        expected_sha = str(artifact.get("sha256") or "")
+        expected_sha = str(expected_artifact.get("sha256") or artifact.get("sha256") or "")
         if not path.exists():
             raise AuditAbort(
                 "missing_manifested_artifact",
@@ -802,11 +860,14 @@ def compare_run_json_path_normalized(
         manifest_path=manifest_path,
     )
     if expected_payload is None:
-        # No locked snapshot available; the stable manifest fields plus the
-        # path-leak guard cover the audit's invariants. Return the observed
-        # normalized SHA so the caller can record it in the audit summary.
-        observed_normalized = _normalize_run_json_payload(observed_payload)
-        return _sha256_normalized_payload(observed_normalized)
+        raise AuditAbort(
+            "missing_locked_run_json_snapshot",
+            {
+                "manifest": repo_relative(manifest_path),
+                "path": repo_relative(observed_path),
+                "equivalence_mode": context.equivalence_mode,
+            },
+        )
     observed_normalized = _normalize_run_json_payload(observed_payload)
     expected_normalized = _normalize_run_json_payload(expected_payload)
     observed_sha = _sha256_normalized_payload(observed_normalized)
@@ -838,8 +899,9 @@ def _locked_run_json_payload(
 
     Looks for a sibling locked run JSON in the same directory as the
     expected manifest (the snapshot directory written before regeneration).
-    If no locked snapshot is found, returns None and the caller falls back
-    to a self-consistent check (path-leak guard only).
+    If no locked snapshot is found, returns None and the caller aborts. The
+    repair requires a locked payload; otherwise path normalization could
+    silently accept non-path drift in the regenerated run JSON.
     """
     if expected_manifest is None or expected_manifest_path is None:
         return None
@@ -851,6 +913,78 @@ def _locked_run_json_payload(
     if sibling.exists():
         return read_json(sibling)
     return None
+
+
+def _expected_manifest_artifact(
+    *,
+    observed_artifact: Mapping[str, object],
+    expected_manifest: Optional[Mapping[str, object]],
+    manifest_path: Path,
+    expected_manifest_path: Optional[Path],
+    context: AuditContext,
+) -> Mapping[str, object]:
+    if context.equivalence_mode != EQUIVALENCE_MODE_PATH_NORMALIZED:
+        return observed_artifact
+    if expected_manifest is None:
+        raise AuditAbort(
+            "missing_locked_manifest_snapshot",
+            {
+                "manifest": repo_relative(manifest_path),
+                "expected_manifest": (
+                    repo_relative(expected_manifest_path)
+                    if expected_manifest_path is not None
+                    else None
+                ),
+            },
+        )
+    observed_path = str(observed_artifact.get("path") or "")
+    for expected_artifact in expected_manifest.get("artifacts", []):
+        if (
+            isinstance(expected_artifact, dict)
+            and str(expected_artifact.get("path") or "") == observed_path
+        ):
+            return expected_artifact
+    raise AuditAbort(
+        "manifest_artifact_list_drift",
+        {
+            "manifest": repo_relative(manifest_path),
+            "expected_manifest": (
+                repo_relative(expected_manifest_path)
+                if expected_manifest_path is not None
+                else None
+            ),
+            "path": observed_path,
+        },
+    )
+
+
+def _verify_manifest_artifact_paths(
+    *,
+    manifest_path: Path,
+    observed_manifest: Mapping[str, object],
+    expected_manifest: Mapping[str, object],
+    expected_manifest_path: Path,
+) -> None:
+    observed_paths = {
+        str(artifact.get("path") or "")
+        for artifact in observed_manifest.get("artifacts", [])
+        if isinstance(artifact, dict)
+    }
+    expected_paths = {
+        str(artifact.get("path") or "")
+        for artifact in expected_manifest.get("artifacts", [])
+        if isinstance(artifact, dict)
+    }
+    if observed_paths != expected_paths:
+        raise AuditAbort(
+            "manifest_artifact_list_drift",
+            {
+                "manifest": repo_relative(manifest_path),
+                "expected_manifest": repo_relative(expected_manifest_path),
+                "missing_paths": sorted(expected_paths - observed_paths),
+                "unexpected_paths": sorted(observed_paths - expected_paths),
+            },
+        )
 
 
 def _enforce_path_leak_guard(

@@ -19,14 +19,16 @@ metrics, thesis families, bucket rules, predictions, alias function, locked
 input SHAs, and verification commands. Read it first. This repair adds no new
 predictions, no new families, no new gates, and no new alias logic.
 
-The locked Phase 4 replay target is the original Phase 4 commit:
+The locked Phase 4 replay target is the artifact-lock commit whose manifest
+SHAs match the original CQR preregistration:
 
-- `7583d3cdbb9db84e5875157931df35beb666dd8a`
+- `98959788f318e84347216aa8b8b5bd52b6a86e1a`
 
 The repair only changes how the CQR runner compares regenerated artifacts
 against the committed Phase 4 manifests when the replay is performed in a
-detached worktree at that commit. It does not change the locked Phase 4
-artifacts themselves.
+detached worktree at that commit with the ignored locked run JSON artifacts
+materialized locally. It does not change the locked Phase 4 artifacts
+themselves.
 
 ## 2. Repair Is Methodology-Only
 
@@ -51,15 +53,16 @@ through a separate preregistration update, not through this repair document.
 ## 3. Repaired Official Command
 
 The repaired official CQR replay command must be invoked from a clean current
-repository and against a clean detached worktree checked out at the locked
-Phase 4 commit. The command is exactly:
+repository and against a clean detached worktree checked out at the
+artifact-lock commit, with the ignored locked run JSON artifacts present and
+matching the committed manifests. The command is exactly:
 
 ```bash
 PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_canonical_id_resolution_audit.py \
   --primary-model-tag qwen2.5:32b-instruct-q4_K_M \
   --schema-profile default \
   --include-frozen-sentinel \
-  --replay-root <path-at-7583d3cd> \
+  --replay-root <path-at-98959788> \
   --equivalence-mode path_normalized
 ```
 
@@ -68,8 +71,8 @@ All four of these flags are required for the official repaired replay:
 - `--include-frozen-sentinel` (already required by the original preregistration)
 - `--primary-model-tag qwen2.5:32b-instruct-q4_K_M` (locked Phase 4 cell)
 - `--schema-profile default` (locked Phase 4 cell)
-- `--replay-root <path-at-7583d3cd>` (non-default; points at a detached
-  worktree at the locked Phase 4 commit)
+- `--replay-root <path-at-98959788>` (non-default; points at a detached
+  worktree at the artifact-lock commit)
 - `--equivalence-mode path_normalized`
 
 The runner reads replay inputs (run JSON, metrics CSV, manifest, and component
@@ -90,8 +93,10 @@ following hold:
 - The replay-root working tree is dirty.
 - Any locked-input artifact referenced under
   `<!-- CQR_LOCKED_INPUT_SHAS_START -->` is missing under the replay root.
-- Any locked-input SHA does not match its declared value (this remains exact in
-  both modes).
+- Any locked-input SHA does not match its declared value before replay starts.
+- Any locked run JSON artifact referenced by a locked manifest is missing
+  before replay starts or does not match the locked manifest's raw SHA before
+  replay starts.
 - A regenerated manifested artifact is missing.
 - The newly written replay manifest mismatches the locked manifest on any of
   the stable manifest fields enumerated in Section 5.
