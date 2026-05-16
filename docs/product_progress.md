@@ -1,5 +1,28 @@
 # Product Progress
 
+## 2026-05-15 — Next original-research plan written
+
+### What shipped
+
+- added `docs/next_research_plan.md` as the active next-phase research plan
+- updated `PROJECT_PLAN.md` so immediate next tasks point to that plan before
+  the historical task ledger
+
+### Why it matters
+
+- the project now prioritizes a defensible mechanism-local contribution over
+  adding benchmark breadth
+- the next work stays anchored on CQR replay repair, honest Bucket B
+  attribution, and one preregistered follow-up only after the internal story is
+  settled
+
+### Open issues / next
+
+- write the narrow CQR path-normalization repair preregistration and tests
+- rerun CQR only under the repaired replay-equivalence contract
+- update the methodology draft from the CQR outcome or explicitly keep CQR as
+  an abort
+
 ## 2026-05-15 — Canonical-id resolution audit aborts under locked replay
 
 ### What happened
