@@ -129,6 +129,9 @@ class CQDatedContestationUnitTests(unittest.TestCase):
     def setUp(self) -> None:
         self.base_time = datetime(2026, 6, 1, 9, 0, 0)
 
+    def test_dated_variant_reuses_base_observe_candidate_pipeline(self) -> None:
+        self.assertIs(CQDatedContestation.observe_candidate, ConsolidationQueueLite.observe_candidate)
+
     def _run_pair(self, source: CandidateUpdate, target: CandidateUpdate):
         base_policy = ConsolidationQueueLite()
         base_policy.observe_candidate(target)

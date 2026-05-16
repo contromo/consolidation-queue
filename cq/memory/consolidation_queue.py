@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from cq.memory.lifecycle import merge_thresholds, pending_use_allowed, should_promote_candidate
 from cq.memory.substrate import (
@@ -20,6 +21,12 @@ WIDER_SCOPE_MATCHES = {
 }
 
 
+@dataclass
+class _ContradictionResult:
+    wider_scope_override: bool = False
+    source_contestation_reason: Optional[str] = None
+
+
 class ConsolidationQueueLite:
     policy_name = "consolidation_queue_lite"
     ablation_note = ""
@@ -35,55 +42,16 @@ class ConsolidationQueueLite:
     def observe_candidate(self, candidate: CandidateUpdate) -> None:
         stored = self.store.add_candidate(candidate)
         active = self.store.active_durable(stored.canonical_id, stored.scope_level, stored.scope_key)
-        wider_scope_override = False
+        contradiction_result = self._process_contradictions(stored, active)
 
-        if self.enable_contestation_demotion:
-            for target_candidate_id in stored.contradicts:
-                if target_candidate_id in self.store.candidate_memories:
-                    target = self.store.candidate_memories[target_candidate_id]
-                    target.contradiction_count += 1
-                    target.refresh_scores()
-                    self.store.add_contradiction(
-                        stored.candidate_id,
-                        target_candidate_id,
-                        "candidate",
-                        "candidate contradicts earlier candidate",
-                        stored.updated_at,
-                    )
-                    self.store.update_candidate_state(
-                        target_candidate_id,
-                        MemoryState.CONTESTED,
-                        "newer evidence contradicts earlier candidate",
-                        stored.updated_at,
-                    )
-
-        if active is not None and self.enable_contestation_demotion:
-            contradicts_active = any(
-                candidate_id in stored.contradicts for candidate_id in active.created_from_candidate_ids
+        if contradiction_result.source_contestation_reason is not None:
+            self.store.update_candidate_state(
+                stored.candidate_id,
+                MemoryState.CONTESTED,
+                contradiction_result.source_contestation_reason,
+                stored.updated_at,
             )
-            if contradicts_active:
-                active_relation = scope_match_relation(
-                    active.scope_level,
-                    active.scope_key,
-                    stored.scope_level,
-                    stored.scope_key,
-                )
-                self.store.add_contradiction(
-                    stored.candidate_id,
-                    active.memory_id,
-                    "durable_memory",
-                    "candidate contradicts active durable memory",
-                    stored.updated_at,
-                )
-                if active_relation in WIDER_SCOPE_MATCHES and active.scope_level != stored.scope_level:
-                    # A narrower override should not erase a still-valid wider default globally.
-                    wider_scope_override = True
-                else:
-                    self.store.demote_memory(
-                        active.memory_id,
-                        "contradicted during queue consolidation",
-                        stored.updated_at,
-                    )
+            return
 
         if self._should_promote_candidate(stored):
             self.store.promote_candidate(
@@ -95,7 +63,7 @@ class ConsolidationQueueLite:
         else:
             reason = (
                 "retained as exact-scope override for wider durable"
-                if wider_scope_override
+                if contradiction_result.wider_scope_override
                 else "retained in queue pending more evidence"
             )
             self.store.update_candidate_state(
@@ -104,6 +72,75 @@ class ConsolidationQueueLite:
                 reason,
                 stored.updated_at,
             )
+
+    def _process_contradictions(
+        self,
+        stored: CandidateUpdate,
+        active: Optional[DurableMemory],
+    ) -> _ContradictionResult:
+        result = _ContradictionResult()
+        if not self.enable_contestation_demotion:
+            return result
+
+        for target_candidate_id in stored.contradicts:
+            target = self.store.candidate_memories.get(target_candidate_id)
+            if target is None:
+                continue
+            self._contest_candidate_target(stored, target_candidate_id, target)
+
+        if active is not None and self._contradicts_active_durable(stored, active):
+            result.wider_scope_override = self._contest_active_durable(stored, active)
+
+        return result
+
+    def _contest_candidate_target(
+        self,
+        stored: CandidateUpdate,
+        target_candidate_id: str,
+        target: CandidateUpdate,
+    ) -> None:
+        target.contradiction_count += 1
+        target.refresh_scores()
+        self.store.add_contradiction(
+            stored.candidate_id,
+            target_candidate_id,
+            "candidate",
+            "candidate contradicts earlier candidate",
+            stored.updated_at,
+        )
+        self.store.update_candidate_state(
+            target_candidate_id,
+            MemoryState.CONTESTED,
+            "newer evidence contradicts earlier candidate",
+            stored.updated_at,
+        )
+
+    def _contradicts_active_durable(self, stored: CandidateUpdate, active: DurableMemory) -> bool:
+        return any(candidate_id in stored.contradicts for candidate_id in active.created_from_candidate_ids)
+
+    def _contest_active_durable(self, stored: CandidateUpdate, active: DurableMemory) -> bool:
+        active_relation = scope_match_relation(
+            active.scope_level,
+            active.scope_key,
+            stored.scope_level,
+            stored.scope_key,
+        )
+        self.store.add_contradiction(
+            stored.candidate_id,
+            active.memory_id,
+            "durable_memory",
+            "candidate contradicts active durable memory",
+            stored.updated_at,
+        )
+        if active_relation in WIDER_SCOPE_MATCHES and active.scope_level != stored.scope_level:
+            # A narrower override should not erase a still-valid wider default globally.
+            return True
+        self.store.demote_memory(
+            active.memory_id,
+            "contradicted during queue consolidation",
+            stored.updated_at,
+        )
+        return False
 
     def answer_question(self, question: QuestionSpec) -> AnswerTrace:
         durable = self.store.active_durable(
@@ -253,16 +290,10 @@ class CQNoSourceIndependenceGate(ConsolidationQueueLite):
     enable_source_independence_gate = False
 
 
-def _candidate_observed_at(candidate: CandidateUpdate) -> datetime:
-    if candidate.provenance:
-        return max(record.observed_at for record in candidate.provenance)
-    return candidate.updated_at
-
-
-def _durable_observed_at(durable: DurableMemory) -> datetime:
-    if durable.provenance:
-        return max(record.observed_at for record in durable.provenance)
-    return durable.updated_at
+def _get_observed_at(memory: Union[CandidateUpdate, DurableMemory]) -> datetime:
+    if memory.provenance:
+        return max(record.observed_at for record in memory.provenance)
+    return memory.updated_at
 
 
 class CQDatedContestation(ConsolidationQueueLite):
@@ -288,114 +319,47 @@ class CQDatedContestation(ConsolidationQueueLite):
         "on stale contradictors."
     )
 
-    def observe_candidate(self, candidate: CandidateUpdate) -> None:
-        stored = self.store.add_candidate(candidate)
-        active = self.store.active_durable(stored.canonical_id, stored.scope_level, stored.scope_key)
-        wider_scope_override = False
-        source_observed_at = _candidate_observed_at(stored)
-        stale_against_any_target = False
+    def _process_contradictions(
+        self,
+        stored: CandidateUpdate,
+        active: Optional[DurableMemory],
+    ) -> _ContradictionResult:
+        result = _ContradictionResult()
+        if not self.enable_contestation_demotion:
+            return result
 
-        if self.enable_contestation_demotion:
-            for target_candidate_id in stored.contradicts:
-                if target_candidate_id not in self.store.candidate_memories:
-                    continue
-                target = self.store.candidate_memories[target_candidate_id]
-                target_observed_at = _candidate_observed_at(target)
-                if source_observed_at < target_observed_at:
-                    # Stale contradictor: keep the edge for inspection but do not
-                    # penalize the fresher target.
-                    self.store.add_contradiction(
-                        stored.candidate_id,
-                        target_candidate_id,
-                        "candidate",
-                        "stale contradictor against fresher candidate; target not penalized",
-                        stored.updated_at,
-                    )
-                    stale_against_any_target = True
-                    continue
-                target.contradiction_count += 1
-                target.refresh_scores()
+        source_observed_at = _get_observed_at(stored)
+        for target_candidate_id in stored.contradicts:
+            target = self.store.candidate_memories.get(target_candidate_id)
+            if target is None:
+                continue
+            if source_observed_at < _get_observed_at(target):
+                # Stale contradictor: keep the edge for inspection but do not
+                # penalize the fresher target.
                 self.store.add_contradiction(
                     stored.candidate_id,
                     target_candidate_id,
                     "candidate",
-                    "candidate contradicts earlier candidate",
+                    "stale contradictor against fresher candidate; target not penalized",
                     stored.updated_at,
                 )
-                self.store.update_candidate_state(
-                    target_candidate_id,
-                    MemoryState.CONTESTED,
-                    "newer evidence contradicts earlier candidate",
+                result.source_contestation_reason = "stale contradictor against fresher evidence"
+                continue
+            self._contest_candidate_target(stored, target_candidate_id, target)
+
+        if active is not None and self._contradicts_active_durable(stored, active):
+            if source_observed_at < _get_observed_at(active):
+                # Stale contradictor against a fresher durable: record the edge
+                # but do not demote the durable.
+                self.store.add_contradiction(
+                    stored.candidate_id,
+                    active.memory_id,
+                    "durable_memory",
+                    "stale contradictor against fresher active durable; durable not demoted",
                     stored.updated_at,
                 )
+                result.source_contestation_reason = "stale contradictor against fresher evidence"
+            else:
+                result.wider_scope_override = self._contest_active_durable(stored, active)
 
-        if active is not None and self.enable_contestation_demotion:
-            contradicts_active = any(
-                candidate_id in stored.contradicts for candidate_id in active.created_from_candidate_ids
-            )
-            if contradicts_active:
-                active_relation = scope_match_relation(
-                    active.scope_level,
-                    active.scope_key,
-                    stored.scope_level,
-                    stored.scope_key,
-                )
-                durable_observed_at = _durable_observed_at(active)
-                if source_observed_at < durable_observed_at:
-                    # Stale contradictor against a fresher durable: record the edge
-                    # but do not demote the durable.
-                    self.store.add_contradiction(
-                        stored.candidate_id,
-                        active.memory_id,
-                        "durable_memory",
-                        "stale contradictor against fresher active durable; durable not demoted",
-                        stored.updated_at,
-                    )
-                    stale_against_any_target = True
-                else:
-                    self.store.add_contradiction(
-                        stored.candidate_id,
-                        active.memory_id,
-                        "durable_memory",
-                        "candidate contradicts active durable memory",
-                        stored.updated_at,
-                    )
-                    if active_relation in WIDER_SCOPE_MATCHES and active.scope_level != stored.scope_level:
-                        # A narrower override should not erase a still-valid wider default globally.
-                        wider_scope_override = True
-                    else:
-                        self.store.demote_memory(
-                            active.memory_id,
-                            "contradicted during queue consolidation",
-                            stored.updated_at,
-                        )
-
-        if stale_against_any_target:
-            # The stale source must not be promoted nor used as a pending answer.
-            self.store.update_candidate_state(
-                stored.candidate_id,
-                MemoryState.CONTESTED,
-                "stale contradictor against fresher evidence",
-                stored.updated_at,
-            )
-            return
-
-        if self._should_promote_candidate(stored):
-            self.store.promote_candidate(
-                stored.candidate_id,
-                stored.strength,
-                "promotion after queue scoring",
-                stored.updated_at,
-            )
-        else:
-            reason = (
-                "retained as exact-scope override for wider durable"
-                if wider_scope_override
-                else "retained in queue pending more evidence"
-            )
-            self.store.update_candidate_state(
-                stored.candidate_id,
-                MemoryState.PENDING,
-                reason,
-                stored.updated_at,
-            )
+        return result
