@@ -20,7 +20,8 @@ Workstream C item 2 landed. `CQDatedContestation` repaired base CQ's
 mechanisms, but did not clear the CQ-vs-Reflection win criterion.
 
 Workstream D landed as feasibility-only. `docs/longmemeval_feasibility_memo.md`
-found 72 LongMemEval oracle `knowledge-update` cases that map to
+and `data/results/longmemeval_feasibility_coding.csv` record a 500-case
+coding pass with 72 LongMemEval oracle `knowledge-update` cases that map to
 `contradiction_edge`, but the decision is descriptive-only future work because
 the released artifacts do not provide a shared CQ-style candidate stream,
 contradiction edges, canonical slots, or a policy-query canonical-id contract.

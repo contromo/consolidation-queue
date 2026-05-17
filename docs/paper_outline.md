@@ -174,7 +174,7 @@ patterns, and representative traces.
 | Phase 4 noisy comparison reaches Bucket B with mechanism-local support. | Noisy policy comparison | `docs/noisy_policy_comparison_preregistration.md`; adapter pin | `docs/noisy_policy_comparison_results.md`; `data/results/noisy_policy_comparison_summary.json`; per-family metrics/manifests | CQ wins vs Reflection on forced contradiction and preference drift, records no countable directional losses, ties `Mem0Lite` on frozen sentinel, and has no replicate contradictions. | Not broad noisy CQ superiority. |
 | The mechanism audit attributes only forced contradiction cleanly and preference drift partially. | Noisy audit | `docs/noisy_policy_mechanism_audit_hypothesis.md` | `docs/noisy_policy_mechanism_audit.md`; `data/results/noisy_policy_mechanism_audit_evidence.json`; three audit traces | `forced_contradiction` survives through contradiction edges and contestation/demotion; `preference_drift` partially survives; other rows remain unattributed or descriptive. | No noisy scope/source/pending/poisoning survival claim. |
 | CQR replay repair refused to emit a verdict under a second Bucket D. | Reproducibility audit | `docs/canonical_id_resolution_audit_preregistration.md`; `docs/canonical_id_resolution_audit_repair_preregistration.md` | `docs/canonical_id_resolution_audit_results.md`; `data/results/canonical_id_resolution_audit_stop_2026-05-15.json`; `data/results/canonical_id_resolution_audit_stop_2026-05-16.json` | The repair separated path-sensitive fields but still aborted on locked run-JSON non-reproducibility. | No CQR A/B/C attribution; null rows remain unsettled. |
-| LongMemEval is relevant but not yet a fair transfer run. | Feasibility only | `docs/next_research_plan.md` Workstream D; frozen coding rule in memo | `docs/longmemeval_feasibility_memo.md` | 72 `knowledge-update` cases map to `contradiction_edge`, but candidate stream and policy-query invariants are not preserved. | Descriptive-only future work; no policy run. |
+| LongMemEval is relevant but not yet a fair transfer run. | Feasibility only | `docs/next_research_plan.md` Workstream D; frozen coding rule in memo | `docs/longmemeval_feasibility_memo.md`; `data/results/longmemeval_feasibility_coding.csv` | 72 `knowledge-update` cases map to `contradiction_edge`, but candidate stream and policy-query invariants are not preserved. | Descriptive-only future work; no policy run. |
 
 ## 6. Discussion
 
@@ -229,11 +229,11 @@ attribution.
 
 ### External Transfer Boundary
 
-The LongMemEval feasibility memo found a relevant `knowledge-update`
-denominator, but no fair policy run is licensed yet. The released artifacts do
-not provide CQ-style candidate streams, contradiction edges, canonical ids, or a
-policy-query contract. A future LongMemEval-CQ run must first create and
-preregister that adapter/annotation layer.
+The LongMemEval feasibility memo and per-case coding CSV found a relevant
+`knowledge-update` denominator, but no fair policy run is licensed yet. The
+released artifacts do not provide CQ-style candidate streams, contradiction
+edges, canonical ids, or a policy-query contract. A future LongMemEval-CQ run
+must first create and preregister that adapter/annotation layer.
 
 ## 9. Future Work
 

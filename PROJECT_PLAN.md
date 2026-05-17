@@ -133,7 +133,8 @@ Implemented:
   cleared because `CQDatedContestation` ties `ReflectionEagerWriteLite` at
   `1.00` rather than exceeding it; `phase2_5` remains byte and behaviorally
   unchanged. See `docs/adversarial_upstream_noise_dated_followup_results.md`.
-- `docs/longmemeval_feasibility_memo.md`, recording the 2026-05-17
+- `docs/longmemeval_feasibility_memo.md` and
+  `data/results/longmemeval_feasibility_coding.csv`, recording the 2026-05-17
   descriptive-only LongMemEval decision: the official oracle split contains
   72 update/correction cases that map to `contradiction_edge`, but the released
   artifacts do not preserve CQ's same-candidate-stream or policy-query
@@ -581,7 +582,7 @@ The first deterministic forced-contradiction local-model command/prompt, compone
 2. Use `docs/noisy_policy_mechanism_audit.md` as the Phase 4 writeup anchor until CQR emits a non-abort result: clean survival on forced contradiction, partial survival on preference drift, and unattributed nulls elsewhere unless directly supported by 32B artifacts.
 3. The methodology spine promotion landed on 2026-05-16: `docs/benchmark_methodology_draft.md` now carries an Abstract, two new §5 subsections (the `CQDatedContestation` partial preregistered success and the 2026-05-16 CQR repair-attempt second Bucket D), an updated §6 Discussion integrating both 2026-05-16 outcomes, an expanded §8 Limits separating CQDated and CQR boundary claims, and a §9 Next Work that gated LongMemEval feasibility on the spine landing. The LongMemEval feasibility memo landed on 2026-05-17 with decision (b), descriptive-only future work: 72 official `knowledge-update` cases map to `contradiction_edge`, but a fair transfer run is blocked until a separate adapter/annotation preregistration creates a shared candidate stream and policy-query contract.
 4. Keep Bucket C abstention, LongMemEval transfer, prompt changes, validator changes, and new mechanism families out of scope unless a future preregistered follow-up explicitly justifies them from the audit's mechanism-local interpretation. (`CQDatedContestation` is removed from this exclusion list because the preregistered follow-up landed on 2026-05-16 as partial preregistered success — base-CQ repair with the Reflection win criterion not cleared on the `temporal_skew` lane; see `docs/adversarial_upstream_noise_dated_followup_results.md`.)
-5. Use `docs/paper_outline.md` as the packaging spine for the report. The next original-research move should be either a policy-facing adapter-contract audit or a fresh Phase 4 baseline with committed or archived run-JSON payloads; LongMemEval should not be run against policies until a separate candidate-stream and canonical-query annotation layer is preregistered.
+5. Use `docs/paper_outline.md` as the packaging spine for the report. The next licensed original-research move should be one of three preregistered paths: a policy-facing adapter-contract audit, a fresh Phase 4 baseline with committed or archived run-JSON payloads, or a LongMemEval adapter/annotation preregistration that creates a shared candidate stream and canonical-query contract before any policy run.
 
 ## Working Rules
 

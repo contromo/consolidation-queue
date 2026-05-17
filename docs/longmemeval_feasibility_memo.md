@@ -22,8 +22,15 @@ Dataset inspected for the denominator pass:
   release on 2026-05-17
 - bytes: `15388478`
 - SHA256: `821a2034d219ab45846873dd14c14f12cfe7776e73527a483f9dac095d38620c`
-- frozen-rule memo SHA before opening case contents:
+- frozen-rule workflow checkpoint before opening case contents:
   `bbe6a0981c07a869a22d09f13fb09e37cdfb6f85ff0a23732420934fd4e3a54d`
+  over the initial memo skeleton containing the source survey, §2 coding rule,
+  and pending §3-§7 placeholders. This checkpoint records workflow discipline,
+  not a committed standalone artifact.
+- per-case coding artifact:
+  `data/results/longmemeval_feasibility_coding.csv`
+- per-case coding CSV SHA256:
+  `d8932f39a4006ce6b0d98adbef0b013fd912129b873d8cebf4491673cd3e46e3`
 
 ## 1. Task Design Survey
 
@@ -147,10 +154,11 @@ A case is `out_of_scope` if any of the following apply:
 
 ## 3. Mechanism Mapping Under The Frozen Rule
 
-The coding pass labels the full 500-instance oracle split once under §2.
-Abstention cases are excluded before mechanism assignment because their
-question ids end in `_abs` and the official retrieval metric has no answer
-location denominator for them.
+The coding pass labels the full 500-instance oracle split once under §2 and is
+recorded in `data/results/longmemeval_feasibility_coding.csv`. Abstention cases
+are excluded before mechanism assignment because their question ids end in
+`_abs` and the official retrieval metric has no answer-location denominator
+for them.
 
 ### Dataset Shape
 
@@ -168,8 +176,8 @@ location denominator for them.
 | Label | Count | Source under rule | Interpretation |
 | --- | ---: | --- | --- |
 | `contradiction_edge` | 72 | non-abstention `knowledge-update` | feasible transfer denominator in principle: each case asks for an updated value after earlier evidence |
-| `preference_correction` | 0 | none | `single-session-preference` cases use preferences but do not expose a later correction boundary |
-| `dated_contradiction_boundary` | 0 | none | temporal cases require date reasoning, but the official type is not a dated contradiction / supersession lane under §2 |
+| `preference_correction` | 0 | none; excluded by inclusion criterion #3 | `single-session-preference` cases use preferences but do not expose a later correction boundary |
+| `dated_contradiction_boundary` | 0 | none; excluded by inclusion criterion #3 | temporal cases require date reasoning, but the official type is not a dated contradiction / supersession lane under §2 |
 | `out_of_scope` | 428 | all remaining cases | pure recall, aggregation, assistant-side recall, preference use, false-premise abstention, or unsupported mechanisms |
 
 Every non-abstention `knowledge-update` case has exactly two oracle evidence
@@ -193,11 +201,15 @@ fair-policy benchmark for CQ.
 
 ## 4. Fairness-Invariant Feasibility
 
+Rows 1 and 3 share the same named prerequisite: a separately preregistered
+LongMemEval adapter/annotation workstream that creates both a shared candidate
+stream and a policy-query canonical-id contract before policy execution.
+
 | Feasibility question | Readout | Reason |
 | --- | --- | --- |
-| Can LongMemEval's transcript stream be transformed into a shared `CandidateUpdate` stream that CQ, Reflection, and `Mem0Lite` consume identically? | **No for the current plan; possible only as a new annotation/adapter workstream.** | The released oracle split contains evidence sessions and answer labels, but no CQ-style candidate ids, canonical ids, scopes, source ids, confidence scores, support edges, or contradiction edges. A future extractor or manual coding layer could create such a stream, but that would be new benchmark construction and must be preregistered and component-scored before policy execution. |
+| Can LongMemEval's transcript stream be transformed into a shared `CandidateUpdate` stream that CQ, Reflection, and `Mem0Lite` consume identically? | **Blocked pending a LongMemEval adapter/annotation preregistration.** | The released oracle split contains evidence sessions and answer labels, but no CQ-style candidate ids, canonical ids, scopes, source ids, confidence scores, support edges, or contradiction edges. A future extractor or manual coding layer could create such a stream, but that would be new benchmark construction and must be preregistered and component-scored before policy execution. |
 | Can the shared scoped substrate be preserved across policies on LongMemEval inputs? | **Conditionally yes, after a valid candidate stream exists.** | The 72 update/correction cases appear representable in the existing shared substrate as scoped observations with timestamps and later supersession. They do not require a richer CQ-only memory representation. The blocker is upstream stream construction, not storage. |
-| Can the policy-query interface be made consistent with the Phase 4 adapter contract? | **No under current artifacts.** | LongMemEval questions and answers do not expose `relevant_canonical_id` or a policy lookup key. Deriving a lookup key from the reference answer or `has_answer` labels would leak answer-side information into the policy interface. Deriving it from the question requires exactly the policy-facing canonical-id/query-resolution contract that remains unsettled in the Phase 4 null rows. |
+| Can the policy-query interface be made consistent with the Phase 4 adapter contract? | **Blocked pending a LongMemEval adapter/annotation preregistration.** | LongMemEval questions and answers do not expose `relevant_canonical_id` or a policy lookup key. Deriving a lookup key from the reference answer or `has_answer` labels would leak answer-side information into the policy interface. Deriving it from the question requires exactly the policy-facing canonical-id/query-resolution contract that remains unsettled in the Phase 4 null rows. |
 
 The first and third answers are enough to block a preregister-and-run decision
 under this plan. The benchmark has plausible transfer cases, but the current
@@ -262,13 +274,14 @@ LongMemEval artifacts:
 - using answer/evidence labels to build the policy input would leak oracle
   answer information
 
-The correct next step is not a LongMemEval policy run. It is either:
+The correct next step is not a LongMemEval policy run. Licensed follow-ons are:
 
 1. a separate LongMemEval adapter/annotation preregistration that creates a
    candidate stream, canonical-id query contract, and metric labels before any
-   policy execution; or
-2. the already licensed policy-facing adapter-contract audit / fresh Phase 4
-   baseline path for the current benchmark null rows.
+   policy execution;
+2. the already licensed policy-facing adapter-contract audit for the current
+   benchmark null rows; or
+3. a fresh Phase 4 baseline with committed or archived run-JSON payloads.
 
 Until one of those exists, LongMemEval belongs in the report as an external
 transfer limitation and future-work target, not as evidence for CQ.

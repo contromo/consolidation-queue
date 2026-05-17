@@ -14,6 +14,10 @@
   `dated_contradiction_boundary` get zero denominator under the rule; the other
   428 cases remain out of scope for this repo's current mechanism-local
   transfer hypothesis
+- tracked `data/results/longmemeval_feasibility_coding.csv` as the per-case
+  coding artifact (`question_id`, `question_type`, applied label, rule
+  reference, rationale, and evidence/answer-session counts), with SHA256
+  `d8932f39a4006ce6b0d98adbef0b013fd912129b873d8cebf4491673cd3e46e3`
 - recorded the key blocker for a policy run: LongMemEval has relevant
   update/correction cases, but the released artifacts do not expose CQ-style
   `CandidateUpdate` streams, contradiction edges, canonical slots, or
@@ -32,9 +36,10 @@
 - the repo now answers the strongest external-transfer reviewer question
   without violating its own fairness rules: LongMemEval is relevant, but not yet
   a fair CQ-vs-Reflection-vs-`Mem0Lite` transfer run
-- the positive denominator is useful (72 update/correction cases), but the
-  decision remains conservative because the candidate-stream and query-contract
-  invariants are the load-bearing part of the benchmark
+- the positive denominator is useful (72 update/correction cases), and the new
+  CSV makes the denominator auditable, but the decision remains conservative
+  because the candidate-stream and query-contract invariants are the
+  load-bearing part of the benchmark
 - the paper package has a cleaner outline that keeps supported claims in the
   evidence ledger and moves unsupported claims to limitations/future work rather
   than letting them leak into the contribution
