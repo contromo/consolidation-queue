@@ -126,9 +126,13 @@ Implemented:
 - landed `CQDatedContestation` as the preregistered post-hoc CQ variant for
   the `adversarial_upstream_noise/temporal_skew` weakness plus
   `POLICY_SET_FOLLOWUP` wiring; the 2026-05-16 `mixed` and `heldout`
-  follow-up runs recorded a clean repair (`answer_correctness=1.00` on
-  `temporal_skew` on both splits) with no reversal of the four originally won
-  mechanisms; `phase2_5` remains byte and behaviorally unchanged
+  follow-up runs recorded partial preregistered success: base CQ's
+  `temporal_skew` failure is repaired (`answer_correctness` `0.00`→`1.00`
+  vs base CQ on both `v1` and `v2`) and the four originally won mechanisms
+  do not reverse, but the preregistered Reflection win criterion is not
+  cleared because `CQDatedContestation` ties `ReflectionEagerWriteLite` at
+  `1.00` rather than exceeding it; `phase2_5` remains byte and behaviorally
+  unchanged. See `docs/adversarial_upstream_noise_dated_followup_results.md`.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -566,7 +570,7 @@ The first deterministic forced-contradiction local-model command/prompt, compone
 
 1. The CQR path-normalized replay repair landed and was exercised on 2026-05-16; a second Bucket D was recorded under the repaired equivalence rule. The null-row attribution remains unsettled. Do not attempt a third CQR audit attempt without first re-establishing a locked Phase 4 baseline that includes committed (or separately archived) run-JSON payloads.
 2. Use `docs/noisy_policy_mechanism_audit.md` as the Phase 4 writeup anchor until CQR emits a non-abort result: clean survival on forced contradiction, partial survival on preference drift, and unattributed nulls elsewhere unless directly supported by 32B artifacts.
-3. Promote `docs/benchmark_methodology_draft.md` to the technical-report spine per the reframing in `docs/next_research_plan.md`, with CQR explicitly framed as a documented second abort and `CQDatedContestation` explicitly framed as a named post-hoc repair on a known weakness; do not present either as settling Phase 4 null-row attribution.
+3. Promote `docs/benchmark_methodology_draft.md` to the technical-report spine per the reframing in `docs/next_research_plan.md`, with CQR explicitly framed as a documented second abort and `CQDatedContestation` explicitly framed as a named post-hoc repair of base CQ's dated-evidence failure mode (with the explicit boundary that the preregistered Reflection win criterion was not cleared on the `temporal_skew` lane because the eager-write baseline already records `correctness=1.00`); do not present either as settling Phase 4 null-row attribution.
 4. Keep Bucket C abstention, LongMemEval transfer, prompt changes, validator changes, and new mechanism families out of scope unless a future preregistered follow-up explicitly justifies them from the audit's mechanism-local interpretation. (`CQDatedContestation` is removed from this exclusion list because the preregistered follow-up completed cleanly on 2026-05-16; see `docs/adversarial_upstream_noise_dated_followup_results.md`.)
 5. Write the LongMemEval feasibility memo per `docs/next_research_plan.md` once the methodology-draft promotion is in place; preregister LongMemEval only if same-candidate-stream evaluation can be preserved, otherwise keep it as descriptive future work.
 

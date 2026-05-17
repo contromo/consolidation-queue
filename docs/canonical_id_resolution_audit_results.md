@@ -27,7 +27,12 @@ After local Ollama access was allowed, the run aborted before metric emission:
 | Path | `data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json` |
 | Expected SHA256 | `03d9715cae2e34ab639a9c17f638787aff3128ce56cb4eb21846c63c7ee5f8af` |
 | Observed SHA256 | `1a2dbd7c1c9e65121f2a2482e57e78c1ca9541de18038ca9da91bd9fcadc76b2` |
-| Stop report | `data/results/canonical_id_resolution_audit_stop.json` |
+| Stop report (date-specific snapshot) | `data/results/canonical_id_resolution_audit_stop_2026-05-15.json` |
+
+The canonical `data/results/canonical_id_resolution_audit_stop.json` is
+overwritten by every audit run, so the 2026-05-15 contents are preserved as
+the date-suffixed snapshot above; the canonical path currently reflects the
+2026-05-16 retry recorded later in this doc.
 
 The earlier sandboxed attempt failed before replay because localhost access to
 Ollama was blocked:
@@ -118,7 +123,8 @@ PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_canonical_id_resolution_aud
 | Path | `data/runs/noisy_policy_comparison_forced_contradiction_default.json` |
 | Expected SHA256 | `342fc97d15c51f315347597a0f278de089e5961a2f7e3f32d06be71147a7f479` |
 | Observed SHA256 | `fa738ab89084b34440305ccb452046f5e343f1bf618f2152b6833a60edc1fb1c` |
-| Stop report path | `data/results/canonical_id_resolution_audit_stop.json` |
+| Stop report (canonical, latest abort) | `data/results/canonical_id_resolution_audit_stop.json` |
+| Stop report (date-specific snapshot) | `data/results/canonical_id_resolution_audit_stop_2026-05-16.json` |
 
 ### Observed Evidence (Not Causal Closure)
 

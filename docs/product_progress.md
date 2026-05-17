@@ -11,9 +11,13 @@
   rule fired rather than a code or test failure)
 - executed the preregistered `CQDatedContestation` follow-up on
   `adversarial_upstream_noise` with `--policy-set followup --scenarios 300` for
-  both `mixed` and `heldout` splits; CQDated repairs `temporal_skew`
-  (`answer_correctness=1.00` on both `v1` and `v2`) without reversing any of
-  the four originally won mechanisms
+  both `mixed` and `heldout` splits; recorded partial preregistered success:
+  base CQ's `temporal_skew` failure is repaired
+  (`answer_correctness` `0.00`→`1.00` vs base CQ on both `v1` and `v2`) and
+  the four originally won mechanisms do not reverse, but the preregistered
+  Reflection win criterion (delta `>= 0.10`, LCB `> 0`) is not cleared
+  because both `CQDatedContestation` and `ReflectionEagerWriteLite` land at
+  `correctness=1.00` on this lane (delta `+0.00`)
 - added `docs/adversarial_upstream_noise_dated_followup_results.md` recording
   the Lane B clean-repair outcome against the preregistration's success
   criteria
@@ -31,10 +35,12 @@
   inputs cannot be reproduced; the abort attempt did not establish a single
   cause for the non-reproducibility and is documented as observed evidence
   rather than causal closure
-- the CQDated clean repair lets the writeup claim a named post-hoc fix on the
-  dated-evidence weakness without rewriting the original `phase2_5` headline,
-  matching the preregistered "named post-hoc repair on a known weakness"
-  framing
+- the CQDated outcome lets the writeup claim a named post-hoc repair of base
+  CQ's dated-evidence failure mode without rewriting the original `phase2_5`
+  headline, while honestly recording that the preregistered Reflection win
+  criterion was not cleared on this lane (Reflection's eager-overwrite already
+  records `correctness=1.00`, so the dated fix raises CQ to parity rather than
+  past it)
 - both outcomes together unblock methodology-draft promotion: it now lands
   with two recorded results rather than waiting on a CQR Bucket A/B/C readout
 
