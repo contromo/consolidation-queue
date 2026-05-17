@@ -126,6 +126,13 @@ PYTHONPYCACHEPREFIX=/tmp/pycache python3 scripts/run_canonical_id_resolution_aud
 | Stop report (canonical, latest abort) | `data/results/canonical_id_resolution_audit_stop.json` |
 | Stop report (date-specific snapshot) | `data/results/canonical_id_resolution_audit_stop_2026-05-16.json` |
 
+Both stop reports' `details.manifest` field has been normalized post-hoc to
+`<replay-root>/…` so the committed JSON does not embed the local detached
+worktree path. The audit script's `write_stop_report()` still emits the raw
+absolute-from-main-repo path; updating the runner to write a normalized path
+is left as a small follow-up code change so the next audit's stop report
+matches this convention by construction.
+
 ### Observed Evidence (Not Causal Closure)
 
 The audit recorded these observations during the retry. Each is stated as

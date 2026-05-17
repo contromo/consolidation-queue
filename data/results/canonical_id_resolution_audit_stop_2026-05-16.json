@@ -3,7 +3,7 @@
   "details": {
     "expected_sha256": "342fc97d15c51f315347597a0f278de089e5961a2f7e3f32d06be71147a7f479",
     "family": "forced_contradiction",
-    "manifest": ".claude/worktrees/cqr-replay-98959788/data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json",
+    "manifest": "<replay-root>/data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json",
     "observed_sha256": "fa738ab89084b34440305ccb452046f5e343f1bf618f2152b6833a60edc1fb1c",
     "path": "data/runs/noisy_policy_comparison_forced_contradiction_default.json"
   },
