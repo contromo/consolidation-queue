@@ -1,6 +1,6 @@
 # Product Progress
 
-## 2026-05-16 — CQR second abort and CQDated clean repair
+## 2026-05-16 — CQR second abort and CQDated partial preregistered success
 
 ### What shipped
 
@@ -19,8 +19,9 @@
   because both `CQDatedContestation` and `ReflectionEagerWriteLite` land at
   `correctness=1.00` on this lane (delta `+0.00`)
 - added `docs/adversarial_upstream_noise_dated_followup_results.md` recording
-  the Lane B clean-repair outcome against the preregistration's success
-  criteria
+  the Lane B outcome as partial preregistered success (base-CQ repair with the
+  Reflection win criterion not cleared) against the preregistration's three
+  success criteria
 - appended the 2026-05-16 retry section to
   `docs/canonical_id_resolution_audit_results.md`, preserving the 2026-05-15
   first-abort record verbatim

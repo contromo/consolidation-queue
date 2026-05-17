@@ -207,8 +207,10 @@ recorded above.
 
 - This is a post-hoc, preregistered follow-up. It does not alter the
   2026-05-15 `adversarial_upstream_noise` headline Bucket D result.
-- The clean repair holds in oracle mode. The follow-up does not claim a
-  noisy-mode repair of `temporal_skew`, does not claim transfer to
+- The partial preregistered success above is an oracle-mode result. The
+  follow-up does not claim a noisy-mode repair of `temporal_skew`, does not
+  claim that the base-CQ repair clears any CQ-vs-Reflection win criterion
+  beyond the one preregistered for this family, does not claim transfer to
   LongMemEval, and does not claim that `CQDatedContestation` would repair the
   Phase 4 null rows.
 - The four-mechanism preservation check uses scenario-level
