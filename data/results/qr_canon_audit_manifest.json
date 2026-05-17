@@ -1,0 +1,94 @@
+{
+  "alias_function_source": "scripts/run_canonical_id_resolution_audit.py imports ALIAS_FUNCTION_SOURCE verbatim from docs/canonical_id_resolution_audit_preregistration.md section 6",
+  "command": "python3 scripts/run_qr_canon_audit.py",
+  "date": "2026-05-17",
+  "git_commit": "da2cc2ac28874f1c5187882b8597841bfebc9f92",
+  "inputs": {
+    "source_table_csv": {
+      "byte_size": 94161,
+      "path": "data/results/qr_canon_source_table.csv",
+      "sha256": "59bab6a2dab3fdc4b79e9f3a8b30ef18a0535506f0f8ef83138ec36abce3c4e6"
+    }
+  },
+  "outputs": {
+    "audit_metrics_csv": {
+      "byte_size": 1403,
+      "path": "data/results/qr_canon_audit_metrics.csv",
+      "sha256": "115e60ad4fd5f5d79c829bff571f782ca8c82b7be7b342756b603f970b708714"
+    }
+  },
+  "phase_4_per_family_summary": {
+    "false_corroboration": {
+      "canonicalization_b_cubed_f1": "1.000000",
+      "denominator": 60,
+      "joint_passes_clustering_floor_but_not_lookup": true,
+      "qr_canon_exact_hits": 0,
+      "qr_canon_exact_rate": "0.000000",
+      "qr_canon_normalized_hits": 0,
+      "qr_canon_normalized_rate": "0.000000"
+    },
+    "forced_contradiction": {
+      "canonicalization_b_cubed_f1": "1.000000",
+      "denominator": 120,
+      "joint_passes_clustering_floor_but_not_lookup": false,
+      "qr_canon_exact_hits": 112,
+      "qr_canon_exact_rate": "0.933333",
+      "qr_canon_normalized_hits": 120,
+      "qr_canon_normalized_rate": "1.000000"
+    },
+    "mechanism_diverse_heldout": {
+      "canonicalization_b_cubed_f1": "0.952381",
+      "denominator": 4,
+      "joint_passes_clustering_floor_but_not_lookup": true,
+      "qr_canon_exact_hits": 0,
+      "qr_canon_exact_rate": "0.000000",
+      "qr_canon_normalized_hits": 0,
+      "qr_canon_normalized_rate": "0.000000"
+    },
+    "memory_poisoning": {
+      "canonicalization_b_cubed_f1": "1.000000",
+      "denominator": 60,
+      "joint_passes_clustering_floor_but_not_lookup": true,
+      "qr_canon_exact_hits": 0,
+      "qr_canon_exact_rate": "0.000000",
+      "qr_canon_normalized_hits": 0,
+      "qr_canon_normalized_rate": "0.000000"
+    },
+    "preference_drift": {
+      "canonicalization_b_cubed_f1": "0.800000",
+      "denominator": 120,
+      "joint_passes_clustering_floor_but_not_lookup": false,
+      "qr_canon_exact_hits": 40,
+      "qr_canon_exact_rate": "0.333333",
+      "qr_canon_normalized_hits": 80,
+      "qr_canon_normalized_rate": "0.666667"
+    },
+    "scope_contamination": {
+      "canonicalization_b_cubed_f1": "0.888889",
+      "denominator": 75,
+      "joint_passes_clustering_floor_but_not_lookup": true,
+      "qr_canon_exact_hits": 0,
+      "qr_canon_exact_rate": "0.000000",
+      "qr_canon_normalized_hits": 15,
+      "qr_canon_normalized_rate": "0.200000"
+    },
+    "useful_pending_memory": {
+      "canonicalization_b_cubed_f1": "1.000000",
+      "denominator": 60,
+      "joint_passes_clustering_floor_but_not_lookup": true,
+      "qr_canon_exact_hits": 0,
+      "qr_canon_exact_rate": "0.000000",
+      "qr_canon_normalized_hits": 0,
+      "qr_canon_normalized_rate": "0.000000"
+    }
+  },
+  "python_version": "3.9.6",
+  "registration_doc": "docs/qr_canon_audit_registration.md",
+  "synthetic_counterexample_present": true,
+  "synthetic_counterexample_summary": {
+    "b_cubed_f1": "1.000000",
+    "qr_canon_exact_rate": "0.000000",
+    "qr_canon_normalized_rate": "0.000000"
+  },
+  "working_tree_status": "dirty"
+}

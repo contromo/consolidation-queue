@@ -32,3 +32,7 @@ data/results/**/*.json
 !data/results/*/*_manifest.json
 !data/results/abstention/**
 !data/results/*/*_metrics.csv
+!data/results/qr_canon_source_table.csv
+!data/results/qr_canon_source_table_manifest.json
+!data/results/qr_canon_audit_metrics.csv
+!data/results/qr_canon_audit_manifest.json

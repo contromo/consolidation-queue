@@ -1,0 +1,175 @@
+{
+  "alias_function_source": "scripts/run_canonical_id_resolution_audit.py imports ALIAS_FUNCTION_SOURCE verbatim from docs/canonical_id_resolution_audit_preregistration.md section 6",
+  "command": "python3 scripts/build_qr_canon_source_table.py",
+  "date": "2026-05-17",
+  "families": [
+    "forced_contradiction",
+    "scope_contamination",
+    "preference_drift",
+    "useful_pending_memory",
+    "memory_poisoning",
+    "false_corroboration",
+    "mechanism_diverse_heldout"
+  ],
+  "git_commit": "da2cc2ac28874f1c5187882b8597841bfebc9f92",
+  "inputs": {
+    "noisy_policy_mechanism_audit_evidence": {
+      "byte_size": 59181,
+      "path": "data/results/noisy_policy_mechanism_audit_evidence.json",
+      "sha256": "95dcb2153ce951ea8e9b6bb962cbf5873849b0fada5c749c01f9542eaca520fa"
+    },
+    "phase_4_run_jsons": [
+      {
+        "byte_size": 18073294,
+        "family": "forced_contradiction",
+        "path": "data/runs/noisy_policy_comparison_forced_contradiction_default.json",
+        "sha256": "fa738ab89084b34440305ccb452046f5e343f1bf618f2152b6833a60edc1fb1c"
+      },
+      {
+        "byte_size": 15081686,
+        "family": "scope_contamination",
+        "path": "data/runs/noisy_policy_comparison_scope_contamination_default.json",
+        "sha256": "cf9a3d671488686e892ce89f7d0336a90d4d47fdbf2a87c62e1f15439617608f"
+      },
+      {
+        "byte_size": 17601960,
+        "family": "preference_drift",
+        "path": "data/runs/noisy_policy_comparison_preference_drift_default.json",
+        "sha256": "d92dbc7c299312bd428a3bdb51ca980a9e2a562fa16df5d46b4d9afee4ad85ad"
+      },
+      {
+        "byte_size": 15101949,
+        "family": "useful_pending_memory",
+        "path": "data/runs/noisy_policy_comparison_useful_pending_memory_default.json",
+        "sha256": "0f83d886f2785b7d2fce66830c36596efa2282384e19ba6519a22d62a168e865"
+      },
+      {
+        "byte_size": 12827052,
+        "family": "memory_poisoning",
+        "path": "data/runs/noisy_policy_comparison_memory_poisoning_default.json",
+        "sha256": "0c7cbec3ca53d7e7dce55a483ebbdf0c0bcbaaa0b4edb1be0a3997874b9611b1"
+      },
+      {
+        "byte_size": 33618331,
+        "family": "false_corroboration",
+        "path": "data/runs/noisy_policy_comparison_false_corroboration_default.json",
+        "sha256": "e1c0c0e3bc9fe0b30f0a70f86bf61aa3077e946348cc8a22ed5adf3bca4d0c98"
+      },
+      {
+        "byte_size": 1537734,
+        "family": "mechanism_diverse_heldout",
+        "path": "data/runs/noisy_policy_comparison_mechanism_diverse_heldout_default.json",
+        "sha256": "b425dad4956ccd8caadd03d866dd9886163a37aa8f478af6dbabcd0cd0674f8e"
+      }
+    ]
+  },
+  "outputs": {
+    "source_table_csv": {
+      "byte_size": 94161,
+      "path": "data/results/qr_canon_source_table.csv",
+      "sha256": "59bab6a2dab3fdc4b79e9f3a8b30ef18a0535506f0f8ef83138ec36abce3c4e6"
+    }
+  },
+  "per_family_counts": {
+    "false_corroboration": {
+      "exact_hits": 0,
+      "normalized_hits": 0,
+      "row_canonicalization_b_cubed_f1": 1.0,
+      "row_count": 60
+    },
+    "forced_contradiction": {
+      "exact_hits": 112,
+      "normalized_hits": 120,
+      "row_canonicalization_b_cubed_f1": 1.0,
+      "row_count": 120
+    },
+    "mechanism_diverse_heldout": {
+      "exact_hits": 0,
+      "normalized_hits": 0,
+      "row_canonicalization_b_cubed_f1": 0.9523809523809523,
+      "row_count": 4
+    },
+    "memory_poisoning": {
+      "exact_hits": 0,
+      "normalized_hits": 0,
+      "row_canonicalization_b_cubed_f1": 1.0,
+      "row_count": 60
+    },
+    "preference_drift": {
+      "exact_hits": 40,
+      "normalized_hits": 80,
+      "row_canonicalization_b_cubed_f1": 0.8,
+      "row_count": 120
+    },
+    "scope_contamination": {
+      "exact_hits": 0,
+      "normalized_hits": 15,
+      "row_canonicalization_b_cubed_f1": 0.888888888888889,
+      "row_count": 75
+    },
+    "useful_pending_memory": {
+      "exact_hits": 0,
+      "normalized_hits": 0,
+      "row_canonicalization_b_cubed_f1": 1.0,
+      "row_count": 60
+    }
+  },
+  "policy_name": "consolidation_queue_lite",
+  "python_version": "3.9.6",
+  "regression": {
+    "all_passed": true,
+    "per_family": {
+      "false_corroboration": {
+        "computed_exact_hits": 0,
+        "computed_row_count": 60,
+        "expected_denominator": 60,
+        "expected_exact_matches": 0,
+        "passed": true
+      },
+      "forced_contradiction": {
+        "computed_exact_hits": 112,
+        "computed_row_count": 120,
+        "expected_denominator": 120,
+        "expected_exact_matches": 112,
+        "passed": true
+      },
+      "mechanism_diverse_heldout": {
+        "computed_exact_hits": 0,
+        "computed_row_count": 4,
+        "expected_denominator": 4,
+        "expected_exact_matches": 0,
+        "passed": true
+      },
+      "memory_poisoning": {
+        "computed_exact_hits": 0,
+        "computed_row_count": 60,
+        "expected_denominator": 60,
+        "expected_exact_matches": 0,
+        "passed": true
+      },
+      "preference_drift": {
+        "computed_exact_hits": 40,
+        "computed_row_count": 120,
+        "expected_denominator": 120,
+        "expected_exact_matches": 40,
+        "passed": true
+      },
+      "scope_contamination": {
+        "computed_exact_hits": 0,
+        "computed_row_count": 75,
+        "expected_denominator": 75,
+        "expected_exact_matches": 0,
+        "passed": true
+      },
+      "useful_pending_memory": {
+        "computed_exact_hits": 0,
+        "computed_row_count": 60,
+        "expected_denominator": 60,
+        "expected_exact_matches": 0,
+        "passed": true
+      }
+    }
+  },
+  "schema_profile": "default",
+  "working_tree_status": "dirty"
+}
