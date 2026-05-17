@@ -427,8 +427,10 @@ that the replay discipline is enforced — under the repair contract, the audit
 still refused to emit a verdict and recorded a second Bucket D. Unsupported
 claim: any CQR Bucket A/B/C readout, any change to the Phase 4 null-row
 attribution beyond what is already recorded in `docs/noisy_policy_mechanism_audit.md`,
-or that a third CQR attempt is licensed without first re-establishing a freshly
-run Phase 4 baseline with separately archived run-JSON payloads.
+or that a third CQR attempt is licensed without first either materializing the
+original locked run JSON payloads from a separately archived `7583d3cd`
+environment or restarting from a freshly run Phase 4 baseline at the current
+main commit.
 
 ## 6. Discussion
 
@@ -482,8 +484,11 @@ without loosening any check. The Phase 4 null rows on `useful_pending_memory`
 and `memory_poisoning` therefore stay recorded as unattributed under the
 mechanism-audit posture; the methodology does not promote them into
 canonical-id/query-resolution findings, and any third CQR attempt would
-require a freshly run Phase 4 baseline with separately archived run-JSON
-payloads (i.e. a new experiment, not a methodology repair).
+require either materializing the original locked run JSON payloads from a
+separately archived `7583d3cd` environment or restarting from a freshly run
+Phase 4 baseline at the current main commit (i.e. an artifact-recovery
+attempt or a new experiment, not a methodology repair of the original
+Phase 4 result).
 
 ## 7. Local Unlock Probe
 
@@ -550,9 +555,10 @@ second Bucket D. The following claims are explicitly **not** supported:
   hypothesis remains an open attribution, not a settled cause)
 - any loosening of the pre-flight raw-SHA check, the path-leak guard, or any
   other equivalence rule introduced by the repair
-- a third CQR attempt without first re-establishing a freshly run Phase 4
-  baseline that includes committed (or separately archived) run-JSON payloads;
-  any such re-baseline would be a new experiment with its own preregistration,
+- a third CQR attempt without first either materializing the original locked
+  run JSON payloads from a separately archived `7583d3cd` environment or
+  restarting from a freshly run Phase 4 baseline at the current main commit;
+  the second option would be a new experiment with its own preregistration,
   not a methodology repair of the original Phase 4 result
 
 ## 9. Next Work
