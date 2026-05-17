@@ -2,7 +2,6 @@
   "alias_function_source": "scripts/run_canonical_id_resolution_audit.py imports ALIAS_FUNCTION_SOURCE verbatim from docs/canonical_id_resolution_audit_preregistration.md section 6",
   "command": "python3 scripts/run_qr_canon_audit.py",
   "date": "2026-05-17",
-  "git_commit": "da2cc2ac28874f1c5187882b8597841bfebc9f92",
   "inputs": {
     "source_table_csv": {
       "byte_size": 94161,
@@ -82,13 +81,11 @@
       "qr_canon_normalized_rate": "0.000000"
     }
   },
-  "python_version": "3.9.6",
   "registration_doc": "docs/qr_canon_audit_registration.md",
   "synthetic_counterexample_present": true,
   "synthetic_counterexample_summary": {
     "b_cubed_f1": "1.000000",
     "qr_canon_exact_rate": "0.000000",
     "qr_canon_normalized_rate": "0.000000"
-  },
-  "working_tree_status": "dirty"
+  }
 }

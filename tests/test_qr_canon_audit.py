@@ -193,6 +193,59 @@ class CommittedArtifactsTests(unittest.TestCase):
             ).read_bytes()
             self.assertEqual(committed, regenerated)
 
+    def test_committed_audit_manifest_is_byte_stable(self) -> None:
+        """The audit manifest must reproduce byte-identically from a fixed
+        source CSV. The registration packages it as a reproducibility
+        artifact, so it cannot record live git/Python/status fields.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_repo = Path(tmpdir)
+            (tmp_repo / "data" / "results").mkdir(parents=True)
+            source = (
+                REPO_ROOT / "data" / "results" / "qr_canon_source_table.csv"
+            ).read_bytes()
+            (tmp_repo / "data" / "results" / "qr_canon_source_table.csv").write_bytes(source)
+
+            rc = AUDIT.main(["--repo-root", str(tmp_repo)])
+            self.assertEqual(rc, 0)
+
+            committed = (
+                REPO_ROOT / "data" / "results" / "qr_canon_audit_manifest.json"
+            ).read_bytes()
+            regenerated = (
+                tmp_repo / "data" / "results" / "qr_canon_audit_manifest.json"
+            ).read_bytes()
+            self.assertEqual(committed, regenerated)
+
+            manifest = json.loads(regenerated)
+            for forbidden in ("git_commit", "python_version", "working_tree_status"):
+                self.assertNotIn(
+                    forbidden,
+                    manifest,
+                    f"audit manifest must not embed live {forbidden}",
+                )
+
+
+class GeneratorManifestByteStabilityTests(unittest.TestCase):
+    def test_committed_source_table_manifest_does_not_embed_live_fields(self) -> None:
+        """The generator manifest must not embed git_commit/python_version/
+        working_tree_status either. The source CSV is the load-bearing
+        reproducibility artifact, and the manifest exists to document the
+        regression check and the input-file SHAs. Embedding live fields
+        would silently break manifest byte-stability across reruns from
+        the same inputs.
+        """
+        manifest_path = (
+            REPO_ROOT / "data" / "results" / "qr_canon_source_table_manifest.json"
+        )
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for forbidden in ("git_commit", "python_version", "working_tree_status"):
+            self.assertNotIn(
+                forbidden,
+                manifest,
+                f"generator manifest must not embed live {forbidden}",
+            )
+
 
 class GeneratorRegressionCheckTests(unittest.TestCase):
     def test_regression_check_passes_when_counts_align(self) -> None:

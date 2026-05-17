@@ -24,8 +24,6 @@ import csv
 import hashlib
 import importlib.util
 import json
-import os
-import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
@@ -322,9 +320,6 @@ def _build_manifest(
     return {
         "command": "python3 scripts/build_qr_canon_source_table.py",
         "date": "2026-05-17",
-        "git_commit": _git_commit(),
-        "python_version": _python_version(),
-        "working_tree_status": _working_tree_status(),
         "regression": regression,
         "per_family_counts": per_family_counts,
         "inputs": {
@@ -366,40 +361,6 @@ def _relativize_input(entry: Dict[str, object]) -> Dict[str, object]:
         "byte_size": entry["byte_size"],
         "family": entry["family"],
     }
-
-
-def _git_commit() -> str:
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            check=False,
-            capture_output=True,
-            text=True,
-            cwd=REPO_ROOT,
-        )
-        return result.stdout.strip() if result.returncode == 0 else ""
-    except FileNotFoundError:
-        return ""
-
-
-def _python_version() -> str:
-    return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-
-
-def _working_tree_status() -> str:
-    try:
-        result = subprocess.run(
-            ["git", "status", "--porcelain"],
-            check=False,
-            capture_output=True,
-            text=True,
-            cwd=REPO_ROOT,
-        )
-        if result.returncode != 0:
-            return "git_unavailable"
-        return "clean" if not result.stdout.strip() else "dirty"
-    except FileNotFoundError:
-        return "git_unavailable"
 
 
 if __name__ == "__main__":

@@ -143,14 +143,26 @@ columns:
 - `qr_canon_normalized_hit` (`0`/`1`)
 - `row_canonicalization_b_cubed_f1` (denormalized per row)
 
-`data/results/qr_canon_source_table_manifest.json`, recording:
+`data/results/qr_canon_source_table_manifest.json`, recording **only
+content-derived fields** so the manifest itself is byte-stable across
+reruns from the same inputs:
 
-- generator command and git commit
-- per-input-file SHA256, byte size, and source path
+- generator command (hardcoded literal) and a hardcoded `date`
+- per-input-file SHA256, byte size, and replay-root-relative source path
+  (the manifest stores `data/runs/...`, never the absolute path of the
+  replay root used at generation time)
+- per-family `qr_canon_exact_hit` and row counts
 - regression check: per-family `qr_canon_exact_hit` sum must equal the
   `exact_matches` value in `data/results/noisy_policy_mechanism_audit_evidence.json`
   and per-family row count must equal `question_traces_with_relevant_id`
-- working-tree status at write time
+
+The manifest deliberately does **not** record `git_commit`,
+`python_version`, or `working_tree_status`. Those fields would drift on
+normal reruns even though the artifact this manifest documents (the
+source CSV) is itself byte-stable; embedding them would silently break
+manifest byte-reproducibility while leaving the CSV content unchanged.
+Provenance about the historical generation environment lives in git log
+on the commit that introduced the manifest, not in the manifest payload.
 
 ### 4.2 Generator And Audit Separation
 
@@ -168,11 +180,17 @@ committed source table. It does not import the gitignored run JSONs at
 audit time. It emits:
 
 - `data/results/qr_canon_audit_metrics.csv` (per-row aggregates)
-- `data/results/qr_canon_audit_manifest.json` (input/output SHAs, command,
-  git commit)
+- `data/results/qr_canon_audit_manifest.json` (input/output SHAs,
+  per-family summary, synthetic-counterexample summary, command literal,
+  date literal, registration-doc reference, and alias-function source
+  reference)
 
-Independent reviewers can reproduce the audit by running only the audit
-script against the committed source table.
+The audit manifest deliberately omits `git_commit`, `python_version`, and
+`working_tree_status` so it is byte-stable from a fixed source CSV. The
+test suite asserts manifest byte-stability directly. Independent
+reviewers can reproduce both the metrics CSV and the manifest byte for
+byte by running only the audit script against the committed source
+table.
 
 ## 5. Forbidden In This Audit
 
