@@ -4,6 +4,31 @@ Target format: arXiv technical report first, with a workshop submission as a
 follow-up only if the narrative tightens after the noisy policy-comparison
 preregistration lands.
 
+## Abstract
+
+This work presents a preregistered fair-policy memory-governance benchmark
+together with a component-gated noisy-mode discipline and a Bucket B mechanism
+audit. Under the same upstream candidate stream and shared scoped substrate,
+contradiction-edge-driven contestation/demotion survives cleanly on
+`forced_contradiction` and partially on `preference_drift`; the remaining ties
+are unattributed or uninformative under the current noisy stream unless
+directly supported by 32B artifact evidence. A path-normalized canonical-id
+resolution (CQR) replay repair refused to emit a verdict under a second Bucket
+D abort on locked-input non-reproducibility, which strengthens rather than
+weakens the replay-discipline claim because the audit refuses methodology-only
+fixes when locked inputs cannot be reproduced. A named post-hoc CQ variant
+(`CQDatedContestation`) repairs base CQ's dated-evidence failure mode on
+`adversarial_temporal_skew` without retrofitting the original `phase2_5`
+adversarial headline; it does not clear the preregistered CQ-vs-Reflection
+win criterion because Reflection's eager-overwrite already lands the lane at
+the correctness ceiling. The shareable contribution is therefore mechanism-
+local: a preregistered benchmark plus attribution discipline that exposes
+when a memory-governance policy remains scientifically evaluable under shared
+noisy inputs, not a claim of broad noisy CQ superiority or a replacement
+persistent-agent memory system.
+
+## Draft Scope
+
 This draft consolidates the contribution the repo can defend today:
 
 1. a preregistered fair memory-policy benchmark,
@@ -153,6 +178,58 @@ Supported claim: CQ has a named narrow advantage on witness conflict and a
 named dated-evidence weakness. Unsupported claim: CQ fully governs adversarial
 upstream noise.
 
+### Adversarial Upstream-Noise Dated Follow-Up
+
+Source: `docs/adversarial_upstream_noise_dated_followup_results.md`.
+
+Specific cells:
+
+- `followup`, `mixed` (`adversarial_temporal_skew_v1`),
+  `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_followup_mixed_metrics.csv`
+- `followup`, `heldout` (`adversarial_temporal_skew_v2`),
+  `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_followup_heldout_metrics.csv`
+
+Readout:
+
+- Outcome: **partial preregistered success** on both splits.
+- Per-policy `answer_correctness` on the `temporal_skew` lane (mixed `v1` /
+  heldout `v2`):
+
+  | Policy | `mixed` | `heldout` |
+  | --- | ---: | ---: |
+  | `reflection_eager_write_lite` | `1.00` | `1.00` |
+  | `cq_dated_contestation` | `1.00` | `1.00` |
+  | `consolidation_queue_lite` (base) | `0.00` | `0.00` |
+  | `mem0_lite` | `0.00` | `0.00` |
+
+- Preregistered primary criterion (`CQDatedContestation` vs
+  `ReflectionEagerWriteLite` mechanism win, point-estimate delta `>= 0.10` AND
+  one-sided 95% LCB `> 0`): **NOT cleared** — delta is `+0.00` on both splits
+  because Reflection's eager-overwrite already lands `correctness=1.00`. The
+  fixed-seed paired bootstrap is uninformative on a unanimous `(1, 1)` row
+  and is omitted to avoid implying CI precision the data does not support.
+- Secondary descriptive criterion (`CQDatedContestation` improves on base
+  `ConsolidationQueueLite`): **MET** — delta `+1.00` on both splits.
+- Four-mechanism preservation criterion (no direction reversal on
+  `retraction`, `witness_conflict`, `scope_narrowing`, `pending_competition`):
+  **MET** on both splits, with mechanism-aligned outcome rates
+  (`retraction_demotion_rate`, `narrow_scope_override_success_rate`,
+  `pending_competition_resolution_rate`) matching base CQ at `1.00`.
+- The base-CQ "loss" on `temporal_skew` is mechanically abstention rather than
+  stale assertion (`false_assertion_rate=0.00`); `CQDatedContestation` upgrades
+  that to a correct answer from the fresher dated evidence.
+- `mem0_lite` records `false_assertion_rate=1.00` and
+  `stale_evidence_promotion_rate=1.00` on both `temporal_skew` rows — the
+  documented Mem0-family weakness on dated contradiction.
+
+Supported claim: a named post-hoc CQ variant repairs base CQ's
+dated-evidence failure mode on `temporal_skew` and preserves the four
+originally won mechanisms in oracle mode, without retrofitting the original
+`phase2_5` adversarial headline. Unsupported claim: that
+`CQDatedContestation` clears the preregistered CQ-vs-Reflection win
+criterion on this lane, that it produces a noisy-mode repair, that it
+transfers to LongMemEval, or that it would repair the Phase 4 null rows.
+
 ### Phase 2.6 Abstention Assay
 
 Source: `docs/abstention_quality_results.md`.
@@ -239,9 +316,12 @@ Readout:
 - CQ records no directional losses versus Reflection on the five countable
   primary metrics
 - `scope_contamination`, `useful_pending_memory`, `memory_poisoning`, and the
-  frozen sentinel collapse to exact policy ties on the primary metrics,
-  suggesting current-extraction convergence where the noisy candidate stream
-  stops exposing policy differences
+  frozen sentinel collapse to exact policy ties on the primary metrics; the
+  Bucket B Mechanism Audit subsection below carries the per-row attribution
+  (`scope_contamination` has real 32B residual defects plus unresolved
+  query/adapter pressure; `useful_pending_memory` and `memory_poisoning`
+  remain unattributed nulls with perfect 32B component artifacts but failing
+  exact policy-query canonical-id alignment)
 - CQ is non-inferior to `Mem0Lite` on the frozen sentinel primary metrics, but
   has no frozen superiority row because every CQ-vs-`Mem0Lite` frozen primary
   delta is `+0.00`
@@ -251,9 +331,9 @@ Readout:
 
 Supported claim: same-candidate-stream, same-substrate, component-gated policy
 isolation produces mechanism-local noisy support for CQ on forced contradiction
-and preference drift. Secondary methodological claim: the null rows expose an
-extraction-floor convergence mode that makes some policy comparisons
-uninformative under the current noisy stream. Unsupported claim: broad noisy CQ
+and preference drift, with the audit subsection below attributing the
+remaining countable rows individually rather than as a uniform convergence
+mode. Unsupported claim: broad noisy CQ
 superiority or noisy separation from `Mem0Lite` on the frozen sentinel.
 
 ### Bucket B Mechanism Audit
@@ -300,6 +380,58 @@ visible under the current 32B noisy stream. Unsupported claim:
 scope-aware pending override, source-independence gating, and poisoning defense
 survive noisy extraction in this Phase 4 run.
 
+### Canonical-Id Resolution Audit (Repair Attempt)
+
+Source: `docs/canonical_id_resolution_audit_results.md`.
+
+Specific cells:
+
+- canonical, latest abort:
+  `data/results/canonical_id_resolution_audit_stop.json`
+- date-suffixed snapshot of first abort (2026-05-15):
+  `data/results/canonical_id_resolution_audit_stop_2026-05-15.json`
+- date-suffixed snapshot of second abort (2026-05-16):
+  `data/results/canonical_id_resolution_audit_stop_2026-05-16.json`
+- repair preregistration:
+  `docs/canonical_id_resolution_audit_repair_preregistration.md`
+
+Readout:
+
+- The canonical-id/query-resolution (CQR) audit was first preregistered as a
+  standalone replay-only follow-up against the Phase 4 null rows. The
+  2026-05-15 official replay aborted under **Bucket D** with
+  `locked_input_sha_mismatch` on the locked forced-contradiction manifest
+  before any CQR metric could be emitted.
+- A narrow, repair-only preregistration (`--replay-root`,
+  `--equivalence-mode path_normalized`) was added to separate path-sensitive
+  run JSON content from stable policy artifacts while preserving stable checks
+  for metrics, candidate-stream hashes, adapter identity, model digest,
+  prompts, and preregistration locks. The repair did not change prompts,
+  thresholds, validators, adapters, policies, or the shared substrate.
+- The 2026-05-16 retry from a detached worktree at the locked Phase 4 commit
+  `98959788` aborted again under **Bucket D** with
+  `locked_run_json_sha_mismatch`. Direct path substitution did not reduce the
+  regenerated content to the locked SHA, and the locked run JSON payload is
+  not present in any commit, so the strict pre-flight raw-SHA check stops the
+  audit before path-normalized comparison can run. The audit recorded this as
+  observed evidence rather than causal closure: the residual non-reproducibility
+  was not attributed to a single cause among candidate inter-commit code
+  changes, runner non-determinism, or upstream artifact drift.
+- Per the §4 CQR × writeup posture matrix, a second Bucket D **strengthens**
+  the replay-discipline methodology claim: it shows that the replay rule is
+  strict enough to refuse a methodology-only repair when the locked inputs
+  cannot be reproduced.
+
+Supported claim: the path-normalized CQR audit is the contrastive evidence
+that the replay discipline is enforced — under the repair contract, the audit
+still refused to emit a verdict and recorded a second Bucket D. Unsupported
+claim: any CQR Bucket A/B/C readout, any change to the Phase 4 null-row
+attribution beyond what is already recorded in `docs/noisy_policy_mechanism_audit.md`,
+or that a third CQR attempt is licensed without first either materializing the
+original locked run JSON payloads from a separately archived `7583d3cd`
+environment or restarting from a freshly run Phase 4 baseline at the current
+main commit.
+
 ## 6. Discussion
 
 The audit thesis should lead the writeup: the completed Bucket B result is a
@@ -327,6 +459,36 @@ visible after noisy extraction, and it can also identify when the noisy stream
 has stopped exposing the policy distinction. That makes the contribution a
 preregistered benchmark plus attribution discipline, not a replacement memory
 system or a claim of broad noisy CQ superiority.
+
+The two 2026-05-16 follow-up outcomes sharpen this thesis on either side. The
+`CQDatedContestation` follow-up is an oracle-mode, named post-hoc repair of
+base CQ's dated-evidence failure mode on `adversarial_temporal_skew`. It
+upgrades base CQ from abstention to a correct answer from the fresher dated
+evidence on both `mixed` and `heldout` splits and preserves the four
+originally won mechanisms, but it does not clear the preregistered
+CQ-vs-Reflection win criterion because Reflection's eager-overwrite already
+lands the lane at the correctness ceiling. That outcome is honestly a partial
+preregistered success: the mechanism the original headline named — base CQ
+losing on dated contradiction — is now repaired by a named CQ variant, and
+the methodology refuses to manufacture a CQ-vs-Reflection win where the
+eager-write baseline already wins by accident-of-mechanism. The follow-up does
+not alter the Phase 4 noisy story or imply any LongMemEval transfer. The
+canonical-id resolution (CQR) replay repair is the contrastive evidence on the
+audit side: the path-normalized repair tightened the equivalence rule to
+separate path-sensitive run JSON content from stable policy artifacts, and the
+2026-05-16 retry still aborted under a second Bucket D on
+`locked_run_json_sha_mismatch`. Under the §4 plan matrix, a second Bucket D
+strengthens the replay-discipline claim rather than weakening it: the rule
+refused to emit a verdict when locked inputs cannot be reproduced and did so
+without loosening any check. The Phase 4 null rows on `useful_pending_memory`
+and `memory_poisoning` therefore stay recorded as unattributed under the
+mechanism-audit posture; the methodology does not promote them into
+canonical-id/query-resolution findings, and any third CQR attempt would
+require either materializing the original locked run JSON payloads from a
+separately archived `7583d3cd` environment or restarting from a freshly run
+Phase 4 baseline at the current main commit (i.e. an artifact-recovery
+attempt or a new experiment, not a methodology repair of the original
+Phase 4 result).
 
 ## 7. Local Unlock Probe
 
@@ -365,13 +527,39 @@ Current unsupported claims:
 - LongMemEval or other external benchmark transfer
 - real-user long-horizon helpfulness
 - learned semantic scope inference
-- repaired `temporal_skew`
 - spectrum-family evidence as external validation
 - extractor-floor convergence for `useful_pending_memory` or
   `memory_poisoning` under the current 32B artifacts
 
-`CQDatedContestation` remains a separately preregistered follow-up. It must not
-retrofit the original `phase2_5` adversarial headline result.
+The 2026-05-16 `CQDatedContestation` oracle-mode follow-up repairs base CQ's
+failure mode on `adversarial_temporal_skew` (correctness `0.00`→`1.00` on both
+`mixed` and `heldout`) and preserves the four originally won mechanisms, but
+the following claims are explicitly **not** supported:
+
+- that `CQDatedContestation` clears the preregistered CQ-vs-Reflection win
+  criterion on the `temporal_skew` lane (both policies land at
+  `correctness=1.00`; delta is `+0.00`)
+- that `CQDatedContestation` produces a noisy-mode repair on any family
+- that `CQDatedContestation` would repair the Phase 4 null rows
+- that `CQDatedContestation` transfers to LongMemEval or any external benchmark
+
+The follow-up must not retrofit the original `phase2_5` adversarial headline
+result; it lives in its own `followup` policy-set artifacts.
+
+The 2026-05-16 canonical-id resolution (CQR) replay repair aborted under a
+second Bucket D. The following claims are explicitly **not** supported:
+
+- any CQR Bucket A/B/C readout from either the 2026-05-15 or 2026-05-16 attempt
+- attribution of `useful_pending_memory` or `memory_poisoning` null rows to
+  canonical-id/query-resolution failure (the mechanism audit's adapter-contract
+  hypothesis remains an open attribution, not a settled cause)
+- any loosening of the pre-flight raw-SHA check, the path-leak guard, or any
+  other equivalence rule introduced by the repair
+- a third CQR attempt without first either materializing the original locked
+  run JSON payloads from a separately archived `7583d3cd` environment or
+  restarting from a freshly run Phase 4 baseline at the current main commit;
+  the second option would be a new experiment with its own preregistration,
+  not a methodology repair of the original Phase 4 result
 
 ## 9. Next Work
 
@@ -379,12 +567,20 @@ retrofit the original `phase2_5` adversarial headline result.
    contradiction, partial survival on preference drift, and unattributed nulls
    elsewhere unless directly supported by 32B artifacts.
 2. If future work addresses null rows, preregister it as a policy-facing
-   canonical-id/query-resolution or adapter-contract audit, not as a threshold
-   sweep that rescues Bucket B.
-3. Treat LongMemEval as future transfer work, not a current claim, and base any
-   transfer hypothesis only on the contradiction-like mechanism that survived.
+   adapter-contract audit (or a fresh Phase 4 baseline with archived run-JSON
+   payloads), not as a threshold sweep or a third CQR replay attempt against
+   the existing locked Phase 4 manifests.
+3. The next named follow-on, gated on this spine landing, is the LongMemEval
+   feasibility memo (Workstream D of `docs/next_research_plan.md`). It must be
+   preregistered as a transfer probe before any policy is executed against it,
+   and it should be framed as descriptive future work if the
+   same-candidate-stream fairness invariants cannot be preserved. Any transfer
+   hypothesis must be based only on the contradiction-like mechanism that
+   survived the Bucket B audit.
 
 The current shareable package is therefore a benchmark and methodology draft
-with honest oracle-policy results, a clear noisy-mode gate, and a completed
-mixed noisy policy comparison, not a completed persistent-agent memory-system
-claim.
+with honest oracle-policy results, a clear noisy-mode gate, a completed mixed
+noisy policy comparison, a named post-hoc oracle-mode repair of base CQ's
+dated-evidence weakness, and a second Bucket D CQR replay abort that the
+methodology refuses to wave away — not a completed persistent-agent
+memory-system claim.
