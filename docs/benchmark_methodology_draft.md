@@ -316,9 +316,12 @@ Readout:
 - CQ records no directional losses versus Reflection on the five countable
   primary metrics
 - `scope_contamination`, `useful_pending_memory`, `memory_poisoning`, and the
-  frozen sentinel collapse to exact policy ties on the primary metrics,
-  suggesting current-extraction convergence where the noisy candidate stream
-  stops exposing policy differences
+  frozen sentinel collapse to exact policy ties on the primary metrics; the
+  Bucket B Mechanism Audit subsection below carries the per-row attribution
+  (`scope_contamination` has real 32B residual defects plus unresolved
+  query/adapter pressure; `useful_pending_memory` and `memory_poisoning`
+  remain unattributed nulls with perfect 32B component artifacts but failing
+  exact policy-query canonical-id alignment)
 - CQ is non-inferior to `Mem0Lite` on the frozen sentinel primary metrics, but
   has no frozen superiority row because every CQ-vs-`Mem0Lite` frozen primary
   delta is `+0.00`
@@ -328,9 +331,9 @@ Readout:
 
 Supported claim: same-candidate-stream, same-substrate, component-gated policy
 isolation produces mechanism-local noisy support for CQ on forced contradiction
-and preference drift. Secondary methodological claim: the null rows expose an
-extraction-floor convergence mode that makes some policy comparisons
-uninformative under the current noisy stream. Unsupported claim: broad noisy CQ
+and preference drift, with the audit subsection below attributing the
+remaining countable rows individually rather than as a uniform convergence
+mode. Unsupported claim: broad noisy CQ
 superiority or noisy separation from `Mem0Lite` on the frozen sentinel.
 
 ### Bucket B Mechanism Audit

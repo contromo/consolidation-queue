@@ -64,8 +64,11 @@
   preserved
 - Phase 4 null rows on `useful_pending_memory`, `memory_poisoning`,
   `scope_contamination`, and the frozen sentinel remain unattributed; the
-  spine names a freshly run Phase 4 baseline with archived run-JSON payloads
-  as the only licensed path to a new CQR or adapter-contract attribution
+  spine names two licensed paths for any future null-row attribution work —
+  a separately preregistered policy-facing adapter-contract audit, or a
+  freshly run Phase 4 baseline with archived run-JSON payloads — while
+  explicitly forbidding a third CQR replay attempt against the existing
+  locked Phase 4 manifests
 - no new experiments, prompt/threshold/validator/adapter/policy/substrate
   changes are licensed by this promotion
 
