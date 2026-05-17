@@ -1,5 +1,58 @@
 # Product Progress
 
+## 2026-05-17 — LongMemEval feasibility lands as descriptive-only and paper outline added
+
+### What shipped
+
+- added `docs/longmemeval_feasibility_memo.md` with a frozen pre-policy coding
+  rule, official LongMemEval oracle-split provenance, one-pass mechanism
+  denominators, fairness-invariant feasibility readouts, metric mapping,
+  failure-interpretation rules, and decision (b): descriptive-only future work
+- coded the full 500-instance `longmemeval_oracle.json` split once under that
+  frozen rule: 72 non-abstention `knowledge-update` cases map to
+  `contradiction_edge`; `preference_correction` and
+  `dated_contradiction_boundary` get zero denominator under the rule; the other
+  428 cases remain out of scope for this repo's current mechanism-local
+  transfer hypothesis
+- tracked `data/results/longmemeval_feasibility_coding.csv` as the per-case
+  coding artifact (`question_id`, `question_type`, applied label, rule
+  reference, rationale, and evidence/answer-session counts), with SHA256
+  `d8932f39a4006ce6b0d98adbef0b013fd912129b873d8cebf4491673cd3e46e3`
+- recorded the key blocker for a policy run: LongMemEval has relevant
+  update/correction cases, but the released artifacts do not expose CQ-style
+  `CandidateUpdate` streams, contradiction edges, canonical slots, or
+  policy-query `relevant_canonical_id` mappings; deriving those from answer or
+  evidence labels would leak oracle information into policy inputs
+- added `docs/paper_outline.md`, a reviewer-facing outline derived from the
+  methodology spine with a unified evidence ledger, related-work positioning,
+  explicit limitations, LongMemEval external-transfer boundary, future-work
+  split, and artifact/reproducibility appendices
+- updated `PROJECT_PLAN.md` and `docs/next_research_plan.md` so LongMemEval is
+  no longer listed as the immediate pending memo; any future LongMemEval run now
+  requires a separate adapter/annotation preregistration first
+
+### Why it matters
+
+- the repo now answers the strongest external-transfer reviewer question
+  without violating its own fairness rules: LongMemEval is relevant, but not yet
+  a fair CQ-vs-Reflection-vs-`Mem0Lite` transfer run
+- the positive denominator is useful (72 update/correction cases), and the new
+  CSV makes the denominator auditable, but the decision remains conservative
+  because the candidate-stream and query-contract invariants are the
+  load-bearing part of the benchmark
+- the paper package has a cleaner outline that keeps supported claims in the
+  evidence ledger and moves unsupported claims to limitations/future work rather
+  than letting them leak into the contribution
+
+### Open issues / next
+
+- do not run LongMemEval policies until a candidate-stream and canonical-query
+  annotation layer is preregistered and scored
+- the next original-research path remains a policy-facing adapter-contract audit
+  or a fresh Phase 4 baseline with committed/archived run-JSON payloads, not a
+  third CQR replay attempt against the existing locked manifests
+- continue the final report package from `docs/paper_outline.md`
+
 ## 2026-05-16 — Methodology draft promoted to technical-report spine
 
 ### What shipped

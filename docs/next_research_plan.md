@@ -2,7 +2,31 @@
 
 Date: 2026-05-15
 
-Status: active planning draft.
+Status: active roadmap with 2026-05-17 progress notes.
+
+## Status Update — 2026-05-17
+
+Workstream A landed. The CQR path-normalized repair was exercised on
+2026-05-16 and produced a second Bucket D under
+`locked_run_json_sha_mismatch`; the Phase 4 null-row attribution remains
+unsettled.
+
+Workstream B landed. `docs/benchmark_methodology_draft.md` now serves as the
+technical-report spine, and `docs/paper_outline.md` adds the reviewer-facing
+outline with unified evidence ledger, limits, future work, and appendices.
+
+Workstream C item 2 landed. `CQDatedContestation` repaired base CQ's
+`temporal_skew` failure in oracle mode and preserved the four originally won
+mechanisms, but did not clear the CQ-vs-Reflection win criterion.
+
+Workstream D landed as feasibility-only. `docs/longmemeval_feasibility_memo.md`
+and `data/results/longmemeval_feasibility_coding.csv` record a 500-case
+coding pass with 72 LongMemEval oracle `knowledge-update` cases that map to
+`contradiction_edge`, but the decision is descriptive-only future work because
+the released artifacts do not provide a shared CQ-style candidate stream,
+contradiction edges, canonical slots, or a policy-query canonical-id contract.
+LongMemEval should not be run against policies until a separate
+adapter/annotation preregistration creates those inputs.
 
 ## Research Posture
 
