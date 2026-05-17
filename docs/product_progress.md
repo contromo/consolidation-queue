@@ -1,5 +1,74 @@
 # Product Progress
 
+## 2026-05-16 — Methodology draft promoted to technical-report spine
+
+### What shipped
+
+- prepended an Abstract to `docs/benchmark_methodology_draft.md` that frames
+  the shareable contribution as mechanism-local: preregistered fair-policy
+  benchmark + component-gate discipline + Bucket B audit, with the
+  contradiction-edge-driven survival rows and the two 2026-05-16 boundary
+  outcomes named directly; the Abstract avoids "current-stream convergence"
+  framing and keeps null-row attribution open
+- added a §5 Evidence Ledger subsection "Adversarial Upstream-Noise Dated
+  Follow-Up" with the per-policy `answer_correctness` table on both
+  `temporal_skew` splits, the three preregistered success criteria, and the
+  partial preregistered success readout (criterion 1 NOT MET; criteria 2 and
+  3 MET); referenced
+  `docs/adversarial_upstream_noise_dated_followup_results.md` and both
+  `data/results/adversarial_upstream_noise/adversarial_upstream_noise_oracle_followup_*_metrics.csv`
+- added a §5 subsection "Canonical-Id Resolution Audit (Repair Attempt)" that
+  records the path-normalized replay repair, the 2026-05-16 second Bucket D
+  under `locked_run_json_sha_mismatch`, the observed-evidence-not-causal-closure
+  framing, and the §4 plan matrix mapping that a second Bucket D strengthens
+  the replay-discipline claim; cited
+  `data/results/canonical_id_resolution_audit_stop.json` plus the
+  date-suffixed `2026-05-15` and `2026-05-16` snapshots that exist on this
+  branch
+- expanded §6 Discussion with a paragraph integrating both 2026-05-16
+  outcomes: CQDated as oracle-mode named post-hoc repair that does not
+  manufacture a CQ-vs-Reflection win where the eager-write baseline already
+  lands the lane at ceiling; CQR second abort as evidence that the replay
+  discipline refused a methodology-only fix
+- expanded §8 Limits into two explicit boundary blocks (one for
+  `CQDatedContestation` and one for the CQR repair attempt) so each new
+  result's unsupported claims are enumerated next to its evidence
+- rewrote §9 Next Work item 3 so it gates the LongMemEval feasibility memo on
+  the spine landing, and renamed item 2 so it points at adapter-contract
+  audits or a fresh Phase 4 baseline rather than a third CQR replay attempt
+- updated `PROJECT_PLAN.md` "Immediate Next Tasks" item 3 to record that the
+  methodology spine promotion has landed and to name the LongMemEval
+  feasibility memo as the next preregistration-first follow-on
+
+### Why it matters
+
+- the methodology draft is now structured as a true technical-report spine
+  (Abstract → §1–4 method → §5 Evidence → §6 Discussion → §7 Local Unlock
+  Probe → §8 Limits → §9 Next Work) and reflects every committed result up to
+  2026-05-16 without inventing claims beyond the source docs
+- both 2026-05-16 outcomes are integrated honestly: the CQDated partial
+  preregistered success is recorded without retrofitting the original
+  `phase2_5` headline, and the CQR second abort is recorded as a
+  methodology-strengthening boundary rather than a result to be waved away
+- the LongMemEval feasibility memo (Workstream D of
+  `docs/next_research_plan.md`) is now the next named workstream, gated on
+  this spine landing and explicitly scoped as its own preregistration-first
+  plan rather than an inline extension
+
+### Open issues / next
+
+- scope the LongMemEval feasibility memo as a separate plan; preregister the
+  subset, metrics, baselines, and failure interpretation before any policy
+  is executed against LongMemEval, and frame the result as descriptive
+  transfer only if the same-candidate-stream fairness invariants cannot be
+  preserved
+- Phase 4 null rows on `useful_pending_memory`, `memory_poisoning`,
+  `scope_contamination`, and the frozen sentinel remain unattributed; the
+  spine names a freshly run Phase 4 baseline with archived run-JSON payloads
+  as the only licensed path to a new CQR or adapter-contract attribution
+- no new experiments, prompt/threshold/validator/adapter/policy/substrate
+  changes are licensed by this promotion
+
 ## 2026-05-16 — CQR second abort and CQDated partial preregistered success
 
 ### What shipped
