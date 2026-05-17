@@ -1,5 +1,63 @@
 # Product Progress
 
+## 2026-05-16 — CQR second abort and CQDated partial preregistered success
+
+### What shipped
+
+- executed the repaired CQR audit against the locked Phase 4 commit
+  `98959788` in `--equivalence-mode path_normalized` from a detached replay
+  worktree; the audit aborted under Bucket D for
+  `locked_run_json_sha_mismatch` (working as designed — the replay-equivalence
+  rule fired rather than a code or test failure)
+- executed the preregistered `CQDatedContestation` follow-up on
+  `adversarial_upstream_noise` with `--policy-set followup --scenarios 300` for
+  both `mixed` and `heldout` splits; recorded partial preregistered success:
+  base CQ's `temporal_skew` failure is repaired
+  (`answer_correctness` `0.00`→`1.00` vs base CQ on both `v1` and `v2`) and
+  the four originally won mechanisms do not reverse, but the preregistered
+  Reflection win criterion (delta `>= 0.10`, LCB `> 0`) is not cleared
+  because both `CQDatedContestation` and `ReflectionEagerWriteLite` land at
+  `correctness=1.00` on this lane (delta `+0.00`)
+- added `docs/adversarial_upstream_noise_dated_followup_results.md` recording
+  the Lane B outcome as partial preregistered success (base-CQ repair with the
+  Reflection win criterion not cleared) against the preregistration's three
+  success criteria
+- appended the 2026-05-16 retry section to
+  `docs/canonical_id_resolution_audit_results.md`, preserving the 2026-05-15
+  first-abort record verbatim
+- tracked the two Lane B metrics CSVs under
+  `data/results/adversarial_upstream_noise/`; left the regeneratable 85+ MB
+  followup run JSONs untracked (SHA and size recorded in the result doc)
+
+### Why it matters
+
+- the CQR second abort is itself the §4 plan-matrix Bucket-D outcome: the
+  path-normalized replay discipline refuses to emit a verdict when the locked
+  inputs cannot be reproduced; the abort attempt did not establish a single
+  cause for the non-reproducibility and is documented as observed evidence
+  rather than causal closure
+- the CQDated outcome lets the writeup claim a named post-hoc repair of base
+  CQ's dated-evidence failure mode without rewriting the original `phase2_5`
+  headline, while honestly recording that the preregistered Reflection win
+  criterion was not cleared on this lane (Reflection's eager-overwrite already
+  records `correctness=1.00`, so the dated fix raises CQ to parity rather than
+  past it)
+- both outcomes together unblock methodology-draft promotion: it now lands
+  with two recorded results rather than waiting on a CQR Bucket A/B/C readout
+
+### Open issues / next
+
+- promote `docs/benchmark_methodology_draft.md` to the technical-report spine
+  per `docs/next_research_plan.md`, framing CQR as a documented second abort
+  and CQDated as a named post-hoc repair (neither settles Phase 4 null-row
+  attribution)
+- Phase 4 null rows on `useful_pending_memory`, `memory_poisoning`,
+  `scope_contamination`, and the frozen sentinel remain unattributed; future
+  attribution work would require a freshly run Phase 4 baseline (a new
+  experiment, not a methodology repair)
+- LongMemEval feasibility memo remains future work, gated on the methodology
+  draft
+
 ## 2026-05-15 — Next original-research plan written
 
 ### What shipped
