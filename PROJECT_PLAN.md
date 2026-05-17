@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-15
+Last updated: 2026-05-17
 
 ## Goal
 
@@ -133,6 +133,15 @@ Implemented:
   cleared because `CQDatedContestation` ties `ReflectionEagerWriteLite` at
   `1.00` rather than exceeding it; `phase2_5` remains byte and behaviorally
   unchanged. See `docs/adversarial_upstream_noise_dated_followup_results.md`.
+- `docs/longmemeval_feasibility_memo.md`, recording the 2026-05-17
+  descriptive-only LongMemEval decision: the official oracle split contains
+  72 update/correction cases that map to `contradiction_edge`, but the released
+  artifacts do not preserve CQ's same-candidate-stream or policy-query
+  invariants because they lack CQ-style candidate streams, contradiction edges,
+  canonical slots, and `relevant_canonical_id` mappings.
+- `docs/paper_outline.md`, a reviewer-facing outline derived from the
+  methodology spine with a unified evidence ledger, related-work positioning,
+  explicit limits, future-work split, and reproducibility appendices.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -141,7 +150,7 @@ Not implemented yet:
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
-- LongMemEval transfer check
+- LongMemEval adapter/annotation preregistration and transfer run
 - final writeup docs
 
 ## Repository Map
@@ -570,9 +579,9 @@ The first deterministic forced-contradiction local-model command/prompt, compone
 
 1. The CQR path-normalized replay repair landed and was exercised on 2026-05-16; a second Bucket D was recorded under the repaired equivalence rule. The null-row attribution remains unsettled. Do not attempt a third CQR audit attempt without first re-establishing a locked Phase 4 baseline that includes committed (or separately archived) run-JSON payloads.
 2. Use `docs/noisy_policy_mechanism_audit.md` as the Phase 4 writeup anchor until CQR emits a non-abort result: clean survival on forced contradiction, partial survival on preference drift, and unattributed nulls elsewhere unless directly supported by 32B artifacts.
-3. The methodology spine promotion landed on 2026-05-16: `docs/benchmark_methodology_draft.md` now carries an Abstract, two new §5 subsections (the `CQDatedContestation` partial preregistered success and the 2026-05-16 CQR repair-attempt second Bucket D), an updated §6 Discussion integrating both 2026-05-16 outcomes, an expanded §8 Limits separating CQDated and CQR boundary claims, and a §9 Next Work that gates LongMemEval feasibility on the spine landing. The next named follow-on is the LongMemEval feasibility memo (per `docs/next_research_plan.md` Workstream D); start it as its own preregistration-first plan, not as an inline extension of the spine.
+3. The methodology spine promotion landed on 2026-05-16: `docs/benchmark_methodology_draft.md` now carries an Abstract, two new §5 subsections (the `CQDatedContestation` partial preregistered success and the 2026-05-16 CQR repair-attempt second Bucket D), an updated §6 Discussion integrating both 2026-05-16 outcomes, an expanded §8 Limits separating CQDated and CQR boundary claims, and a §9 Next Work that gated LongMemEval feasibility on the spine landing. The LongMemEval feasibility memo landed on 2026-05-17 with decision (b), descriptive-only future work: 72 official `knowledge-update` cases map to `contradiction_edge`, but a fair transfer run is blocked until a separate adapter/annotation preregistration creates a shared candidate stream and policy-query contract.
 4. Keep Bucket C abstention, LongMemEval transfer, prompt changes, validator changes, and new mechanism families out of scope unless a future preregistered follow-up explicitly justifies them from the audit's mechanism-local interpretation. (`CQDatedContestation` is removed from this exclusion list because the preregistered follow-up landed on 2026-05-16 as partial preregistered success — base-CQ repair with the Reflection win criterion not cleared on the `temporal_skew` lane; see `docs/adversarial_upstream_noise_dated_followup_results.md`.)
-5. Write the LongMemEval feasibility memo per `docs/next_research_plan.md` once the methodology-draft promotion is in place; preregister LongMemEval only if same-candidate-stream evaluation can be preserved, otherwise keep it as descriptive future work.
+5. Use `docs/paper_outline.md` as the packaging spine for the report. The next original-research move should be either a policy-facing adapter-contract audit or a fresh Phase 4 baseline with committed or archived run-JSON payloads; LongMemEval should not be run against policies until a separate candidate-stream and canonical-query annotation layer is preregistered.
 
 ## Working Rules
 
