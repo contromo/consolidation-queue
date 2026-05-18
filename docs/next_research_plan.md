@@ -84,6 +84,27 @@ PFLC class. The workstream did not unlock CQR Bucket D, amend Phase 4
 Bucket B, modify the byte-locked CQR alias function, or run any policy
 against any external benchmark.
 
+Post-A.6 LoCoMo published-output follow-up landed later on 2026-05-18.
+The corrected artifact gate is now recorded in
+`docs/locomo_baseline_replay_survey.md`. The original A.6 anchor set remains
+artifact-blocked, but a current Agent Memory Benchmark (AMB) sweep found
+public per-question LoCoMo run gzips for Hindsight and hybrid-search whose
+injected contexts contain recoverable LoCoMo `dia_id` values. The scorer
+`scripts/score_locomo_amb_pflc.py` compares those emitted IDs with official
+LoCoMo `qa[].evidence` and writes
+`data/results/locomo_amb_pflc_rows.csv` plus
+`data/results/locomo_amb_pflc_summary.json`. On the lookup-relevant
+denominator (rows with non-empty gold `evidence`), Hindsight records answer
+accuracy `92.0%`, all-evidence PFLC@10 `65.8%`, PFLC@20 `83.1%`, and
+PFLC@50 `97.6%` with `36,235` average context tokens; hybrid-search records
+answer accuracy `79.1%`, PFLC@10 `64.8%`, PFLC@20 `75.7%`, and PFLC@50
+`90.5%` with `22,156` average context tokens. The right interpretation is
+not "public systems fail PFLC"; it is that once public per-question context is
+available, PFLC decomposes LoCoMo scores into evidence exposure, evidence
+rank/context saturation, and answer-generation residuals. This remains a
+published-output/context-derived benchmark-artifact diagnostic, not a CQ
+policy transfer claim.
+
 ## Research Posture
 
 The next phase should aim for an original, defensible research contribution
@@ -265,10 +286,17 @@ Required pieces:
    counterexamples + consolidated results doc + methodology-spine /
    paper-outline updates. **Landed (Workstream A.6, outcome bucket
    B-3).**
+8. LoCoMo published-output PFLC follow-up over current AMB outputs:
+   artifact gate + scorer + per-question rows + summary manifest. **Landed
+   as a narrow published-output/context-derived replay, not a policy
+   comparison.**
 
 Next-next, none of which is licensed by this plan without a separate
 preregistration:
 
+- report integration of the AMB LoCoMo PFLC replay, including the context-
+  saturation caveat and the distinction between evidence exposure and answer
+  generation
 - a policy-facing adapter-contract experiment that runs the CQR Section C
   cross-tab (QR-canon hit vs per-policy answer success) on a fresh Phase 4
   baseline or a separately archived locked-input environment
