@@ -8,12 +8,31 @@ Status: active roadmap with 2026-05-17 progress notes.
 
 Workstream A landed. The CQR path-normalized repair was exercised on
 2026-05-16 and produced a second Bucket D under
-`locked_run_json_sha_mismatch`; the Phase 4 null-row attribution remains
-unsettled.
+`locked_run_json_sha_mismatch`; the Phase 4 null-row attribution remained
+unsettled until Workstream A.5.
+
+Workstream A.5 landed (2026-05-17 evening). A registered post-hoc QR-canon
+audit ships in `docs/qr_canon_audit_registration.md` and
+`docs/qr_canon_audit_results.md`. It reuses the locked CQR Section A
+`cqr_set_membership` metric and the locked CQR alias function verbatim,
+reads from a small committed `data/results/qr_canon_source_table.csv`
+(no Phase 4 run-JSON byte reproducibility required at audit time), and
+emits per-row Wilson CIs, a joint B-cubed F1 vs QR-canon table, and a
+synthetic counterexample row showing B-cubed F1 `1.00` with QR-canon
+(exact) `0.00`. Five of seven Phase 4 rows clear the existing B-cubed F1
+floor while QR-canon (exact) is below 5 percent; the locked CQR alias
+function also returns zero on four of those rows. The audit reattributes
+those rows from "unattributed null" to "policy-facing query interface
+contract failure" and ships QR-canon as a required diagnostic alongside
+clustering-quality component metrics in
+`docs/benchmark_methodology_draft.md` and `docs/paper_outline.md`. The
+audit does not unlock the locked CQR Bucket D verdict, does not amend the
+Phase 4 Bucket B result, and does not propose a new pass/fail threshold.
 
 Workstream B landed. `docs/benchmark_methodology_draft.md` now serves as the
 technical-report spine, and `docs/paper_outline.md` adds the reviewer-facing
 outline with unified evidence ledger, limits, future work, and appendices.
+Both documents now also carry the QR-canon contribution.
 
 Workstream C item 2 landed. `CQDatedContestation` repaired base CQ's
 `temporal_skew` failure in oracle mode and preserved the four originally won
@@ -26,7 +45,8 @@ coding pass with 72 LongMemEval oracle `knowledge-update` cases that map to
 the released artifacts do not provide a shared CQ-style candidate stream,
 contradiction edges, canonical slots, or a policy-query canonical-id contract.
 LongMemEval should not be run against policies until a separate
-adapter/annotation preregistration creates those inputs.
+adapter/annotation preregistration creates those inputs. Any LongMemEval
+adapter must also establish a QR-canon target before any policy run.
 
 ## Research Posture
 
@@ -193,12 +213,28 @@ Required pieces:
 
 ## Suggested Order
 
-1. CQR path-normalization preregistration and tests.
-2. CQR non-abort replay or documented second abort.
-3. Methodology draft update from the CQR outcome.
-4. Paper-outline pass focused on the mechanism-local thesis.
+1. CQR path-normalization preregistration and tests. **Landed.**
+2. CQR non-abort replay or documented second abort. **Landed as second
+   documented Bucket D.**
+3. Methodology draft update from the CQR outcome. **Landed.**
+4. Paper-outline pass focused on the mechanism-local thesis. **Landed.**
 5. Decide between `CQDatedContestation` and LongMemEval based on which one
-   answers the most credible reviewer objection.
+   answers the most credible reviewer objection. **`CQDatedContestation`
+   landed as partial preregistered success; LongMemEval landed as
+   descriptive-only future work.**
+6. Registered post-hoc QR-canon audit reattributing the four
+   perfect-clustering null rows. **Landed (Workstream A.5).**
+
+Next-next, none of which is licensed by this plan without a separate
+preregistration:
+
+- a policy-facing adapter-contract experiment that runs the CQR Section C
+  cross-tab (QR-canon hit vs per-policy answer success) on a fresh Phase 4
+  baseline or a separately archived locked-input environment
+- a LongMemEval adapter/annotation preregistration that establishes a
+  QR-canon target before any policy run
+- threshold or prompt or validator changes — explicitly forbidden by the
+  Kill Criteria below
 
 ## Kill Criteria
 

@@ -1,0 +1,9 @@
+row_id,family,denominator,qr_canon_exact_hits,qr_canon_exact_rate,qr_canon_exact_wilson_lcb,qr_canon_exact_wilson_ucb,qr_canon_normalized_hits,qr_canon_normalized_rate,qr_canon_normalized_wilson_lcb,qr_canon_normalized_wilson_ucb,canonicalization_b_cubed_f1,joint_passes_clustering_floor_but_not_lookup,row_kind
+forced_contradiction,forced_contradiction,120,112,0.933333,0.873949,0.965835,120,1.000000,0.968981,1.000000,1.000000,False,phase_4_default
+preference_drift,preference_drift,120,40,0.333333,0.255317,0.421689,80,0.666667,0.578311,0.744683,0.800000,False,phase_4_default
+scope_contamination,scope_contamination,75,0,0.000000,0.000000,0.048724,15,0.200000,0.125121,0.304113,0.888889,True,phase_4_default
+useful_pending_memory,useful_pending_memory,60,0,0.000000,0.000000,0.060172,0,0.000000,0.000000,0.060172,1.000000,True,phase_4_default
+memory_poisoning,memory_poisoning,60,0,0.000000,0.000000,0.060172,0,0.000000,0.000000,0.060172,1.000000,True,phase_4_default
+false_corroboration,false_corroboration,60,0,0.000000,0.000000,0.060172,0,0.000000,0.000000,0.060172,1.000000,True,phase_4_default
+mechanism_diverse_heldout,mechanism_diverse_heldout,4,0,0.000000,0.000000,0.489891,0,0.000000,0.000000,0.489891,0.952381,True,phase_4_default
+synthetic_counterexample,synthetic_counterexample,1,0,0.000000,0.000000,0.793451,0,0.000000,0.000000,0.793451,1.000000,True,synthetic_counterexample

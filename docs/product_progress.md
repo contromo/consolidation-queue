@@ -1,5 +1,93 @@
 # Product Progress
 
+## 2026-05-17 — QR-canon registered post-hoc audit lands
+
+### What shipped
+
+- added `docs/qr_canon_audit_registration.md` and
+  `docs/qr_canon_audit_results.md`: a registered post-hoc audit that
+  reuses the locked CQR Section A `cqr_set_membership` metric and the
+  locked CQR alias function verbatim, discloses the per-row exact-match
+  counts already in the mechanism audit, and adds per-row Wilson CIs, a
+  joint B-cubed F1 vs QR-canon (exact) table, an alias-normalized
+  sensitivity, a synthetic counterexample, and a re-attribution block
+- added `scripts/build_qr_canon_source_table.py` as a one-time generator
+  that reads the gitignored Phase 4 noisy run JSONs, ties per-family
+  counts to `data/results/noisy_policy_mechanism_audit_evidence.json`,
+  and emits the small committed
+  `data/results/qr_canon_source_table.csv` plus
+  `data/results/qr_canon_source_table_manifest.json`
+- added `scripts/run_qr_canon_audit.py` as the audit script. It reads
+  **only** the committed source CSV at audit time; the gitignored 12-17
+  MB Phase 4 run JSONs are not required for reproduction, and a
+  dedicated test in `tests/test_qr_canon_audit.py` enforces that
+  invariant
+- emitted `data/results/qr_canon_audit_metrics.csv` and
+  `data/results/qr_canon_audit_manifest.json`. The metrics CSV includes
+  a fixture-driven synthetic counterexample row demonstrating B-cubed F1
+  `1.00` with QR-canon (exact) `0.00` by construction
+- added `tests/test_qr_canon_audit.py` with 17 tests covering Wilson math,
+  joint-diagnostic logic, the synthetic counterexample fixture, the
+  generator regression check against the mechanism-audit evidence
+  counts, the committed source-table ↔ evidence tie, byte-stable audit
+  reproduction, and the no-gitignored-input audit reproducibility
+  invariant
+- promoted QR-canon into `docs/benchmark_methodology_draft.md`:
+  Contributions §1 now names it as a required diagnostic alongside the
+  aggregate, per-family, and frozen-sentinel gates; §5 carries the
+  full registered audit subsection; §6 Discussion folds in the
+  reattribution and the synthetic counterexample; §8 Limits enumerates
+  the unsupported claims (no hard threshold, no semantic-extractor
+  verdict, no CQR Bucket A/B/C); §9 Next Work reframes the Phase 4
+  null-row attribution as already done for the four perfect-clustering
+  rows
+- promoted QR-canon into `docs/paper_outline.md`: Method §4 adds a new
+  QR-canon Diagnostic subsection; Contributions §1.7 names the
+  diagnostic; Evidence Ledger §5 adds a QR-canon row; Discussion §6 now
+  closes the loop on the three-layer diagnostic story (per-family
+  observed gates + frozen sentinel + QR-canon); Limitations §8 names
+  the QR-canon boundary; Future Work §9 calls out the CQR Section C
+  cross-tab as the natural but blocked next step
+- updated `docs/next_research_plan.md` Workstream A.5 with the audit
+  outcome and the suggested order
+
+### Why it matters
+
+- the most-cited reviewer-facing methodological gap (clustering metrics
+  passing while the policy-query interface fails) is now load-bearing in
+  the methodology spine and the paper outline, not buried in a
+  mechanism-audit aside
+- the audit is reproducible without depending on the gitignored 12-17
+  MB Phase 4 run JSONs at audit time, which addresses the very failure
+  mode that aborted the CQR audit twice on Bucket D
+- the contribution is honest about prior observations (the
+  mechanism-audit counts were already disclosed), about what is genuinely
+  new (Wilson CIs, joint table, synthetic counterexample, methodology
+  reframing), and about what it does **not** do (no preregistered
+  discovery, no CQR A/B/C verdict, no new policy claim, no new
+  threshold)
+- the synthetic counterexample lets the methodological claim land
+  independent of the Phase 4 numbers; reviewers who refuse to credit
+  the noisy-stream evidence can still observe the gap by construction
+- the headline pitch becomes: *clustering-quality component evaluation
+  is insufficient for memory-policy evaluability; QR-canon is the
+  missing diagnostic that should be reported alongside clustering
+  metrics whenever a memory policy is evaluated under shared noisy
+  extraction*
+
+### Open issues / next
+
+- the CQR Section C cross-tab (QR-canon hit vs per-policy answer
+  success) is the natural follow-on diagnostic but remains blocked on
+  the same replay path that aborted the CQR audit; do not retry against
+  the existing locked Phase 4 manifests
+- a fresh Phase 4 baseline with committed/archived run-JSON payloads or
+  a separately preregistered adapter-contract experiment remains the
+  licensed path forward for the Section C cross-tab
+- LongMemEval transfer remains gated on a separate adapter/annotation
+  preregistration; any LongMemEval adapter must also establish a
+  QR-canon target before any policy run
+
 ## 2026-05-17 — LongMemEval feasibility lands as descriptive-only and paper outline added
 
 ### What shipped

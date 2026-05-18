@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-17
+Last updated: 2026-05-17 (QR-canon audit landed)
 
 ## Goal
 
@@ -143,6 +143,23 @@ Implemented:
 - `docs/paper_outline.md`, a reviewer-facing outline derived from the
   methodology spine with a unified evidence ledger, related-work positioning,
   explicit limits, future-work split, and reproducibility appendices.
+- `docs/qr_canon_audit_registration.md`,
+  `docs/qr_canon_audit_results.md`,
+  `scripts/build_qr_canon_source_table.py`,
+  `scripts/run_qr_canon_audit.py`,
+  `data/results/qr_canon_source_table.csv`,
+  `data/results/qr_canon_source_table_manifest.json`,
+  `data/results/qr_canon_audit_metrics.csv`,
+  `data/results/qr_canon_audit_manifest.json`, and
+  `tests/test_qr_canon_audit.py`: a registered post-hoc QR-canon audit
+  that reuses the locked CQR Section A `cqr_set_membership` metric and
+  the locked CQR alias function verbatim, reads only the committed
+  per-question source table at audit time, emits per-row Wilson CIs plus
+  a joint B-cubed F1 vs QR-canon (exact) table, ships a synthetic
+  counterexample with B-cubed F1 `1.00` and QR-canon (exact) `0.00`, and
+  reattributes the four perfect-clustering null rows from "unattributed
+  null" to "policy-facing query interface contract failure" without
+  unlocking the locked CQR audit or amending any policy verdict.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -583,6 +600,7 @@ The first deterministic forced-contradiction local-model command/prompt, compone
 3. The methodology spine promotion landed on 2026-05-16: `docs/benchmark_methodology_draft.md` now carries an Abstract, two new §5 subsections (the `CQDatedContestation` partial preregistered success and the 2026-05-16 CQR repair-attempt second Bucket D), an updated §6 Discussion integrating both 2026-05-16 outcomes, an expanded §8 Limits separating CQDated and CQR boundary claims, and a §9 Next Work that gated LongMemEval feasibility on the spine landing. The LongMemEval feasibility memo landed on 2026-05-17 with decision (b), descriptive-only future work: 72 official `knowledge-update` cases map to `contradiction_edge`, but a fair transfer run is blocked until a separate adapter/annotation preregistration creates a shared candidate stream and policy-query contract.
 4. Keep Bucket C abstention, LongMemEval transfer, prompt changes, validator changes, and new mechanism families out of scope unless a future preregistered follow-up explicitly justifies them from the audit's mechanism-local interpretation. (`CQDatedContestation` is removed from this exclusion list because the preregistered follow-up landed on 2026-05-16 as partial preregistered success — base-CQ repair with the Reflection win criterion not cleared on the `temporal_skew` lane; see `docs/adversarial_upstream_noise_dated_followup_results.md`.)
 5. Use `docs/paper_outline.md` as the packaging spine for the report. The next licensed original-research move should be one of three preregistered paths: a policy-facing adapter-contract audit, a fresh Phase 4 baseline with committed or archived run-JSON payloads, or a LongMemEval adapter/annotation preregistration that creates a shared candidate stream and canonical-query contract before any policy run.
+6. The 2026-05-17 registered post-hoc QR-canon audit landed and is the most recent reframing artifact for the paper. It reuses the locked CQR Section A `cqr_set_membership` metric and the locked CQR alias function verbatim, reads only the committed `data/results/qr_canon_source_table.csv` at audit time, and reattributes the four perfect-clustering null rows from "unattributed null" to "policy-facing query interface contract failure" without unlocking the locked CQR audit or amending any policy verdict. See `docs/qr_canon_audit_results.md`. The CQR Section C cross-tab (QR-canon hit vs per-policy answer success) remains the natural follow-on diagnostic but is blocked on the same replay path; it is not licensed against the existing locked Phase 4 manifests.
 
 ## Working Rules
 

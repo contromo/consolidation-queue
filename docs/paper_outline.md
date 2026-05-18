@@ -18,10 +18,15 @@ This report introduces a preregistered fair-policy benchmark for persistent
 agent memory governance. Under a shared upstream candidate stream and shared
 scoped substrate, CQ's contradiction-edge-driven contestation/demotion mechanism
 survives noisy 32B extraction cleanly on `forced_contradiction` and partially on
-`preference_drift`. The remaining Phase 4 ties are recorded as unattributed or
-descriptive nulls unless direct 32B artifact evidence supports a narrower
-attribution. The report contributes: a same-stream benchmark, a component-gated
-noisy-mode unlock discipline, a mechanism audit for Bucket B, and a
+`preference_drift`. The remaining Phase 4 ties are recorded as policy-facing
+query interface contract failures rather than unattributed nulls, under a
+registered post-hoc QR-canon audit that ships per-row Wilson confidence
+intervals and a synthetic counterexample showing clustering-quality
+canonicalization can score `1.00` while exact policy-query canonical-id
+agreement remains `0.00`. The report contributes: a same-stream benchmark, a
+component-gated noisy-mode unlock discipline, a mechanism audit for Bucket B,
+a query-resolvable canonical-id diagnostic that should accompany any
+clustering-quality component evaluation of memory-policy benchmarks, and a
 reproducibility posture strict enough to report a second Bucket D CQR abort
 instead of forcing a verdict.
 
@@ -53,6 +58,13 @@ substrate.
    stopped unstable extractor rows before broader scoring.
 6. **Deterministic replay.** Determinism and replay-equivalence checks prevent
    post-hoc methodology repairs from emitting verdicts when locked inputs drift.
+7. **QR-canon diagnostic.** Clustering-quality canonicalization (B-cubed F1)
+   can score `1.00` while exact policy-query canonical-id agreement remains
+   `0.00` on a real benchmark; the registered post-hoc QR-canon audit
+   surfaces this gap on five of seven Phase 4 rows and ships a synthetic
+   counterexample. QR-canon enters the methodology as a required diagnostic
+   alongside the clustering-quality gates above, not as a tuneable
+   pass/fail threshold.
 
 Key artifacts:
 
@@ -63,6 +75,9 @@ Key artifacts:
 - `docs/component_gate_failure_taxonomy.md`
 - `docs/noisy_policy_mechanism_audit.md`
 - `docs/canonical_id_resolution_audit_results.md`
+- `docs/qr_canon_audit_registration.md`
+- `docs/qr_canon_audit_results.md`
+- `data/results/qr_canon_audit_metrics.csv`
 
 ## 2. Benchmark And Policies
 
@@ -161,6 +176,22 @@ visible from rows where ties are unattributed. It uses Phase 4 policy artifacts,
 component-eval artifacts, exact policy-query canonical-id alignment, ablation
 patterns, and representative traces.
 
+### Query-Resolvable Canonical-Id Diagnostic
+
+The QR-canon audit is a registered post-hoc companion to the attribution
+stage. It reuses the locked CQR Section A `cqr_set_membership` metric and
+the locked CQR alias function verbatim, but reads from a small committed
+per-question source table that does **not** depend on the gitignored
+12-17 MB Phase 4 run JSONs at audit time. It emits per-row QR-canon (exact
+and alias-normalized) rates with Wilson confidence intervals, a joint
+B-cubed F1 vs QR-canon (exact) table, and a synthetic counterexample
+fixture demonstrating that B-cubed F1 can be `1.00` while QR-canon (exact)
+is `0.00` by construction. The audit does not unlock the locked CQR
+Bucket D verdict, does not issue a new pass/fail threshold, and does not
+change any policy verdict. It reattributes the perfect-clustering null
+rows from "unattributed null" to "policy-facing query interface contract
+failure."
+
 ## 5. Evidence Ledger
 
 | Claim | Mode | Preregistration / contract | Committed evidence | Readout | Boundary |
@@ -173,8 +204,9 @@ patterns, and representative traces.
 | The 32B local unlock probe made a separately preregistered noisy comparison eligible. | Noisy component eval | `docs/local_unlock_probe_preregistration.md` | 7B anchor and 32B summary/manifest artifacts | 7B anchor reproduced locked counts; both 32B primary cells cleared unlock checks. | Unlock alone is not a policy result. |
 | Phase 4 noisy comparison reaches Bucket B with mechanism-local support. | Noisy policy comparison | `docs/noisy_policy_comparison_preregistration.md`; adapter pin | `docs/noisy_policy_comparison_results.md`; `data/results/noisy_policy_comparison_summary.json`; per-family metrics/manifests | CQ wins vs Reflection on forced contradiction and preference drift, records no countable directional losses, ties `Mem0Lite` on frozen sentinel, and has no replicate contradictions. | Not broad noisy CQ superiority. |
 | The mechanism audit attributes only forced contradiction cleanly and preference drift partially. | Noisy audit | `docs/noisy_policy_mechanism_audit_hypothesis.md` | `docs/noisy_policy_mechanism_audit.md`; `data/results/noisy_policy_mechanism_audit_evidence.json`; three audit traces | `forced_contradiction` survives through contradiction edges and contestation/demotion; `preference_drift` partially survives; other rows remain unattributed or descriptive. | No noisy scope/source/pending/poisoning survival claim. |
-| CQR replay repair refused to emit a verdict under a second Bucket D. | Reproducibility audit | `docs/canonical_id_resolution_audit_preregistration.md`; `docs/canonical_id_resolution_audit_repair_preregistration.md` | `docs/canonical_id_resolution_audit_results.md`; `data/results/canonical_id_resolution_audit_stop_2026-05-15.json`; `data/results/canonical_id_resolution_audit_stop_2026-05-16.json` | The repair separated path-sensitive fields but still aborted on locked run-JSON non-reproducibility. | No CQR A/B/C attribution; null rows remain unsettled. |
-| LongMemEval is relevant but not yet a fair transfer run. | Feasibility only | `docs/next_research_plan.md` Workstream D; frozen coding rule in memo | `docs/longmemeval_feasibility_memo.md`; `data/results/longmemeval_feasibility_coding.csv` | 72 `knowledge-update` cases map to `contradiction_edge`, but candidate stream and policy-query invariants are not preserved. | Descriptive-only future work; no policy run. |
+| CQR replay repair refused to emit a verdict under a second Bucket D. | Reproducibility audit | `docs/canonical_id_resolution_audit_preregistration.md`; `docs/canonical_id_resolution_audit_repair_preregistration.md` | `docs/canonical_id_resolution_audit_results.md`; `data/results/canonical_id_resolution_audit_stop_2026-05-15.json`; `data/results/canonical_id_resolution_audit_stop_2026-05-16.json` | The repair separated path-sensitive fields but still aborted on locked run-JSON non-reproducibility. | No CQR A/B/C attribution; null rows remain unsettled until QR-canon reattributed them. |
+| QR-canon exposes clustering-vs-lookup gap and reattributes four null rows. | Component diagnostic, registered post-hoc | `docs/qr_canon_audit_registration.md` (reuses CQR Section A metrics) | `docs/qr_canon_audit_results.md`; `data/results/qr_canon_audit_metrics.csv`; `data/results/qr_canon_source_table.csv`; synthetic counterexample row | Five of seven Phase 4 rows clear the B-cubed F1 `>= 0.65` floor while QR-canon (exact) is below 5 percent; locked CQR alias function also returns zero on four of those rows. | No QR-canon pass/fail gate; no CQR A/B/C verdict; no change to policy verdicts. |
+| LongMemEval is relevant but not yet a fair transfer run. | Feasibility only | `docs/next_research_plan.md` Workstream D; frozen coding rule in memo | `docs/longmemeval_feasibility_memo.md`; `data/results/longmemeval_feasibility_coding.csv` | 72 `knowledge-update` cases map to `contradiction_edge`, but candidate stream and policy-query invariants are not preserved. | Descriptive-only future work; no policy run. A future LongMemEval adapter must establish a QR-canon target before any policy run. |
 
 ## 6. Discussion
 
@@ -188,7 +220,16 @@ current interface failed to expose the distinction.
 This framing makes the negative and mixed rows useful. The 7B gate shows why
 aggregate component metrics are not enough. The 32B Bucket B audit shows why a
 successful component unlock is also not enough: each policy row still needs
-mechanism-level attribution.
+mechanism-level attribution. The QR-canon audit closes the loop on the
+downstream side: clustering-quality metrics passing at `1.00` does not imply
+the policy-facing query lookup contract is satisfied. On four of the seven
+Phase 4 rows the lookup contract is satisfied for zero questions even under
+the locked CQR alias function, so a clustering-only view of extractor quality
+would have read those rows as "policies are equivalent" rather than "the
+interface failed to expose the distinction." A complete memory-policy
+benchmark therefore needs three layered diagnostics — concentrated per-family
+component failures, frozen mechanism-diverse sentinels, and query-resolvable
+canonical-id agreement — none of which is sufficient alone.
 
 ## 7. Local Unlock Probe
 
@@ -212,6 +253,11 @@ that later reached Bucket B.
   `memory_poisoning` under the current 32B artifacts
 - real-user, weeks-long helpfulness
 - LongMemEval or other external transfer
+- a hard QR-canon pass/fail threshold; QR-canon is a required diagnostic
+  alongside clustering-quality metrics, not a new gate
+- semantic extractor failure as the cause of the QR-canon gap; the gap is
+  a policy-facing query contract failure, not evidence that the extractor
+  is semantically wrong
 
 ### CQDated Boundary
 
@@ -227,6 +273,21 @@ evidence that the replay discipline refuses a methodology-only fix when locked
 inputs cannot be reproduced. It does not settle the Phase 4 null-row
 attribution.
 
+### QR-Canon Boundary
+
+The QR-canon audit reattributes four mechanism-audit null rows from
+"unattributed null" to "policy-facing query interface contract failure"
+based on disclosed prior observations plus newly registered Wilson CIs and
+a synthetic counterexample. It does not unlock the locked CQR Bucket D
+verdict; it does not amend the Phase 4 noisy policy comparison's Bucket B
+result; it does not run a cross-tab between QR-canon hits and per-policy
+answer success (the CQR audit's Section C cross-tab remains future work
+blocked on the same replay path); and it does not introduce a new
+QR-canon pass/fail threshold. The deployed metric is exact-string set
+membership, framed as the active policy lookup contract; the
+alias-normalized variant is a frozen boundary sensitivity check that uses
+the locked CQR alias function and never substitutes for the exact metric.
+
 ### External Transfer Boundary
 
 The LongMemEval feasibility memo and per-case coding CSV found a relevant
@@ -237,9 +298,13 @@ must first create and preregister that adapter/annotation layer.
 
 ## 9. Future Work
 
-1. Preregister a policy-facing adapter-contract audit, or run a fresh Phase 4
-   baseline with committed or archived run-JSON payloads, before making new
-   null-row attribution claims.
+1. Preregister a policy-facing adapter-contract experiment, or run a fresh
+   Phase 4 baseline with committed or archived run-JSON payloads, before
+   making new null-row attribution claims beyond the QR-canon reattribution.
+   The CQR audit's Section C cross-tab (QR-canon hit vs per-policy answer
+   success) is the natural follow-on diagnostic but remains blocked on the
+   same replay path; it is not licensed against the existing locked Phase 4
+   manifests.
 2. If LongMemEval remains the transfer target, write a separate adapter and
    annotation preregistration that freezes candidate construction, canonical-id
    query mapping, per-mechanism labels, metrics, baselines, and kill criteria
