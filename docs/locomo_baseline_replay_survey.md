@@ -145,7 +145,7 @@ Primary input hashes:
 
 Committed artifact hashes:
 
-- `scripts/score_locomo_amb_pflc.py`: `c263eb5b4fecba60cae10232c09b8120ce012b0a95c3839af4a37afca219cd8c`
+- `scripts/score_locomo_amb_pflc.py`: `a6ccd66ae1ccc9205f5cea89416128851370c54005f79d4711672519ab154f46`
 - `data/results/locomo_amb_pflc_rows.csv`: `11721c3ee81ac997e1c4f79bf7317a28880ddc4fc7c7c4d27f1b1f706ca7badd`
 - `data/results/locomo_amb_pflc_summary.json`: `adf2b4c508df8589f88a4abdf06cb3df91c3385cf8cb3a6739db615e9e3b15c1`
 

@@ -46,9 +46,18 @@ def _load_json_or_gzip(path: Path) -> Any:
 
 
 def _memory_blocks(context: str) -> list[str]:
+    """Split an AMB ``context`` string into per-rank ``## Memory N`` blocks.
+
+    Returns ``[]`` if ``MEMORY_BLOCK_RE`` finds no headers. This fails closed:
+    a future AMB header-format change would otherwise lump every emitted
+    ``dia_id`` into a single fallback block and inflate the rank-sensitive
+    ``PFLC@1`` / ``PFLC@5`` / ``PFLC@10`` rates. ``_assert_parse_sanity``
+    catches the systemic case.
+    """
+
     starts = [m.start() for m in MEMORY_BLOCK_RE.finditer(context)]
     if not starts:
-        return [context] if context else []
+        return []
     starts.append(len(context))
     return [context[a:b] for a, b in zip(starts, starts[1:])]
 
@@ -291,6 +300,17 @@ def main() -> None:
         default=None,
         help="ISO date stamped into the summary (default: today in UTC).",
     )
+    parser.add_argument(
+        "--allow-question-mismatches",
+        action="store_true",
+        help=(
+            "Continue scoring when an AMB result's ``query`` does not match the "
+            "official LoCoMo qa[].question at the resolved sample/qa_index. "
+            "Off by default because the scorer's validity depends on exact "
+            "alignment; enabling this is an explicit acknowledgement that "
+            "evidence is being compared against the wrong gold row."
+        ),
+    )
     args = parser.parse_args()
     created_utc_date = args.created_utc_date or datetime.datetime.now(
         datetime.timezone.utc
@@ -304,6 +324,16 @@ def main() -> None:
     for run_path in args.amb_run:
         run = _load_json_or_gzip(run_path)
         rows, mismatches = _extract_rows(run, locomo, ks)
+        if mismatches and not args.allow_question_mismatches:
+            sample = ", ".join(mismatches[:5])
+            raise ValueError(
+                f"{len(mismatches)} AMB query/LoCoMo question mismatches in run "
+                f"{run.get('run_name')!r} (first: {sample}). The scorer compares "
+                "context-emitted dia_id values against gold qa[].evidence at the "
+                "resolved qa_index, so a mismatch means evidence is being scored "
+                "against the wrong gold row. Pass --allow-question-mismatches to "
+                "override after confirming the divergence is acceptable."
+            )
         all_rows.extend(rows)
         run_summaries.append(
             {

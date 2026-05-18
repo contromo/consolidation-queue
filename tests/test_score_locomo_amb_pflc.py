@@ -269,6 +269,55 @@ class RegexSanityAssertTests(unittest.TestCase):
             SCORER._extract_rows(run, locomo, (1, 5, 10, 20, 50))
         self.assertIn("DIA_ID_RE", str(ctx.exception))
 
+    def test_no_memory_headers_returns_empty_blocks_not_fallback(self) -> None:
+        # Header-format drift: AMB switches "## Memory 1\n" to something
+        # MEMORY_BLOCK_RE no longer matches, but dia_id JSON is still in
+        # the context. Previously the fallback returned [context], lumping
+        # every emitted dia_id into a single rank-1 block and inflating
+        # PFLC@1/@5/@10. Now the function returns [] so rank-sensitive
+        # metrics fail closed via _assert_parse_sanity.
+        context_without_headers = (
+            'No headers here. {"dia_id": "D1"} '
+            'and more text {"dia_id": "D2"}.'
+        )
+        self.assertEqual(SCORER._memory_blocks(context_without_headers), [])
+        self.assertEqual(SCORER._memory_blocks(""), [])
+
+    def test_header_drift_with_intact_dia_ids_still_fails_closed(self) -> None:
+        # End-to-end: every row has dia_id JSON but no Memory N headers.
+        # The dia_id regex still matches, but because dia_ids are
+        # extracted per block (and there are no blocks), block_ids is
+        # empty and retrieved_dia_id_count is zero. The sanity assert
+        # fires on the block floor first; the rank inflation path is
+        # unreachable.
+        bad_context = 'some context {"dia_id": "D1"} text {"dia_id": "D2"}'
+        run = _make_run(
+            [
+                {
+                    "query_id": f"sample-a_q{i}",
+                    "query": f"Q{i}",
+                    "gold_answers": [f"a{i}"],
+                    "correct": True,
+                    "context": bad_context,
+                }
+                for i in range(4)
+            ]
+        )
+        locomo = _make_locomo(
+            [
+                (
+                    "sample-a",
+                    [
+                        {"question": f"Q{i}", "evidence": [f"D{i}"], "category": "1"}
+                        for i in range(4)
+                    ],
+                )
+            ]
+        )
+        with self.assertRaises(ValueError) as ctx:
+            SCORER._extract_rows(run, locomo, (1, 5, 10, 20, 50))
+        self.assertIn("MEMORY_BLOCK_RE", str(ctx.exception))
+
     def test_healthy_parse_does_not_raise(self) -> None:
         run = _make_run(
             [
@@ -296,6 +345,147 @@ class RegexSanityAssertTests(unittest.TestCase):
         # Should not raise.
         rows, _ = SCORER._extract_rows(run, locomo, (1, 5, 10, 20, 50))
         self.assertEqual(len(rows), 4)
+
+
+class QuestionMismatchAbortTests(unittest.TestCase):
+    """Validity of dialog-evidence-id PFLC depends on exact alignment between
+    each AMB ``result["query"]`` and the resolved LoCoMo ``qa[qa_index].question``.
+    A mismatch means evidence is being scored against the wrong gold row, so
+    ``main`` must abort by default; ``--allow-question-mismatches`` is the
+    explicit-override flag that surfaces the mismatch in the alignment block
+    rather than silently scoring against the wrong gold.
+    """
+
+    def _build_fixture(
+        self, tmp: Path, *, mismatch_query: str
+    ) -> tuple[Path, Path, Path, Path]:
+        locomo_path = tmp / "locomo.json"
+        run_path = tmp / "run.json"
+        out_csv = tmp / "rows.csv"
+        out_summary = tmp / "summary.json"
+        locomo_path.write_text(
+            json.dumps(
+                _make_locomo(
+                    [
+                        (
+                            "sample-a",
+                            [
+                                {"question": "Q0", "evidence": ["D1"], "category": "1"},
+                                {"question": "Q1", "evidence": ["D2"], "category": "1"},
+                            ],
+                        )
+                    ]
+                )
+            )
+        )
+        run_path.write_text(
+            json.dumps(
+                _make_run(
+                    [
+                        {
+                            "query_id": "sample-a_q0",
+                            "query": "Q0",
+                            "gold_answers": ["yes"],
+                            "correct": True,
+                            "context": _context([["D1"], ["D2"]]),
+                        },
+                        {
+                            "query_id": "sample-a_q1",
+                            "query": mismatch_query,
+                            "gold_answers": ["no"],
+                            "correct": True,
+                            "context": _context([["D2"], ["D3"]]),
+                        },
+                    ]
+                )
+            )
+        )
+        return locomo_path, run_path, out_csv, out_summary
+
+    def test_main_aborts_on_question_mismatch_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            locomo_path, run_path, out_csv, out_summary = self._build_fixture(
+                Path(tmp_dir), mismatch_query="DIFFERENT QUESTION"
+            )
+            argv = [
+                "score_locomo_amb_pflc.py",
+                "--locomo-data",
+                str(locomo_path),
+                "--amb-run",
+                str(run_path),
+                "--out-csv",
+                str(out_csv),
+                "--out-summary",
+                str(out_summary),
+                "--bootstrap-samples",
+                "0",
+                "--created-utc-date",
+                "1999-12-31",
+            ]
+            with mock.patch.object(sys, "argv", argv):
+                with self.assertRaises(ValueError) as ctx:
+                    SCORER.main()
+            msg = str(ctx.exception)
+            self.assertIn("query/LoCoMo question mismatches", msg)
+            self.assertIn("sample-a_q1", msg)
+            self.assertIn("--allow-question-mismatches", msg)
+            # Summary must not have been written on abort.
+            self.assertFalse(out_summary.exists())
+
+    def test_main_proceeds_on_explicit_override(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            locomo_path, run_path, out_csv, out_summary = self._build_fixture(
+                Path(tmp_dir), mismatch_query="DIFFERENT QUESTION"
+            )
+            argv = [
+                "score_locomo_amb_pflc.py",
+                "--locomo-data",
+                str(locomo_path),
+                "--amb-run",
+                str(run_path),
+                "--out-csv",
+                str(out_csv),
+                "--out-summary",
+                str(out_summary),
+                "--bootstrap-samples",
+                "0",
+                "--created-utc-date",
+                "1999-12-31",
+                "--allow-question-mismatches",
+            ]
+            with mock.patch.object(sys, "argv", argv):
+                SCORER.main()
+            summary = json.loads(out_summary.read_text())
+            run_summary = summary["runs"][0]
+            # The override does not hide the mismatch; it surfaces it
+            # in the alignment block so reviewers see what was tolerated.
+            self.assertEqual(run_summary["alignment"]["question_mismatch_count"], 1)
+            self.assertIn("sample-a_q1", run_summary["alignment"]["question_mismatch_ids"])
+
+    def test_main_no_mismatch_no_override_needed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            locomo_path, run_path, out_csv, out_summary = self._build_fixture(
+                Path(tmp_dir), mismatch_query="Q1"
+            )
+            argv = [
+                "score_locomo_amb_pflc.py",
+                "--locomo-data",
+                str(locomo_path),
+                "--amb-run",
+                str(run_path),
+                "--out-csv",
+                str(out_csv),
+                "--out-summary",
+                str(out_summary),
+                "--bootstrap-samples",
+                "0",
+                "--created-utc-date",
+                "1999-12-31",
+            ]
+            with mock.patch.object(sys, "argv", argv):
+                SCORER.main()
+            summary = json.loads(out_summary.read_text())
+            self.assertEqual(summary["runs"][0]["alignment"]["question_mismatch_count"], 0)
 
 
 class CreatedUtcDateTests(unittest.TestCase):
