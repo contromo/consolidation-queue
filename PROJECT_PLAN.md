@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-17 (QR-canon audit landed)
+Last updated: 2026-05-18 (PFLC field-level diagnostic landed, Workstream A.6 outcome B-3)
 
 ## Goal
 
@@ -160,6 +160,28 @@ Implemented:
   reattributes the four perfect-clustering null rows from "unattributed
   null" to "policy-facing query interface contract failure" without
   unlocking the locked CQR audit or amending any policy verdict.
+- `docs/policy_facing_lookup_contract_registration.md`,
+  `docs/policy_facing_lookup_contract_proposition.md`,
+  `docs/qr_canon_field_diagnostic_results.md`,
+  `docs/qr_canon_longmemeval_feasibility.md`,
+  `docs/qr_canon_mem0_locomo_feasibility.md`,
+  `docs/qr_canon_memoryagentbench_feasibility.md`,
+  `docs/qr_canon_membench_feasibility.md`,
+  `scripts/build_qr_canon_field_diagnostic_metrics.py`,
+  `data/results/qr_canon_field_diagnostic_metrics.csv`,
+  `data/results/qr_canon_field_diagnostic_metrics_manifest.json`, and
+  `tests/test_qr_canon_field_diagnostic.py`: a registered Workstream A.6
+  generalization of QR-canon into a field-level diagnostic class
+  (policy-facing lookup-contract, PFLC), with Proposition 1 proved under
+  label-renaming bijections satisfying both `ρ(g*) ≠ g*` and
+  `g* ∉ image(ρ)`, Lemmas 1 and 2 by construction for retrieval@k and
+  answer-accuracy metrics, four per-anchor feasibility memos all landing
+  at descriptive-only with named PFLC instances (answer-handle,
+  dialog-evidence-id, conflict-resolution-id, fact-id), four
+  benchmark-targeted synthetic counterexample rows, and outcome bucket
+  B-3 (artifact-blocked). The workstream did not unlock CQR Bucket D,
+  amend Phase 4 Bucket B, modify the byte-locked CQR alias function, or
+  run any policy against any external benchmark.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -601,6 +623,7 @@ The first deterministic forced-contradiction local-model command/prompt, compone
 4. Keep Bucket C abstention, LongMemEval transfer, prompt changes, validator changes, and new mechanism families out of scope unless a future preregistered follow-up explicitly justifies them from the audit's mechanism-local interpretation. (`CQDatedContestation` is removed from this exclusion list because the preregistered follow-up landed on 2026-05-16 as partial preregistered success — base-CQ repair with the Reflection win criterion not cleared on the `temporal_skew` lane; see `docs/adversarial_upstream_noise_dated_followup_results.md`.)
 5. Use `docs/paper_outline.md` as the packaging spine for the report. The next licensed original-research move should be one of three preregistered paths: a policy-facing adapter-contract audit, a fresh Phase 4 baseline with committed or archived run-JSON payloads, or a LongMemEval adapter/annotation preregistration that creates a shared candidate stream and canonical-query contract before any policy run.
 6. The 2026-05-17 registered post-hoc QR-canon audit landed and is the most recent reframing artifact for the paper. It reuses the locked CQR Section A `cqr_set_membership` metric and the locked CQR alias function verbatim, reads only the committed `data/results/qr_canon_source_table.csv` at audit time, and reattributes the four perfect-clustering null rows from "unattributed null" to "policy-facing query interface contract failure" without unlocking the locked CQR audit or amending any policy verdict. See `docs/qr_canon_audit_results.md`. The CQR Section C cross-tab (QR-canon hit vs per-policy answer success) remains the natural follow-on diagnostic but is blocked on the same replay path; it is not licensed against the existing locked Phase 4 manifests.
+7. Workstream A.6 (PFLC field-level diagnostic generalization) landed on 2026-05-18 at outcome bucket B-3 (artifact-blocked). The registration `docs/policy_facing_lookup_contract_registration.md` locks the contract; the proposition `docs/policy_facing_lookup_contract_proposition.md` gives the formal core. Four per-anchor feasibility memos (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) all landed at descriptive-only. Four synthetic counterexample rows ship in `data/results/qr_canon_field_diagnostic_metrics.csv`. The consolidated readout is `docs/qr_canon_field_diagnostic_results.md`; methodology spine §5 and paper outline §1, §3, §4, §5, §8 are updated. The next licensed original-research move on this axis would be empirical-replay scoring of any released baseline that publishes per-question system-emitted identifier outputs (most plausibly on Mem0/LoCoMo, given LoCoMo's `evidence` field is a clean gold-side PFLC target); locating such outputs is **not** licensed by this plan — it requires a separate preregistered follow-up. BEAM remains in the field-exclusion table because its conditional promotion rule (Mem0/LoCoMo = blocked) did not fire.
 
 ## Working Rules
 
