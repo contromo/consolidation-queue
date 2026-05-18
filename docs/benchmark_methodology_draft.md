@@ -537,6 +537,101 @@ Unsupported claims:
 - semantic extractor failure as the cause; the gap is a policy-facing
   contract failure on top of semantically reasonable slot naming
 
+### PFLC Field-Level Diagnostic Generalization
+
+Source: `docs/qr_canon_field_diagnostic_results.md`.
+
+Specific cells:
+
+- registration: `docs/policy_facing_lookup_contract_registration.md`
+- formal proposition + lemmas:
+  `docs/policy_facing_lookup_contract_proposition.md`
+- four per-benchmark feasibility memos:
+  `docs/qr_canon_longmemeval_feasibility.md`,
+  `docs/qr_canon_mem0_locomo_feasibility.md`,
+  `docs/qr_canon_memoryagentbench_feasibility.md`,
+  `docs/qr_canon_membench_feasibility.md`
+- per-benchmark synthetic counterexample rows:
+  `data/results/qr_canon_field_diagnostic_metrics.csv`
+- manifest with alias-SHA pin and Proposition 1 reproducibility summary:
+  `data/results/qr_canon_field_diagnostic_metrics_manifest.json`
+- generator (no external inputs, no policy runs):
+  `scripts/build_qr_canon_field_diagnostic_metrics.py`
+- tests (Proposition 1 hand-computed reproducibility, per-benchmark
+  structure, byte-stable reproduction, alias-SHA pin):
+  `tests/test_qr_canon_field_diagnostic.py`
+
+Posture:
+
+- generalizes QR-canon from a CQ-internal post-hoc audit (the previous
+  subsection) to a field-level diagnostic class (PFLC, policy-facing
+  lookup-contract diagnostics). QR-canon is the canonical-id instance of
+  the class; retrieval-id, slot-id, fact-id, and answer-handle are
+  benchmark-specific instances.
+- Proposition 1 (cluster-partition / lookup-contract gap) is proved under
+  any label-renaming bijection satisfying both `ρ(g*) ≠ g*` and
+  `g* ∉ image(ρ)`. Lemmas 1 and 2 establish the same gap by construction
+  for retrieval@k content-based metrics and answer-accuracy text-based
+  metrics respectively. The proposition is reproducible
+  unit-test-deterministically: the test hand-computes B-cubed F1 = 1.00
+  on identical partitions and set-membership PFLC = 0 from the renaming
+  construction, without sklearn or any external clustering library.
+- per-benchmark feasibility memos lock {empirical, descriptive-only,
+  blocked} decisions for each of the four anchor benchmarks before any
+  empirical scoring runs.
+- registration explicitly forbids modifying the byte-locked CQR alias
+  function; the canonical-id PFLC instance inherits it. Other PFLC
+  instances do not inherit it.
+
+Readout:
+
+| Anchor | PFLC instance | Headline metric paired | Decision | Lemma |
+| --- | --- | --- | --- | --- |
+| LongMemEval | answer-handle | overall_accuracy | descriptive-only | Lemma 2 |
+| Mem0 / LoCoMo | dialog-evidence-id | recall_at_k | descriptive-only | Lemma 1 |
+| MemoryAgentBench | conflict-resolution-id | task_accuracy | descriptive-only | Lemma 2 |
+| MemBench | fact-id | factual_recall | descriptive-only | Lemma 1 |
+
+All four anchors land at descriptive-only; no empirical scoring is
+reached. Per the registration's outcome buckets (§4) the workstream
+lands at **B-3 (artifact-blocked)**. BEAM's conditional promotion rule
+fires only on Mem0/LoCoMo = blocked; it is **not** triggered.
+
+Supported claims:
+
+- The cluster-partition / lookup-contract gap holds formally for any
+  benchmark with a label space of size at least two and any cluster-
+  partition metric that is invariant under label-renaming bijections
+  (B-cubed F1, ARI, NMI, V-measure, pairwise cluster F1).
+- The same gap holds by construction for retrieval@k content-based
+  metrics (Lemma 1) and answer-accuracy text-based metrics (Lemma 2).
+  Each anchor benchmark ships one synthetic counterexample row tied to
+  its headline metric.
+- No anchor benchmark in this workstream's representative set releases
+  the per-question system-emitted identifier artifacts needed for
+  empirical PFLC scoring. This itself is a structural finding about
+  current memory-benchmark release contracts.
+- The canonical-id PFLC instance's byte-locked alias function (CQR
+  preregistration §6, SHA `8176c5a9…7896de0`) remains unmodified across
+  this workstream; both the field-diagnostic manifest and a unit test
+  pin the SHA against the preregistration doc.
+
+Unsupported claims:
+
+- any empirical PFLC row on any external benchmark; the workstream is at
+  B-3 by design and by released-artifact availability.
+- any pass/fail PFLC threshold; PFLC enters the field-level methodology
+  as a required diagnostic alongside clustering / retrieval / accuracy
+  metrics, never a gate.
+- benchmark-design criticism of the four anchors; LoCoMo's `evidence`
+  field is a clean gold-side target, MemoryAgentBench's CR / FactCon
+  mechanism is exactly PFLC-relevant, and the workstream's decision
+  table records what released artifacts publish, not what the benchmarks
+  *could* expose with an additional annotation layer.
+- any modification or generalization of the byte-locked CQR alias
+  function; that function applies only to the canonical-id PFLC
+  instance.
+
 ## 6. Discussion
 
 The audit thesis should lead the writeup: the completed Bucket B result is a
