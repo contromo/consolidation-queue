@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-18 (LongMemEval fair-stream externalization gate/preregistration scaffold landed)
+Last updated: 2026-05-18 (LongMemEval Phase X.1 dual-path annotation artifacts landed)
 
 ## Goal
 
@@ -215,6 +215,21 @@ Implemented:
   preregistration locks the shared-stream, hidden-answer, dual-path annotation,
   PFLC, judge-calibration, and abort/downgrade protocol before any external
   policy execution. No external policy run has been executed.
+- `cq/eval/external/longmemeval/annotator_path_a.py`,
+  `cq/eval/external/longmemeval/annotator_path_b.py`,
+  `cq/eval/external/longmemeval/annotation_manifest.py`,
+  `data/external/longmemeval/annotations_path_a.json`,
+  `data/external/longmemeval/annotations_path_b.json`,
+  `data/external/longmemeval/annotations_agreed.json`,
+  `data/external/longmemeval/dual_path_divergence_report.json`,
+  `data/external/longmemeval/verifier_report.json`, and
+  `data/external/longmemeval/annotations_manifest.json`: Phase X.1 dual-path
+  annotation output for the LongMemEval v1 primary controlled-pilot
+  denominator. The two independent local-first annotation paths agree on
+  all 72 in-denominator cases (`agreement_rate = 1.0`), emit adapter-ready
+  candidate events in the agreed file, and pass the hidden-answer verifier.
+  This freezes the annotation layer only; no adapter pin, smoke run, judge
+  calibration, or external policy comparison has been executed.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -223,8 +238,7 @@ Not implemented yet:
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
-- full LongMemEval dual-path annotation outputs, adapter pin, smoke run, judge
-  calibration, and transfer policy run
+- LongMemEval adapter pin, smoke run, judge calibration, and transfer policy run
 - final writeup docs
 
 ## Repository Map

@@ -8,10 +8,44 @@ class LongMemEvalDualPathAuditTests(unittest.TestCase):
         path_a = {
             "agree": {
                 "case_id": "agree",
+                "question_type": "knowledge-update",
+                "question": "What changed?",
+                "mechanism_code": "contradiction_edge",
                 "relevant_canonical_id": "current-home",
                 "scope_level": "user_global",
                 "scope_key": "user",
+                "claim_type": "world_fact",
                 "contradiction_edges": [["e1", "e2"]],
+                "candidate_events": [
+                    {
+                        "event_id": "e1",
+                        "session_id": "s1",
+                        "session_index": 0,
+                        "session_date": "2023/01/01",
+                        "turn_index": 0,
+                        "raw_claim": "Old claim.",
+                        "canonical_id": "current-home",
+                        "claim_type": "world_fact",
+                        "scope_level": "user_global",
+                        "scope_key": "user",
+                        "confidence": 0.7,
+                        "contradicts_event_ids": [],
+                    },
+                    {
+                        "event_id": "e2",
+                        "session_id": "s2",
+                        "session_index": 1,
+                        "session_date": "2023/01/02",
+                        "turn_index": 0,
+                        "raw_claim": "New claim.",
+                        "canonical_id": "current-home",
+                        "claim_type": "world_fact",
+                        "scope_level": "user_global",
+                        "scope_key": "user",
+                        "confidence": 0.7,
+                        "contradicts_event_ids": ["e1"],
+                    },
+                ],
             },
             "canon": {
                 "case_id": "canon",
@@ -91,6 +125,12 @@ class LongMemEvalDualPathAuditTests(unittest.TestCase):
         self.assertEqual(rows["missing-b"]["status"], audit.MISSING_PATH_B)
         self.assertEqual(len(agreed), 1)
         self.assertEqual(agreed[0]["case_id"], "agree")
+        self.assertEqual(agreed[0]["question_type"], "knowledge-update")
+        self.assertEqual(agreed[0]["mechanism_code"], "contradiction_edge")
+        self.assertEqual(
+            [event["event_id"] for event in agreed[0]["candidate_events"]],
+            ["e1", "e2"],
+        )
         self.assertEqual(report["summary"]["comparable_in_denominator_count"], 4)
         self.assertEqual(report["summary"]["agreement_count"], 1)
         self.assertTrue(report["summary"]["bucket_c_dual_path_divergence_triggered"])
@@ -115,4 +155,3 @@ class LongMemEvalDualPathAuditTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

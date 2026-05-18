@@ -1,0 +1,18 @@
+{
+  "agreement_count": 72,
+  "agreement_rate": 1.0,
+  "agreement_rate_check_passed": true,
+  "alpha": 0.05,
+  "annotation_count": 72,
+  "audit_summary_check_passed": true,
+  "audit_summary_present": true,
+  "audit_summary_required": true,
+  "binomial_check_passed": true,
+  "binomial_upper_tail_p_value": 2.117582368135751e-22,
+  "chance_agreement": 0.5,
+  "comparable_in_denominator_count": 72,
+  "forbidden_answer_key_paths": [],
+  "hidden_answer_check_passed": true,
+  "min_agreement_rate": 0.75,
+  "verifier_passed": true
+}

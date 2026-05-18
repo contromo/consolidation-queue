@@ -128,7 +128,7 @@ def redact_case(row: Mapping[str, Any]) -> RedactedLongMemEvalCase:
         question_date=str(row.get("question_date") or ""),
         haystack_session_ids=row.get("haystack_session_ids"),
         haystack_dates=row.get("haystack_dates"),
-        haystack_sessions=row.get("haystack_sessions"),
+        haystack_sessions=_scrub_sensitive_keys(row.get("haystack_sessions")),
         raw=_redacted_raw(row),
         answer_redaction=RedactedField(
             "answer",

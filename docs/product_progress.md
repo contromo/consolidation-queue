@@ -1,5 +1,46 @@
 # Product Progress
 
+## 2026-05-18 — LongMemEval Phase X.1 dual-path annotations freeze
+
+### What shipped
+
+- added `cq/eval/external/longmemeval/annotator_path_a.py` and
+  `annotator_path_b.py`: two independent local-first annotation paths over
+  the redacted LongMemEval v1 oracle and the committed 72-case
+  `contradiction_edge` denominator
+- extended `dual_path_audit.py` so the agreed annotation file carries the
+  adapter-ready candidate events, not only the canonical id / scope /
+  contradiction-edge summary
+- added `cq/eval/external/longmemeval/annotation_manifest.py` plus
+  `data/external/longmemeval/annotations_path_a.json`,
+  `annotations_path_b.json`, `annotations_agreed.json`,
+  `dual_path_divergence_report.json`, `verifier_report.json`, and
+  `annotations_manifest.json`
+- tightened redaction export so nested sensitive keys in retained
+  `haystack_sessions` are scrubbed before downstream annotation code sees
+  them
+- added focused tests for both annotation paths and the manifest
+
+### Why it matters
+
+- Phase X.1 now has a frozen, inspectable annotation layer before any adapter
+  or policy execution. The audit reports 72 comparable in-denominator cases,
+  72 agreements, zero divergences, and `agreement_rate = 1.0`
+- the hidden-answer verifier passes on the agreed annotations with no
+  forbidden answer/gold/rubric/label key paths and a binomial upper-tail
+  p-value of `2.12e-22`
+- the agreed annotation file is now usable by Phase X.2 because it includes
+  per-session candidate events, contradiction links, canonical ids, scope, and
+  raw evidence claims derived from redacted sessions
+
+### Open issues / next
+
+- build and pin the LongMemEval adapter before any policy run
+- run the stream-hash invariant, N=6 smoke, PFLC wrapper, and judge
+  calibration gates before licensing Phase X.4
+- continue to report this as an externalization-methodology pilot, not an
+  external CQ transfer result
+
 ## 2026-05-18 — LongMemEval fair-stream externalization gate and preregistration scaffold land
 
 ### What shipped

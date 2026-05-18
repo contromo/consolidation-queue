@@ -113,9 +113,13 @@ bearing annotation labels, so V2 is demoted to descriptive evidence-exposure
 work and LongMemEval v1 remains the primary controlled-pilot anchor. Phase X.0
 also landed in `docs/fair_stream_externalization_preregistration.md`, with a
 lock checker and local primitives for redacted loading, dual-path divergence
-auditing, and hidden-answer verification. This does not authorize a policy run.
-The next step is dual-path annotation output and adapter construction under the
-locked protocol.
+auditing, and hidden-answer verification. Phase X.1 has now frozen the
+LongMemEval v1 annotation layer: both local-first annotation paths agree on all
+72 in-denominator `contradiction_edge` cases, the hidden-answer verifier
+passes, and the agreed annotation artifact includes candidate events for the
+adapter. This does not authorize a policy run. The next step is adapter
+construction, stream-hash pinning, smoke testing, PFLC scoring, and judge
+calibration under the locked protocol.
 
 ## Research Posture
 
@@ -251,20 +255,23 @@ Status:
 - Phase X.-1 anchor gate is complete: LongMemEval v1 primary, V2 descriptive
   evidence-exposure only.
 - Phase X.0 preregistration is locked.
-- Redacted loader, dual-path audit, verifier, and lock primitives exist with
-  focused tests.
-- No annotation outputs, adapter pin, smoke run, judge calibration, or policy
-  comparison has been executed.
+- Phase X.1 annotation output is frozen: 72 comparable cases, 72 dual-path
+  agreements, zero divergences, verifier pass, and adapter-ready agreed
+  candidate events.
+- Redacted loader, dual-path audit, verifier, annotator paths, manifest writer,
+  and lock primitives exist with focused tests.
+- No adapter pin, smoke run, judge calibration, or policy comparison has been
+  executed.
 
 Remaining design requirements before policy execution:
 
-1. Identify LongMemEval cases that map to contradiction, correction, or stale
-   memory mechanisms. The v1 starting denominator is the 72 already-coded
-   non-abstention `knowledge-update` cases, pending dual-path agreement.
+1. Preserve the frozen 72-case dual-path-agreed denominator when building the
+   adapter.
 2. Define how CQ, ReflectionEagerWrite, and `Mem0Lite` receive comparable
    upstream inputs through a pinned adapter.
-3. Freeze the dual-path disagreement report; drop disagreements to audit rows
-   instead of patching them.
+3. Preserve the dual-path disagreement report as an audit artifact; future
+   sensitivity cells may use path-A-only and path-B-only subsets, but the
+   primary contract is the agreed subset.
 4. Validate the hidden-answer verifier, stream-hash invariant, and judge
    calibration before running any policy.
 
@@ -313,6 +320,10 @@ Required pieces:
    artifact gate + scorer + per-question rows + summary manifest. **Landed
    as a narrow published-output/context-derived replay, not a policy
    comparison.**
+9. LongMemEval Phase X.1 dual-path annotation layer: redacted local-first
+   annotation paths, dual-path audit, agreed annotations, verifier report, and
+   byte-stable manifest. **Landed as annotation freeze only; no adapter or
+   policy execution.**
 
 Next-next, none of which is licensed by this plan without a separate
 preregistration:
@@ -323,8 +334,9 @@ preregistration:
 - a policy-facing adapter-contract experiment that runs the CQR Section C
   cross-tab (QR-canon hit vs per-policy answer success) on a fresh Phase 4
   baseline or a separately archived locked-input environment
-- a LongMemEval adapter/annotation preregistration that establishes a
-  QR-canon target before any policy run
+- LongMemEval adapter construction, stream-hash pinning, N=6 smoke, PFLC
+  wrapper, and judge calibration under the already-locked externalization
+  protocol
 - threshold or prompt or validator changes — explicitly forbidden by the
   Kill Criteria below
 

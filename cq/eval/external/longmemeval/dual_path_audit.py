@@ -142,11 +142,16 @@ def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
 def _canonical_public_annotation(case_id: str, row: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "case_id": case_id,
+        "question_type": str(row.get("question_type") or ""),
+        "question": str(row.get("question") or ""),
         "in_denominator": bool(row.get("in_denominator", True)),
+        "mechanism_code": str(row.get("mechanism_code") or ""),
         "relevant_canonical_id": _canonical_id(row),
         "scope_level": _scope(row)[0],
         "scope_key": _scope(row)[1],
+        "claim_type": str(row.get("claim_type") or ""),
         "contradiction_edges": [list(edge) for edge in _normalized_edges(row)],
+        "candidate_events": _canonical_candidate_events(row),
     }
 
 
@@ -170,6 +175,42 @@ def _normalized_edges(row: Mapping[str, Any]) -> tuple[tuple[str, str], ...]:
         if pair is not None:
             normalized.append(tuple(sorted(pair)))
     return tuple(sorted(set(normalized)))
+
+
+def _canonical_candidate_events(row: Mapping[str, Any]) -> list[dict[str, Any]]:
+    events = row.get("candidate_events") or []
+    if not isinstance(events, list):
+        return []
+    cleaned = []
+    for event in events:
+        if not isinstance(event, Mapping):
+            continue
+        cleaned.append(
+            {
+                "event_id": str(event.get("event_id") or ""),
+                "session_id": str(event.get("session_id") or ""),
+                "session_index": event.get("session_index"),
+                "session_date": str(event.get("session_date") or ""),
+                "turn_index": event.get("turn_index"),
+                "raw_claim": str(event.get("raw_claim") or ""),
+                "canonical_id": str(event.get("canonical_id") or ""),
+                "claim_type": str(event.get("claim_type") or ""),
+                "scope_level": str(event.get("scope_level") or ""),
+                "scope_key": str(event.get("scope_key") or ""),
+                "confidence": event.get("confidence"),
+                "contradicts_event_ids": [
+                    str(event_id)
+                    for event_id in event.get("contradicts_event_ids") or []
+                ],
+            }
+        )
+    return sorted(cleaned, key=_event_sort_key)
+
+
+def _event_sort_key(event: Mapping[str, Any]) -> tuple[int, str]:
+    index = event.get("session_index")
+    sortable_index = index if isinstance(index, int) else 10**9
+    return (sortable_index, str(event.get("event_id") or ""))
 
 
 def _edge_pair(edge: Any) -> Optional[Tuple[str, str]]:

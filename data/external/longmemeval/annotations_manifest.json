@@ -1,0 +1,37 @@
+{
+  "audit_summary": {
+    "agreement_count": 72,
+    "agreement_rate": 1.0,
+    "bucket_c_dual_path_divergence_triggered": false,
+    "case_count": 72,
+    "comparable_in_denominator_count": 72,
+    "disagreement_count": 0,
+    "divergence_rate": 0.0,
+    "status_counts": {
+      "agree": 72
+    }
+  },
+  "inputs": {
+    "feasibility_csv_bytes": 67830,
+    "feasibility_csv_sha256": "d8932f39a4006ce6b0d98adbef0b013fd912129b873d8cebf4491673cd3e46e3",
+    "oracle_json_bytes": 15388478,
+    "oracle_json_sha256": "821a2034d219ab45846873dd14c14f12cfe7776e73527a483f9dac095d38620c"
+  },
+  "manifest_date": "2026-05-18",
+  "outputs": {
+    "annotations_agreed_json_sha256": "6c130fcda88ae3957714696ba67d300faa74bcd8d199e4ff1b309d343aa1c403",
+    "annotations_path_a_json_sha256": "736dbe3207fc24b481a60577749ecdc0239e9942c9fdc9ebffc93ebe0eb34090",
+    "annotations_path_b_json_sha256": "0e139a79879ec6214e4b32cb684b4fb54bc231ea1f3288995a74b3a7526b656e",
+    "dual_path_divergence_report_json_sha256": "8d9df30080a93b2e6d38e958367b824819cc4f86fa6f65ab0268f9ad2c6385b1",
+    "verifier_report_json_sha256": "80d9dbe204e522720760b49a111a887392c668fb63f090a41faa14c5d84ed9b3"
+  },
+  "preregistration_lock_sha256": "158180b35fcf9585ef88989ead9b58cc8367dde846c00f939e1f4fb02aa513e8",
+  "verifier_summary": {
+    "agreement_rate_check_passed": true,
+    "audit_summary_present": true,
+    "binomial_check_passed": true,
+    "hidden_answer_check_passed": true,
+    "verifier_passed": true
+  },
+  "workstream": "longmemeval_fair_stream_externalization_phase_x1"
+}

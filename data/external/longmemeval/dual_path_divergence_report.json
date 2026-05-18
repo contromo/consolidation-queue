@@ -1,0 +1,2176 @@
+{
+  "rows": [
+    {
+      "case_id": "01493427",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-new-postcards-added-collection-since-started-collecting-again",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-new-postcards-added-collection-since-started-collecting-again",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "031748ae",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-engineers-lead-just-started-new-role-as-senior-software-engineer",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-engineers-lead-just-started-new-role-as-senior-software-engineer",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "06db6396",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-projects-completed-since-starting-painting-classes",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-projects-completed-since-starting-painting-classes",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "07741c44",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-initially-keep-old-sneakers",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-initially-keep-old-sneakers",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "07741c45",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-keep-old-sneakers",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-keep-old-sneakers",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "08e075c7",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-long-been-using-fitbit-charge",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-long-been-using-fitbit-charge",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "0977f2af",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-new-kitchen-gadget-invest-before-getting-air-fryer",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-new-kitchen-gadget-invest-before-getting-air-fryer",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "0ddfec37",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-autographed-baseballs-added-collection-first-three-months-collection",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-autographed-baseballs-added-collection-first-three-months-collection",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "0e4e4c46",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-highest-score-ticket-ride",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-highest-score-ticket-ride",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "0f05491a",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-stars-need-reach-gold-level-starbucks-rewards-app",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-stars-need-reach-gold-level-starbucks-rewards-app",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "10e09553",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-largemouth-bass-catch-alex-earlier-fishing-trip-lake-michigan-before-22-trip",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-largemouth-bass-catch-alex-earlier-fishing-trip-lake-michigan-before-22-trip",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "184da446",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-pages-short-history-nearly-everything-read-so-far",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-pages-short-history-nearly-everything-read-so-far",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "18bc8abd",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-brand-bbq-sauce-obsessed",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-brand-bbq-sauce-obsessed",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "1cea1afa",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-instagram-followers",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-instagram-followers",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "2133c1b5",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-long-been-living-apartment-harajuku",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-long-been-living-apartment-harajuku",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "22d2cb42",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-get-guitar-serviced",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-get-guitar-serviced",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "2698e78f",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-often-see-therapist-dr-smith",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-often-see-therapist-dr-smith",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "26bdc477",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-trips-taken-canon-eos-80d-camera",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-trips-taken-canon-eos-80d-camera",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "3ba21379",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-type-vehicle-model-working",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-type-vehicle-model-working",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "41698283",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-type-camera-lens-purchase-most",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-type-camera-lens-purchase-most",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "42ec0761",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-spare-screwdriver-opening-up-laptop",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-spare-screwdriver-opening-up-laptop",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "45dc21b6",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-emma-recipes-tried-out",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-emma-recipes-tried-out",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "4b24c848",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-tops-bought-so-far",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-tops-bought-so-far",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "4d6b87c8",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-titles-watch-list",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-titles-watch-list",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "50635ada",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-previous-frequent-flyer-status-united-airlines-before-got-status",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-previous-frequent-flyer-status-united-airlines-before-got-status",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "5831f84d",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-crash-course-videos-watched-past-few-weeks",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-crash-course-videos-watched-past-few-weeks",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "59524333",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-time-usually-go-gym",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-time-usually-go-gym",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "5a4f22c0",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-company-rachel-old-colleague-previous-company-working-at",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-company-rachel-old-colleague-previous-company-working-at",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "5c40ec5b",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-times-met-up-alex-germany",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-times-met-up-alex-germany",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "603deb26",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-times-tried-making-negroni-at-home-since-friend-emma-showed-make-it",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-times-tried-making-negroni-at-home-since-friend-emma-showed-make-it",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "6071bd76",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-coffee-water-ratio-french-press-switch-more-water-per-tablespoon-coffee-or",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-coffee-water-ratio-french-press-switch-more-water-per-tablespoon-coffee-or",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "618f13b2",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-times-worn-new-black-converse-chuck-taylor-all-star-sneakers",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-times-worn-new-black-converse-chuck-taylor-all-star-sneakers",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "69fee5aa",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-pre-1920-american-coins-collection",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-pre-1920-american-coins-collection",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "6a1eabeb",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-personal-best-time-charity-5k-run",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-personal-best-time-charity-5k-run",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "6a27ffc2",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-videos-corey-schafer-python-programming-series-completed-so-far",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-videos-corey-schafer-python-programming-series-completed-so-far",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "6aeb4375",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-korean-restaurants-tried-city",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-korean-restaurants-tried-city",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "71315a70",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-hours-spent-abstract-ocean-sculpture",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-hours-spent-abstract-ocean-sculpture",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "72e3ee87",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-episodes-science-series-completed-crash-course",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-episodes-science-series-completed-crash-course",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "7401057b",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-free-night-stays-can-redeem-at-any-hilton-property-accumulated-points",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-free-night-stays-can-redeem-at-any-hilton-property-accumulated-points",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "7a87bd0c",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-long-been-sticking-daily-tidying-routine",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-long-been-sticking-daily-tidying-routine",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "7e974930",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-much-earn-at-downtown-farmers-market-most-visit",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-much-earn-at-downtown-farmers-market-most-visit",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "830ce83f",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-rachel-move-her-relocation",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-rachel-move-her-relocation",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "852ce960",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-amount-pre-approved-got-mortgage-wells-fargo",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-amount-pre-approved-got-mortgage-wells-fargo",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "89941a93",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-bikes-own",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-bikes-own",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "89941a94",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-before-purchased-gravel-bike-other-bikes-addition-mountain-bike-commuter-bike",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-before-purchased-gravel-bike-other-bikes-addition-mountain-bike-commuter-bike",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "8fb83627",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-issues-national-geographic-finished-reading",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-issues-national-geographic-finished-reading",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "945e3d21",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-often-attend-yoga-classes-help-anxiety",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-often-attend-yoga-classes-help-anxiety",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "9bbe84a2",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-previous-goal-apex-legends-level-before-updated-goal",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-previous-goal-apex-legends-level-before-updated-goal",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "9ea5eabc",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-go-most-family-trip",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-go-most-family-trip",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "a1eacc2a",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-short-stories-written-since-started-writing-regularly",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-short-stories-written-since-started-writing-regularly",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "a2f3aa27",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-followers-instagram-now",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-followers-instagram-now",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "affe2881",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-different-species-birds-seen-local-park",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-different-species-birds-seen-local-park",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "b01defab",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-finish-reading-nightingale-by-kristin-hannah",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-finish-reading-nightingale-by-kristin-hannah",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "b6019101",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-mcu-films-watch-last-months",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-mcu-films-watch-last-months",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "ba61f0b9",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-women-team-led-by-former-manager-rachel",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-women-team-led-by-former-manager-rachel",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "c4ea545c",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-go-gym-more-frequently-than-previously",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-go-gym-more-frequently-than-previously",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "c6853660",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-mostly-increase-or-decrease-limit-number-cups-coffee-morning",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-mostly-increase-or-decrease-limit-number-cups-coffee-morning",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "c7dc5443",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-record-recreational-volleyball-league",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-record-recreational-volleyball-league",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "cc5ded98",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-much-time-dedicate-coding-exercises-each-day",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-much-time-dedicate-coding-exercises-each-day",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "ce6d2d27",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-day-week-take-cocktail-making-class",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-day-week-take-cocktail-making-class",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "cf22b7bf",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-much-weight-lost-since-started-going-gym-consistently",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-much-weight-lost-since-started-going-gym-consistently",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "d7c942c3",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-mom-using-same-grocery-list-method-as",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-mom-using-same-grocery-list-method-as",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "dad224aa",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-time-wake-up-saturday-mornings",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-time-wake-up-saturday-mornings",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "db467c8c",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-long-parents-been-staying-us",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-long-parents-been-staying-us",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "dfde3500",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-day-week-meet-previous-language-exchange-tutor-juan",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-day-week-meet-previous-language-exchange-tutor-juan",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "e493bb7c",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-painting-ethereal-dreams-by-emma-taylor-hanging",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-painting-ethereal-dreams-by-emma-taylor-hanging",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "e61a7584",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-long-cat-luna",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-long-cat-luna",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "e66b632c",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-previous-personal-best-time-charity-5k-run",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-previous-personal-best-time-charity-5k-run",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "eace081b",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-planning-stay-birthday-trip-hawaii",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-planning-stay-birthday-trip-hawaii",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "ed4ddc30",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-dozen-eggs-we-stocked-up-our-refrigerator",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-dozen-eggs-we-stocked-up-our-refrigerator",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "f685340e",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-often-play-tennis-friends-at-local-park-previously",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-often-play-tennis-friends-at-local-park-previously",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    },
+    {
+      "case_id": "f9e8c073",
+      "disagreement_fields": [],
+      "in_denominator": true,
+      "path_a_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_a_in_denominator": true,
+      "path_a_relevant_canonical_id": "lme-sessions-bereavement-support-group-attend",
+      "path_a_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "path_b_contradiction_edges": [
+        [
+          "obs_0",
+          "obs_1"
+        ]
+      ],
+      "path_b_in_denominator": true,
+      "path_b_relevant_canonical_id": "lme-sessions-bereavement-support-group-attend",
+      "path_b_scope": [
+        "user_global",
+        "longmemeval:user"
+      ],
+      "status": "agree"
+    }
+  ],
+  "summary": {
+    "agreement_count": 72,
+    "agreement_rate": 1.0,
+    "bucket_c_dual_path_divergence_triggered": false,
+    "case_count": 72,
+    "comparable_in_denominator_count": 72,
+    "disagreement_count": 0,
+    "divergence_rate": 0.0,
+    "status_counts": {
+      "agree": 72
+    }
+  }
+}
