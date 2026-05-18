@@ -10,8 +10,13 @@ bucket: **B-3** (artifact-blocked). Registration:
 ## 1. Headline
 
 A formal cluster-partition / lookup-contract gap holds by Proposition 1
-under any label-renaming bijection that satisfies both `ρ(g*) ≠ g*` and
-`g* ∉ image(ρ)`. Two parallel existence lemmas establish the same gap for
+under any injective relabeling `ρ: L_gold → Σ` whose codomain is the
+label alphabet `Σ` (not `L_gold`) and whose image is disjoint from
+`{g*}`. This relabeling satisfies both `ρ(g*) ≠ g*` and
+`g* ∉ image(ρ)`; the codomain has to be `Σ` because a bijective self-map
+of `L_gold` is necessarily surjective onto `L_gold ∋ g*` and so cannot
+satisfy the disjoint-image condition. Two parallel existence lemmas
+establish the same gap for
 retrieval@k content-based metrics (Lemma 1) and answer-accuracy text-
 based metrics (Lemma 2). A feasibility survey of four anchor memory
 benchmarks (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) finds

@@ -39,9 +39,15 @@ full forbidden list.
 - `q`: a query in the benchmark's evaluation set.
 - `g* := relevant_canonical_id(q)`: the gold canonical identifier the
   benchmark requires the policy to resolve `q` against.
-- `M_cluster(C_pred, C_gold)`: a cluster-partition metric over partitions
-  only. Defined to be invariant under any label-renaming bijection that
-  preserves the partition structure.
+- `M_cluster(C_pred, C_gold)`: a cluster-partition metric whose value
+  depends only on the partition structures `(C_pred, C_gold)` and **not**
+  on label identity. Equivalently: for any injective relabeling
+  `ρ: L_pred → L_pred'` (where `L_pred'` is any label space, not
+  necessarily equal to `L_pred` or `L_gold`), substituting the predicted
+  labels by `ρ ∘ L_pred` leaves `M_cluster` unchanged. B-cubed F1,
+  adjusted Rand index, normalized mutual information, V-measure, and
+  pairwise cluster F1 satisfy this property — they read which items
+  belong to which cluster, not the labels attached.
 - `M_lookup(q, C_pred, L_pred)`: a query-resolvable lookup-contract metric
   requiring agreement between `g*` and predicted labels. Two variants
   matter:
@@ -54,41 +60,57 @@ full forbidden list.
 
 **Hypotheses.**
 
-- `M_cluster` is invariant under label-renaming bijections that preserve
-  the partition structure. B-cubed F1, adjusted Rand index, normalized
-  mutual information, V-measure, and pairwise cluster F1 satisfy this
-  property.
-- The benchmark exposes at least one query target `g*` and the label
-  space `L_gold` has size at least two.
+- `M_cluster` is invariant under arbitrary injective relabeling of
+  predicted cluster labels (see §2). B-cubed F1, adjusted Rand index,
+  normalized mutual information, V-measure, and pairwise cluster F1
+  satisfy this property.
+- The benchmark exposes at least one query target `g*`.
+- The label alphabet `Σ` (the set of admissible cluster-label strings)
+  is non-singleton, so at least one label `ℓ ∈ Σ` satisfies `ℓ ≠ g*`.
+  This is the typical case: cluster labels are drawn from an unbounded
+  string alphabet.
 
-**Proposition.** There exists a label-renaming function `ρ` over
-`L_gold` such that:
+**Statement.** There exists an injective relabeling `ρ: L_gold → Σ`
+such that:
 
 1. `ρ(g*) ≠ g*` — the queried gold label is renamed; and
-2. `g* ∉ image(ρ)` — the renamed label space does not include `g*`.
+2. `g* ∉ image(ρ)` — no predicted cluster is labeled `g*`.
 
-Define `L_pred := ρ ∘ L_gold` and `C_pred := C_gold`. Under this
-construction:
+Note that `ρ`'s codomain is `Σ`, **not** `L_gold`. Condition (2) asks
+that `ρ`'s image avoid `g*`, which is impossible if `ρ` is forced to be
+a bijection from `L_gold` to itself (any surjection onto `L_gold`
+necessarily covers `g* ∈ L_gold`). Allowing the codomain to be `Σ`
+(equivalently: any label space, not necessarily equal to `L_gold`)
+makes condition (2) satisfiable — choose `ρ` to land in `Σ ∖ {g*}`.
 
-- `M_cluster(C_pred, C_gold) = 1.00`, because the predicted partition is
-  identical to the gold partition and `M_cluster` ignores label identity.
+Applied with `C_pred := C_gold` and `L_pred := ρ ∘ L_gold`:
+
+- `M_cluster(C_pred, C_gold) = 1.00`, because the predicted partition
+  is identical to the gold partition and `M_cluster` is invariant under
+  the relabeling (depends only on partition structure, not on label
+  identity).
 - `M_lookup(q, C_pred, L_pred) = 0`:
-  - for set-membership PFLC, because the check `g* ∈ image(L_pred)` is
-    false by condition (2);
-  - for label-on-the-relevant-cluster PFLC, because the label attached to
-    `c*` is `ρ(g*) ≠ g*` by condition (1).
+  - for **set-membership** PFLC, because the check
+    `g* ∈ image(L_pred) = image(ρ)` is false by condition (2);
+  - for **label-on-the-relevant-cluster** PFLC, because the label
+    attached to the queried cluster's predicted counterpart is
+    `ρ(g*) ≠ g*` by condition (1).
 
-**Proof sketch.** Existence of `ρ` follows from the label-space-size
-hypothesis. Pick any label `ℓ ∈ L_gold` with `ℓ ≠ g*` and set
-`ρ(g*) := ℓ`. Complete `ρ` to a bijection on `L_gold ∖ {g*}` whose image
-avoids `g*` — for example, by mapping `L_gold ∖ {g*}` into a fresh
-namespace disjoint from `{g*}`. `M_cluster = 1.00` follows from
-label-renaming invariance applied to identical partitions. The lookup
-metric value follows from the two conditions on `ρ`.
+**Proof sketch.** Existence of `ρ` is constructive. Pick any label
+`ℓ ∈ Σ` with `ℓ ≠ g*` (exists by the alphabet hypothesis) and set
+`ρ(g*) := ℓ`. Complete `ρ` on `L_gold ∖ {g*}` by mapping each remaining
+gold label to a fresh label drawn from a sub-alphabet of `Σ` disjoint
+from `{g*}` (for instance, prefix each remaining gold label with a
+fixed string outside the gold-label namespace). The result is injective
+by choice of fresh labels and has image contained in `Σ ∖ {g*}`, so
+conditions (1) and (2) hold simultaneously. Invariance of `M_cluster`
+under predicted-label relabelings gives `M_cluster = 1.00`. Conditions
+(1) and (2) give `M_lookup = 0` for both PFLC variants.
 
-For the stronger label-on-the-relevant-cluster PFLC variant, condition
-(1) alone suffices: even if `g*` is reused somewhere else in `image(ρ)`,
-the label attached to the queried cluster `c*` is not `g*`.
+Condition (2) implies condition (1). The label-on-the-relevant-cluster
+variant only requires condition (1); the set-membership variant
+requires condition (2). A single `ρ` satisfying both covers both
+variants.
 
 **Worked example.** The existing internal CQ synthetic counterexample
 in `scripts/run_qr_canon_audit.py` (lines 178–207) instantiates exactly
@@ -195,5 +217,5 @@ alongside its headline metric.
 | `docs/qr_canon_audit_registration.md` | Source of the canonical-id PFLC instance and its reproducibility contract. This proposition document generalizes the proposition that audit's synthetic counterexample already instantiates. |
 | `docs/qr_canon_audit_results.md` | The five-of-seven Phase 4 rows that motivate the field-level diagnostic. Unchanged by this workstream. |
 | `scripts/run_qr_canon_audit.py:178-207` | Existing implementation of the internal worked example for Proposition 1. Unchanged by this workstream. |
-| `tests/test_qr_canon_audit.py` | Existing 17 tests that enforce reproducibility of the internal counterexample. Must remain green byte-stable. |
+| `tests/test_qr_canon_audit.py` | Existing 19 tests that enforce reproducibility of the internal counterexample. Must remain green byte-stable. |
 | `docs/policy_facing_lookup_contract_registration.md` | The registration document that locks the workstream contract and references this proposition as its load-bearing claim. |

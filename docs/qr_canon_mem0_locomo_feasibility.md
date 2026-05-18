@@ -165,7 +165,7 @@ For LoCoMo under this workstream:
 Tied to LoCoMo's Recall@k retrieval-content metric, this counterexample
 lands as a shipped fixture row in
 `data/results/qr_canon_field_diagnostic_metrics.csv` under
-`row_kind = synthetic_locomo_counterexample` when that artifact lands.
+`row_kind = synthetic_mem0_locomo_counterexample` when that artifact lands.
 
 Construction (per `docs/policy_facing_lookup_contract_proposition.md`
 Lemma 1):

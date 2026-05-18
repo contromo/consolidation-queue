@@ -44,13 +44,13 @@
   byte-locked CQR alias function SHA
   `8176c5a93ffbdbfd99d48f73836b954aa27aee4ab08de567ca47ec63d7896de0`,
   and records workstream outcome bucket B-3
-- added `tests/test_qr_canon_field_diagnostic.py` with 19 tests:
+- added `tests/test_qr_canon_field_diagnostic.py` with 17 tests:
   Proposition 1 reproducibility (hand-computed B-cubed F1 on identical
   partitions, no sklearn), per-benchmark synthetic counterexample
   structure, CSV and manifest byte-stable reproduction, manifest
   forbidden-field assertion, generator runs without gitignored or
   external inputs, alias function SHA pin verified against the
-  preregistration doc frontmatter. All 17 existing
+  preregistration doc frontmatter. All 19 existing
   `tests/test_qr_canon_audit.py` tests stay green byte-stable. Total
   36 tests passing
 - added `docs/qr_canon_field_diagnostic_results.md`: consolidated

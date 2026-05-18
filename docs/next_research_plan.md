@@ -55,10 +55,12 @@ generalize QR-canon from a CQ-internal post-hoc audit into a field-level
 diagnostic class. The registration
 (`docs/policy_facing_lookup_contract_registration.md`) locks the contract;
 the proposition (`docs/policy_facing_lookup_contract_proposition.md`) gives
-the formal core (Proposition 1 over cluster-partition metrics under
-label-renaming bijections satisfying both `ρ(g*) ≠ g*` and
-`g* ∉ image(ρ)`, plus Lemmas 1 and 2 by construction for retrieval@k and
-answer-accuracy metrics). Four per-anchor feasibility memos
+the formal core (Proposition 1 over cluster-partition metrics, proved by
+an injective relabeling `ρ: L_gold → Σ` whose image is disjoint from
+`{g*}` and which therefore satisfies both `ρ(g*) ≠ g*` and
+`g* ∉ image(ρ)`; the codomain is the label alphabet `Σ`, not `L_gold`,
+since a bijective self-map of `L_gold` necessarily covers `g*`. Lemmas
+1 and 2 by construction for retrieval@k and answer-accuracy metrics). Four per-anchor feasibility memos
 (`docs/qr_canon_longmemeval_feasibility.md`,
 `docs/qr_canon_mem0_locomo_feasibility.md`,
 `docs/qr_canon_memoryagentbench_feasibility.md`,

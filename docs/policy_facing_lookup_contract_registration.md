@@ -71,7 +71,11 @@ workstream:
 
 1. **Formal proposition + lemmas.**
    `docs/policy_facing_lookup_contract_proposition.md`. Proposition 1 covers
-   cluster-partition metrics (with proof under label-renaming bijections);
+   cluster-partition metrics, proved by an injective relabeling
+   `ρ: L_gold → Σ` whose image is disjoint from `{g*}` (the codomain
+   is the label alphabet `Σ`, not `L_gold` — a bijective self-map of
+   `L_gold` cannot satisfy the disjoint-image condition, so the
+   relabeling must be allowed to land in a fresh label space);
    Lemma 1 covers retrieval-content / retrieval-id; Lemma 2 covers
    answer-text / lookup-handle. A unit test in
    `tests/test_qr_canon_field_diagnostic.py` will instantiate Proposition 1
@@ -298,7 +302,7 @@ contract (`docs/qr_canon_audit_registration.md` §4).
   reproduce the metrics CSV and manifest from the committed source CSV
   alone, with no read of large per-scenario JSONs.
 - **Test coverage.**
-  - All 17 existing tests in `tests/test_qr_canon_audit.py` must remain
+  - All 19 existing tests in `tests/test_qr_canon_audit.py` must remain
     green byte-stable.
   - `tests/test_qr_canon_field_diagnostic.py` adds: per-benchmark
     generator regression checks (only for benchmarks with empirical

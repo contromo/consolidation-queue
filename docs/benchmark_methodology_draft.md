@@ -568,11 +568,15 @@ Posture:
   lookup-contract diagnostics). QR-canon is the canonical-id instance of
   the class; retrieval-id, slot-id, fact-id, and answer-handle are
   benchmark-specific instances.
-- Proposition 1 (cluster-partition / lookup-contract gap) is proved under
-  any label-renaming bijection satisfying both `ρ(g*) ≠ g*` and
-  `g* ∉ image(ρ)`. Lemmas 1 and 2 establish the same gap by construction
-  for retrieval@k content-based metrics and answer-accuracy text-based
-  metrics respectively. The proposition is reproducible
+- Proposition 1 (cluster-partition / lookup-contract gap) is proved by
+  an injective relabeling `ρ: L_gold → Σ` whose codomain is the label
+  alphabet `Σ` (not `L_gold`, since a bijective self-map of `L_gold`
+  necessarily covers `g* ∈ L_gold` and therefore cannot satisfy
+  `g* ∉ image(ρ)`) and whose image is disjoint from `{g*}`. Such a `ρ`
+  satisfies both `ρ(g*) ≠ g*` and `g* ∉ image(ρ)`. Lemmas 1 and 2
+  establish the same gap by construction for retrieval@k content-based
+  metrics and answer-accuracy text-based metrics respectively. The
+  proposition is reproducible
   unit-test-deterministically: the test hand-computes B-cubed F1 = 1.00
   on identical partitions and set-membership PFLC = 0 from the renaming
   construction, without sklearn or any external clustering library.
@@ -600,9 +604,11 @@ fires only on Mem0/LoCoMo = blocked; it is **not** triggered.
 Supported claims:
 
 - The cluster-partition / lookup-contract gap holds formally for any
-  benchmark with a label space of size at least two and any cluster-
-  partition metric that is invariant under label-renaming bijections
-  (B-cubed F1, ARI, NMI, V-measure, pairwise cluster F1).
+  benchmark whose label alphabet `Σ` is non-singleton (the typical case
+  for string-valued cluster labels) and any cluster-partition metric
+  whose value is invariant under arbitrary injective relabeling of
+  predicted cluster labels (B-cubed F1, ARI, NMI, V-measure, pairwise
+  cluster F1).
 - The same gap holds by construction for retrieval@k content-based
   metrics (Lemma 1) and answer-accuracy text-based metrics (Lemma 2).
   Each anchor benchmark ships one synthetic counterexample row tied to

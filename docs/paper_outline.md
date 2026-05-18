@@ -72,8 +72,11 @@ substrate.
    recall, retrieval, or clustering scores while failing to expose the
    policy-facing lookup contract that memory-governance systems actually
    need. Proposition 1 proves a cluster-partition / lookup-contract gap
-   under label-renaming bijections satisfying both `ρ(g*) ≠ g*` and
-   `g* ∉ image(ρ)`. Two constructive lemmas establish the same gap by
+   by an injective relabeling `ρ: L_gold → Σ` whose image is disjoint
+   from `{g*}` (the codomain must be `Σ`, not `L_gold`, because any
+   bijective self-map of `L_gold` covers `g* ∈ L_gold`); such a `ρ`
+   satisfies both `ρ(g*) ≠ g*` and `g* ∉ image(ρ)`. Two constructive
+   lemmas establish the same gap by
    construction for retrieval@k content-based metrics (Lemma 1) and
    answer-accuracy text-based metrics (Lemma 2). A representative-anchor
    feasibility survey of four memory benchmarks (LongMemEval, Mem0/LoCoMo,
@@ -236,14 +239,17 @@ a CQ-internal audit into a field-level minimum-diagnostic recommendation.
 The contribution has three layers:
 
 - **Proposition 1** proves a cluster-partition / lookup-contract gap for
-  any benchmark instance with a label space of size at least two and any
-  cluster-partition metric invariant under label-renaming bijections
-  (B-cubed F1, ARI, NMI, V-measure, pairwise cluster F1). The
-  construction uses a renaming function `ρ` satisfying both
-  `ρ(g*) ≠ g*` and `g* ∉ image(ρ)`; the predicted partition equals the
-  gold partition so the cluster-partition metric scores `1.00`, while
-  set-membership PFLC scores `0` because the queried gold canonical id
-  is not in the predicted label set. A unit test hand-computes this
+  any benchmark instance whose label alphabet `Σ` is non-singleton and
+  any cluster-partition metric invariant under arbitrary injective
+  relabeling of predicted cluster labels (B-cubed F1, ARI, NMI,
+  V-measure, pairwise cluster F1). The construction uses an injective
+  relabeling `ρ: L_gold → Σ` whose image is disjoint from `{g*}` (so
+  `ρ` lands in `Σ ∖ {g*}` rather than mapping `L_gold` onto itself);
+  this `ρ` satisfies both `ρ(g*) ≠ g*` and `g* ∉ image(ρ)`. The
+  predicted partition equals the gold partition so the cluster-partition
+  metric scores `1.00`, while set-membership PFLC scores `0` because
+  the queried gold canonical id is not in the predicted label set. A
+  unit test hand-computes this
   result, without any clustering library.
 - **Lemma 1** establishes the same gap by construction for retrieval@k
   content-based metrics. **Lemma 2** establishes it for answer-accuracy
