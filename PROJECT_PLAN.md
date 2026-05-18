@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-18 (LoCoMo AMB published-output PFLC replay landed)
+Last updated: 2026-05-18 (LongMemEval fair-stream externalization gate/preregistration scaffold landed)
 
 ## Goal
 
@@ -201,6 +201,20 @@ Implemented:
   tokens. The result is a published-output/context-derived benchmark-
   artifact diagnostic, not a CQ policy comparison and not a
   same-candidate-stream transfer claim.
+- `docs/longmemeval_externalization_anchor_gate.md`,
+  `docs/fair_stream_externalization_preregistration.md`,
+  `cq/eval/external/longmemeval/preregistration_lock.py`,
+  `cq/eval/external/longmemeval/redacted_loader.py`,
+  `cq/eval/external/longmemeval/dual_path_audit.py`,
+  `cq/eval/external/longmemeval/verifier.py`, and focused
+  `tests/test_longmemeval_external_*.py`: Phase X.-1/X.0 scaffolding for a
+  preregistered fair-stream externalization protocol. The gate verifies
+  LongMemEval-V2's public release from small metadata files and selects
+  LongMemEval v1 as the primary controlled-pilot anchor because V2 strips
+  gold-side answer-bearing annotation labels needed for matched PFLC. The
+  preregistration locks the shared-stream, hidden-answer, dual-path annotation,
+  PFLC, judge-calibration, and abort/downgrade protocol before any external
+  policy execution. No external policy run has been executed.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -209,7 +223,8 @@ Not implemented yet:
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
-- LongMemEval adapter/annotation preregistration and transfer run
+- full LongMemEval dual-path annotation outputs, adapter pin, smoke run, judge
+  calibration, and transfer policy run
 - final writeup docs
 
 ## Repository Map
@@ -644,6 +659,18 @@ The first deterministic forced-contradiction local-model command/prompt, compone
 6. The 2026-05-17 registered post-hoc QR-canon audit landed and is the most recent reframing artifact for the paper. It reuses the locked CQR Section A `cqr_set_membership` metric and the locked CQR alias function verbatim, reads only the committed `data/results/qr_canon_source_table.csv` at audit time, and reattributes the four perfect-clustering null rows from "unattributed null" to "policy-facing query interface contract failure" without unlocking the locked CQR audit or amending any policy verdict. See `docs/qr_canon_audit_results.md`. The CQR Section C cross-tab (QR-canon hit vs per-policy answer success) remains the natural follow-on diagnostic but is blocked on the same replay path; it is not licensed against the existing locked Phase 4 manifests.
 7. Workstream A.6 (PFLC field-level diagnostic generalization) landed on 2026-05-18 at outcome bucket B-3 (artifact-blocked) for its original anchor set. The registration `docs/policy_facing_lookup_contract_registration.md` locks the contract; the proposition `docs/policy_facing_lookup_contract_proposition.md` gives the formal core. Four per-anchor feasibility memos (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) all landed at descriptive-only. Four synthetic counterexample rows ship in `data/results/qr_canon_field_diagnostic_metrics.csv`. The consolidated readout is `docs/qr_canon_field_diagnostic_results.md`; methodology spine §5 and paper outline §1, §3, §4, §5, §8 are updated. BEAM remains in the field-exclusion table because its conditional promotion rule (Mem0/LoCoMo = blocked) did not fire.
 8. The post-A.6 LoCoMo published-output PFLC follow-up landed in `docs/locomo_baseline_replay_survey.md`. A current artifact sweep found that the Agent Memory Benchmark publishes per-question LoCoMo Hindsight and hybrid-search run gzips with injected contexts containing recoverable LoCoMo `dia_id` values. `scripts/score_locomo_amb_pflc.py` scores those IDs against official LoCoMo `qa[].evidence` and emits `data/results/locomo_amb_pflc_rows.csv` plus `data/results/locomo_amb_pflc_summary.json`. This upgrades the LoCoMo axis from universal artifact-blocked to a narrow `published-output/context-derived` replay for AMB outputs only. The next licensed step is report integration and, if useful, a separately registered expansion to additional AMB providers or stricter compact-retrieval cutoffs; do not convert this into a CQ-vs-external policy comparison without preserving the same-candidate-stream/substrate invariants or explicitly labeling it descriptive-only.
+9. The LongMemEval fair-stream externalization workstream has started but is
+   not yet a policy result. `docs/longmemeval_externalization_anchor_gate.md`
+   selects LongMemEval v1 as the primary controlled pilot and demotes V2 to
+   descriptive evidence-exposure work because V2's public files strip the
+   gold-side labels needed for matched PFLC. `docs/fair_stream_externalization_preregistration.md`
+   is locked, and the redacted-loader, dual-path-audit, verifier, and lock
+   primitives have focused tests. The next licensed step is Phase X.1:
+   produce the two independent annotation paths and divergence report without
+   reading answer labels, then build the adapter pin only after that report is
+   frozen. Do not run CQ, Reflection, or `Mem0Lite` on LongMemEval before the
+   agreed annotations, hidden-answer verifier, stream-hash invariant, and judge
+   calibration gates pass.
 
 ## Working Rules
 

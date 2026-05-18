@@ -105,6 +105,18 @@ rank/context saturation, and answer-generation residuals. This remains a
 published-output/context-derived benchmark-artifact diagnostic, not a CQ
 policy transfer claim.
 
+The LongMemEval fair-stream externalization workstream has now started under
+the heavy-integration plan. Phase X.-1 landed in
+`docs/longmemeval_externalization_anchor_gate.md`: V2 is verified as a real
+public release with 451 question rows, but its public files strip answer-
+bearing annotation labels, so V2 is demoted to descriptive evidence-exposure
+work and LongMemEval v1 remains the primary controlled-pilot anchor. Phase X.0
+also landed in `docs/fair_stream_externalization_preregistration.md`, with a
+lock checker and local primitives for redacted loading, dual-path divergence
+auditing, and hidden-answer verification. This does not authorize a policy run.
+The next step is dual-path annotation output and adapter construction under the
+locked protocol.
+
 ## Research Posture
 
 The next phase should aim for an original, defensible research contribution
@@ -234,16 +246,27 @@ also appears outside this benchmark.
 
 LongMemEval should be treated as a transfer probe, not a leaderboard target.
 
-Design requirements before implementation:
+Status:
+
+- Phase X.-1 anchor gate is complete: LongMemEval v1 primary, V2 descriptive
+  evidence-exposure only.
+- Phase X.0 preregistration is locked.
+- Redacted loader, dual-path audit, verifier, and lock primitives exist with
+  focused tests.
+- No annotation outputs, adapter pin, smoke run, judge calibration, or policy
+  comparison has been executed.
+
+Remaining design requirements before policy execution:
 
 1. Identify LongMemEval cases that map to contradiction, correction, or stale
-   memory mechanisms.
+   memory mechanisms. The v1 starting denominator is the 72 already-coded
+   non-abstention `knowledge-update` cases, pending dual-path agreement.
 2. Define how CQ, ReflectionEagerWrite, and `Mem0Lite` receive comparable
-   upstream inputs.
-3. If a same-candidate-stream setup is not possible, label the result as
-   descriptive transfer only.
-4. Preregister the subset, metrics, baselines, and failure interpretation
-   before running any policy.
+   upstream inputs through a pinned adapter.
+3. Freeze the dual-path disagreement report; drop disagreements to audit rows
+   instead of patching them.
+4. Validate the hidden-answer verifier, stream-hash invariant, and judge
+   calibration before running any policy.
 
 Decision rule:
 

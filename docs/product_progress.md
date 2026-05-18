@@ -1,5 +1,41 @@
 # Product Progress
 
+## 2026-05-18 — LongMemEval fair-stream externalization gate and preregistration scaffold land
+
+### What shipped
+
+- added `docs/longmemeval_externalization_anchor_gate.md`: executes the
+  Phase X.-1 anchor decision. LongMemEval-V2 is verified from public metadata
+  as a real 451-question release, but its public files strip answer-bearing
+  annotation labels, so it is demoted to descriptive evidence-exposure work.
+  LongMemEval v1 remains the primary controlled-pilot anchor
+- added `docs/fair_stream_externalization_preregistration.md` plus
+  `cq/eval/external/longmemeval/preregistration_lock.py`: locks the protocol
+  before annotation, adapter execution, or policy execution
+- added `cq/eval/external/longmemeval/redacted_loader.py`,
+  `dual_path_audit.py`, and `verifier.py`: local primitives for hash-only
+  answer redaction, dual-path disagreement classification, and answer-blind
+  agreement verification
+- added 12 focused tests under `tests/test_longmemeval_external_*.py`
+
+### Why it matters
+
+- the external-transfer workstream now has the same abort-first discipline as
+  the internal noisy-policy path. The repo can start LongMemEval annotation
+  work without silently turning answer labels or V2 public answers into policy
+  inputs
+- V2 is not ignored, but it is scoped correctly: useful as a modern benchmark
+  artifact and evidence-exposure target, not yet a matched gold PFLC or
+  same-candidate-stream policy anchor
+
+### Open issues / next
+
+- implement the two independent annotation paths and freeze the divergence
+  report before adapter work
+- do not run CQ, Reflection, or `Mem0Lite` on LongMemEval until agreed
+  annotations, hidden-answer verification, adapter pinning, stream-hash checks,
+  and judge calibration all pass
+
 ## 2026-05-18 — LoCoMo AMB published-output PFLC replay lands
 
 ### What shipped
