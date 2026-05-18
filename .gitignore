@@ -38,3 +38,5 @@ data/results/**/*.json
 !data/results/qr_canon_audit_manifest.json
 !data/results/qr_canon_field_diagnostic_metrics.csv
 !data/results/qr_canon_field_diagnostic_metrics_manifest.json
+!data/results/locomo_amb_pflc_rows.csv
+!data/results/locomo_amb_pflc_summary.json

@@ -1,5 +1,60 @@
 # Product Progress
 
+## 2026-05-18 — LoCoMo AMB published-output PFLC replay lands
+
+### What shipped
+
+- added `docs/locomo_baseline_replay_survey.md`: executes the corrected
+  Phase 0 artifact gate for LoCoMo PFLC. Mem0, A-MEM, official LoCoMo RAG,
+  Backboard, MemoryLake, Engram, and aggregate-only external rows remain
+  blocked for published-output PFLC. The current Agent Memory Benchmark
+  (AMB) Hindsight and hybrid-search LoCoMo outputs pass a narrower
+  `published-output/context-derived` gate because their per-question injected
+  contexts contain recoverable LoCoMo `dia_id` values
+- added `scripts/score_locomo_amb_pflc.py`: parses public AMB run gzips,
+  extracts context-emitted `dia_id` values from `## Memory N` blocks, aligns
+  `query_id` to official LoCoMo `sample_id` / QA index, and scores against
+  LoCoMo `qa[].evidence` at cutoffs `1, 5, 10, 20, 50, 200`
+- added `data/results/locomo_amb_pflc_rows.csv` and
+  `data/results/locomo_amb_pflc_summary.json`: 3,232 scored rows across AMB
+  Hindsight, hybrid-search, and the partial Cognee run, with input hashes,
+  Wilson intervals, and fixed-seed paired bootstrap gaps between answer
+  accuracy and PFLC indicators
+- updated `PROJECT_PLAN.md` and `docs/next_research_plan.md`: the LoCoMo
+  axis is no longer universally artifact-blocked once AMB current outputs are
+  included. The new result is explicitly scoped as a benchmark-artifact
+  diagnostic, not a CQ policy comparison or same-candidate-stream transfer
+  claim
+
+### Why it matters
+
+- the earlier B-3 finding remains true for the original A.6 anchor set, but
+  the current field now has at least one public LoCoMo output family with
+  enough per-question context to run empirical PFLC. That changes the next
+  research step from "find any output" to "use PFLC to decompose published
+  LoCoMo results"
+- AMB Hindsight scores `92.0%` answer accuracy, all-evidence PFLC@10
+  `65.6%`, PFLC@20 `82.9%`, and PFLC@50 `97.3%` with `36,235` average
+  context tokens. AMB hybrid-search scores `79.1%` answer accuracy,
+  PFLC@10 `64.7%`, PFLC@20 `75.5%`, and PFLC@50 `90.3%` with `22,156`
+  average context tokens
+- the result is sharper than a leaderboard comparison: high PFLC@50 with huge
+  contexts shows evidence exposure, while lower PFLC@10/@20 shows rank and
+  compactness pressure. Wrong answers with PFLC hits isolate answer-generation
+  or judging residuals; correct answers with PFLC misses flag success not fully
+  backed by the official LoCoMo evidence contract as scored here
+
+### Open issues / next
+
+- integrate this as a report/paper artifact with the context-saturation caveat
+  front and center
+- do not convert it into a CQ-vs-external policy comparison unless a new
+  preregistration preserves same-candidate-stream and same-substrate fairness,
+  or explicitly labels the result descriptive-only
+- a separate expansion could score additional AMB providers if they publish
+  per-question context, but aggregate-only Mem0, Zep, Letta, LangMem,
+  MemoryBank, and similar rows remain artifact-blocked for PFLC
+
 ## 2026-05-18 — PFLC field-level diagnostic lands (Workstream A.6, outcome B-3)
 
 ### What shipped

@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-18 (PFLC field-level diagnostic landed, Workstream A.6 outcome B-3)
+Last updated: 2026-05-18 (LoCoMo AMB published-output PFLC replay landed)
 
 ## Goal
 
@@ -182,6 +182,24 @@ Implemented:
   B-3 (artifact-blocked). The workstream did not unlock CQR Bucket D,
   amend Phase 4 Bucket B, modify the byte-locked CQR alias function, or
   run any policy against any external benchmark.
+- `docs/locomo_baseline_replay_survey.md`,
+  `scripts/score_locomo_amb_pflc.py`,
+  `data/results/locomo_amb_pflc_rows.csv`, and
+  `data/results/locomo_amb_pflc_summary.json`: the post-A.6 LoCoMo
+  published-output PFLC artifact gate and empirical replay. The survey
+  keeps Mem0, A-MEM, official LoCoMo RAG, Backboard, MemoryLake, Engram,
+  and aggregate-only external rows artifact-blocked for published-output
+  PFLC, but promotes the public Agent Memory Benchmark LoCoMo Hindsight
+  and hybrid-search run gzips because their per-question injected context
+  exposes recoverable LoCoMo `dia_id` values. The replay scores those
+  `dia_id`s against official LoCoMo `qa[].evidence`: Hindsight records
+  answer accuracy `92.0%`, all-evidence PFLC@10 `65.6%`, PFLC@20
+  `82.9%`, and PFLC@50 `97.3%` with `36,235` average context tokens;
+  hybrid-search records answer accuracy `79.1%`, PFLC@10 `64.7%`,
+  PFLC@20 `75.5%`, and PFLC@50 `90.3%` with `22,156` average context
+  tokens. The result is a published-output/context-derived benchmark-
+  artifact diagnostic, not a CQ policy comparison and not a
+  same-candidate-stream transfer claim.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -623,7 +641,8 @@ The first deterministic forced-contradiction local-model command/prompt, compone
 4. Keep Bucket C abstention, LongMemEval transfer, prompt changes, validator changes, and new mechanism families out of scope unless a future preregistered follow-up explicitly justifies them from the audit's mechanism-local interpretation. (`CQDatedContestation` is removed from this exclusion list because the preregistered follow-up landed on 2026-05-16 as partial preregistered success — base-CQ repair with the Reflection win criterion not cleared on the `temporal_skew` lane; see `docs/adversarial_upstream_noise_dated_followup_results.md`.)
 5. Use `docs/paper_outline.md` as the packaging spine for the report. The next licensed original-research move should be one of three preregistered paths: a policy-facing adapter-contract audit, a fresh Phase 4 baseline with committed or archived run-JSON payloads, or a LongMemEval adapter/annotation preregistration that creates a shared candidate stream and canonical-query contract before any policy run.
 6. The 2026-05-17 registered post-hoc QR-canon audit landed and is the most recent reframing artifact for the paper. It reuses the locked CQR Section A `cqr_set_membership` metric and the locked CQR alias function verbatim, reads only the committed `data/results/qr_canon_source_table.csv` at audit time, and reattributes the four perfect-clustering null rows from "unattributed null" to "policy-facing query interface contract failure" without unlocking the locked CQR audit or amending any policy verdict. See `docs/qr_canon_audit_results.md`. The CQR Section C cross-tab (QR-canon hit vs per-policy answer success) remains the natural follow-on diagnostic but is blocked on the same replay path; it is not licensed against the existing locked Phase 4 manifests.
-7. Workstream A.6 (PFLC field-level diagnostic generalization) landed on 2026-05-18 at outcome bucket B-3 (artifact-blocked). The registration `docs/policy_facing_lookup_contract_registration.md` locks the contract; the proposition `docs/policy_facing_lookup_contract_proposition.md` gives the formal core. Four per-anchor feasibility memos (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) all landed at descriptive-only. Four synthetic counterexample rows ship in `data/results/qr_canon_field_diagnostic_metrics.csv`. The consolidated readout is `docs/qr_canon_field_diagnostic_results.md`; methodology spine §5 and paper outline §1, §3, §4, §5, §8 are updated. The next licensed original-research move on this axis would be empirical-replay scoring of any released baseline that publishes per-question system-emitted identifier outputs (most plausibly on Mem0/LoCoMo, given LoCoMo's `evidence` field is a clean gold-side PFLC target); locating such outputs is **not** licensed by this plan — it requires a separate preregistered follow-up. BEAM remains in the field-exclusion table because its conditional promotion rule (Mem0/LoCoMo = blocked) did not fire.
+7. Workstream A.6 (PFLC field-level diagnostic generalization) landed on 2026-05-18 at outcome bucket B-3 (artifact-blocked) for its original anchor set. The registration `docs/policy_facing_lookup_contract_registration.md` locks the contract; the proposition `docs/policy_facing_lookup_contract_proposition.md` gives the formal core. Four per-anchor feasibility memos (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) all landed at descriptive-only. Four synthetic counterexample rows ship in `data/results/qr_canon_field_diagnostic_metrics.csv`. The consolidated readout is `docs/qr_canon_field_diagnostic_results.md`; methodology spine §5 and paper outline §1, §3, §4, §5, §8 are updated. BEAM remains in the field-exclusion table because its conditional promotion rule (Mem0/LoCoMo = blocked) did not fire.
+8. The post-A.6 LoCoMo published-output PFLC follow-up landed in `docs/locomo_baseline_replay_survey.md`. A current artifact sweep found that the Agent Memory Benchmark publishes per-question LoCoMo Hindsight and hybrid-search run gzips with injected contexts containing recoverable LoCoMo `dia_id` values. `scripts/score_locomo_amb_pflc.py` scores those IDs against official LoCoMo `qa[].evidence` and emits `data/results/locomo_amb_pflc_rows.csv` plus `data/results/locomo_amb_pflc_summary.json`. This upgrades the LoCoMo axis from universal artifact-blocked to a narrow `published-output/context-derived` replay for AMB outputs only. The next licensed step is report integration and, if useful, a separately registered expansion to additional AMB providers or stricter compact-retrieval cutoffs; do not convert this into a CQ-vs-external policy comparison without preserving the same-candidate-stream/substrate invariants or explicitly labeling it descriptive-only.
 
 ## Working Rules
 
