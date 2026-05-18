@@ -193,6 +193,81 @@ class ZeroGoldRowSemanticsTests(unittest.TestCase):
         self.assertEqual(joint["answer_wrong_and_pflc_miss"], 0)
 
 
+class AlignmentGuardTests(unittest.TestCase):
+    """Bad AMB/LoCoMo pairings should fail with targeted alignment errors
+    rather than raw KeyError or IndexError exceptions.
+    """
+
+    def test_unknown_sample_id_raises_clear_value_error(self) -> None:
+        run = _make_run(
+            [
+                {
+                    "query_id": "missing-sample_q0",
+                    "query": "Q0",
+                    "gold_answers": ["yes"],
+                    "correct": True,
+                    "context": _context([["D1"]]),
+                }
+            ]
+        )
+        locomo = _make_locomo(
+            [("sample-a", [{"question": "Q0", "evidence": ["D1"], "category": "1"}])]
+        )
+
+        with self.assertRaises(ValueError) as ctx:
+            SCORER._extract_rows(run, locomo, (1, 5, 10, 20, 50))
+
+        msg = str(ctx.exception)
+        self.assertIn("missing-sample_q0", msg)
+        self.assertIn("sample_id 'missing-sample'", msg)
+        self.assertIn("absent", msg)
+
+    def test_out_of_range_qa_index_raises_clear_value_error(self) -> None:
+        run = _make_run(
+            [
+                {
+                    "query_id": "sample-a_q3",
+                    "query": "Q3",
+                    "gold_answers": ["yes"],
+                    "correct": True,
+                    "context": _context([["D1"]]),
+                }
+            ]
+        )
+        locomo = _make_locomo(
+            [("sample-a", [{"question": "Q0", "evidence": ["D1"], "category": "1"}])]
+        )
+
+        with self.assertRaises(ValueError) as ctx:
+            SCORER._extract_rows(run, locomo, (1, 5, 10, 20, 50))
+
+        msg = str(ctx.exception)
+        self.assertIn("sample-a_q3", msg)
+        self.assertIn("qa_index 3", msg)
+        self.assertIn("only 1 QA rows", msg)
+
+    def test_missing_qa_field_raises_clear_value_error(self) -> None:
+        run = _make_run(
+            [
+                {
+                    "query_id": "sample-a_q0",
+                    "query": "Q0",
+                    "gold_answers": ["yes"],
+                    "correct": True,
+                    "context": _context([["D1"]]),
+                }
+            ]
+        )
+        locomo = [{"sample_id": "sample-a"}]
+
+        with self.assertRaises(ValueError) as ctx:
+            SCORER._extract_rows(run, locomo, (1, 5, 10, 20, 50))
+
+        msg = str(ctx.exception)
+        self.assertIn("sample-a_q0", msg)
+        self.assertIn("no list-valued 'qa' field", msg)
+
+
 class RegexSanityAssertTests(unittest.TestCase):
     """``_assert_parse_sanity`` must raise when MEMORY_BLOCK_RE or DIA_ID_RE
     produces parses below ``MIN_PARSE_RATIO`` of the input rows. This is the

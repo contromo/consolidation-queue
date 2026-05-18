@@ -75,7 +75,7 @@ def _extract_rows(run: dict[str, Any], locomo: list[dict[str, Any]], ks: tuple[i
 
         sample_id = match.group("sample")
         qa_index = int(match.group("idx"))
-        qa = by_sample[sample_id]["qa"][qa_index]
+        qa = _lookup_locomo_qa(by_sample, sample_id, qa_index, query_id)
         if qa["question"] != result["query"]:
             mismatches.append(query_id)
 
@@ -121,6 +121,40 @@ def _extract_rows(run: dict[str, Any], locomo: list[dict[str, Any]], ks: tuple[i
 
     _assert_parse_sanity(rows, run.get("run_name"))
     return rows, mismatches
+
+
+def _lookup_locomo_qa(
+    by_sample: dict[str, dict[str, Any]],
+    sample_id: str,
+    qa_index: int,
+    query_id: str,
+) -> dict[str, Any]:
+    if sample_id not in by_sample:
+        raise ValueError(
+            f"AMB query_id {query_id!r} references sample_id {sample_id!r}, "
+            "but that sample_id is absent from the LoCoMo data."
+        )
+
+    qa_rows = by_sample[sample_id].get("qa")
+    if not isinstance(qa_rows, list):
+        raise ValueError(
+            f"LoCoMo sample_id {sample_id!r} has no list-valued 'qa' field "
+            f"needed for AMB query_id {query_id!r}."
+        )
+
+    if qa_index >= len(qa_rows):
+        raise ValueError(
+            f"AMB query_id {query_id!r} references qa_index {qa_index}, "
+            f"but LoCoMo sample_id {sample_id!r} has only {len(qa_rows)} QA rows."
+        )
+
+    qa = qa_rows[qa_index]
+    if not isinstance(qa, dict):
+        raise ValueError(
+            f"LoCoMo sample_id {sample_id!r} qa_index {qa_index} is not an object "
+            f"needed for AMB query_id {query_id!r}."
+        )
+    return qa
 
 
 def _assert_parse_sanity(rows: list[dict[str, Any]], run_name: str | None) -> None:
