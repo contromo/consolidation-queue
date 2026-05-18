@@ -6,14 +6,7 @@ import math
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional, Union
 
-
-FORBIDDEN_KEYS = {
-    "answer",
-    "answers",
-    "gold_answer",
-    "reference_answer",
-    "answer_session_ids",
-}
+from cq.eval.external.longmemeval.sensitive_keys import is_forbidden_answer_key
 
 
 def binomial_upper_tail(successes: int, trials: int, probability: float) -> float:
@@ -32,7 +25,7 @@ def forbidden_answer_key_paths(payload: Any, *, prefix: str = "") -> list[str]:
     if isinstance(payload, dict):
         for key, value in payload.items():
             path = "{}.{}".format(prefix, key) if prefix else str(key)
-            if key in FORBIDDEN_KEYS:
+            if is_forbidden_answer_key(key):
                 paths.append(path)
             paths.extend(forbidden_answer_key_paths(value, prefix=path))
     elif isinstance(payload, list):
@@ -52,16 +45,19 @@ def build_verifier_report(
 ) -> dict[str, Any]:
     annotation_rows = list(annotations)
     forbidden_paths = forbidden_answer_key_paths(annotation_rows)
-    if audit_summary:
+    audit_summary_present = audit_summary is not None
+    if audit_summary_present:
         trials = int(audit_summary.get("comparable_in_denominator_count") or 0)
         successes = int(audit_summary.get("agreement_count") or 0)
     else:
-        trials = len(annotation_rows)
-        successes = len(annotation_rows)
+        trials = 0
+        successes = 0
     agreement_rate = successes / trials if trials else 0.0
     p_value = binomial_upper_tail(successes, trials, chance_agreement) if trials else 1.0
     return {
         "annotation_count": len(annotation_rows),
+        "audit_summary_required": True,
+        "audit_summary_present": audit_summary_present,
         "agreement_count": successes,
         "comparable_in_denominator_count": trials,
         "agreement_rate": agreement_rate,
@@ -71,10 +67,12 @@ def build_verifier_report(
         "min_agreement_rate": min_agreement_rate,
         "forbidden_answer_key_paths": forbidden_paths,
         "hidden_answer_check_passed": not forbidden_paths,
+        "audit_summary_check_passed": audit_summary_present,
         "agreement_rate_check_passed": agreement_rate >= min_agreement_rate if trials else False,
         "binomial_check_passed": p_value <= alpha if trials else False,
         "verifier_passed": (
             not forbidden_paths
+            and audit_summary_present
             and bool(trials)
             and agreement_rate >= min_agreement_rate
             and p_value <= alpha

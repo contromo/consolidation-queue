@@ -9,11 +9,35 @@ class LongMemEvalVerifierTests(unittest.TestCase):
         self.assertAlmostEqual(verifier.binomial_upper_tail(3, 4, 0.5), 0.3125)
 
     def test_forbidden_answer_key_paths_are_recursive(self) -> None:
-        payload = [{"case_id": "c1", "nested": {"answer": "secret"}}]
+        payload = [
+            {
+                "case_id": "c1",
+                "nested": {
+                    "answer": "secret",
+                    "ground_truth": "secret",
+                    "gold_slot": "secret",
+                    "answer_redaction": {"sha256": "safe"},
+                },
+            }
+        ]
         self.assertEqual(
             verifier.forbidden_answer_key_paths(payload),
-            ["[0].nested.answer"],
+            [
+                "[0].nested.answer",
+                "[0].nested.ground_truth",
+                "[0].nested.gold_slot",
+            ],
         )
+
+    def test_report_fails_closed_without_audit_summary(self) -> None:
+        annotations = [{"case_id": str(index)} for index in range(9)]
+        report = verifier.build_verifier_report(annotations)
+
+        self.assertFalse(report["audit_summary_present"])
+        self.assertFalse(report["audit_summary_check_passed"])
+        self.assertFalse(report["agreement_rate_check_passed"])
+        self.assertFalse(report["binomial_check_passed"])
+        self.assertFalse(report["verifier_passed"])
 
     def test_report_passes_with_high_agreement_and_no_answer_keys(self) -> None:
         annotations = [{"case_id": str(index)} for index in range(9)]
@@ -45,4 +69,3 @@ class LongMemEvalVerifierTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

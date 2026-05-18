@@ -10,7 +10,7 @@ class FairStreamExternalizationLockTests(unittest.TestCase):
         observed = lock.validate_fair_stream_externalization_lock()
         self.assertEqual(
             observed,
-            "0edf74633d8129a9b043dffce0eb76aa46356fcadf2ea2dc5628a039a81c2c56",
+            "158180b35fcf9585ef88989ead9b58cc8367dde846c00f939e1f4fb02aa513e8",
         )
 
     def test_temp_preregistration_lock_recomputes_from_protocol_block(self) -> None:
@@ -47,4 +47,3 @@ locked line
 
 if __name__ == "__main__":
     unittest.main()
-

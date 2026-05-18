@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, List, Mapping, Union
 
+from cq.eval.external.longmemeval.sensitive_keys import is_forbidden_answer_key
+
 
 class RedactionAccessError(RuntimeError):
     pass
@@ -97,6 +99,8 @@ class RedactedLongMemEvalCase:
         )
 
     def to_public_dict(self) -> dict[str, Any]:
+        # Haystack fields are intentionally retained: they are the annotation
+        # context. Answer-side fields inside them are scrubbed from ``raw``.
         return {
             "case_id": self.case_id,
             "question_type": self.question_type,
@@ -140,9 +144,7 @@ def redact_case(row: Mapping[str, Any]) -> RedactedLongMemEvalCase:
 
 
 def _redacted_raw(row: Mapping[str, Any]) -> dict[str, Any]:
-    result = dict(row)
-    result.pop("answer", None)
-    result.pop("answer_session_ids", None)
+    result = _scrub_sensitive_keys(row)
     result["answer_redaction"] = RedactedField(
         "answer",
         row.get("answer"),
@@ -156,12 +158,30 @@ def _redacted_raw(row: Mapping[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _scrub_sensitive_keys(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        result = {}
+        for key, item in value.items():
+            if is_forbidden_answer_key(key):
+                result["{}_redaction".format(key)] = RedactedField(
+                    str(key),
+                    item,
+                    present=True,
+                ).to_metadata()
+            else:
+                result[key] = _scrub_sensitive_keys(item)
+        return result
+    if isinstance(value, list):
+        return [_scrub_sensitive_keys(item) for item in value]
+    return value
+
+
 def _load_records(path: Path) -> list[Mapping[str, Any]]:
     text = _read_text(path)
     stripped = text.lstrip()
     if not stripped:
         return []
-    if path.suffix == ".jsonl":
+    if _looks_like_jsonl(path):
         return _assert_mapping_records((json.loads(line) for line in text.splitlines() if line.strip()), path)
     if stripped[0] == "[":
         payload = json.loads(text)
@@ -177,6 +197,10 @@ def _load_records(path: Path) -> list[Mapping[str, Any]]:
                     return _assert_mapping_records(value, path)
         raise ValueError("Expected list JSON or object with cases/annotations/data/records in {}".format(path))
     return _assert_mapping_records((json.loads(line) for line in text.splitlines() if line.strip()), path)
+
+
+def _looks_like_jsonl(path: Path) -> bool:
+    return path.name.endswith(".jsonl") or path.name.endswith(".jsonl.gz")
 
 
 def _read_text(path: Path) -> str:

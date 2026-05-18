@@ -4,7 +4,7 @@ Date: 2026-05-18
 
 Status: locked before annotation, adapter execution, or policy execution.
 
-fair_stream_externalization_lock_sha256: 0edf74633d8129a9b043dffce0eb76aa46356fcadf2ea2dc5628a039a81c2c56
+fair_stream_externalization_lock_sha256: 158180b35fcf9585ef88989ead9b58cc8367dde846c00f939e1f4fb02aa513e8
 
 This preregistration defines a protocol-level externalization methodology for
 memory benchmarks. The policy readout is a supporting experiment only. The
@@ -102,7 +102,11 @@ D before policy scoring.
 Both annotation paths load LongMemEval through
 `cq.eval.external.longmemeval.redacted_loader`, which replaces `answer` and
 `answer_session_ids` with hash-only redactions at load time. Attempting to read
-those fields raises an exception.
+those fields raises an exception. The loader recursively scrubs answer-side
+keys matching answer/gold/ground-truth/rubric/label patterns from exported
+`raw` payloads. `haystack_sessions` remain available because they are the
+annotation context, but answer-side keys nested inside that context are also
+redacted before export.
 
 Path A: locked local-model path, intended to use the existing
 `qwen2.5:32b-instruct-q4_K_M` local model cell plus a frozen question/evidence
@@ -125,6 +129,13 @@ Path outputs are compared by
 
 Only `agree` cases enter `annotations_agreed.json`. Disagreement rows remain
 in the divergence report and are never patched silently.
+
+The hidden-answer verifier fails closed unless it receives the dual-path audit
+summary. A bare `annotations_agreed.json` file is not sufficient for
+`verifier_passed=true` because it cannot prove the denominator or disagreement
+rate. The binomial upper-tail check uses a preregistered `p=0.5` chance
+agreement null as a diagnostic sanity check only; it is not a claim that the
+two annotation paths are statistically independent.
 
 ## 5. Scope Mapping And Contract Sensitivity
 

@@ -1,3 +1,4 @@
+import gzip
 import json
 import tempfile
 import unittest
@@ -40,6 +41,44 @@ class LongMemEvalRedactedLoaderTests(unittest.TestCase):
         self.assertNotIn("answer_session_ids", case.raw)
         self.assertIn("answer_redaction", case.raw)
 
+    def test_raw_recursively_scrubs_nested_answer_material(self) -> None:
+        payload = [
+            {
+                "question_id": "case-1",
+                "question_type": "knowledge-update",
+                "question": "q",
+                "answer": "top-level",
+                "answer_session_ids": ["s1"],
+                "metadata": {
+                    "gold": "nested gold",
+                    "ground_truth_answer": "nested answer",
+                    "safe_note": "keep me",
+                },
+                "haystack_sessions": [
+                    {
+                        "text": "annotation context is retained",
+                        "reference_answer": "nested forbidden",
+                    }
+                ],
+            }
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "oracle.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            case = load_redacted_cases(path)[0]
+
+        self.assertNotIn("gold", case.raw["metadata"])
+        self.assertIn("gold_redaction", case.raw["metadata"])
+        self.assertNotIn("ground_truth_answer", case.raw["metadata"])
+        self.assertIn("ground_truth_answer_redaction", case.raw["metadata"])
+        self.assertEqual(case.raw["metadata"]["safe_note"], "keep me")
+        self.assertEqual(
+            case.raw["haystack_sessions"][0]["text"],
+            "annotation context is retained",
+        )
+        self.assertNotIn("reference_answer", case.raw["haystack_sessions"][0])
+        self.assertIn("reference_answer_redaction", case.raw["haystack_sessions"][0])
+
     def test_accessing_redacted_values_raises(self) -> None:
         payload = [
             {
@@ -80,7 +119,30 @@ class LongMemEvalRedactedLoaderTests(unittest.TestCase):
         self.assertTrue(case.answer_redaction.present)
         self.assertFalse(case.answer_session_ids_redaction.present)
 
+    def test_jsonl_gz_questions_are_line_split_after_decompression(self) -> None:
+        rows = [
+            {
+                "id": "v2-1",
+                "question_type": "static-environment",
+                "question": "q1",
+                "answer": "a1",
+            },
+            {
+                "id": "v2-2",
+                "question_type": "procedure",
+                "question": "q2",
+                "answer": "a2",
+            },
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "questions.jsonl.gz"
+            with gzip.open(path, "wt", encoding="utf-8") as handle:
+                for row in rows:
+                    handle.write(json.dumps(row) + "\n")
+            cases = load_redacted_cases(path)
+
+        self.assertEqual([case.case_id for case in cases], ["v2-1", "v2-2"])
+
 
 if __name__ == "__main__":
     unittest.main()
-

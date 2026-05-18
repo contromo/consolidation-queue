@@ -92,7 +92,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         print("fair-stream externalization lock OK")
         return 0
     parser.error("Choose --recompute or --check")
-    return 2
 
 
 if __name__ == "__main__":
