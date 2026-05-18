@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import functools
 import hashlib
 import importlib.util
 import json
@@ -295,7 +296,14 @@ def _build_manifest(
     }
 
 
+@functools.lru_cache(maxsize=None)
 def _load_audit_module():
+    """Load and cache the audit module so its source executes once per
+    process. Memoization avoids redundant re-execution when this
+    generator is called multiple times within a single test run or
+    future callers re-use the Wilson / counterexample helpers it
+    exposes.
+    """
     audit_path = REPO_ROOT / "scripts" / "run_qr_canon_audit.py"
     spec = importlib.util.spec_from_file_location(
         "run_qr_canon_audit_for_field_diagnostic", audit_path
