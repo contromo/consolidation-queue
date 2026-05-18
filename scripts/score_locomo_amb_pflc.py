@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import datetime
 import gzip
 import hashlib
 import json
@@ -26,6 +27,7 @@ DEFAULT_K = (1, 5, 10, 20, 50, 200)
 DIA_ID_RE = re.compile(r'"dia_id"\s*:\s*"([^"]+)"')
 MEMORY_BLOCK_RE = re.compile(r"(?:^|\n)## Memory \d+\n")
 QUERY_ID_RE = re.compile(r"^(?P<sample>.+)_q(?P<idx>\d+)$")
+MIN_PARSE_RATIO = 0.5
 
 
 def _sha256(path: Path) -> str:
@@ -72,6 +74,7 @@ def _extract_rows(run: dict[str, Any], locomo: list[dict[str, Any]], ks: tuple[i
         blocks = _memory_blocks(result.get("context") or "")
         block_ids = [set(DIA_ID_RE.findall(block)) for block in blocks]
         all_retrieved_ids = set().union(*block_ids) if block_ids else set()
+        lookup_relevant = bool(gold_evidence)
 
         row: dict[str, Any] = {
             "run_name": run.get("run_name"),
@@ -86,10 +89,11 @@ def _extract_rows(run: dict[str, Any], locomo: list[dict[str, Any]], ks: tuple[i
             "gold_answer": " | ".join(str(answer) for answer in (result.get("gold_answers") or [])),
             "gold_evidence_ids": " ".join(sorted(gold_evidence)),
             "gold_evidence_count": len(gold_evidence),
+            "lookup_relevant": lookup_relevant,
             "retrieved_memory_blocks": len(block_ids),
             "retrieved_dia_id_count": len(all_retrieved_ids),
             "any_hit_all_context": bool(gold_evidence & all_retrieved_ids),
-            "all_hit_all_context": gold_evidence <= all_retrieved_ids if gold_evidence else False,
+            "all_hit_all_context": gold_evidence <= all_retrieved_ids,
         }
 
         first_gold_rank: int | None = None
@@ -102,11 +106,34 @@ def _extract_rows(run: dict[str, Any], locomo: list[dict[str, Any]], ks: tuple[i
         for k in ks:
             ids_at_k = set().union(*block_ids[:k]) if block_ids[:k] else set()
             row[f"any_hit_at_{k}"] = bool(gold_evidence & ids_at_k)
-            row[f"all_hit_at_{k}"] = gold_evidence <= ids_at_k if gold_evidence else False
+            row[f"all_hit_at_{k}"] = gold_evidence <= ids_at_k
 
         rows.append(row)
 
+    _assert_parse_sanity(rows, run.get("run_name"))
     return rows, mismatches
+
+
+def _assert_parse_sanity(rows: list[dict[str, Any]], run_name: str | None) -> None:
+    if not rows:
+        return
+    total = len(rows)
+    rows_with_blocks = sum(1 for row in rows if int(row["retrieved_memory_blocks"]) > 0)
+    rows_with_dia_ids = sum(1 for row in rows if int(row["retrieved_dia_id_count"]) > 0)
+    floor = math.ceil(MIN_PARSE_RATIO * total)
+    label = run_name or "<unknown run>"
+    if rows_with_blocks < floor:
+        raise ValueError(
+            f"MEMORY_BLOCK_RE produced fewer than {floor}/{total} rows with >=1 block "
+            f"on run {label!r} ({rows_with_blocks} matched). Likely AMB context format drift; "
+            "inspect a sample `result['context']` and update MEMORY_BLOCK_RE before scoring."
+        )
+    if rows_with_dia_ids < floor:
+        raise ValueError(
+            f"DIA_ID_RE produced fewer than {floor}/{total} rows with >=1 dia_id "
+            f"on run {label!r} ({rows_with_dia_ids} matched). Likely AMB context format drift; "
+            "inspect a sample memory block and update DIA_ID_RE before scoring."
+        )
 
 
 def _wilson(successes: int, total: int, z: float = 1.959963984540054) -> dict[str, float]:
@@ -152,6 +179,8 @@ def _summarize_run(
     bootstrap_samples: int,
 ) -> dict[str, Any]:
     total = len(rows)
+    lookup_rows = [row for row in rows if row["lookup_relevant"]]
+    lookup_total = len(lookup_rows)
     summary: dict[str, Any] = {
         "run": {
             "run_name": run.get("run_name"),
@@ -170,7 +199,9 @@ def _summarize_run(
             "scored_rows": total,
             "question_mismatch_count": len(mismatches),
             "question_mismatch_ids": mismatches[:20],
-            "zero_gold_evidence_count": sum(row["gold_evidence_count"] == 0 for row in rows),
+            "zero_gold_evidence_count": total - lookup_total,
+            "lookup_relevant_rows": lookup_total,
+            "metric_denominator": "lookup_relevant",
         },
         "context_parse": {
             "memory_blocks": _distribution([int(row["retrieved_memory_blocks"]) for row in rows]),
@@ -181,24 +212,31 @@ def _summarize_run(
     }
 
     metric_summary: dict[str, Any] = summary["metrics"]
-    metric_summary["answer_accuracy"] = _wilson(sum(row["answer_correct"] for row in rows), total)
+    metric_summary["answer_accuracy_all_rows"] = _wilson(
+        sum(row["answer_correct"] for row in rows), total
+    )
+    metric_summary["answer_accuracy"] = _wilson(
+        sum(row["answer_correct"] for row in lookup_rows), lookup_total
+    )
 
     for suffix in ["all_context", *[f"at_{k}" for k in ks]]:
         for mode in ("any_hit", "all_hit"):
             key = f"{mode}_{suffix}"
-            metric_summary[key] = _wilson(sum(row[key] for row in rows), total)
+            metric_summary[key] = _wilson(
+                sum(row[key] for row in lookup_rows), lookup_total
+            )
             metric_summary[f"answer_minus_{key}_paired_bootstrap"] = _bootstrap_gap(
-                rows,
+                lookup_rows,
                 key,
                 seed=bootstrap_seed,
                 samples=bootstrap_samples,
             )
 
-    metric_summary["joint_counts_at_50"] = _joint_counts(rows, "all_hit_at_50")
-    metric_summary["joint_counts_all_context"] = _joint_counts(rows, "all_hit_all_context")
+    metric_summary["joint_counts_at_50"] = _joint_counts(lookup_rows, "all_hit_at_50")
+    metric_summary["joint_counts_all_context"] = _joint_counts(lookup_rows, "all_hit_all_context")
 
     by_category: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for row in rows:
+    for row in lookup_rows:
         by_category[str(row["category"])].append(row)
     for category, cat_rows in sorted(by_category.items(), key=lambda item: item[0]):
         cat_total = len(cat_rows)
@@ -248,7 +286,15 @@ def main() -> None:
     parser.add_argument("--bootstrap-seed", type=int, default=1729)
     parser.add_argument("--bootstrap-samples", type=int, default=5000)
     parser.add_argument("--k", type=int, nargs="*", default=list(DEFAULT_K))
+    parser.add_argument(
+        "--created-utc-date",
+        default=None,
+        help="ISO date stamped into the summary (default: today in UTC).",
+    )
     args = parser.parse_args()
+    created_utc_date = args.created_utc_date or datetime.datetime.now(
+        datetime.timezone.utc
+    ).strftime("%Y-%m-%d")
 
     ks = tuple(args.k)
     locomo = _load_json_or_gzip(args.locomo_data)
@@ -278,7 +324,7 @@ def main() -> None:
     summary = {
         "artifact": "locomo_amb_pflc",
         "artifact_class": "published-output/context-derived",
-        "created_utc_date": "2026-05-18",
+        "created_utc_date": created_utc_date,
         "description": (
             "PFLC scoring of public Agent Memory Benchmark LoCoMo run outputs "
             "against LoCoMo qa[].evidence dialog IDs."

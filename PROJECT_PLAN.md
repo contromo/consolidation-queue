@@ -192,11 +192,12 @@ Implemented:
   PFLC, but promotes the public Agent Memory Benchmark LoCoMo Hindsight
   and hybrid-search run gzips because their per-question injected context
   exposes recoverable LoCoMo `dia_id` values. The replay scores those
-  `dia_id`s against official LoCoMo `qa[].evidence`: Hindsight records
-  answer accuracy `92.0%`, all-evidence PFLC@10 `65.6%`, PFLC@20
-  `82.9%`, and PFLC@50 `97.3%` with `36,235` average context tokens;
-  hybrid-search records answer accuracy `79.1%`, PFLC@10 `64.7%`,
-  PFLC@20 `75.5%`, and PFLC@50 `90.3%` with `22,156` average context
+  `dia_id`s against official LoCoMo `qa[].evidence` on the lookup-relevant
+  denominator (rows with non-empty gold `evidence`): Hindsight records
+  answer accuracy `92.0%`, all-evidence PFLC@10 `65.8%`, PFLC@20
+  `83.1%`, and PFLC@50 `97.6%` with `36,235` average context tokens;
+  hybrid-search records answer accuracy `79.1%`, PFLC@10 `64.8%`,
+  PFLC@20 `75.7%`, and PFLC@50 `90.5%` with `22,156` average context
   tokens. The result is a published-output/context-derived benchmark-
   artifact diagnostic, not a CQ policy comparison and not a
   same-candidate-stream transfer claim.

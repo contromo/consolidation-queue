@@ -34,10 +34,14 @@
   research step from "find any output" to "use PFLC to decompose published
   LoCoMo results"
 - AMB Hindsight scores `92.0%` answer accuracy, all-evidence PFLC@10
-  `65.6%`, PFLC@20 `82.9%`, and PFLC@50 `97.3%` with `36,235` average
-  context tokens. AMB hybrid-search scores `79.1%` answer accuracy,
-  PFLC@10 `64.7%`, PFLC@20 `75.5%`, and PFLC@50 `90.3%` with `22,156`
-  average context tokens
+  `65.8%`, PFLC@20 `83.1%`, and PFLC@50 `97.6%` with `36,235` average
+  context tokens (lookup-relevant denominator: `1,536` of `1,540` rows).
+  AMB hybrid-search scores `79.1%` answer accuracy, PFLC@10 `64.8%`,
+  PFLC@20 `75.7%`, and PFLC@50 `90.5%` with `22,156` average context
+  tokens (same denominator). PFLC@k excludes rows with empty gold
+  `evidence`, where `all_hit` is vacuously satisfied (∅ ⊆ S) and
+  `any_hit` is undefined; the four excluded rows per run were a
+  systematic ~0.2–1.3 pp downward bias before this fix
 - the result is sharper than a leaderboard comparison: high PFLC@50 with huge
   contexts shows evidence exposure, while lower PFLC@10/@20 shows rank and
   compactness pressure. Wrong answers with PFLC hits isolate answer-generation

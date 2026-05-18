@@ -93,11 +93,12 @@ injected contexts contain recoverable LoCoMo `dia_id` values. The scorer
 `scripts/score_locomo_amb_pflc.py` compares those emitted IDs with official
 LoCoMo `qa[].evidence` and writes
 `data/results/locomo_amb_pflc_rows.csv` plus
-`data/results/locomo_amb_pflc_summary.json`. Hindsight records answer
-accuracy `92.0%`, all-evidence PFLC@10 `65.6%`, PFLC@20 `82.9%`, and
-PFLC@50 `97.3%` with `36,235` average context tokens; hybrid-search records
-answer accuracy `79.1%`, PFLC@10 `64.7%`, PFLC@20 `75.5%`, and PFLC@50
-`90.3%` with `22,156` average context tokens. The right interpretation is
+`data/results/locomo_amb_pflc_summary.json`. On the lookup-relevant
+denominator (rows with non-empty gold `evidence`), Hindsight records answer
+accuracy `92.0%`, all-evidence PFLC@10 `65.8%`, PFLC@20 `83.1%`, and
+PFLC@50 `97.6%` with `36,235` average context tokens; hybrid-search records
+answer accuracy `79.1%`, PFLC@10 `64.8%`, PFLC@20 `75.7%`, and PFLC@50
+`90.5%` with `22,156` average context tokens. The right interpretation is
 not "public systems fail PFLC"; it is that once public per-question context is
 available, PFLC decomposes LoCoMo scores into evidence exposure, evidence
 rank/context saturation, and answer-generation residuals. This remains a

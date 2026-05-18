@@ -66,29 +66,40 @@ Scoring rule:
 - compare those IDs to the official LoCoMo `qa[].evidence` IDs
 - report `any_hit@k` and `all_hit@k` for memory-block cutoffs
   `k = 1, 5, 10, 20, 50, 200`
+- denominator is the lookup-relevant subset (rows with non-empty
+  `qa[].evidence`). Rows with empty gold evidence have a vacuously-satisfied
+  `all_hit` (∅ ⊆ S for any S) and undefined `any_hit` semantics, so they are
+  excluded from the headline PFLC denominator; their count is surfaced as
+  `zero_gold_evidence_count`. The full-row answer accuracy is also reported
+  as `answer_accuracy_all_rows` for AMB parity.
 
-Headline results:
+Headline results (lookup-relevant denominator):
 
-| Run | Rows | Answer accuracy | All-evidence PFLC@10 | All-evidence PFLC@20 | All-evidence PFLC@50 | Any-evidence PFLC@50 | Avg context tokens |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| AMB `locomo-hindsight` | 1,540 | 92.0% | 65.6% | 82.9% | 97.3% | 99.0% | 36,235 |
-| AMB `hybrid-search` | 1,540 | 79.1% | 64.7% | 75.5% | 90.3% | 96.2% | 22,156 |
-| AMB `cognee` | 152 | 80.3% | 59.2% | 72.4% | 90.8% | 96.1% | 14,724 |
+| Run | Scored | Lookup-relevant | Answer accuracy | All-evidence PFLC@10 | All-evidence PFLC@20 | All-evidence PFLC@50 | Any-evidence PFLC@50 | Avg context tokens |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| AMB `locomo-hindsight` | 1,540 | 1,536 | 92.0% | 65.8% | 83.1% | 97.6% | 99.2% | 36,235 |
+| AMB `hybrid-search` | 1,540 | 1,536 | 79.1% | 64.8% | 75.7% | 90.5% | 96.4% | 22,156 |
+| AMB `cognee` | 152 | 150 | 80.3% | 60.0% | 73.3% | 92.0% | 97.3% | 14,724 |
 
-Joint counts at all-evidence PFLC@50:
+Answer-accuracy columns report `answer_accuracy_all_rows`, which matches the
+AMB-published headline; the per-lookup-relevant answer-accuracy (which pairs
+with the PFLC columns in the paired bootstrap) is within `<= 0.3` pp of the
+all-row value on every run.
+
+Joint counts at all-evidence PFLC@50 (lookup-relevant denominator):
 
 | Run | Correct + PFLC hit | Correct + PFLC miss | Wrong + PFLC hit | Wrong + PFLC miss |
 | --- | ---: | ---: | ---: | ---: |
-| AMB `locomo-hindsight` | 1,383 | 34 | 116 | 7 |
-| AMB `hybrid-search` | 1,114 | 104 | 276 | 46 |
-| AMB `cognee` | 109 | 13 | 29 | 1 |
+| AMB `locomo-hindsight` | 1,383 | 30 | 116 | 7 |
+| AMB `hybrid-search` | 1,114 | 100 | 276 | 46 |
+| AMB `cognee` | 109 | 11 | 29 | 1 |
 
 ## Interpretation
 
 This is stronger than the earlier B-3 artifact-blocked posture, but not in the
 way the original plan hoped. The public AMB context makes empirical PFLC
 scoring possible, and the first result is not a lookup-contract collapse:
-Hindsight reaches all-evidence PFLC@50 of 97.3 percent.
+Hindsight reaches all-evidence PFLC@50 of 97.6 percent.
 
 The result still matters because it separates three phenomena that aggregate
 LoCoMo answer accuracy conflates:
@@ -102,7 +113,7 @@ LoCoMo answer accuracy conflates:
 For example, `hybrid-search` has 276 wrong answers where all gold evidence is
 already present by PFLC@50. That is not a retrieval contract failure; it is an
 answering, reasoning, prompt, or judging failure under a large injected context.
-Conversely, it has 104 correct answers where all gold evidence is missing by
+Conversely, it has 100 correct answers where all gold evidence is missing by
 PFLC@50, which flags answer success not fully backed by the LoCoMo evidence
 contract as scored here.
 
@@ -134,9 +145,9 @@ Primary input hashes:
 
 Committed artifact hashes:
 
-- `scripts/score_locomo_amb_pflc.py`: `92106277b79ebd864e67bafd16ecb1d93aeb2bfcec08b70384ae610c9836530b`
-- `data/results/locomo_amb_pflc_rows.csv`: `16ee6eaf006ea2a11e7148b9aeeb27cea75ce56eada23794e48784fba0ae1ea6`
-- `data/results/locomo_amb_pflc_summary.json`: `065db2439b6741f66a71e1b2a03813badcd5cc609baa76cba91038055852ca85`
+- `scripts/score_locomo_amb_pflc.py`: `c263eb5b4fecba60cae10232c09b8120ce012b0a95c3839af4a37afca219cd8c`
+- `data/results/locomo_amb_pflc_rows.csv`: `11721c3ee81ac997e1c4f79bf7317a28880ddc4fc7c7c4d27f1b1f706ca7badd`
+- `data/results/locomo_amb_pflc_summary.json`: `adf2b4c508df8589f88a4abdf06cb3df91c3385cf8cb3a6739db615e9e3b15c1`
 
 Public URLs:
 
