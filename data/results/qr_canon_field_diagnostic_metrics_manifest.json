@@ -1,0 +1,66 @@
+{
+  "alias_function_sha256_pin": {
+    "expected_sha256": "8176c5a93ffbdbfd99d48f73836b954aa27aee4ab08de567ca47ec63d7896de0",
+    "note": "PFLC canonical-id instance inherits the byte-locked CQR alias function. Other PFLC instances (retrieval-id, slot-id, fact-id, answer-handle) do not inherit it. The pin is documentary; the audit logic does not modify the function.",
+    "source_doc": "docs/canonical_id_resolution_audit_preregistration.md",
+    "source_script": "scripts/run_canonical_id_resolution_audit.py"
+  },
+  "command": "python3 scripts/build_qr_canon_field_diagnostic_metrics.py",
+  "date": "2026-05-18",
+  "inputs": {},
+  "outputs": {
+    "field_diagnostic_metrics_csv": {
+      "byte_size": 936,
+      "path": "data/results/qr_canon_field_diagnostic_metrics.csv",
+      "sha256": "682488df073ef86b837ba8281d48243f40069aafb2eb94446c848672d4d1abe6"
+    }
+  },
+  "per_benchmark_synthetic_summary": {
+    "longmemeval": {
+      "joint_passes_headline_but_not_lookup": true,
+      "paired_headline_metric_name": "overall_accuracy",
+      "paired_headline_metric_value": "1.000000",
+      "pflc_exact_rate": "0.000000",
+      "pflc_instance": "answer-handle",
+      "proposition_or_lemma_ref": "Lemma 2",
+      "row_kind": "synthetic_longmemeval_counterexample"
+    },
+    "mem0_locomo": {
+      "joint_passes_headline_but_not_lookup": true,
+      "paired_headline_metric_name": "recall_at_k",
+      "paired_headline_metric_value": "1.000000",
+      "pflc_exact_rate": "0.000000",
+      "pflc_instance": "dialog-evidence-id",
+      "proposition_or_lemma_ref": "Lemma 1",
+      "row_kind": "synthetic_mem0_locomo_counterexample"
+    },
+    "membench": {
+      "joint_passes_headline_but_not_lookup": true,
+      "paired_headline_metric_name": "factual_recall",
+      "paired_headline_metric_value": "1.000000",
+      "pflc_exact_rate": "0.000000",
+      "pflc_instance": "fact-id",
+      "proposition_or_lemma_ref": "Lemma 1",
+      "row_kind": "synthetic_membench_counterexample"
+    },
+    "memoryagentbench": {
+      "joint_passes_headline_but_not_lookup": true,
+      "paired_headline_metric_name": "task_accuracy",
+      "paired_headline_metric_value": "1.000000",
+      "pflc_exact_rate": "0.000000",
+      "pflc_instance": "conflict-resolution-id",
+      "proposition_or_lemma_ref": "Lemma 2",
+      "row_kind": "synthetic_memoryagentbench_counterexample"
+    }
+  },
+  "proposition_doc": "docs/policy_facing_lookup_contract_proposition.md",
+  "proposition_one_reproducibility": {
+    "g_star_not_in_image_rho": true,
+    "m_cluster_b_cubed_f1_by_construction": 1.0,
+    "m_lookup_set_membership_by_construction": 0,
+    "rho_g_star_not_equal_g_star": true
+  },
+  "registration_doc": "docs/policy_facing_lookup_contract_registration.md",
+  "workstream_outcome_bucket": "B-3",
+  "workstream_outcome_rationale": "All four anchor benchmark feasibility memos landed at descriptive-only. No anchor released artifacts sufficient for empirical PFLC scoring. B-3 (artifact-blocked) per registration section 4."
+}
