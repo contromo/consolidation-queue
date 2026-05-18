@@ -1,0 +1,5 @@
+row_id,benchmark,pflc_instance,denominator,pflc_exact_hits,pflc_exact_rate,pflc_exact_wilson_lcb,pflc_exact_wilson_ucb,paired_headline_metric_name,paired_headline_metric_value,joint_passes_headline_but_not_lookup,proposition_or_lemma_ref,row_kind
+synthetic_longmemeval_counterexample,longmemeval,answer-handle,1,0,0.000000,0.000000,0.793451,overall_accuracy,1.000000,True,Lemma 2,synthetic_longmemeval_counterexample
+synthetic_mem0_locomo_counterexample,mem0_locomo,dialog-evidence-id,1,0,0.000000,0.000000,0.793451,recall_at_k,1.000000,True,Lemma 1,synthetic_mem0_locomo_counterexample
+synthetic_memoryagentbench_counterexample,memoryagentbench,conflict-resolution-id,1,0,0.000000,0.000000,0.793451,task_accuracy,1.000000,True,Lemma 2,synthetic_memoryagentbench_counterexample
+synthetic_membench_counterexample,membench,fact-id,1,0,0.000000,0.000000,0.793451,factual_recall,1.000000,True,Lemma 1,synthetic_membench_counterexample

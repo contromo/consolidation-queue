@@ -58,13 +58,32 @@ substrate.
    stopped unstable extractor rows before broader scoring.
 6. **Deterministic replay.** Determinism and replay-equivalence checks prevent
    post-hoc methodology repairs from emitting verdicts when locked inputs drift.
-7. **QR-canon diagnostic.** Clustering-quality canonicalization (B-cubed F1)
-   can score `1.00` while exact policy-query canonical-id agreement remains
-   `0.00` on a real benchmark; the registered post-hoc QR-canon audit
-   surfaces this gap on five of seven Phase 4 rows and ships a synthetic
-   counterexample. QR-canon enters the methodology as a required diagnostic
-   alongside the clustering-quality gates above, not as a tuneable
-   pass/fail threshold.
+7. **QR-canon diagnostic (canonical-id PFLC instance).** Clustering-quality
+   canonicalization (B-cubed F1) can score `1.00` while exact policy-query
+   canonical-id agreement remains `0.00` on a real benchmark; the registered
+   post-hoc QR-canon audit surfaces this gap on five of seven Phase 4 rows
+   and ships a synthetic counterexample. QR-canon enters the methodology as
+   a required diagnostic alongside the clustering-quality gates above, not
+   as a tuneable pass/fail threshold. It is the canonical-id instance of
+   the broader PFLC class in contribution 8.
+8. **PFLC field-level diagnostic class.** Policy-facing lookup-contract
+   (PFLC) diagnostics generalize QR-canon from a CQ-internal audit to a
+   field-level methodological claim: memory benchmarks can report strong
+   recall, retrieval, or clustering scores while failing to expose the
+   policy-facing lookup contract that memory-governance systems actually
+   need. Proposition 1 proves a cluster-partition / lookup-contract gap
+   by an injective relabeling `ρ: L_gold → Σ` whose image is disjoint
+   from `{g*}` (the codomain must be `Σ`, not `L_gold`, because any
+   bijective self-map of `L_gold` covers `g* ∈ L_gold`); such a `ρ`
+   satisfies both `ρ(g*) ≠ g*` and `g* ∉ image(ρ)`. Two constructive
+   lemmas establish the same gap by
+   construction for retrieval@k content-based metrics (Lemma 1) and
+   answer-accuracy text-based metrics (Lemma 2). A representative-anchor
+   feasibility survey of four memory benchmarks (LongMemEval, Mem0/LoCoMo,
+   MemoryAgentBench, MemBench) finds none expose the artifacts needed for
+   empirical PFLC scoring (outcome bucket B-3). Each anchor receives a
+   benchmark-targeted synthetic counterexample row, instantiating Lemma 1
+   or Lemma 2.
 
 Key artifacts:
 
@@ -78,6 +97,14 @@ Key artifacts:
 - `docs/qr_canon_audit_registration.md`
 - `docs/qr_canon_audit_results.md`
 - `data/results/qr_canon_audit_metrics.csv`
+- `docs/policy_facing_lookup_contract_registration.md`
+- `docs/policy_facing_lookup_contract_proposition.md`
+- `docs/qr_canon_field_diagnostic_results.md`
+- `docs/qr_canon_longmemeval_feasibility.md`
+- `docs/qr_canon_mem0_locomo_feasibility.md`
+- `docs/qr_canon_memoryagentbench_feasibility.md`
+- `docs/qr_canon_membench_feasibility.md`
+- `data/results/qr_canon_field_diagnostic_metrics.csv`
 
 ## 2. Benchmark And Policies
 
@@ -123,12 +150,25 @@ edges, or canonical query ids.
 MemoryAgentBench evaluates memory agents through incremental multi-turn
 interactions and emphasizes accurate retrieval, test-time learning,
 long-range understanding, and selective forgetting
-([OpenReview](https://openreview.net/pdf?id=DT7JyQC3MR)). MemBench evaluates
+([arXiv:2507.05257](https://arxiv.org/abs/2507.05257);
+[OpenReview](https://openreview.net/pdf?id=DT7JyQC3MR)). MemBench evaluates
 LLM-agent memory across factual/reflective memory and
 participation/observation scenarios ([arXiv:2506.21605](https://arxiv.org/abs/2506.21605)).
 These benchmarks occupy the external-evaluation lane. They are valuable
 positioning and future transfer targets, but they do not by themselves enforce
-this repo's fair same-stream policy comparison.
+this repo's fair same-stream policy comparison. Under the PFLC field-level
+diagnostic (§4), each of these benchmarks receives a per-anchor feasibility
+memo and a benchmark-targeted synthetic counterexample: LongMemEval as the
+answer-handle PFLC instance (Lemma 2), MemoryAgentBench's CR /
+FactConsolidation split as the conflict-resolution-id PFLC instance (Lemma
+2), and MemBench's factual-memory categories as the fact-id PFLC instance
+(Lemma 1). LoCoMo's `evidence` field is the strongest gold-side PFLC target
+in the anchor set (dialog-evidence-id PFLC, Lemma 1), but Mem0's evaluation
+framework and standard baselines publish aggregate scores rather than
+per-question retrieved-dialog-id outputs, so empirical scoring is blocked at
+the system-output side. The four feasibility memos all land at
+descriptive-only; the workstream-level outcome bucket is B-3
+(artifact-blocked).
 
 ### Memory Systems And Write Policies
 
@@ -192,6 +232,48 @@ change any policy verdict. It reattributes the perfect-clustering null
 rows from "unattributed null" to "policy-facing query interface contract
 failure."
 
+### PFLC Field-Level Diagnostic Class
+
+Policy-facing lookup-contract (PFLC) diagnostics generalize QR-canon from
+a CQ-internal audit into a field-level minimum-diagnostic recommendation.
+The contribution has three layers:
+
+- **Proposition 1** proves a cluster-partition / lookup-contract gap for
+  any benchmark instance whose label alphabet `Σ` is non-singleton and
+  any cluster-partition metric invariant under arbitrary injective
+  relabeling of predicted cluster labels (B-cubed F1, ARI, NMI,
+  V-measure, pairwise cluster F1). The construction uses an injective
+  relabeling `ρ: L_gold → Σ` whose image is disjoint from `{g*}` (so
+  `ρ` lands in `Σ ∖ {g*}` rather than mapping `L_gold` onto itself);
+  this `ρ` satisfies both `ρ(g*) ≠ g*` and `g* ∉ image(ρ)`. The
+  predicted partition equals the gold partition so the cluster-partition
+  metric scores `1.00`, while set-membership PFLC scores `0` because
+  the queried gold canonical id is not in the predicted label set. A
+  unit test hand-computes this
+  result, without any clustering library.
+- **Lemma 1** establishes the same gap by construction for retrieval@k
+  content-based metrics. **Lemma 2** establishes it for answer-accuracy
+  text-based metrics. Together with Proposition 1, these cover the
+  three main metric classes in current memory-benchmark practice.
+- **Per-anchor feasibility memos** for LongMemEval, Mem0/LoCoMo,
+  MemoryAgentBench, and MemBench lock a decision call (empirical /
+  descriptive-only / blocked) and a named PFLC instance per benchmark.
+  All four anchors land at descriptive-only; no released artifacts in
+  the surveyed anchor set support empirical PFLC scoring today. The
+  workstream lands at outcome bucket B-3 (artifact-blocked) per the
+  registration's preregistered bucket scheme.
+
+Each anchor benchmark ships one benchmark-targeted synthetic
+counterexample row in
+`data/results/qr_canon_field_diagnostic_metrics.csv` instantiating
+Lemma 1 or Lemma 2 against that benchmark's headline metric. The
+manifest pins the byte-locked CQR alias function SHA from the CQR
+preregistration §6; the canonical-id PFLC instance inherits the alias
+function, while retrieval-id, slot-id, fact-id, and answer-handle
+instances do not. The PFLC class never proposes a hard pass/fail
+threshold; it enters the field-level methodology as a required
+diagnostic alongside clustering / retrieval / accuracy metrics.
+
 ## 5. Evidence Ledger
 
 | Claim | Mode | Preregistration / contract | Committed evidence | Readout | Boundary |
@@ -207,6 +289,8 @@ failure."
 | CQR replay repair refused to emit a verdict under a second Bucket D. | Reproducibility audit | `docs/canonical_id_resolution_audit_preregistration.md`; `docs/canonical_id_resolution_audit_repair_preregistration.md` | `docs/canonical_id_resolution_audit_results.md`; `data/results/canonical_id_resolution_audit_stop_2026-05-15.json`; `data/results/canonical_id_resolution_audit_stop_2026-05-16.json` | The repair separated path-sensitive fields but still aborted on locked run-JSON non-reproducibility. | No CQR A/B/C attribution; null rows remain unsettled until QR-canon reattributed them. |
 | QR-canon exposes clustering-vs-lookup gap and reattributes four null rows. | Component diagnostic, registered post-hoc | `docs/qr_canon_audit_registration.md` (reuses CQR Section A metrics) | `docs/qr_canon_audit_results.md`; `data/results/qr_canon_audit_metrics.csv`; `data/results/qr_canon_source_table.csv`; synthetic counterexample row | Five of seven Phase 4 rows clear the B-cubed F1 `>= 0.65` floor while QR-canon (exact) is below 5 percent; locked CQR alias function also returns zero on four of those rows. | No QR-canon pass/fail gate; no CQR A/B/C verdict; no change to policy verdicts. |
 | LongMemEval is relevant but not yet a fair transfer run. | Feasibility only | `docs/next_research_plan.md` Workstream D; frozen coding rule in memo | `docs/longmemeval_feasibility_memo.md`; `data/results/longmemeval_feasibility_coding.csv` | 72 `knowledge-update` cases map to `contradiction_edge`, but candidate stream and policy-query invariants are not preserved. | Descriptive-only future work; no policy run. A future LongMemEval adapter must establish a QR-canon target before any policy run. |
+| The cluster-partition / lookup-contract gap holds formally for cluster-partition metrics; analogous gaps hold by construction for retrieval@k and answer-accuracy metrics. | Formal (Proposition 1) + constructive (Lemmas 1, 2) | `docs/policy_facing_lookup_contract_registration.md`; `docs/policy_facing_lookup_contract_proposition.md` | `tests/test_qr_canon_field_diagnostic.py::PropositionOneReproducibilityTests` (hand-computed B-cubed F1 = 1.00, set-membership PFLC = 0 under renaming `ρ(g*) ≠ g*` AND `g* ∉ image(ρ)`) | Proposition reproducible unit-test-deterministically; corollary: no cluster-partition, content-based retrieval, or text-based answer-accuracy metric is sufficient evidence of policy-facing lookup-contract success. | No pass/fail PFLC threshold; no modification of byte-locked CQR alias function. |
+| PFLC anchor feasibility survey lands at B-3 (artifact-blocked). | Descriptive feasibility | `docs/policy_facing_lookup_contract_registration.md` §4 outcome buckets; per-benchmark memos | `docs/qr_canon_longmemeval_feasibility.md`; `docs/qr_canon_mem0_locomo_feasibility.md`; `docs/qr_canon_memoryagentbench_feasibility.md`; `docs/qr_canon_membench_feasibility.md`; `docs/qr_canon_field_diagnostic_results.md`; `data/results/qr_canon_field_diagnostic_metrics.csv` | All four anchor benchmarks (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) land at descriptive-only. No anchor releases per-question system-emitted identifier artifacts standardly. BEAM's conditional promotion rule does not fire. Each anchor ships one synthetic counterexample row (Lemma 1 or Lemma 2). | Outcome bucket B-3 is itself a structural finding about released-artifact contracts; not a benchmark-design criticism. |
 
 ## 6. Discussion
 
@@ -287,6 +371,32 @@ QR-canon pass/fail threshold. The deployed metric is exact-string set
 membership, framed as the active policy lookup contract; the
 alias-normalized variant is a frozen boundary sensitivity check that uses
 the locked CQR alias function and never substitutes for the exact metric.
+
+### PFLC Field-Level Boundary
+
+The PFLC field-level generalization (contribution 8) produces no
+empirical row on any external benchmark. The workstream's outcome bucket
+B-3 is supported by a formal proposition, two constructive lemmas, four
+per-anchor feasibility memos, and four benchmark-targeted synthetic
+counterexamples; it is **not** supported by any empirical PFLC scoring
+of released system outputs. Specific unsupported claims:
+
+- a hard PFLC pass/fail threshold; PFLC is a required diagnostic
+  alongside clustering / retrieval / accuracy metrics, never a gate.
+- benchmark-design criticism of the four anchors. LoCoMo's `evidence`
+  field is a clean gold-side PFLC target. MemoryAgentBench's CR /
+  FactConsolidation mechanism is exactly PFLC-relevant. The B-3
+  outcome reflects what released artifacts publish, not what the
+  benchmarks could expose with an additional annotation layer.
+- generalization of the byte-locked CQR alias function to non-canonical-
+  id PFLC instances. The alias function applies only to the canonical-id
+  PFLC instance; retrieval-id, slot-id, fact-id, and answer-handle
+  instances have no inherited alias function.
+- promotion of the workstream from B-3 to B-1 without a separate
+  follow-up locating per-question system-emitted identifier outputs as
+  a downloadable artifact from a released baseline. The registration
+  permits empirical-replay scoring of such artifacts; this workstream
+  does not perform the locating step.
 
 ### External Transfer Boundary
 

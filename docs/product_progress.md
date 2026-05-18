@@ -1,5 +1,133 @@
 # Product Progress
 
+## 2026-05-18 — PFLC field-level diagnostic lands (Workstream A.6, outcome B-3)
+
+### What shipped
+
+- added `docs/policy_facing_lookup_contract_registration.md`: locks
+  Workstream A.6 before any per-benchmark scoring. Defines the
+  policy-facing lookup-contract (PFLC) diagnostic class with QR-canon as
+  the canonical-id instance and four other named instances
+  (retrieval-id, slot-id, fact-id, answer-handle). Locks the
+  per-benchmark feasibility-coding contract, the four outcome buckets
+  (B-1 strong-gap, B-2 weak-gap, B-3 artifact-blocked, B-4
+  synthetic-only fallback), the reproducibility contract, and the
+  field-exclusion table (BEAM conditionally promoted, MemGUI-Bench,
+  LoCoMo-Plus, 2026 survey explicitly out of scope)
+- added `docs/policy_facing_lookup_contract_proposition.md`: Proposition 1
+  (cluster-partition / lookup-contract gap) proved under any label-
+  renaming bijection satisfying both `ρ(g*) ≠ g*` and `g* ∉ image(ρ)`.
+  Lemmas 1 (retrieval-content / retrieval-id) and 2 (answer-text /
+  lookup-handle) by construction. Worked example references the existing
+  internal CQ synthetic counterexample at
+  `scripts/run_qr_canon_audit.py:178-207` verbatim
+- added four per-anchor feasibility memos:
+  `docs/qr_canon_longmemeval_feasibility.md` (answer-handle PFLC,
+  descriptive-only; wraps the existing 2026-05-17 memo verbatim),
+  `docs/qr_canon_mem0_locomo_feasibility.md` (dialog-evidence-id PFLC,
+  descriptive-only; LoCoMo's `evidence` field is the strongest gold-side
+  PFLC target in the anchor set, but Mem0 and standard baselines publish
+  aggregate scores only),
+  `docs/qr_canon_memoryagentbench_feasibility.md`
+  (conflict-resolution-id PFLC, descriptive-only; CR / FactConsolidation
+  is the strongest design-level analogue but releases no fact-id
+  annotation per question), and
+  `docs/qr_canon_membench_feasibility.md` (fact-id PFLC,
+  descriptive-only at the documented evidence floor; per-question schema
+  not exposed publicly)
+- added `scripts/build_qr_canon_field_diagnostic_metrics.py`,
+  `data/results/qr_canon_field_diagnostic_metrics.csv`, and
+  `data/results/qr_canon_field_diagnostic_metrics_manifest.json`: four
+  benchmark-targeted synthetic counterexample rows, one per anchor,
+  scoring PFLC = 0 by construction while the paired headline metric
+  scores 1 by construction. Manifest is byte-stable, pins the
+  byte-locked CQR alias function SHA
+  `8176c5a93ffbdbfd99d48f73836b954aa27aee4ab08de567ca47ec63d7896de0`,
+  and records workstream outcome bucket B-3
+- added `tests/test_qr_canon_field_diagnostic.py` with 17 tests:
+  Proposition 1 reproducibility (hand-computed B-cubed F1 on identical
+  partitions, no sklearn), per-benchmark synthetic counterexample
+  structure, CSV and manifest byte-stable reproduction, manifest
+  forbidden-field assertion, generator runs without gitignored or
+  external inputs, alias function SHA pin verified against the
+  preregistration doc frontmatter. All 19 existing
+  `tests/test_qr_canon_audit.py` tests stay green byte-stable. Total
+  36 tests passing
+- added `docs/qr_canon_field_diagnostic_results.md`: consolidated
+  Workstream A.6 results doc. Records the formal spine
+  (Proposition 1 + Lemmas 1, 2 + corollary), the four feasibility
+  decisions, the four synthetic counterexample rows, and the strict
+  evidence-mode separation (empirical / descriptively coded / synthetic
+  fixtures / formally argued)
+- extended `docs/benchmark_methodology_draft.md` §5 with a new
+  "PFLC Field-Level Diagnostic Generalization" subsection alongside the
+  existing QR-canon audit subsection. The CQ-internal QR-canon readout
+  is not modified
+- extended `docs/paper_outline.md` §1 Contributions with new
+  contribution 8 (PFLC class), refined contribution 7 (QR-canon =
+  canonical-id PFLC instance), updated §3 Related Work with per-anchor
+  PFLC instance assignments, added a §4 "PFLC Field-Level Diagnostic
+  Class" method subsection, added two new §5 Evidence Ledger rows (one
+  for the formal proposition + lemmas, one for the four feasibility
+  memos at B-3), and added a §8 "PFLC Field-Level Boundary" limitations
+  subsection
+- updated `docs/next_research_plan.md` with a 2026-05-18 status block
+  recording Workstream A.6 as landed at outcome B-3, plus a new
+  Suggested Order item 7. Updated `PROJECT_PLAN.md` Implemented list
+  and Immediate Next Tasks (new item 7 records the landing and names the
+  next licensed follow-up as empirical-replay scoring of any released
+  baseline that publishes per-question system-emitted identifier outputs)
+
+### Why it matters
+
+- the contribution shifts from "we audited ourselves and showed
+  clustering metrics miss the lookup contract" to "memory benchmarks
+  can report strong recall, retrieval, or clustering scores while
+  failing to expose the policy-facing lookup contract that
+  memory-governance systems actually need" — a field-level
+  methodological claim supported by a proved proposition, two
+  constructive lemmas, four per-anchor feasibility memos, and four
+  benchmark-targeted synthetic counterexamples
+- B-3 (artifact-blocked) is itself a publishable structural finding
+  about current memory-benchmark release contracts. None of LongMemEval,
+  Mem0/LoCoMo, MemoryAgentBench, or MemBench releases the per-question
+  system-emitted identifier artifacts needed for empirical PFLC scoring.
+  The workstream documents what released artifacts publish, not what
+  the benchmarks could expose with an additional annotation layer
+- the formal proposition's reproducibility test instantiates the
+  renaming construction by hand (gold cluster `{e1, e2}` labeled
+  `gold-X`, predicted cluster `{e1, e2}` labeled `pred-Y`, with
+  `ρ(gold-X) = pred-Y` satisfying both `ρ(g*) ≠ g*` and
+  `g* ∉ image(ρ)`), computes B-cubed F1 from scratch (no sklearn),
+  and asserts B-cubed F1 = 1.00 with set-membership PFLC = 0. The
+  methodological claim therefore lands by construction even for
+  reviewers who refuse to credit any specific benchmark's released
+  numbers
+- the paper outline now has nine numbered contributions, with PFLC as
+  contribution 8 (the field-level generalization) and QR-canon as
+  contribution 7 (the canonical-id instance). The contribution list
+  remains tight: every contribution is supported by committed
+  evidence in the repository
+
+### Open issues / next
+
+- the next licensed original-research move on this axis is empirical-
+  replay scoring of any released baseline that publishes per-question
+  system-emitted identifier outputs. The most plausible candidate is
+  Mem0/LoCoMo (LoCoMo's `evidence` field is a clean gold-side PFLC
+  target). Locating such a baseline output dump is not licensed by
+  this plan and would require a separate preregistered follow-up
+- BEAM remains in the field-exclusion table; its conditional promotion
+  rule (Mem0/LoCoMo = blocked) did not fire. Promotion would require
+  its own preregistered feasibility memo
+- a future preregistered fact-id annotation layer over MemoryAgentBench
+  CR / FactConsolidation, or LongMemEval's contradiction-edge cases,
+  would convert those memos from descriptive-only to empirical. Neither
+  is licensed here
+- the workstream did not modify the byte-locked CQR alias function,
+  did not unlock CQR Bucket D, did not amend Phase 4 Bucket B, and did
+  not run any policy against any external benchmark
+
 ## 2026-05-17 — QR-canon registered post-hoc audit lands
 
 ### What shipped
