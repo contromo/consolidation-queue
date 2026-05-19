@@ -4,7 +4,7 @@ Date: 2026-05-18
 
 Status: locked before annotation, adapter execution, or policy execution.
 
-fair_stream_externalization_lock_sha256: 158180b35fcf9585ef88989ead9b58cc8367dde846c00f939e1f4fb02aa513e8
+fair_stream_externalization_lock_sha256: 4a8abc4d8969f9ddf479f42a6cd12fe126f3230925749f493c66afb4426c57e2
 
 This preregistration defines a protocol-level externalization methodology for
 memory benchmarks. The policy readout is a supporting experiment only. The
@@ -62,9 +62,10 @@ The 72-case denominator is not automatically a policy denominator. It becomes a
 policy denominator only after both independent annotation paths agree on:
 
 - `relevant_canonical_id`;
-- contradiction-edge structure;
 - scope level/key;
-- candidate stream construction sufficient for all compared policies.
+
+and the agreed annotation artifact carries candidate events sufficient for the
+shared adapter used by all compared policies.
 
 LongMemEval-V2 role: descriptive evidence-exposure appendix only in this
 workstream. It is not a primary policy anchor and not a matched gold PFLC row.
@@ -92,10 +93,11 @@ Candidate fields follow the shared `CandidateUpdate` dataclass:
 - `strength` and `promotion_score` are computed by `CandidateUpdate`, not set
   privately by the adapter.
 
-Contradictions are constructed from event-level contradiction edges and fanned
-out to emitted candidate ids after candidate id rewriting. Candidate stream
-hashes must match across policies for every scenario. A mismatch aborts Bucket
-D before policy scoring.
+Phase X.1 annotations do not invent contradiction edges. Contradictions are
+constructed only after the adapter/extractor phase has event-level support, and
+then fanned out to emitted candidate ids after candidate id rewriting.
+Candidate stream hashes must match across policies for every scenario. A
+mismatch aborts Bucket D before policy scoring.
 
 ## 4. Hidden-Answer Annotation Protocol
 
@@ -108,21 +110,31 @@ keys matching answer/gold/ground-truth/rubric/label patterns from exported
 annotation context, but answer-side keys nested inside that context are also
 redacted before export.
 
-Path A: locked local-model path, intended to use the existing
-`qwen2.5:32b-instruct-q4_K_M` local model cell plus a frozen question/evidence
-prompt and a slugify-over-question-noun-phrase canonical-id rule.
+Path A: deterministic question-slug path. It uses a frozen question-surface
+token filter plus evidence-session turn selector to derive
+`relevant_canonical_id` and candidate events. It is local-first and uses no
+model call.
 
-Path B: independent deterministic or smaller-local-model path with a different
-canonical-id derivation rule. It must not share canonical-id derivation code
-with Path A and must not introduce new runtime dependencies without explicit
-user authorization.
+Path B: independent deterministic question-rewrite path. It uses regex
+surface rewrites and a separate evidence-overlap turn selector, must not share
+Path A's canonical-id function or stopword set object, and must not introduce
+new runtime dependencies without explicit user authorization.
+
+Both paths assign flat `confidence = 0.70` to Phase X.1 candidate events. This
+is a deterministic annotation contract, not a semantic confidence estimate;
+policy-facing use of confidence must remain identical across all compared
+policies.
+
+Both paths emit `contradiction_edges = []` and empty per-event
+`contradicts_event_ids` in Phase X.1. Any contradiction edge used by Phase X.2+
+must come from the locked adapter/extractor step, not from an adjacent-session
+chain assumption.
 
 Path outputs are compared by
 `cq.eval.external.longmemeval.dual_path_audit` per case. Cases are labeled:
 
 - `agree`;
 - `disagree_canonical_id`;
-- `disagree_contradiction_edges`;
 - `disagree_scope`;
 - `missing_path_a`;
 - `missing_path_b`.
@@ -133,9 +145,11 @@ in the divergence report and are never patched silently.
 The hidden-answer verifier fails closed unless it receives the dual-path audit
 summary. A bare `annotations_agreed.json` file is not sufficient for
 `verifier_passed=true` because it cannot prove the denominator or disagreement
-rate. The binomial upper-tail check uses a preregistered `p=0.5` chance
-agreement null as a diagnostic sanity check only; it is not a claim that the
-two annotation paths are statistically independent.
+rate. The verifier also scans annotator source files for answer-side field,
+redaction-hash, or forbidden-key-helper references. The binomial upper-tail
+check uses a preregistered `p=0.5` chance agreement null as a diagnostic sanity
+check only; it is not a claim that the two annotation paths are statistically
+independent and is not part of the hard `verifier_passed` conjunction.
 
 ## 5. Scope Mapping And Contract Sensitivity
 

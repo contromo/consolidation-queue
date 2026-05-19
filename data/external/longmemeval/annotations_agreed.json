@@ -20,9 +20,7 @@
           "canonical_id": "lme-new-postcards-added-collection-since-started-collecting-again",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm really excited to host this collector's gathering and share my passion with like-minded enthusiasts. Speaking of which, I just realized I've added 25 new postcards to my collection since I started collecting again. It's amazing how fast my collection has grown! By the way, do you have any recommendations for creating a simple, yet effective display for my postcard collection?",
           "scope_key": "longmemeval:user",
@@ -35,12 +33,7 @@
       ],
       "case_id": "01493427",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many new postcards have I added to my collection since I started collecting again?",
@@ -69,9 +62,7 @@
           "canonical_id": "lme-engineers-lead-just-started-new-role-as-senior-software-engineer",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "That's a great list! I think I'll go with the group hike option. Do you know if there are any nearby parks or nature reserves that are suitable for a 6-person group? And by the way, I've been enjoying my role as Senior Software Engineer for a while, especially the part where I now lead a team of five engineers - it's been a great experience so far, and I'm excited to see how they'll grow under my guidance.",
           "scope_key": "longmemeval:user",
@@ -84,12 +75,7 @@
       ],
       "case_id": "031748ae",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many engineers do I lead when I just started my new role as Senior Software Engineer? How many engineers do I lead now?",
@@ -118,9 +104,7 @@
           "canonical_id": "lme-projects-completed-since-starting-painting-classes",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking for some inspiration for my next painting project. I've been stuck on what to paint next and was wondering if you could suggest some ideas or themes. By the way, I just finished my 5th project since starting painting classes, and I'm feeling pretty accomplished!",
           "scope_key": "longmemeval:user",
@@ -133,12 +117,7 @@
       ],
       "case_id": "06db6396",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many projects have I completed since starting painting classes?",
@@ -167,9 +146,7 @@
           "canonical_id": "lme-initially-keep-old-sneakers",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm thinking of buying a new pair of sandals with better quality straps. Can you recommend some good brands or stores that offer durable sandals? By the way, I need to organize my closet this weekend, and I'm looking forward to get rid of some of my old sneakers in a shoe rack in it, they're currently taking up space.",
           "scope_key": "longmemeval:user",
@@ -182,12 +159,7 @@
       ],
       "case_id": "07741c44",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Where do I initially keep my old sneakers?",
@@ -216,9 +188,7 @@
           "canonical_id": "lme-keep-old-sneakers",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm thinking of buying a new pair of sandals with better quality straps. Can you recommend some good brands or stores that offer durable sandals? By the way, I need to organize my closet this weekend, and I'm looking forward to get rid of some of my old sneakers in a shoe rack in it, they're currently taking up space.",
           "scope_key": "longmemeval:user",
@@ -231,12 +201,7 @@
       ],
       "case_id": "07741c45",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Where do I currently keep my old sneakers?",
@@ -265,9 +230,7 @@
           "canonical_id": "lme-long-been-using-fitbit-charge",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I've already been working on establishing a consistent bedtime routine and creating a sleep-conducive environment, but I think I need to focus on limiting stimulating activities before bed. I've been watching TV shows before bed, and I think that might be affecting my sleep. By the way, speaking of tracking my health, I just realized I've been using my Fitbit Charge 3 for 9 months now - it's crazy how time flies!",
           "scope_key": "longmemeval:user",
@@ -280,12 +243,7 @@
       ],
       "case_id": "08e075c7",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How long have I been using my Fitbit Charge 3?",
@@ -314,9 +272,7 @@
           "canonical_id": "lme-new-kitchen-gadget-invest-before-getting-air-fryer",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm actually thinking of using the Air Fryer I got yesterday to make some crispy sweet potato fries to go with the meals. Do you have any tips on how to get the best results with it?",
           "scope_key": "longmemeval:user",
@@ -329,12 +285,7 @@
       ],
       "case_id": "0977f2af",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What new kitchen gadget did I invest in before getting the Air Fryer?",
@@ -363,9 +314,7 @@
           "canonical_id": "lme-autographed-baseballs-added-collection-first-three-months-collection",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking to get some information on upcoming sports memorabilia auctions in the city. Do you know of any notable ones happening in the next few weeks? By the way, I just got back from a weekend trip and had some time to organize my collection - I've added 20 autographed baseballs to my collection in the past few months, which is crazy!",
           "scope_key": "longmemeval:user",
@@ -378,12 +327,7 @@
       ],
       "case_id": "0ddfec37",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many autographed baseballs have I added to my collection in the first three months of collection?",
@@ -412,9 +356,7 @@
           "canonical_id": "lme-highest-score-ticket-ride",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "Building structures and trading resources is indeed a crucial part of the game. By the way, speaking of building and creating things, I just got my highest score in Ticket to Ride - 132 points! Anyway, back to Scythe... Do you want to know more about how to maximize your trade opportunities with other players?",
           "scope_key": "longmemeval:user",
@@ -427,12 +369,7 @@
       ],
       "case_id": "0e4e4c46",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What is my current highest score in Ticket to Ride?",
@@ -461,9 +398,7 @@
           "canonical_id": "lme-stars-need-reach-gold-level-starbucks-rewards-app",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm trying to reach the gold level on my Starbucks Rewards app, which I know requires a certain number of stars. Can you remind me how many stars I need to reach gold?",
           "scope_key": "longmemeval:user",
@@ -476,12 +411,7 @@
       ],
       "case_id": "0f05491a",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many stars do I need to reach the gold level on my Starbucks Rewards app?",
@@ -510,9 +440,7 @@
           "canonical_id": "lme-largemouth-bass-catch-alex-earlier-fishing-trip-lake-michigan-before-22-trip",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning to try out some of those deer calls during our next hunting trip. By the way, speaking of hunting, I've been watching some YouTube videos on deer hunting strategies and tactics, just like I did before our last fishing trip to Lake Michigan. Remember that trip when we caught 9 largemouth bass with Alex?",
           "scope_key": "longmemeval:user",
@@ -525,12 +453,7 @@
       ],
       "case_id": "10e09553",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many largemouth bass did I catch with Alex on the earlier fishing trip to Lake Michigan before the 7/22 trip?",
@@ -559,9 +482,7 @@
           "canonical_id": "lme-pages-short-history-nearly-everything-read-so-far",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm interested in learning more about renewable energy, can you recommend some online resources or documentaries that I can check out? By the way, I just finished reading about the discovery of DNA structure in \"A Short History of Nearly Everything\" - I'm now on page 220, and it's amazing how much I've learned so far!",
           "scope_key": "longmemeval:user",
@@ -574,12 +495,7 @@
       ],
       "case_id": "184da446",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many pages of 'A Short History of Nearly Everything' have I read so far?",
@@ -608,9 +524,7 @@
           "canonical_id": "lme-brand-bbq-sauce-obsessed",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm thinking of hosting another backyard BBQ soon and I want to try out some new recipes. Can you give me some tips on how to make smoked brisket? By the way, I've been loving my new Weber gas grill for quick weeknight dinners, and I'm currently obsessed with Kansas City Masterpiece BBQ sauce on my ribs.",
           "scope_key": "longmemeval:user",
@@ -623,12 +537,7 @@
       ],
       "case_id": "18bc8abd",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What brand of BBQ sauce am I currently obsessed with?",
@@ -657,9 +566,7 @@
           "canonical_id": "lme-instagram-followers",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm trying to increase my social media presence. Can you help me come up with some ideas for more engaging promotional content on Instagram? By the way, I just checked and I'm now at 600 followers, which is a nice milestone!",
           "scope_key": "longmemeval:user",
@@ -672,12 +579,7 @@
       ],
       "case_id": "1cea1afa",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many Instagram followers do I currently have?",
@@ -706,9 +608,7 @@
           "canonical_id": "lme-long-been-living-apartment-harajuku",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'll definitely check out Minato Mirai 21 and the Red Brick Warehouse. I've heard great things about the harbor views. By the way, I've been living in Harajuku for 3 months now, and I'm still discovering new hidden gems in the neighborhood.",
           "scope_key": "longmemeval:user",
@@ -721,12 +621,7 @@
       ],
       "case_id": "2133c1b5",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How long have I been living in my current apartment in Harajuku?",
@@ -755,9 +650,7 @@
           "canonical_id": "lme-get-guitar-serviced",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I think I made a mistake with the zip code. I'm actually in the city center, so I guess I can just search online for violin teachers or music schools in the city. And yeah, I remember the music shop on Main St where I got my guitar serviced, they're really good with guitar maintenance. Do you have any tips on how to prepare my guitar for servicing?",
           "scope_key": "longmemeval:user",
@@ -770,66 +663,12 @@
       ],
       "case_id": "22d2cb42",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Where did I get my guitar serviced?",
       "question_type": "knowledge-update",
       "relevant_canonical_id": "lme-get-guitar-serviced",
-      "scope_key": "longmemeval:user",
-      "scope_level": "user_global"
-    },
-    {
-      "candidate_events": [
-        {
-          "canonical_id": "lme-often-see-therapist-dr-smith",
-          "claim_type": "world_fact",
-          "confidence": 0.7,
-          "contradicts_event_ids": [],
-          "event_id": "obs_0",
-          "raw_claim": "I've been trying to prioritize self-care activities like yoga and meditation, and it's been helping with my anxiety levels. Do you think these activities can also help with sleep quality? And by the way, I have a therapy session with Dr. Smith coming up soon - it's every two weeks, so I'm looking forward to discussing my progress with her.",
-          "scope_key": "longmemeval:user",
-          "scope_level": "user_global",
-          "session_date": "2023/04/03 (Mon) 02:03",
-          "session_id": "answer_9282283d_1",
-          "session_index": 0,
-          "turn_index": 2
-        },
-        {
-          "canonical_id": "lme-often-see-therapist-dr-smith",
-          "claim_type": "world_fact",
-          "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
-          "event_id": "obs_1",
-          "raw_claim": "I see what you're doing here, but I think it's a bit too structured for me. I'd rather have some flexibility in my schedule. Can you help me come up with a more general plan to prioritize my tasks and set boundaries, rather than a strict schedule? And by the way, speaking of boundaries, I see Dr. Smith every week, and she's been helping me work on this stuff.",
-          "scope_key": "longmemeval:user",
-          "scope_level": "user_global",
-          "session_date": "2023/11/03 (Fri) 08:08",
-          "session_id": "answer_9282283d_2",
-          "session_index": 1,
-          "turn_index": 4
-        }
-      ],
-      "case_id": "2698e78f",
-      "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
-      "in_denominator": true,
-      "mechanism_code": "contradiction_edge",
-      "question": "How often do I see my therapist, Dr. Smith?",
-      "question_type": "knowledge-update",
-      "relevant_canonical_id": "lme-often-see-therapist-dr-smith",
       "scope_key": "longmemeval:user",
       "scope_level": "user_global"
     },
@@ -853,9 +692,7 @@
           "canonical_id": "lme-trips-taken-canon-eos-80d-camera",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning a trip to Zion National Park and want to capture some great landscape shots. Can you recommend any tips for shooting in bright sunlight and high contrast environments? By the way, I've had my Canon EOS 80D with me on five trips now, and it's been a beast!",
           "scope_key": "longmemeval:user",
@@ -868,12 +705,7 @@
       ],
       "case_id": "26bdc477",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many trips have I taken my Canon EOS 80D camera on?",
@@ -902,9 +734,7 @@
           "canonical_id": "lme-type-vehicle-model-working",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "Weathering is an art form in itself, and it can elevate your model to a whole new level of realism. Achieving a weathered look on your Ford F-150 pickup truck model requires some practice, patience, and the right techniques. Here are some tips to help you get started: **Understanding weathering** Weathering is the process of simulating the effects of wear and tear, environmental conditions, and aging on a model. It's essential to study reference images of real vehicles to understand the types of weathering effects you want to achieve. **Basic weathering techniques** 1. **Dust and dirt**: Use a small brush to apply a mixture of acrylic paint and thinner (or a weathering powder) to create a subtle, dusty appearance. Focus on areas that would naturally accumulate dirt, such as wheel wells, door handles, and the underside of the model. 2. **Mud and grime**: Use a thicker mixture of paint and thinner to create a more pronounced, muddy appearance. Apply this mixture to areas that would be exposed to mud, such as the wheels, tires, and lower body panels. 3. **Rust and corrosion**: Use a rust-colored paint or a rust-effect solution to simulate corrosion on metal surfaces. Apply this to areas that would be prone to rust, such as the undercarriage, suspension components, and exhaust system. 4. **Fading and sun bleaching**: Use a lighter shade of the base color to create a faded, sun-bleached appearance on surfaces exposed to direct sunlight. Apply this effect to areas such as the hood, roof, and trunk lid. 5. **Chipping and peeling**: Use a small brush to apply a lighter shade of paint to create a chipped or peeling effect on surfaces that would naturally wear off, such as the edges of body panels and trim. **Advanced weathering techniques** 1. **Washes**: Use a thinned mixture of paint and thinner to create a subtle, translucent wash effect. Apply this to recessed areas, such as panel lines, to create depth and shading. 2. **Drybrushing**: Use a almost-dry brush to apply a lighter shade of paint to raised surfaces, creating a textured, worn appearance. 3. **Salt weathering**: Apply a mixture of salt and water to the model, then use a hair dryer to dry the mixture. The salt will create a textured, rough appearance when brushed off. 4. **Oil stains and streaks**: Use a small brush to apply a dark, thinned mixture of paint to create oil stains and streaks on surfaces that would be exposed to oil, such as the engine and transmission areas. **Tips and tricks** 1. **Start with a clean model**: Make sure your model is free of dust and oils before applying weathering effects. 2. **Use reference images**: Study reference images of real vehicles to understand the types of weathering effects you want to achieve. 3. **Work in layers**: Apply weathering effects in layers, starting with subtle, general effects and building up to more pronounced, specific effects. 4. **Blend, blend, blend**: Use a soft brush to blend weathering effects, creating a natural, subtle appearance. 5. **Practice, practice, practice**: Weathering is an art form that requires practice to master. Don't be discouraged if your first attempts don't turn out as expected. By mastering these weathering techniques, you'll be able to achieve a realistically weathered look on your Ford F-150 pickup truck model. Remember to study reference images, practice patience, and work in layers to create a believable, worn appearance. Good luck, and have fun!",
           "scope_key": "longmemeval:user",
@@ -917,12 +747,7 @@
       ],
       "case_id": "3ba21379",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What type of vehicle model am I currently working on?",
@@ -951,9 +776,7 @@
           "canonical_id": "lme-type-camera-lens-purchase-most",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "Great to hear that you're getting some excellent results with your remote flash triggers! **Tripod weight and camera stability:** The weight of the tripod plays a significant role in camera stability, particularly when using heavy lenses or shooting in windy or unstable conditions. A heavier tripod provides more stability and resistance to movement, which is essential for: 1. **Reducing camera shake**: A heavier tripod is less likely to shift or vibrate, ensuring that your camera remains steady and reducing the risk of camera shake. 2. **Withstanding wind and external forces**: A heavier tripod can better resist wind, accidental knocks, and other external forces that might disturb your camera. 3. **Supporting heavy lenses**: If you plan to use large or heavy lenses, a heavier tripod is essential to maintain stability and prevent the lens from sagging or the tripod from toppling over. However, it's essential to strike a balance between weight and portability. A tripod that's too heavy might be cumbersome to carry, which could limit your ability to shoot in certain locations or situations. **Tripod head features to look for:** When choosing a tripod head, consider the following features to ensure smooth and precise camera control: 1. **Ballhead or panhead**: Ballheads offer more flexibility and ease of use, while panheads provide more precise control and are often preferred by landscape and architectural photographers. 2. **Quick-release plate**: A quick-release plate allows you to quickly attach and detach your camera from the tripod head, saving time and effort. 3. **Friction control**: Look for a tripod head with adjustable friction control, which enables you to customize the resistance to camera movement, ensuring smooth and precise adjustments. 4. **Pan and tilt locks**: Separate locks for pan and tilt movements provide added control and precision when composing your shot. 5. **Bubble level**: A built-in bubble level helps you ensure that your camera is perfectly level, which is crucial for architectural, landscape, and product photography. 6. **Load capacity**: Make sure the tripod head can support the weight of your camera and lens combination. 7. **Smoothness and drag**: A high-quality tripod head should have a smooth, consistent drag when adjusting the camera's position, allowing for precise control and minimizing camera shake. Some popular tripod head brands include: * Arca-Swiss * Really Right Stuff * Gitzo * Manfrotto * Kirk Enterprises When choosing a tripod head, consider your specific needs, budget, and the type of photography you plan to do. It's essential to balance features, weight, and cost to find the perfect tripod head for your setup.",
           "scope_key": "longmemeval:user",
@@ -966,12 +789,7 @@
       ],
       "case_id": "41698283",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What type of camera lens did I purchase most recently?",
@@ -1000,9 +818,7 @@
           "canonical_id": "lme-spare-screwdriver-opening-up-laptop",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I think I'll go with Backblaze, thanks for the info. By the way, I need to open up my laptop to clean the fans soon, do I have a spare screwdriver for that?",
           "scope_key": "longmemeval:user",
@@ -1015,12 +831,7 @@
       ],
       "case_id": "42ec0761",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Do I have a spare screwdriver for opening up my laptop?",
@@ -1049,9 +860,7 @@
           "canonical_id": "lme-emma-recipes-tried-out",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm actually thinking of visiting Europe, maybe Spain or Italy. Do you have any specific tips for those countries? Also, I've been trying out some new recipes lately, and I was wondering if you have any recommendations for vegan restaurants in those areas? By the way, I've tried out 3 of Emma's recipes so far, and they're all amazing!",
           "scope_key": "longmemeval:user",
@@ -1064,12 +873,7 @@
       ],
       "case_id": "45dc21b6",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many of Emma's recipes have I tried out?",
@@ -1098,9 +902,7 @@
           "canonical_id": "lme-tops-bought-so-far",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning to go to the mall this weekend and was wondering if there are any sales or promotions going on at H&M or Sephora that I should know about. By the way, I've already got five tops from H&M so far, and I'm thinking of getting a few more.",
           "scope_key": "longmemeval:user",
@@ -1113,12 +915,7 @@
       ],
       "case_id": "4b24c848",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many tops have I bought from H&M so far?",
@@ -1147,9 +944,7 @@
           "canonical_id": "lme-titles-watch-list",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'll definitely check some of those out. I've been meaning to watch \"Victoria\" anyway. By the way, do you think you could suggest some historical dramas that are movies instead of series? I've got a lot of titles on my to-watch list, currently 25, and I'm always looking to add more.",
           "scope_key": "longmemeval:user",
@@ -1162,12 +957,7 @@
       ],
       "case_id": "4d6b87c8",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many titles are currently on my to-watch list?",
@@ -1196,9 +986,7 @@
           "canonical_id": "lme-previous-frequent-flyer-status-united-airlines-before-got-status",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm flying from DC, and I'm flexible with my travel dates. I'm looking for Economy tickets and my budget is around $400. Oh, and I do have a United Airlines MileagePlus account - I just reached Premier Gold status.",
           "scope_key": "longmemeval:user",
@@ -1211,12 +999,7 @@
       ],
       "case_id": "50635ada",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What was my previous frequent flyer status on United Airlines before I got the current status?",
@@ -1245,9 +1028,7 @@
           "canonical_id": "lme-crash-course-videos-watched-past-few-weeks",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm trying to learn more about natural language processing, can you recommend some online resources or courses that cover this topic? By the way, I've been on a learning streak lately, having watched 15 Crash Course videos in the past few weeks.",
           "scope_key": "longmemeval:user",
@@ -1260,12 +1041,7 @@
       ],
       "case_id": "5831f84d",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many Crash Course videos have I watched in the past few weeks?",
@@ -1294,9 +1070,7 @@
           "canonical_id": "lme-time-usually-go-gym",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm pretty flexible, but I do have a few commitments already. I usually go to the gym on Mondays, Wednesdays, and Fridays, so I'd prefer to avoid scheduling the meeting during those times. How about we focus on Tuesday or Thursday?",
           "scope_key": "longmemeval:user",
@@ -1309,12 +1083,7 @@
       ],
       "case_id": "59524333",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What time do I usually go to the gym?",
@@ -1343,9 +1112,7 @@
           "canonical_id": "lme-company-rachel-old-colleague-previous-company-working-at",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking for some advice on marketing strategies for my startup. I recently met Tom, a marketing expert, and he offered to provide feedback on my marketing strategy. Do you know any other resources or experts in the field that could help me? By the way, speaking of networking, I was just thinking about catching up with Rachel, an old colleague from my previous company, who's currently at TechCorp.",
           "scope_key": "longmemeval:user",
@@ -1358,12 +1125,7 @@
       ],
       "case_id": "5a4f22c0",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What company is Rachel, an old colleague from my previous company, currently working at?",
@@ -1392,9 +1154,7 @@
           "canonical_id": "lme-times-met-up-alex-germany",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning a trip to Germany soon and was wondering if you could recommend some indie rock music venues in Berlin. By the way, speaking of Germany, I've got a friend Alex from there who I met at a music festival, and we've met up twice already - he's really cool.",
           "scope_key": "longmemeval:user",
@@ -1407,12 +1167,7 @@
       ],
       "case_id": "5c40ec5b",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many times have I met up with Alex from Germany?",
@@ -1441,9 +1196,7 @@
           "canonical_id": "lme-times-tried-making-negroni-at-home-since-friend-emma-showed-make-it",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking for some inspiration for a new cocktail to serve at my next dinner party. Do you have any unique recipes that incorporate lavender or grapefruit? By the way, I've been perfecting my Negroni game - I've tried making it at home 10 times now since my friend Emma showed me how to make it.",
           "scope_key": "longmemeval:user",
@@ -1456,12 +1209,7 @@
       ],
       "case_id": "603deb26",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many times have I tried making a Negroni at home since my friend Emma showed me how to make it?",
@@ -1490,9 +1238,7 @@
           "canonical_id": "lme-coffee-water-ratio-french-press-switch-more-water-per-tablespoon-coffee-or",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm thinking of trying out a new tea blend this weekend. Do you have any recommendations for a relaxing tea that's similar to chamomile? By the way, I'm planning to brew a fresh pot of coffee in the morning, and I'm feeling excited to use my new beans - I've got my French press ratio down to a science: 1 tablespoon of coffee for every 5 ounces of water.",
           "scope_key": "longmemeval:user",
@@ -1505,12 +1251,7 @@
       ],
       "case_id": "6071bd76",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "For the coffee-to-water ratio in my French press, did I switch to more water per tablespoon of coffee, or less?",
@@ -1539,9 +1280,7 @@
           "canonical_id": "lme-times-worn-new-black-converse-chuck-taylor-all-star-sneakers",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I need help finding a good cobbler to fix my brown leather boots. Do you have any recommendations? Also, I was thinking of getting a shoe cleaning kit to make cleaning my shoes easier, do you have any suggestions? By the way, I just wore my new black Converse to run some errands yesterday, so that's six times now that I've worn them.",
           "scope_key": "longmemeval:user",
@@ -1554,12 +1293,7 @@
       ],
       "case_id": "618f13b2",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many times have I worn my new black Converse Chuck Taylor All Star sneakers?",
@@ -1588,9 +1322,7 @@
           "canonical_id": "lme-pre-1920-american-coins-collection",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking to learn more about error coins, specifically ones with misprinted dates. Can you tell me about some notable examples, and how I can identify them? By the way, I just added a new coin to my collection of pre-1920 American coins - a 1915-S Barber quarter.",
           "scope_key": "longmemeval:user",
@@ -1603,12 +1335,7 @@
       ],
       "case_id": "69fee5aa",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many pre-1920 American coins do I have in my collection?",
@@ -1637,9 +1364,7 @@
           "canonical_id": "lme-personal-best-time-charity-5k-run",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm training for another charity 5K run coming up and I was wondering if you could give me some tips on how to improve my endurance. By the way, I'm hoping to beat my personal best time of 25:50 this time around.",
           "scope_key": "longmemeval:user",
@@ -1652,12 +1377,7 @@
       ],
       "case_id": "6a1eabeb",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What was my personal best time in the charity 5K run?",
@@ -1686,9 +1406,7 @@
           "canonical_id": "lme-videos-corey-schafer-python-programming-series-completed-so-far",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I've completed 30 videos of Corey Schafer's Python series, and I'm excited to apply my Python skills to NLP tasks. I'm thinking of starting with a simple project like sentiment analysis using IMDB or Amazon reviews. Do you think it's a good idea to explore other NLP techniques, like named entity recognition or topic modeling, once I have a good grasp of sentiment analysis?",
           "scope_key": "longmemeval:user",
@@ -1701,12 +1419,7 @@
       ],
       "case_id": "6a27ffc2",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many videos of Corey Schafer's Python programming series have I completed so far?",
@@ -1735,9 +1448,7 @@
           "canonical_id": "lme-korean-restaurants-tried-city",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I think I'll go with kimchi and bokkeumbap. By the way, have you tried any good Korean restaurants in my city lately? I've tried four different ones so far, and I'm always looking for new recommendations.",
           "scope_key": "longmemeval:user",
@@ -1750,12 +1461,7 @@
       ],
       "case_id": "6aeb4375",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many Korean restaurants have I tried in my city?",
@@ -1784,9 +1490,7 @@
           "canonical_id": "lme-hours-spent-abstract-ocean-sculpture",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I've already spent 10-12 hours on my abstract ocean sculpture, and I'm excited to explore new techniques and materials for my next piece. I think I'll try incorporating some found ocean objects, like sea glass or beach stones, into my next sculpture. Thanks for the tips and ideas!",
           "scope_key": "longmemeval:user",
@@ -1799,12 +1503,7 @@
       ],
       "case_id": "71315a70",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many hours have I spent on my abstract ocean sculpture?",
@@ -1833,9 +1532,7 @@
           "canonical_id": "lme-episodes-science-series-completed-crash-course",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I think I'll start with SpanishDict and then move on to Coursera's Spanish for Beginners course. By the way, I've been watching Crash Course's Science series, and I just completed 50 episodes - it's been really helpful in understanding the basics of science.",
           "scope_key": "longmemeval:user",
@@ -1848,12 +1545,7 @@
       ],
       "case_id": "72e3ee87",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many episodes of the Science series have I completed on Crash Course?",
@@ -1882,9 +1574,7 @@
           "canonical_id": "lme-free-night-stays-can-redeem-at-any-hilton-property-accumulated-points",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning a trip to Europe in November and considering hotels in Paris with an Eiffel Tower view. Can you help me find some options within my budget? By the way, I've accumulated enough points for two free night's stays at any Hilton property, so I might use that for a separate trip to Las Vegas.",
           "scope_key": "longmemeval:user",
@@ -1897,12 +1587,7 @@
       ],
       "case_id": "7401057b",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many free night's stays can I redeem at any Hilton property with my accumulated points?",
@@ -1931,9 +1616,7 @@
           "canonical_id": "lme-long-been-sticking-daily-tidying-routine",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning to clean out the garage this weekend, but I need some advice on how to organize all the storage bins and boxes. Do you have any tips? By the way, I've been sticking to my daily tidying routine for 4 weeks now, and it's amazing how much of a difference it's made in my apartment.",
           "scope_key": "longmemeval:user",
@@ -1946,12 +1629,7 @@
       ],
       "case_id": "7a87bd0c",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How long have I been sticking to my daily tidying routine?",
@@ -1980,9 +1658,7 @@
           "canonical_id": "lme-much-earn-at-downtown-farmers-market-most-visit",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm thinking of setting up a loyalty program to reward my repeat customers. Do you have any suggestions on how to implement it? By the way, speaking of recent sales, I earned $420 at the Downtown Farmers Market on my most recent visit.",
           "scope_key": "longmemeval:user",
@@ -1995,12 +1671,7 @@
       ],
       "case_id": "7e974930",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How much did I earn at the Downtown Farmers Market on my most recent visit?",
@@ -2029,9 +1700,7 @@
           "canonical_id": "lme-rachel-move-her-relocation",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "Miami Beach sounds fun, but I've been there before. I'm thinking of somewhere more relaxed. My friend Rachel actually just moved back to the suburbs again, so I was thinking of somewhere not too far from a major city. Any suggestions?",
           "scope_key": "longmemeval:user",
@@ -2044,12 +1713,7 @@
       ],
       "case_id": "830ce83f",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Where did Rachel move to after her recent relocation?",
@@ -2078,9 +1742,7 @@
           "canonical_id": "lme-amount-pre-approved-got-mortgage-wells-fargo",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning to move into my new home soon and I need to set up cable and TV services. Can you recommend some providers in my area and their prices? By the way, I'm really looking forward to finally owning a home, it's been a long process, but it'll be worth it to have a backyard like the one I'll have - remember when I got pre-approved for $400,000 from Wells Fargo?",
           "scope_key": "longmemeval:user",
@@ -2093,12 +1755,7 @@
       ],
       "case_id": "852ce960",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What was the amount I was pre-approved for when I got my mortgage from Wells Fargo?",
@@ -2127,9 +1784,7 @@
           "canonical_id": "lme-bikes-own",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm driving from San Francisco to New York City, and I have about 10 days for the trip. I'd love to cycle for at least 3-4 days, and I prefer routes with low traffic and scenic views. I'm comfortable with longer distances, but I'd also like to stop at some bike shops along the way to check out local cycling scenes. By the way, I'll have my road bike, and I'm planning to bring all my bikes,l, so I'll need to find accommodations with bike storage.",
           "scope_key": "longmemeval:user",
@@ -2142,12 +1797,7 @@
       ],
       "case_id": "89941a93",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many bikes do I currently own?",
@@ -2176,9 +1826,7 @@
           "canonical_id": "lme-before-purchased-gravel-bike-other-bikes-addition-mountain-bike-commuter-bike",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "That sounds like an amazing itinerary! I'm really excited about the scenic routes and bike-friendly stops. Since I'll have four bikes with me, I'll make sure to book the accommodations with bike storage in advance to ensure they can accommodate all my bikes. By the way, speaking of bikes, I just got a new one recently, so I'll actually have four bikes with me on this trip - my road bike, mountain bike, commuter bike, and a new hybrid bike I just purchased.",
           "scope_key": "longmemeval:user",
@@ -2191,12 +1839,7 @@
       ],
       "case_id": "89941a94",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Before I purchased the gravel bike, do I have other bikes in addition to my mountain bike and my commuter bike?",
@@ -2225,9 +1868,7 @@
           "canonical_id": "lme-issues-national-geographic-finished-reading",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "That's really helpful, thanks for the suggestions! I've actually been reading a lot about the Amazon rainforest lately, especially in National Geographic - I've finished five issues so far and they've all had great articles on the region. Do you have any recommendations for documentaries or films about the Amazon that I can watch to supplement my reading?",
           "scope_key": "longmemeval:user",
@@ -2240,12 +1881,7 @@
       ],
       "case_id": "8fb83627",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many issues of National Geographic have I finished reading?",
@@ -2274,9 +1910,7 @@
           "canonical_id": "lme-often-attend-yoga-classes-help-anxiety",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I've got a bunch of projects going on, including a marketing campaign, a report due next Friday, and some website updates. I'd say the marketing campaign is the priority, but the report is time-sensitive. I think each task will take around 2-3 days to complete. As for work hours, I'm available from 9am-5pm, but I try to take a lunch break from 12-1pm. I've also got a meeting on Wednesday from 2-3pm. Oh, and I've noticed that I'm more focused on days when I attend yoga classes, which is three times a week - it really helps me clear my head.",
           "scope_key": "longmemeval:user",
@@ -2289,12 +1923,7 @@
       ],
       "case_id": "945e3d21",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How often do I attend yoga classes to help with my anxiety?",
@@ -2323,9 +1952,7 @@
           "canonical_id": "lme-previous-goal-apex-legends-level-before-updated-goal",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm actually more interested in playing Apex Legends with my friends this weekend. Do you think it's a good idea to focus on ranking up to level 150, or should we just play for fun and not worry too much about leveling up?",
           "scope_key": "longmemeval:user",
@@ -2338,12 +1965,7 @@
       ],
       "case_id": "9bbe84a2",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What was my previous goal for my Apex Legends level before I updated my goal?",
@@ -2372,9 +1994,7 @@
           "canonical_id": "lme-go-most-family-trip",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning a trip to Europe and I was wondering if you could give me some tips on how to plan a family-friendly itinerary.",
           "scope_key": "longmemeval:user",
@@ -2387,12 +2007,7 @@
       ],
       "case_id": "9ea5eabc",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Where did I go on my most recent family trip?",
@@ -2421,9 +2036,7 @@
           "canonical_id": "lme-short-stories-written-since-started-writing-regularly",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm thinking of continuing to experiment with non-linear narrative structures in my writing. Can you recommend some books or authors that are known for using this style effectively? By the way, I've been writing regularly for three months now, and it's been amazing - I've even managed to complete 7 short stories since I started.",
           "scope_key": "longmemeval:user",
@@ -2436,12 +2049,7 @@
       ],
       "case_id": "a1eacc2a",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many short stories have I written since I started writing regularly?",
@@ -2470,9 +2078,7 @@
           "canonical_id": "lme-followers-instagram-now",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking to create a new Instagram post about a recent industry event I attended. Can you help me come up with a catchy caption that will encourage engagement, considering my audience is mostly from the US, UK, and Australia? By the way, I've been meaning to check my current follower count - I think I'm close to 1300 now.",
           "scope_key": "longmemeval:user",
@@ -2485,12 +2091,7 @@
       ],
       "case_id": "a2f3aa27",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many followers do I have on Instagram now?",
@@ -2519,9 +2120,7 @@
           "canonical_id": "lme-different-species-birds-seen-local-park",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning a picnic in my local park this weekend and I'm wondering if you can suggest some bird-friendly food that I can bring to attract some of the birds I've been seeing lately.",
           "scope_key": "longmemeval:user",
@@ -2534,12 +2133,7 @@
       ],
       "case_id": "affe2881",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many different species of birds have I seen in my local park?",
@@ -2568,9 +2162,7 @@
           "canonical_id": "lme-finish-reading-nightingale-by-kristin-hannah",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking for some book recommendations. I've been into historical fiction lately, and I just finished reading \"The Seven Husbands of Evelyn Hugo\". I also recently finished \"The Nightingale\" by Kristin Hannah, which was amazing, by the way. Do you have any suggestions for something similar?",
           "scope_key": "longmemeval:user",
@@ -2583,12 +2175,7 @@
       ],
       "case_id": "b01defab",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Did I finish reading 'The Nightingale' by Kristin Hannah?",
@@ -2617,9 +2204,7 @@
           "canonical_id": "lme-mcu-films-watch-last-months",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning a movie marathon with my family over the upcoming long weekend and I want to include some classic movies from my childhood. Can you give me some suggestions on what to watch? By the way, I've been on a roll with movies lately - I've watched 12 films in the last 3 months, including 5 MCU films, which is a lot for me!",
           "scope_key": "longmemeval:user",
@@ -2632,12 +2217,7 @@
       ],
       "case_id": "b6019101",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many MCU films did I watch in the last 3 months?",
@@ -2666,9 +2246,7 @@
           "canonical_id": "lme-women-team-led-by-former-manager-rachel",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking for some information on companies that are doing a good job of promoting gender diversity in the workplace. Do you have any examples or resources you can share? By the way, it's interesting to think about this in the context of my own experiences - for instance, my former manager Rachel's team is a great example of a diverse team, with 6 women out of 10 people.",
           "scope_key": "longmemeval:user",
@@ -2681,12 +2259,7 @@
       ],
       "case_id": "ba61f0b9",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many women are on the team led by my former manager Rachel?",
@@ -2715,9 +2288,7 @@
           "canonical_id": "lme-go-gym-more-frequently-than-previously",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm trying to plan out my week ahead. Can you suggest some healthy dinner recipes I can meal prep on Sunday? By the way, I'm thinking of rewarding myself with a post-workout smoothie on Saturday, since I've been consistent with my gym routine - four times a week, actually.",
           "scope_key": "longmemeval:user",
@@ -2730,12 +2301,7 @@
       ],
       "case_id": "c4ea545c",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Do I go to the gym more frequently than I did previously?",
@@ -2764,9 +2330,7 @@
           "canonical_id": "lme-mostly-increase-or-decrease-limit-number-cups-coffee-morning",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm excited to try out the French press method with my darker roast. Speaking of my morning coffee, I have increased the limit to two cups, and I'm thinking of experimenting with different sweeteners, like stevia or honey. Do you have any recommendations for sweeteners that dissolve well in coffee?",
           "scope_key": "longmemeval:user",
@@ -2779,12 +2343,7 @@
       ],
       "case_id": "c6853660",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Did I mostly recently increase or decrease the limit on the number of cups of coffee in the morning?",
@@ -2813,9 +2372,7 @@
           "canonical_id": "lme-record-recreational-volleyball-league",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "Hey, I'm thinking of signing up for a triathlon in the fall, can you give me some tips on how to train for it? By the way, I'm feeling pretty confident about my athletic abilities lately, our volleyball team, the Net Ninjas, is doing well with a 5-2 record.",
           "scope_key": "longmemeval:user",
@@ -2828,12 +2385,7 @@
       ],
       "case_id": "c7dc5443",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What is my current record in the recreational volleyball league?",
@@ -2862,9 +2414,7 @@
           "canonical_id": "lme-much-time-dedicate-coding-exercises-each-day",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "That's great to hear that you're committed to improving your coding skills! Two hours a day is a good amount of time to dedicate to coding exercises, and with consistent effort, you'll definitely see progress. For learning data structures and algorithms, here are some top-notch resources that can help you: **Online Courses:** 1. **Coursera - Algorithms Specialization** by University of California San Diego: This is a comprehensive course that covers algorithms and data structures in-depth. 2. **edX - Data Structures and Algorithms** by Microsoft: This course covers the basics of data structures and algorithms, with a focus on problem-solving. 3. **Udemy - Data Structures and Algorithms in Python**: This course uses Python to teach data structures and algorithms, with a focus on practical implementation. **Practice Platforms:** 1. **LeetCode**: This is one of the most popular platforms for practicing algorithms and data structures. It has a large collection of problems, and you can track your progress. 2. **HackerRank**: Similar to LeetCode, HackerRank offers a wide range of problems in algorithms, data structures, and other areas of computer science. 3. **CodeForces**: This platform offers a variety of problems, including algorithmic and data structure challenges. **Books:** 1. **\"Introduction to Algorithms\" by Thomas H. Cormen**: This is a classic textbook that covers algorithms and data structures in-depth. 2. **\"Data Structures and Algorithms in Python\" by Michael T. Goodrich**: This book is a great resource for learning data structures and algorithms in Python. 3. **\"Cracking the Coding Interview\" by Gayle Laakmann McDowell**: While not exclusively focused on data structures and algorithms, this book provides excellent practice problems and insights into the interview process. **YouTube Channels:** 1. **Neso Academy**: Offers video explanations and solutions to LeetCode problems. 2. **freeCodeCamp**: Covers a range of topics, including data structures and algorithms. 3. **MIT OpenCourseWare**: Offers video lectures on algorithms and data structures from MIT courses. **Additional Tips:** 1. **Practice consistently**: Try to solve at least one problem per day, and review the concepts regularly. 2. **Start with the basics**: Make sure you have a solid understanding of data structures like arrays, linked lists, stacks, and queues before moving on to more advanced topics. 3. **Analyze your code**: Take the time to review your code, optimize it, and think about how you can improve it. 4. **Join a community**: Participate in online forums, like Reddit's r/learnprogramming, to connect with other programmers and get feedback on your progress. Remember, learning data structures and algorithms takes time and practice. Stay motivated, and you'll see improvement over time. Good luck!",
           "scope_key": "longmemeval:user",
@@ -2877,12 +2427,7 @@
       ],
       "case_id": "cc5ded98",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How much time do I dedicate to coding exercises each day?",
@@ -2911,9 +2456,7 @@
           "canonical_id": "lme-day-week-take-cocktail-making-class",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking for some inspiration for a new cocktail recipe. Do you have any ideas for a refreshing summer drink that incorporates tequila? By the way, I have a cocktail-making class on Fridays, so maybe something I can experiment with then.",
           "scope_key": "longmemeval:user",
@@ -2926,12 +2469,7 @@
       ],
       "case_id": "ce6d2d27",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What day of the week do I take a cocktail-making class?",
@@ -2960,9 +2498,7 @@
           "canonical_id": "lme-much-weight-lost-since-started-going-gym-consistently",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "That's a lot of options! I'll check out a few of those playlists, thanks. By the way, speaking of my cardio days, I've been doing great and I just realized I've lost 10 pounds since I started going consistently to the gym 3 months ago. Do you have any tips on how to keep my energy levels up during my workouts?",
           "scope_key": "longmemeval:user",
@@ -2975,12 +2511,7 @@
       ],
       "case_id": "cf22b7bf",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How much weight have I lost since I started going to the gym consistently?",
@@ -3009,9 +2540,7 @@
           "canonical_id": "lme-mom-using-same-grocery-list-method-as",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "By the way, I was just thinking, my mom is actually using the same grocery list app as me now, so we can easily share lists and keep track of what we need. Anyway, thanks for the fajita tips, I think I'm all set for tonight's dinner!",
           "scope_key": "longmemeval:user",
@@ -3024,12 +2553,7 @@
       ],
       "case_id": "d7c942c3",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Is my mom using the same grocery list method as me?",
@@ -3058,9 +2582,7 @@
           "canonical_id": "lme-time-wake-up-saturday-mornings",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'll check the forecast later, thanks. Do you have any jogging route suggestions around my neighborhood? Also, what time do you think I should aim to start my jog, considering I like to wake up at 7:30 am on Saturdays and fit in a cup of coffee beforehand?",
           "scope_key": "longmemeval:user",
@@ -3073,12 +2595,7 @@
       ],
       "case_id": "dad224aa",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What time do I wake up on Saturday mornings?",
@@ -3107,9 +2624,7 @@
           "canonical_id": "lme-long-parents-been-staying-us",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning to apply for a green card soon and I'm not sure what documents I need to prepare. Can you guide me through the process? By the way, my parents have been a huge help in preparing all the paperwork, they've been staying with me for nine months now.",
           "scope_key": "longmemeval:user",
@@ -3122,12 +2637,7 @@
       ],
       "case_id": "db467c8c",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How long have my parents been staying with me in the US?",
@@ -3156,9 +2666,7 @@
           "canonical_id": "lme-day-week-meet-previous-language-exchange-tutor-juan",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm trying to plan a trip to Colombia and was wondering if you could help me with some travel tips and phrases in Spanish? By the way, I have a language exchange session with my tutor Maria this week, so I want to make sure I'm prepared.",
           "scope_key": "longmemeval:user",
@@ -3171,12 +2679,7 @@
       ],
       "case_id": "dfde3500",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What day of the week did I meet with my previous language exchange tutor Juan?",
@@ -3205,9 +2708,7 @@
           "canonical_id": "lme-painting-ethereal-dreams-by-emma-taylor-hanging",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm actually planning to work on a piece that incorporates a figure in a dreamlike environment. I've been inspired by the \"Moonlit Ocean\" print in my bedroom, and I think I can use some of the techniques you mentioned to create a sense of atmosphere and mood. By the way, speaking of my bedroom, I recently moved the \"Ethereal Dreams\" painting by Emma Taylor above my bed, and it adds a nice touch to the space.",
           "scope_key": "longmemeval:user",
@@ -3220,12 +2721,7 @@
       ],
       "case_id": "e493bb7c",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Where is the painting 'Ethereal Dreams' by Emma Taylor currently hanging?",
@@ -3254,9 +2750,7 @@
           "canonical_id": "lme-long-cat-luna",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I've had my cat, Luna, for about 9 months now, and I've been trying to keep her active and engaged. I've set up her cat tree, and she loves climbing up and down it. I've also been rotating her toys every week to keep things fresh for her. Do you think the interactive toys you recommended would be a good addition to her playtime routine?",
           "scope_key": "longmemeval:user",
@@ -3269,12 +2763,7 @@
       ],
       "case_id": "e61a7584",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How long have I had my cat, Luna?",
@@ -3303,9 +2792,7 @@
           "canonical_id": "lme-previous-personal-best-time-charity-5k-run",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm in the city of Oakdale. We'd like to avoid downtown and the highway. We're familiar with the bike trail along the river, so if possible, it'd be great to incorporate that into the route. The terrain is generally flat with some small hills. Oh, and by the way, I just got back from a charity 5K run last weekend and was happy to beat my personal best time - shaved off about a minute and a half from my previous record!",
           "scope_key": "longmemeval:user",
@@ -3318,12 +2805,7 @@
       ],
       "case_id": "e66b632c",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "What was my previous personal best time for the charity 5K run?",
@@ -3352,9 +2834,7 @@
           "canonical_id": "lme-planning-stay-birthday-trip-hawaii",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm planning a birthday trip to Hawaii in October and I was wondering if you could recommend some good snorkeling spots on the island?",
           "scope_key": "longmemeval:user",
@@ -3367,12 +2847,7 @@
       ],
       "case_id": "eace081b",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "Where am I planning to stay for my birthday trip to Hawaii?",
@@ -3401,9 +2876,7 @@
           "canonical_id": "lme-dozen-eggs-we-stocked-up-our-refrigerator",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I think I'll try the spinach and feta variation, sounds delicious. By the way, I was thinking of using some of our fresh eggs from the coop - we've got 20 dozen stocked up in the fridge right now. Do you have any tips on how to store eggs properly to keep them fresh for a longer period?",
           "scope_key": "longmemeval:user",
@@ -3416,12 +2889,7 @@
       ],
       "case_id": "ed4ddc30",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many dozen eggs do we currently have stocked up in our refrigerator?",
@@ -3450,9 +2918,7 @@
           "canonical_id": "lme-often-play-tennis-friends-at-local-park-previously",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I'm looking to plan out my weekend. Can you suggest some jogging routes near my house? Oh, and by the way, I'm planning to play tennis with my friends at the local park this Sunday, like we do every other week.",
           "scope_key": "longmemeval:user",
@@ -3465,12 +2931,7 @@
       ],
       "case_id": "f685340e",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How often do I play tennis with my friends at the local park previously? How often do I play now?",
@@ -3499,9 +2960,7 @@
           "canonical_id": "lme-sessions-bereavement-support-group-attend",
           "claim_type": "world_fact",
           "confidence": 0.7,
-          "contradicts_event_ids": [
-            "obs_0"
-          ],
+          "contradicts_event_ids": [],
           "event_id": "obs_1",
           "raw_claim": "I think I'll start with \"Wild: From Lost to Found on the Pacific Crest Trail\" by Cheryl Strayed. I've heard great things about it and I've always been interested in memoirs. I'm also curious about the self-help books you mentioned, especially \"Daring Greatly\" by Bren\u00e9 Brown. I've heard her TED talks and found them really inspiring. I'll probably check out her book as well. By the way, I was thinking about the bereavement support group I attended last year. I remember attending five sessions and finding it really helpful in processing my emotions.",
           "scope_key": "longmemeval:user",
@@ -3514,12 +2973,7 @@
       ],
       "case_id": "f9e8c073",
       "claim_type": "world_fact",
-      "contradiction_edges": [
-        [
-          "obs_0",
-          "obs_1"
-        ]
-      ],
+      "contradiction_edges": [],
       "in_denominator": true,
       "mechanism_code": "contradiction_edge",
       "question": "How many sessions of the bereavement support group did I attend?",
@@ -3530,15 +2984,16 @@
     }
   ],
   "summary": {
-    "agreement_count": 72,
-    "agreement_rate": 1.0,
+    "agreement_count": 71,
+    "agreement_rate": 0.9861111111111112,
     "bucket_c_dual_path_divergence_triggered": false,
     "case_count": 72,
     "comparable_in_denominator_count": 72,
-    "disagreement_count": 0,
-    "divergence_rate": 0.0,
+    "disagreement_count": 1,
+    "divergence_rate": 0.013888888888888888,
     "status_counts": {
-      "agree": 72
+      "agree": 71,
+      "disagree_canonical_id": 1
     }
   }
 }

@@ -13,52 +13,17 @@ from cq.eval.external.longmemeval.redacted_loader import (
 )
 
 
-METHOD_ID = "path_b_keyword_window_v1"
+METHOD_ID = "path_b_question_rewrite_v2"
 DENOMINATOR_LABEL = "contradiction_edge"
 SCOPE_LEVEL = "user_global"
 SCOPE_KEY = "longmemeval:user"
 CLAIM_TYPE = "world_fact"
 
-_IGNORE = {
-    "a",
-    "about",
-    "after",
-    "am",
-    "an",
-    "and",
-    "are",
-    "current",
-    "currently",
-    "did",
-    "do",
-    "does",
-    "for",
-    "from",
-    "had",
-    "have",
-    "how",
-    "i",
-    "in",
-    "is",
-    "latest",
-    "many",
-    "me",
-    "my",
-    "of",
-    "on",
-    "recent",
-    "recently",
-    "the",
-    "to",
-    "was",
-    "were",
-    "what",
-    "when",
-    "where",
-    "which",
-    "who",
-    "with",
-}
+_CANONICAL_REMOVAL_PATTERNS = (
+    r"\b(?:a|about|after|am|an|and|are|current|currently|did|do|does)\b",
+    r"\b(?:for|from|had|have|how|i|in|is|latest|many|me|my|of|on)\b",
+    r"\b(?:recent|recently|the|to|was|were|what|when|where|which|who|with)\b",
+)
 
 
 def annotate_cases(
@@ -116,27 +81,18 @@ def _annotation_for_case(case: RedactedLongMemEvalCase) -> dict[str, Any]:
         "scope_level": SCOPE_LEVEL,
         "scope_key": SCOPE_KEY,
         "claim_type": CLAIM_TYPE,
-        "contradiction_edges": _edges(events),
+        "contradiction_edges": [],
         "candidate_events": events,
-        "redactions": {
-            "answer_redaction": case.answer_redaction.to_metadata(),
-            "answer_session_ids_redaction": case.answer_session_ids_redaction.to_metadata(),
-        },
     }
 
 
 def lookup_slot_id(question_text: str) -> str:
-    before_mark = question_text.partition("?")[0].lower()
-    words = re.findall(r"[a-z0-9]+", before_mark)
-    kept = []
-    for word in words:
-        if len(word) <= 1:
-            continue
-        if word in _IGNORE:
-            continue
-        kept.append(word)
-    value = "-".join(kept[:12])
-    return "lme-" + (value if value else "memory-slot")
+    focus = re.split(r"[?!.]", question_text.lower(), maxsplit=1)[0]
+    focus = re.sub(r"\b(?:tell|remind|mark|final|answer)\b.*$", "", focus)
+    for pattern in _CANONICAL_REMOVAL_PATTERNS:
+        focus = re.sub(pattern, " ", focus)
+    tokens = [token for token in re.findall(r"[a-z0-9]+", focus) if len(token) > 1]
+    return "lme-" + ("-".join(tokens[:12]) or "memory-slot")
 
 
 def _events_from_sessions(case: RedactedLongMemEvalCase, slot_id: str) -> list[dict[str, Any]]:
@@ -145,7 +101,7 @@ def _events_from_sessions(case: RedactedLongMemEvalCase, slot_id: str) -> list[d
     dates = list(case.haystack_dates or [])
     for session_index, session in enumerate(case.haystack_sessions or []):
         event_id = "obs_{}".format(session_index)
-        selected_turn, selected_claim = _best_user_facing_turn(case.question, session)
+        selected_turn, selected_claim = _latest_question_overlap_turn(case.question, session)
         events.append(
             {
                 "event_id": event_id,
@@ -159,7 +115,7 @@ def _events_from_sessions(case: RedactedLongMemEvalCase, slot_id: str) -> list[d
                 "scope_level": SCOPE_LEVEL,
                 "scope_key": SCOPE_KEY,
                 "confidence": 0.70,
-                "contradicts_event_ids": ["obs_{}".format(session_index - 1)] if session_index else [],
+                "contradicts_event_ids": [],
             }
         )
     return events
@@ -169,39 +125,29 @@ def _value_at(values: list[Any], index: int) -> str:
     return str(values[index]) if index < len(values) else ""
 
 
-def _best_user_facing_turn(question: str, session: Any) -> tuple[int, str]:
+def _latest_question_overlap_turn(question: str, session: Any) -> tuple[int, str]:
     turns = session if isinstance(session, list) else []
-    terms = _question_terms(question)
+    markers = set(_surface_markers(question))
     choice = (0, "")
     choice_score = -1
     for turn_index, turn in enumerate(turns):
         if not isinstance(turn, dict):
             continue
         content = str(turn.get("content") or "")
-        role = str(turn.get("role") or "")
-        lower = content.lower()
-        score = len([term for term in terms if term in lower])
-        if role == "user":
-            score += 1
+        overlap = len(markers & set(_surface_markers(content)))
+        score = overlap * 10 + turn_index
         if score > choice_score:
             choice_score = score
             choice = (turn_index, re.sub(r"\s+", " ", content).strip())
     return choice
 
 
-def _question_terms(question: str) -> set[str]:
-    return {
-        token
-        for token in re.findall(r"[a-z0-9]+", question.lower())
-        if token not in _IGNORE and len(token) > 2
-    }
-
-
-def _edges(events: list[dict[str, Any]]) -> list[list[str]]:
-    pairs = []
-    for index in range(1, len(events)):
-        pairs.append([events[index - 1]["event_id"], events[index]["event_id"]])
-    return pairs
+def _surface_markers(text: str) -> list[str]:
+    markers = []
+    for token in re.findall(r"[A-Za-z0-9]+", text):
+        if len(token) >= 4 or any(character.isdigit() for character in token):
+            markers.append(token.lower())
+    return markers
 
 
 def main(argv: Optional[list[str]] = None) -> int:

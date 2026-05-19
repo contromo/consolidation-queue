@@ -226,10 +226,13 @@ Implemented:
   `data/external/longmemeval/annotations_manifest.json`: Phase X.1 dual-path
   annotation output for the LongMemEval v1 primary controlled-pilot
   denominator. The two independent local-first annotation paths agree on
-  all 72 in-denominator cases (`agreement_rate = 1.0`), emit adapter-ready
-  candidate events in the agreed file, and pass the hidden-answer verifier.
-  This freezes the annotation layer only; no adapter pin, smoke run, judge
-  calibration, or external policy comparison has been executed.
+  71 of 72 comparable in-denominator cases (`agreement_rate = 0.9861`), emit
+  adapter-ready candidate events in the agreed file, record the one
+  canonical-id divergence in the audit report, and pass the hidden-answer
+  verifier. Phase X.1 does not invent contradiction edges; those remain
+  deferred to the adapter/extractor phase. This freezes the annotation layer
+  only; no adapter pin, smoke run, judge calibration, or external policy
+  comparison has been executed.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -678,13 +681,13 @@ The first deterministic forced-contradiction local-model command/prompt, compone
    selects LongMemEval v1 as the primary controlled pilot and demotes V2 to
    descriptive evidence-exposure work because V2's public files strip the
    gold-side labels needed for matched PFLC. `docs/fair_stream_externalization_preregistration.md`
-   is locked, and the redacted-loader, dual-path-audit, verifier, and lock
-   primitives have focused tests. The next licensed step is Phase X.1:
-   produce the two independent annotation paths and divergence report without
-   reading answer labels, then build the adapter pin only after that report is
-   frozen. Do not run CQ, Reflection, or `Mem0Lite` on LongMemEval before the
-   agreed annotations, hidden-answer verifier, stream-hash invariant, and judge
-   calibration gates pass.
+   is locked, and the redacted-loader, dual-path-audit, verifier, annotator
+   paths, manifest writer, and lock primitives have focused tests. Phase X.1
+   now freezes 71 agreed annotations from 72 comparable cases, with the single
+   canonical-id divergence retained as an audit row. The next licensed step is
+   Phase X.2 adapter construction and pinning. Do not run CQ, Reflection, or
+   `Mem0Lite` on LongMemEval before the adapter pin, stream-hash invariant,
+   smoke run, PFLC wrapper, and judge calibration gates pass.
 
 ## Working Rules
 

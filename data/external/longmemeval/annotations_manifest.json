@@ -1,14 +1,15 @@
 {
   "audit_summary": {
-    "agreement_count": 72,
-    "agreement_rate": 1.0,
+    "agreement_count": 71,
+    "agreement_rate": 0.9861111111111112,
     "bucket_c_dual_path_divergence_triggered": false,
     "case_count": 72,
     "comparable_in_denominator_count": 72,
-    "disagreement_count": 0,
-    "divergence_rate": 0.0,
+    "disagreement_count": 1,
+    "divergence_rate": 0.013888888888888888,
     "status_counts": {
-      "agree": 72
+      "agree": 71,
+      "disagree_canonical_id": 1
     }
   },
   "inputs": {
@@ -19,13 +20,13 @@
   },
   "manifest_date": "2026-05-18",
   "outputs": {
-    "annotations_agreed_json_sha256": "6c130fcda88ae3957714696ba67d300faa74bcd8d199e4ff1b309d343aa1c403",
-    "annotations_path_a_json_sha256": "736dbe3207fc24b481a60577749ecdc0239e9942c9fdc9ebffc93ebe0eb34090",
-    "annotations_path_b_json_sha256": "0e139a79879ec6214e4b32cb684b4fb54bc231ea1f3288995a74b3a7526b656e",
-    "dual_path_divergence_report_json_sha256": "8d9df30080a93b2e6d38e958367b824819cc4f86fa6f65ab0268f9ad2c6385b1",
-    "verifier_report_json_sha256": "80d9dbe204e522720760b49a111a887392c668fb63f090a41faa14c5d84ed9b3"
+    "annotations_agreed_json_sha256": "b23e7e5a8289c00132c2b8e557cfbdd46db9ee633e2bfcdba96461242d188385",
+    "annotations_path_a_json_sha256": "c8f3d84bcbf6661df926c62730c70fc718ab0ed370a66bd7620ba9c790176048",
+    "annotations_path_b_json_sha256": "8033960ed568b7f0e025fd54a0bb7964b71ece46613285bc0b8e0e0212d0b4d5",
+    "dual_path_divergence_report_json_sha256": "ab416222a9272c3aeb1b1fde70d32222d36c6ceae1d30d2da9d54c0b14d59c12",
+    "verifier_report_json_sha256": "2503c748c1fd8f96228618b586c39bcff8bf42b34e0285d5c8044b39b35ed076"
   },
-  "preregistration_lock_sha256": "158180b35fcf9585ef88989ead9b58cc8367dde846c00f939e1f4fb02aa513e8",
+  "preregistration_lock_sha256": "4a8abc4d8969f9ddf479f42a6cd12fe126f3230925749f493c66afb4426c57e2",
   "verifier_summary": {
     "agreement_rate_check_passed": true,
     "audit_summary_present": true,

@@ -25,13 +25,14 @@
 
 - Phase X.1 now has a frozen, inspectable annotation layer before any adapter
   or policy execution. The audit reports 72 comparable in-denominator cases,
-  72 agreements, zero divergences, and `agreement_rate = 1.0`
+  71 agreements, one canonical-id divergence, and `agreement_rate = 0.9861`
 - the hidden-answer verifier passes on the agreed annotations with no
-  forbidden answer/gold/rubric/label key paths and a binomial upper-tail
-  p-value of `2.12e-22`
+  forbidden answer/gold/rubric/label key paths, no forbidden annotator-source
+  references, and a binomial upper-tail p-value of `1.55e-20`
 - the agreed annotation file is now usable by Phase X.2 because it includes
-  per-session candidate events, contradiction links, canonical ids, scope, and
-  raw evidence claims derived from redacted sessions
+  per-session candidate events, canonical ids, scope, and raw evidence claims
+  derived from redacted sessions. Phase X.1 deliberately leaves contradiction
+  links empty until the adapter/extractor phase has event-level support
 
 ### Open issues / next
 

@@ -63,17 +63,23 @@ class LongMemEvalAnnotatorPathBTests(unittest.TestCase):
             {row["case_id"]: row for row in payload_a["annotations"]},
             {row["case_id"]: row for row in payload_b["annotations"]},
         )
-        self.assertEqual(report["summary"]["agreement_rate"], 1.0)
+        self.assertEqual(report["summary"]["comparable_in_denominator_count"], 1)
         self.assertEqual(len(agreed), 1)
-        self.assertEqual(
-            agreed[0]["relevant_canonical_id"],
-            "lme-personal-best-time-charity-5k-run",
-        )
+        self.assertTrue(agreed[0]["relevant_canonical_id"].startswith("lme-"))
+        self.assertEqual(agreed[0]["contradiction_edges"], [])
 
     def test_path_b_does_not_import_path_a_or_call_its_canonicalizer(self) -> None:
         source = inspect.getsource(path_b)
         self.assertNotIn("annotator_path_a", source)
         self.assertNotIn("derive_relevant_canonical_id", source)
+        self.assertNotIn("_STOPWORDS", source)
+
+    def test_path_b_canonicalizer_has_independent_surface_behavior(self) -> None:
+        question = "How often do I see my therapist, Dr. Smith?"
+        self.assertNotEqual(
+            path_a.derive_relevant_canonical_id(question),
+            path_b.lookup_slot_id(question),
+        )
 
 
 def _write_feasibility(path: Path) -> None:

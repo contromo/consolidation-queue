@@ -54,8 +54,9 @@ class LongMemEvalAnnotatorPathATests(unittest.TestCase):
         row = payload["annotations"][0]
         self.assertEqual(row["case_id"], "case-1")
         self.assertEqual(row["relevant_canonical_id"], "lme-personal-best-time-charity-5k-run")
-        self.assertEqual(row["contradiction_edges"], [["obs_0", "obs_1"]])
+        self.assertEqual(row["contradiction_edges"], [])
         self.assertEqual(len(row["candidate_events"]), 2)
+        self.assertEqual(row["candidate_events"][1]["contradicts_event_ids"], [])
         self.assertEqual(forbidden_answer_key_paths(payload), [])
 
 

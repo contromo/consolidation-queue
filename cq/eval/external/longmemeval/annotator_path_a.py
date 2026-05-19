@@ -106,24 +106,20 @@ def write_json(path: str | Path, payload: Mapping[str, Any]) -> None:
 
 
 def _annotate_case(case: RedactedLongMemEvalCase) -> dict[str, Any]:
-    candidate_events = _candidate_events(case, derive_relevant_canonical_id(case.question))
-    contradiction_edges = _contradiction_edges(candidate_events)
+    canonical_id = derive_relevant_canonical_id(case.question)
+    candidate_events = _candidate_events(case, canonical_id)
     return {
         "case_id": case.case_id,
         "question_type": case.question_type,
         "question": case.question,
         "in_denominator": True,
         "mechanism_code": DENOMINATOR_LABEL,
-        "relevant_canonical_id": derive_relevant_canonical_id(case.question),
+        "relevant_canonical_id": canonical_id,
         "scope_level": SCOPE_LEVEL,
         "scope_key": SCOPE_KEY,
         "claim_type": CLAIM_TYPE,
-        "contradiction_edges": contradiction_edges,
+        "contradiction_edges": [],
         "candidate_events": candidate_events,
-        "redactions": {
-            "answer_redaction": case.answer_redaction.to_metadata(),
-            "answer_session_ids_redaction": case.answer_session_ids_redaction.to_metadata(),
-        },
     }
 
 
@@ -145,7 +141,6 @@ def _candidate_events(case: RedactedLongMemEvalCase, canonical_id: str) -> list[
     for index, session in enumerate(sessions):
         turn_index, claim = _select_claim_turn(case.question, session)
         event_id = "obs_{}".format(index)
-        contradicts_event_ids = ["obs_{}".format(index - 1)] if index > 0 else []
         events.append(
             {
                 "event_id": event_id,
@@ -159,7 +154,7 @@ def _candidate_events(case: RedactedLongMemEvalCase, canonical_id: str) -> list[
                 "scope_level": SCOPE_LEVEL,
                 "scope_key": SCOPE_KEY,
                 "confidence": 0.70,
-                "contradicts_event_ids": contradicts_event_ids,
+                "contradicts_event_ids": [],
             }
         )
     return events
@@ -196,18 +191,6 @@ def _select_claim_turn(question: str, session: Any) -> tuple[int, str]:
 
 def _collapse(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
-
-
-def _contradiction_edges(candidate_events: list[dict[str, Any]]) -> list[list[str]]:
-    if len(candidate_events) < 2:
-        return []
-    return [
-        [
-            candidate_events[index - 1]["event_id"],
-            candidate_events[index]["event_id"],
-        ]
-        for index in range(1, len(candidate_events))
-    ]
 
 
 def main(argv: Optional[list[str]] = None) -> int:

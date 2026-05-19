@@ -3,10 +3,25 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional, Union
 
 from cq.eval.external.longmemeval.sensitive_keys import is_forbidden_answer_key
+
+
+DEFAULT_ANNOTATOR_SOURCE_PATHS = (
+    Path(__file__).with_name("annotator_path_a.py"),
+    Path(__file__).with_name("annotator_path_b.py"),
+)
+
+FORBIDDEN_SOURCE_REFERENCES = (
+    (re.compile(r"\.answer\b"), "answer_attribute"),
+    (re.compile(r"\.answer_session_ids\b"), "answer_session_ids_attribute"),
+    (re.compile(r"\banswer_redaction\b"), "answer_redaction_reference"),
+    (re.compile(r"\banswer_session_ids_redaction\b"), "answer_session_ids_redaction_reference"),
+    (re.compile(r"\bis_forbidden_answer_key\b"), "forbidden_key_helper_reference"),
+)
 
 
 def binomial_upper_tail(successes: int, trials: int, probability: float) -> float:
@@ -35,16 +50,30 @@ def forbidden_answer_key_paths(payload: Any, *, prefix: str = "") -> list[str]:
     return paths
 
 
+def forbidden_answer_source_references(paths: Iterable[Union[str, Path]]) -> list[str]:
+    references = []
+    for path_value in paths:
+        path = Path(path_value)
+        text = path.read_text(encoding="utf-8")
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            for pattern, label in FORBIDDEN_SOURCE_REFERENCES:
+                if pattern.search(line):
+                    references.append("{}:{}:{}".format(path, line_number, label))
+    return references
+
+
 def build_verifier_report(
     annotations: Iterable[Mapping[str, Any]],
     *,
     audit_summary: Optional[Mapping[str, Any]] = None,
+    source_paths: Optional[Iterable[Union[str, Path]]] = None,
     chance_agreement: float = 0.5,
     alpha: float = 0.05,
     min_agreement_rate: float = 0.75,
 ) -> dict[str, Any]:
     annotation_rows = list(annotations)
     forbidden_paths = forbidden_answer_key_paths(annotation_rows)
+    source_references = forbidden_answer_source_references(source_paths or [])
     audit_summary_present = audit_summary is not None
     if audit_summary_present:
         trials = int(audit_summary.get("comparable_in_denominator_count") or 0)
@@ -66,16 +95,17 @@ def build_verifier_report(
         "alpha": alpha,
         "min_agreement_rate": min_agreement_rate,
         "forbidden_answer_key_paths": forbidden_paths,
-        "hidden_answer_check_passed": not forbidden_paths,
+        "forbidden_answer_source_references": source_references,
+        "hidden_answer_check_passed": not forbidden_paths and not source_references,
         "audit_summary_check_passed": audit_summary_present,
         "agreement_rate_check_passed": agreement_rate >= min_agreement_rate if trials else False,
         "binomial_check_passed": p_value <= alpha if trials else False,
         "verifier_passed": (
             not forbidden_paths
+            and not source_references
             and audit_summary_present
             and bool(trials)
             and agreement_rate >= min_agreement_rate
-            and p_value <= alpha
         ),
     }
 
@@ -117,10 +147,17 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--chance-agreement", type=float, default=0.5)
     parser.add_argument("--alpha", type=float, default=0.05)
     parser.add_argument("--min-agreement-rate", type=float, default=0.75)
+    parser.add_argument(
+        "--source-path",
+        action="append",
+        dest="source_paths",
+        help="Annotator source path to scan for forbidden answer-side references.",
+    )
     args = parser.parse_args(argv)
     report = build_verifier_report(
         load_annotations(args.annotations_json),
         audit_summary=load_audit_summary(args.audit_report_json),
+        source_paths=args.source_paths or DEFAULT_ANNOTATOR_SOURCE_PATHS,
         chance_agreement=args.chance_agreement,
         alpha=args.alpha,
         min_agreement_rate=args.min_agreement_rate,

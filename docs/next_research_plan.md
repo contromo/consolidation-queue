@@ -114,10 +114,12 @@ work and LongMemEval v1 remains the primary controlled-pilot anchor. Phase X.0
 also landed in `docs/fair_stream_externalization_preregistration.md`, with a
 lock checker and local primitives for redacted loading, dual-path divergence
 auditing, and hidden-answer verification. Phase X.1 has now frozen the
-LongMemEval v1 annotation layer: both local-first annotation paths agree on all
-72 in-denominator `contradiction_edge` cases, the hidden-answer verifier
-passes, and the agreed annotation artifact includes candidate events for the
-adapter. This does not authorize a policy run. The next step is adapter
+LongMemEval v1 annotation layer: both local-first annotation paths agree on 71
+of 72 comparable in-denominator `contradiction_edge` cases, the one canonical-id
+divergence is retained as an audit row, the hidden-answer verifier passes, and
+the agreed annotation artifact includes candidate events for the adapter. Phase
+X.1 leaves contradiction edges empty rather than inventing adjacent-session
+links. This does not authorize a policy run. The next step is adapter
 construction, stream-hash pinning, smoke testing, PFLC scoring, and judge
 calibration under the locked protocol.
 
@@ -255,9 +257,9 @@ Status:
 - Phase X.-1 anchor gate is complete: LongMemEval v1 primary, V2 descriptive
   evidence-exposure only.
 - Phase X.0 preregistration is locked.
-- Phase X.1 annotation output is frozen: 72 comparable cases, 72 dual-path
-  agreements, zero divergences, verifier pass, and adapter-ready agreed
-  candidate events.
+- Phase X.1 annotation output is frozen: 72 comparable cases, 71 dual-path
+  agreements, one canonical-id divergence, verifier pass, and adapter-ready
+  agreed candidate events with contradiction links left empty.
 - Redacted loader, dual-path audit, verifier, annotator paths, manifest writer,
   and lock primitives exist with focused tests.
 - No adapter pin, smoke run, judge calibration, or policy comparison has been
