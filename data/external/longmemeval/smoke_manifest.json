@@ -1,5 +1,5 @@
 {
-  "adapter_sha256": "305cc3c1e475bb4ea21b34958267fc7c8aed4764b4389e392de0ac187dcdaea5",
+  "adapter_sha256": "028450fa90f5b46d5170d01b006864184416ab6a78519b7f3bef513492da0c84",
   "artifact": "longmemeval_externalization_smoke",
   "artifact_class": "phase_x3_smoke",
   "candidate_count": 12,
@@ -8,15 +8,15 @@
   "inputs": {
     "adapter_pin_bytes": 263,
     "adapter_pin_repo_path": "docs/longmemeval_adapter_pin.json",
-    "adapter_pin_sha256": "75de6f47467e38e69fa19f063e85790c830977fe2ef9c801fd2177524501c95c",
+    "adapter_pin_sha256": "9b0530a298da6995c1bf2643bda818198354d270b20a4b061cea9fa8e00f8d01",
     "annotations_json_bytes": 163698,
     "annotations_json_repo_path": "data/external/longmemeval/annotations_agreed.json",
     "annotations_json_sha256": "b23e7e5a8289c00132c2b8e557cfbdd46db9ee633e2bfcdba96461242d188385"
   },
   "outputs": {
-    "smoke_summary_bytes": 47118,
+    "smoke_summary_bytes": 67376,
     "smoke_summary_repo_path": "data/external/longmemeval/smoke_summary.json",
-    "smoke_summary_sha256": "1a99af22d669f0a98b4b2efade392f974e168628698a835140deae7880968759"
+    "smoke_summary_sha256": "6edae3af6a514223a9266b00a3a3b2a83ee9a3c07661d0d67742b344200dd5eb"
   },
   "policy_count": 9,
   "policy_names": [
@@ -32,12 +32,13 @@
   ],
   "policy_set": "phase2_5",
   "policy_smoke_passed": true,
+  "post_execution_candidate_hash_check_passed": true,
   "preregistration_lock_sha256": "a7b8b5df50d3dbe41bbf8922c2ba1bbd9b98775c302f25d29313ece093000f53",
   "scenario_count": 6,
   "source_provenance": {
     "dirty_worktree_allowed": false,
     "dirty_worktree_check_passed": true,
-    "git_commit_sha": "da75f883895cc4f60bd3d32fb9266942fd3ac1d0",
+    "git_commit_sha": "359a71eca62abfc15ac85257860e248b733639f9",
     "git_status_porcelain": [],
     "worktree_clean": true
   }
