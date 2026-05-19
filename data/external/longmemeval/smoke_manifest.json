@@ -14,10 +14,31 @@
     "annotations_json_sha256": "b23e7e5a8289c00132c2b8e557cfbdd46db9ee633e2bfcdba96461242d188385"
   },
   "outputs": {
-    "smoke_summary_bytes": 5427,
+    "smoke_summary_bytes": 47118,
     "smoke_summary_repo_path": "data/external/longmemeval/smoke_summary.json",
-    "smoke_summary_sha256": "39b0ae228a2686c8117210cdd5716111ccfb5e9d159a9111fe64649f9a91792e"
+    "smoke_summary_sha256": "1a99af22d669f0a98b4b2efade392f974e168628698a835140deae7880968759"
   },
+  "policy_count": 9,
+  "policy_names": [
+    "reflection_eager_write_lite",
+    "consolidation_queue_lite",
+    "cq_no_contestation_demotion",
+    "cq_no_wider_scope_pending_override",
+    "cq_no_pending_lookup_use",
+    "cq_no_source_independence_gate",
+    "naive_eager_write_lite",
+    "no_memory_lite",
+    "mem0_lite"
+  ],
+  "policy_set": "phase2_5",
+  "policy_smoke_passed": true,
   "preregistration_lock_sha256": "a7b8b5df50d3dbe41bbf8922c2ba1bbd9b98775c302f25d29313ece093000f53",
-  "scenario_count": 6
+  "scenario_count": 6,
+  "source_provenance": {
+    "dirty_worktree_allowed": false,
+    "dirty_worktree_check_passed": true,
+    "git_commit_sha": "da75f883895cc4f60bd3d32fb9266942fd3ac1d0",
+    "git_status_porcelain": [],
+    "worktree_clean": true
+  }
 }
