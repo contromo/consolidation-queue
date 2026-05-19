@@ -7,7 +7,7 @@ from cq.eval.external.longmemeval import adapter
 from cq.eval.external.longmemeval.preregistration_lock import (
     validate_fair_stream_externalization_lock,
 )
-from cq.schemas.memory import ClaimType, ScopeLevel
+from cq.schemas.memory import CandidateUpdate, ClaimType, ScopeLevel
 from cq.schemas.scenario import EventKind, TaskFamily
 
 
@@ -52,6 +52,17 @@ class LongMemEvalAdapterTests(unittest.TestCase):
         self.assertNotIn("s1", first_source_id)
         self.assertNotIn("answer_", first_source_id)
         self.assertEqual(stream.drops, [])
+
+    def test_candidate_update_remains_mutable_for_adapter_edge_resolution(self) -> None:
+        params = getattr(CandidateUpdate, "__dataclass_params__", None)
+
+        self.assertIsNotNone(params)
+        self.assertFalse(params.frozen)
+
+        _, stream = adapter.adapt_annotation(_annotation_row())
+        stream.candidates[0].contradicts = ["manual_edge"]
+
+        self.assertEqual(stream.candidates[0].contradicts, ["manual_edge"])
 
     def test_adapter_stream_hash_is_deterministic_and_policy_invariant(self) -> None:
         annotations = [_annotation_row("case-1"), _annotation_row("case-2")]
