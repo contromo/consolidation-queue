@@ -83,6 +83,29 @@ def _smoke_policy_classes(policy_set: str):
     )
 
 
+def _policy_visible_candidate_hash(candidate_rows: list[dict]) -> str:
+    visible_rows = []
+    for candidate in candidate_rows:
+        visible_rows.append(
+            {
+                "candidate_id": candidate.get("candidate_id"),
+                "raw_text": candidate.get("raw_text"),
+                "raw_claim": candidate.get("raw_claim"),
+                "canonical_claim": candidate.get("canonical_claim"),
+                "claim_type": candidate.get("claim_type"),
+                "scope_level": candidate.get("scope_level"),
+                "scope_key": candidate.get("scope_key"),
+                "canonical_id": candidate.get("canonical_id"),
+                "provenance": candidate.get("provenance", []),
+                "verification_score": candidate.get("verification_score"),
+                "contradicts": candidate.get("contradicts", []),
+                "supports": candidate.get("supports", []),
+            }
+        )
+    payload = json.dumps(visible_rows, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def _policy_smoke_summary(
     *,
     annotations_path: Path,
@@ -90,10 +113,16 @@ def _policy_smoke_summary(
     policy_set: str,
     policy_classes,
 ) -> dict:
-    scenarios, _ = adapt_annotations(
+    scenarios, streams = adapt_annotations(
         load_agreed_annotations(annotations_path),
         case_limit=case_limit,
     )
+    pre_policy_hash_by_scenario = {
+        scenario_id: _policy_visible_candidate_hash(
+            [jsonable(candidate) for candidate in stream.candidates]
+        )
+        for scenario_id, stream in streams.items()
+    }
     policy_runs = []
     for policy_cls in policy_classes:
         run_records = [execute_scenario(policy_cls, scenario) for scenario in scenarios]
@@ -103,6 +132,13 @@ def _policy_smoke_summary(
             trace = traces[0] if traces else {}
             store_snapshot = record["store_snapshot"]
             metrics = record["metrics"]
+            candidate_memory_count = len(store_snapshot.get("candidate_memories", []))
+            input_candidate_count = len(streams[record["scenario_id"]].candidates)
+            post_hash_applicable = candidate_memory_count == input_candidate_count
+            post_hash = _policy_visible_candidate_hash(
+                store_snapshot.get("candidate_memories", [])
+            )
+            pre_hash = pre_policy_hash_by_scenario[record["scenario_id"]]
             per_scenario.append(
                 {
                     "scenario_id": record["scenario_id"],
@@ -110,18 +146,30 @@ def _policy_smoke_summary(
                     "resolved_candidate_count": len(trace.get("resolved_candidate_ids", [])),
                     "used_memory_count": len(trace.get("used_memory_ids", [])),
                     "used_pending": bool(trace.get("used_pending", False)),
-                    "candidate_memory_count": len(store_snapshot.get("candidate_memories", [])),
+                    "candidate_memory_count": candidate_memory_count,
                     "durable_memory_count": len(store_snapshot.get("durable_memories", [])),
                     "lifecycle_event_count": len(store_snapshot.get("lifecycle_events", [])),
                     "failure_example_count": len(record.get("failure_examples", [])),
+                    "pre_policy_visible_candidate_sha256": pre_hash,
+                    "post_policy_visible_candidate_sha256": post_hash,
+                    "post_execution_candidate_hash_check_applicable": post_hash_applicable,
+                    "post_execution_candidate_hash_match": (
+                        post_hash == pre_hash if post_hash_applicable else None
+                    ),
                     "useful_recall": metrics["useful_recall"],
                     "durable_commit": metrics["durable_commit"],
                 }
             )
+        post_hash_rows = [
+            row["post_execution_candidate_hash_match"]
+            for row in per_scenario
+            if row["post_execution_candidate_hash_check_applicable"]
+        ]
         policy_runs.append(
             {
                 "policy_name": policy_cls.policy_name,
                 "scenario_count": len(run_records),
+                "post_execution_candidate_hash_check_passed": all(post_hash_rows),
                 "summary": jsonable(summarize_runs(run_records)),
                 "per_scenario": per_scenario,
             }
@@ -135,6 +183,9 @@ def _policy_smoke_summary(
         "scenario_count": expected_count,
         "policy_smoke_passed": all(
             run["scenario_count"] == expected_count for run in policy_runs
+        ),
+        "post_execution_candidate_hash_check_passed": all(
+            run["post_execution_candidate_hash_check_passed"] for run in policy_runs
         ),
         "policies": policy_runs,
     }
@@ -238,6 +289,9 @@ def main() -> int:
             "candidate_stream_hash_invariant_passed"
         ],
         "policy_smoke_passed": policy_smoke["policy_smoke_passed"],
+        "post_execution_candidate_hash_check_passed": policy_smoke[
+            "post_execution_candidate_hash_check_passed"
+        ],
         "policy_count": policy_smoke["policy_count"],
         "policy_names": policy_smoke["policy_names"],
         "scenario_count": summary["scenario_count"],

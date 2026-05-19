@@ -79,6 +79,46 @@ class LongMemEvalRedactedLoaderTests(unittest.TestCase):
         self.assertNotIn("reference_answer", case.raw["haystack_sessions"][0])
         self.assertIn("reference_answer_redaction", case.raw["haystack_sessions"][0])
 
+    def test_redactor_scrubs_sibling_gold_key_names(self) -> None:
+        payload = [
+            {
+                "question_id": "case-1",
+                "question_type": "knowledge-update",
+                "question": "q",
+                "answer": "top-level",
+                "answer_session_ids": ["s1"],
+                "metadata": {
+                    "solution": "hidden",
+                    "correct_answer": "hidden",
+                    "evidence_session_ids": ["s1"],
+                    "target_answer": "hidden",
+                    "expected_output": "hidden",
+                    "oracle_output": "hidden",
+                    "truth_value": True,
+                    "verdict": "correct",
+                    "safe_note": "keep me",
+                },
+            }
+        ]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "oracle.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            case = load_redacted_cases(path)[0]
+
+        for key in (
+            "solution",
+            "correct_answer",
+            "evidence_session_ids",
+            "target_answer",
+            "expected_output",
+            "oracle_output",
+            "truth_value",
+            "verdict",
+        ):
+            self.assertNotIn(key, case.raw["metadata"])
+            self.assertIn("{}_redaction".format(key), case.raw["metadata"])
+        self.assertEqual(case.raw["metadata"]["safe_note"], "keep me")
+
     def test_accessing_redacted_values_raises(self) -> None:
         payload = [
             {

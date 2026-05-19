@@ -44,6 +44,7 @@ def declared_fair_stream_externalization_lock(preregistration_text: str) -> str:
 
 def compute_fair_stream_externalization_lock_sha256(preregistration_text: str) -> str:
     block = extract_protocol_block(preregistration_text)
+    block = block.replace("\r\n", "\n").replace("\r", "\n").lstrip("\ufeff")
     return hashlib.sha256(block.encode("utf-8")).hexdigest()
 
 

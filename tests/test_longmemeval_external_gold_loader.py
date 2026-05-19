@@ -1,5 +1,4 @@
-import importlib
-import inspect
+import ast
 import json
 import tempfile
 import unittest
@@ -60,29 +59,71 @@ class LongMemEvalGoldLoaderTests(unittest.TestCase):
                 load_gold_cases(path)
 
     def test_gold_loader_is_not_imported_by_protected_modules(self) -> None:
-        allowed_importers = {
-            "cq.eval.external.longmemeval.scorer",
-            "cq.eval.external.longmemeval.judge_stability",
-        }
         package_dir = Path(__file__).resolve().parents[1] / "cq" / "eval" / "external" / "longmemeval"
-        forbidden_importers = []
+        protected_sources = []
         for source_path in package_dir.glob("*.py"):
-            if source_path.stem == "gold_loader":
+            if source_path.stem in {"gold_loader", "scorer"} or source_path.name == "__init__.py":
                 continue
-            module_name = "cq.eval.external.longmemeval.{}".format(source_path.stem)
-            if module_name in allowed_importers or module_name.endswith(".__init__"):
+            protected_sources.append(source_path)
+
+        scripts_dir = Path(__file__).resolve().parents[1] / "scripts"
+        for source_path in scripts_dir.glob("*longmemeval*.py"):
+            if source_path.name == "score_longmemeval_pflc.py":
                 continue
-            forbidden_importers.append(module_name)
-        for module_name in forbidden_importers:
-            module = importlib.import_module(module_name)
-            source = inspect.getsource(module)
-            self.assertNotIn(
-                "gold_loader",
-                source,
-                msg="{} must not import gold_loader (hidden-answer protocol)".format(
-                    module_name
+            protected_sources.append(source_path)
+
+        for source_path in protected_sources:
+            violations = _gold_boundary_violations(source_path)
+            self.assertEqual(
+                violations,
+                [],
+                "{} must not reference gold-loader symbols: {}".format(
+                    source_path,
+                    violations,
                 ),
             )
+
+    def test_gold_boundary_scan_catches_reexport_bypass(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "bad.py"
+            path.write_text(
+                "from cq.eval.external.longmemeval.scorer import load_gold_cases\n",
+                encoding="utf-8",
+            )
+
+            violations = _gold_boundary_violations(path)
+
+        self.assertIn("import:load_gold_cases", violations)
+
+
+FORBIDDEN_GOLD_SYMBOLS = {
+    "GoldCase",
+    "load_gold_cases",
+    "gold_session_ids_by_case_id",
+    "gold_answers_by_case_id",
+}
+
+
+def _gold_boundary_violations(path: Path) -> list[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    violations = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "cq.eval.external.longmemeval.gold_loader":
+                    violations.append("import:gold_loader")
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            if module == "cq.eval.external.longmemeval.gold_loader":
+                violations.append("import_from:gold_loader")
+            for alias in node.names:
+                if alias.name in FORBIDDEN_GOLD_SYMBOLS:
+                    violations.append("import:{}".format(alias.name))
+        elif isinstance(node, ast.Name) and node.id in FORBIDDEN_GOLD_SYMBOLS:
+            violations.append("name:{}".format(node.id))
+        elif isinstance(node, ast.Attribute) and node.attr in FORBIDDEN_GOLD_SYMBOLS:
+            violations.append("attr:{}".format(node.attr))
+    return sorted(set(violations))
 
 
 if __name__ == "__main__":

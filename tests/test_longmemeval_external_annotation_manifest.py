@@ -4,6 +4,9 @@ import unittest
 from pathlib import Path
 
 from cq.eval.external.longmemeval import annotation_manifest
+from cq.eval.external.longmemeval.preregistration_lock import (
+    validate_fair_stream_externalization_lock,
+)
 
 
 class LongMemEvalAnnotationManifestTests(unittest.TestCase):
@@ -59,6 +62,21 @@ class LongMemEvalAnnotationManifestTests(unittest.TestCase):
         self.assertTrue(manifest["verifier_summary"]["verifier_passed"])
         self.assertIn("oracle_json_sha256", manifest["inputs"])
         self.assertIn("annotations_path_a_json_sha256", manifest["outputs"])
+
+    def test_committed_manifest_uses_live_preregistration_lock(self) -> None:
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "data"
+            / "external"
+            / "longmemeval"
+            / "annotations_manifest.json"
+        )
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            manifest["preregistration_lock_sha256"],
+            validate_fair_stream_externalization_lock(),
+        )
 
 
 def _write(path: Path, text: str) -> Path:

@@ -40,6 +40,17 @@ class LongMemEvalAdapterTests(unittest.TestCase):
         self.assertEqual(stream.candidates[0].scope_level, ScopeLevel.USER_GLOBAL)
         self.assertEqual(stream.candidates[0].verification_score, 0.7)
         self.assertEqual(stream.candidates[1].contradicts, ["longmemeval_case-1::obs_0::0"])
+        self.assertEqual(
+            stream.source_session_id_by_candidate_id,
+            {
+                "longmemeval_case-1::obs_0::0": "s1",
+                "longmemeval_case-1::obs_1::0": "s2",
+            },
+        )
+        first_source_id = stream.candidates[0].provenance[0].source_id
+        self.assertIn("opaque-session-", first_source_id)
+        self.assertNotIn("s1", first_source_id)
+        self.assertNotIn("answer_", first_source_id)
         self.assertEqual(stream.drops, [])
 
     def test_adapter_stream_hash_is_deterministic_and_policy_invariant(self) -> None:

@@ -31,6 +31,20 @@ locked line
             path.write_text(text, encoding="utf-8")
             self.assertEqual(lock.validate_fair_stream_externalization_lock(path), sha)
 
+    def test_protocol_lock_normalizes_crlf_and_block_bom(self) -> None:
+        lf_body = """fair_stream_externalization_lock_sha256: {sha}
+
+<!-- FAIR_STREAM_EXTERNALIZATION_PROTOCOL_START -->
+locked line
+<!-- FAIR_STREAM_EXTERNALIZATION_PROTOCOL_END -->
+"""
+        crlf_body = lf_body.replace("locked line", "\ufefflocked line").replace("\n", "\r\n")
+
+        self.assertEqual(
+            lock.compute_fair_stream_externalization_lock_sha256(lf_body.format(sha="0" * 64)),
+            lock.compute_fair_stream_externalization_lock_sha256(crlf_body.format(sha="0" * 64)),
+        )
+
     def test_lock_mismatch_raises(self) -> None:
         text = """fair_stream_externalization_lock_sha256: {}
 

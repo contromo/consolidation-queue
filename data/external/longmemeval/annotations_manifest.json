@@ -18,7 +18,7 @@
     "oracle_json_bytes": 15388478,
     "oracle_json_sha256": "821a2034d219ab45846873dd14c14f12cfe7776e73527a483f9dac095d38620c"
   },
-  "manifest_date": "2026-05-18",
+  "manifest_date": "2026-05-19",
   "outputs": {
     "annotations_agreed_json_sha256": "b23e7e5a8289c00132c2b8e557cfbdd46db9ee633e2bfcdba96461242d188385",
     "annotations_path_a_json_sha256": "c8f3d84bcbf6661df926c62730c70fc718ab0ed370a66bd7620ba9c790176048",
@@ -26,7 +26,7 @@
     "dual_path_divergence_report_json_sha256": "ab416222a9272c3aeb1b1fde70d32222d36c6ceae1d30d2da9d54c0b14d59c12",
     "verifier_report_json_sha256": "2503c748c1fd8f96228618b586c39bcff8bf42b34e0285d5c8044b39b35ed076"
   },
-  "preregistration_lock_sha256": "0772475aa346a52d4367003d097ba072a8fa6d52451a7fe576db0446894a626a",
+  "preregistration_lock_sha256": "a7b8b5df50d3dbe41bbf8922c2ba1bbd9b98775c302f25d29313ece093000f53",
   "verifier_summary": {
     "agreement_rate_check_passed": true,
     "audit_summary_present": true,

@@ -7,6 +7,7 @@ from cq.eval.external.longmemeval.gold_loader import GoldCase
 from cq.eval.external.longmemeval.scorer import (
     DEFAULT_K,
     PolicyPrediction,
+    _percentile_index,
     degeneracy_diagnostic,
     load_policy_predictions,
     score_predictions,
@@ -142,6 +143,12 @@ class LongMemEvalScorerTests(unittest.TestCase):
 
     def test_default_k_includes_locked_cutoffs(self) -> None:
         self.assertEqual(DEFAULT_K, (1, 5, 10, 20, 50))
+
+    def test_bootstrap_percentile_index_uses_samples_minus_one_convention(self) -> None:
+        self.assertEqual(_percentile_index(100, 0.025), 2)
+        self.assertEqual(_percentile_index(100, 0.975), 96)
+        self.assertEqual(_percentile_index(5000, 0.025), 124)
+        self.assertEqual(_percentile_index(5000, 0.975), 4874)
 
     def test_load_policy_predictions_rejects_malformed_payloads(self) -> None:
         malformed_rows = [

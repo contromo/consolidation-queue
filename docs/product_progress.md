@@ -21,7 +21,8 @@
   criterion 10 at `>= 0.85` agreement, and an optional reference-judge verdict
   path for the preferred path-1 calibration. The CLI defaults to `--dry-run`;
   `--run` is required to invoke ollama, and the stability report cannot pass
-  without the preregistered 20 paired/reference cases
+  without the preregistered 20 paired/reference cases. Prompt rendering now
+  preserves literal `{...}` answer text instead of using `str.format`
 - added `cq/eval/external/longmemeval/dirty_worktree_check.py`: the runtime
   guard that Phase X.3/X.4 policy execution calls before running policies
 - added `scripts/run_longmemeval_smoke.py` plus committed
@@ -29,10 +30,20 @@
   `data/external/longmemeval/smoke_manifest.json`: byte-stable Phase X.3 smoke
   artifact emitting six adapted scenarios, twelve candidates, zero adapter
   drops, a passing candidate-stream-hash invariant, and actual execution of
-  the Phase 2.5 policy set over the adapted scenarios
+  the Phase 2.5 policy set over the adapted scenarios. The smoke summary also
+  records post-execution policy-visible candidate hashes for policies that
+  store the candidate stream, catching accidental in-place mutation of the
+  policy input fields
 - added 20 new focused tests across the gold loader, scorer, judge stability,
   dirty worktree check, and committed smoke artifacts; all 62 LongMemEval
   external tests pass
+- hardened the hidden-answer boundary after pre-landing review: adapter
+  provenance now exposes only deterministic opaque session tokens to policies,
+  while the original LongMemEval session ids remain in adapter-side mapping
+  metadata for later PFLC joins; the annotation manifest has been relocked to
+  the current fair-stream preregistration SHA; the gold-loader boundary test is
+  AST-based and catches re-export bypasses; the scorer bootstrap interval uses
+  a documented `samples - 1` percentile-index convention
 
 ### Why it matters
 
@@ -43,8 +54,10 @@
   place and tested
 - the scoring path enforces the hidden-answer protocol by structural
   separation: `gold_loader` is the only licensed reader of
-  `answer_session_ids`, and an import-graph test fails closed if any
-  annotator, verifier, adapter, or audit module references it
+  `answer_session_ids`, adapter `ProvenanceRecord.source_id` values no longer
+  contain raw LongMemEval session ids, and an AST import-graph test fails
+  closed if any protected annotator, verifier, adapter, audit module, or
+  LongMemEval runtime script references gold-loader symbols
 - the smoke summary is byte-stable across consecutive runs (verified by a
   dedicated regression test), while the manifest records source git
   provenance and the clean-worktree pre-run check result before policy
@@ -81,7 +94,7 @@
   agreed annotation events into shared `Scenario` and `CandidateUpdate` objects
   under the hidden-answer protocol
 - added `docs/longmemeval_adapter_pin.json`: pins the adapter SHA
-  (`305cc3c1e475bb4ea21b34958267fc7c8aed4764b4389e392de0ac187dcdaea5`)
+  (`028450fa90f5b46d5170d01b006864184416ab6a78519b7f3bef513492da0c84`)
   against the locked fair-stream externalization preregistration SHA
   (`a7b8b5df50d3dbe41bbf8922c2ba1bbd9b98775c302f25d29313ece093000f53`)
 - added `tests/test_longmemeval_external_adapter.py` and the

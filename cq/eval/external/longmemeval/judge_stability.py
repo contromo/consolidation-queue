@@ -35,6 +35,7 @@ import hashlib
 import json
 import os
 import re
+from string import Template
 from urllib.parse import urlparse
 import urllib.error
 import urllib.request
@@ -55,21 +56,21 @@ INCORRECT_VERDICT = "incorrect"
 INDETERMINATE_VERDICT = "indeterminate"
 
 
-JUDGE_PROMPT_TEMPLATE = """You are scoring a question-answering response.
+JUDGE_PROMPT_TEMPLATE = Template("""You are scoring a question-answering response.
 
 Question:
-{question}
+$question
 
 Reference answer:
-{gold_answer}
+$gold_answer
 
 Candidate answer:
-{candidate_answer}
+$candidate_answer
 
 Decide whether the candidate answer is correct relative to the reference answer
 for this question. Ignore stylistic differences; focus on whether the candidate
 conveys the same factual content as the reference. Reply with the single word
-"correct" or "incorrect" on the first line, with no additional text."""
+"correct" or "incorrect" on the first line, with no additional text.""")
 
 
 @dataclass(frozen=True)
@@ -93,7 +94,7 @@ class JudgeStabilityError(RuntimeError):
 
 
 def render_judge_prompt(case: CalibrationCase) -> str:
-    return JUDGE_PROMPT_TEMPLATE.format(
+    return JUDGE_PROMPT_TEMPLATE.substitute(
         question=case.question.strip(),
         gold_answer=case.gold_answer.strip(),
         candidate_answer=case.candidate_answer.strip(),

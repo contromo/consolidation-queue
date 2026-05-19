@@ -40,6 +40,7 @@ class AdaptedCandidateStream:
     candidates: list[CandidateUpdate]
     candidate_stream_sha256: str
     candidate_ids_by_event_id: dict[str, list[str]]
+    source_session_id_by_candidate_id: dict[str, str]
     input_annotation_event_count: int
     drops: list[dict[str, object]]
 
@@ -138,6 +139,7 @@ def adapt_annotation(row: Mapping[str, Any]) -> tuple[Scenario, AdaptedCandidate
     drops = []
     pending_contradiction_targets: dict[str, list[str]] = {}
     candidate_ids_by_event_id: dict[str, list[str]] = {}
+    source_session_id_by_candidate_id: dict[str, str] = {}
 
     for event_index, event_row in enumerate(candidate_events):
         if not isinstance(event_row, Mapping):
@@ -151,9 +153,10 @@ def adapt_annotation(row: Mapping[str, Any]) -> tuple[Scenario, AdaptedCandidate
         if isinstance(parsed, dict):
             drops.append(parsed)
             continue
-        event_id, event_text, candidate = parsed
+        event_id, event_text, candidate, source_session_id = parsed
         candidates.append(candidate)
         candidate_ids_by_event_id.setdefault(event_id, []).append(candidate.candidate_id)
+        source_session_id_by_candidate_id[candidate.candidate_id] = source_session_id
         pending_contradiction_targets[candidate.candidate_id] = [
             str(target_event_id)
             for target_event_id in event_row.get("contradicts_event_ids") or []
@@ -212,6 +215,7 @@ def adapt_annotation(row: Mapping[str, Any]) -> tuple[Scenario, AdaptedCandidate
         candidates=candidates,
         candidate_stream_sha256=candidate_stream_sha256(candidates),
         candidate_ids_by_event_id=candidate_ids_by_event_id,
+        source_session_id_by_candidate_id=source_session_id_by_candidate_id,
         input_annotation_event_count=len(candidate_events),
         drops=drops,
     )
@@ -272,7 +276,7 @@ def _candidate_from_event_row(
     event_row: Mapping[str, Any],
     *,
     event_index: int,
-) -> Union[Tuple[str, str, CandidateUpdate], dict[str, object]]:
+) -> Union[Tuple[str, str, CandidateUpdate, str], dict[str, object]]:
     event_id = str(event_row.get("event_id") or "obs_{}".format(event_index))
     raw_claim = str(event_row.get("raw_claim") or "").strip()
     if not raw_claim:
@@ -298,6 +302,7 @@ def _candidate_from_event_row(
         return _drop(event_id, event_index, "invalid_confidence")
 
     observed_at = LOCKED_EPOCH + timedelta(seconds=event_index)
+    source_session_id = str(event_row.get("session_id") or "")
     candidate = CandidateUpdate(
         candidate_id="{}::{}::0".format(scenario_id, event_id),
         raw_text=raw_claim,
@@ -315,7 +320,11 @@ def _candidate_from_event_row(
                 source_id="{}::{}::{}".format(
                     scenario_id,
                     event_id,
-                    str(event_row.get("session_id") or ""),
+                    _opaque_session_token(
+                        scenario_id=scenario_id,
+                        event_id=event_id,
+                        source_session_id=source_session_id,
+                    ),
                 ),
                 trust_score=verification_score,
                 observed_at=observed_at,
@@ -325,7 +334,19 @@ def _candidate_from_event_row(
         contradicts=[],
         supports=[],
     )
-    return event_id, raw_claim, candidate
+    return event_id, raw_claim, candidate, source_session_id
+
+
+def _opaque_session_token(
+    *,
+    scenario_id: str,
+    event_id: str,
+    source_session_id: str,
+) -> str:
+    digest = hashlib.sha256(
+        "{}\0{}\0{}".format(scenario_id, event_id, source_session_id).encode("utf-8")
+    ).hexdigest()
+    return "opaque-session-{}".format(digest[:16])
 
 
 def _apply_contradictions(

@@ -11,7 +11,7 @@ from cq.eval.external.longmemeval.preregistration_lock import (
 )
 
 
-MANIFEST_DATE = "2026-05-18"
+MANIFEST_DATE = "2026-05-19"
 
 
 def sha256_file(path: str | Path) -> str:

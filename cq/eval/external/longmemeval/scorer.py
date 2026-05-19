@@ -30,7 +30,7 @@ from pathlib import Path
 from statistics import median
 from typing import Any, Iterable, Mapping, Sequence, Union
 
-from cq.eval.external.longmemeval.gold_loader import GoldCase, load_gold_cases
+from cq.eval.external.longmemeval.gold_loader import GoldCase
 
 
 DEFAULT_K = (1, 5, 10, 20, 50)
@@ -320,9 +320,17 @@ def _bootstrap_gap(
     for _ in range(samples):
         draws.append(sum(values[rng.randrange(n)] for _ in range(n)) / n)
     draws.sort()
-    low_idx = max(0, int(0.025 * samples) - 1)
-    high_idx = min(samples - 1, int(0.975 * samples) - 1)
+    low_idx = _percentile_index(samples, 0.025)
+    high_idx = _percentile_index(samples, 0.975)
     return {"estimate": observed, "low": draws[low_idx], "high": draws[high_idx]}
+
+
+def _percentile_index(samples: int, quantile: float) -> int:
+    if samples <= 0:
+        raise ValueError("samples must be positive")
+    if not 0.0 <= quantile <= 1.0:
+        raise ValueError("quantile must be between 0 and 1")
+    return int(quantile * (samples - 1))
 
 
 def _joint_counts(rows: Sequence[Mapping[str, Any]], metric: str) -> dict[str, int]:

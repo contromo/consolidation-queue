@@ -21,11 +21,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from cq.eval.external.longmemeval.scorer import (
     DEFAULT_K,
     degeneracy_diagnostic,
-    load_gold_cases,
     load_policy_predictions,
     score_predictions,
 )
 from cq.eval.external.longmemeval.adapter import load_agreed_annotations
+from cq.eval.external.longmemeval.gold_loader import load_gold_cases
 
 
 def _sha256(path: Path) -> str:

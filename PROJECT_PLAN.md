@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-19 (LongMemEval Phase X.3 scorer, judge stability scaffold, and smoke artifact landed)
+Last updated: 2026-05-19 (LongMemEval Phase X.3 review hardening landed)
 
 ## Goal
 
@@ -253,23 +253,27 @@ Implemented:
   preregistration §6 path 2 and cannot pass without the locked 20-case support,
   and the smoke artifact is byte-stable across consecutive runs while executing
   the Phase 2.5 policy set on the adapted scenarios. The smoke manifest records
-  source git provenance and the clean-worktree pre-run check result. This is
-  still a smoke/license gate, not a full external policy comparison; the
-  20-case judge stability run on qwen2.5:32b + 7b and the Phase X.4 comparison
-  remain pending.
+  source git provenance and the clean-worktree pre-run check result. Review
+  hardening makes adapter provenance opaque to policy code, records
+  post-execution policy-visible candidate hashes in the smoke summary, relocks
+  `annotations_manifest.json` to the current fair-stream preregistration SHA,
+  fixes brace-safe judge prompt rendering, and tightens the gold-loader import
+  boundary. This is still a smoke/license gate, not a full external policy
+  comparison; the 20-case judge stability run on qwen2.5:32b + 7b and the
+  Phase X.4 comparison remain pending.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
   and pinning for the LongMemEval v1 controlled-pilot denominator. The adapter
   maps the agreed annotation events into CQ `Scenario` and `CandidateUpdate`
   objects, preserves hidden-answer protocol fields by leaving gold and
-  forbidden candidate ids empty, rejects answer-side keys at the adapter
-  boundary, records per-scenario candidate-stream hashes and adapter drops,
-  validates the live adapter SHA plus preregistration lock SHA by default, and
-  exposes an N=6 dry-run CLI that reports zero drops and identical
-  candidate-stream hashes across the CQ, Reflection, and `Mem0Lite` placeholder
-  policy names. This is still adapter plumbing only; no smoke policy run, PFLC
-  scoring, judge calibration, or external policy comparison has been executed.
+  forbidden candidate ids empty, uses opaque source tokens in policy-visible
+  provenance while retaining the original session-id mapping outside policy
+  input for PFLC joins, rejects answer-side keys at the adapter boundary,
+  records per-scenario candidate-stream hashes and adapter drops, validates the
+  live adapter SHA plus preregistration lock SHA by default, and exposes an N=6
+  dry-run CLI that reports zero drops and identical candidate-stream hashes
+  across named policies.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 

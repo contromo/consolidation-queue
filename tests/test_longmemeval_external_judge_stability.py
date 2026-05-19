@@ -33,6 +33,19 @@ class LongMemEvalJudgeStabilityTests(unittest.TestCase):
         self.assertIn("Cand.", prompt)
         self.assertIn("correct", prompt)
 
+    def test_render_judge_prompt_preserves_literal_braces(self) -> None:
+        case = CalibrationCase(
+            "c1",
+            "What does {x} mean?",
+            "Use {'answer': 4}.",
+            "I think {\"answer\": 4}.",
+        )
+        prompt = render_judge_prompt(case)
+
+        self.assertIn("What does {x} mean?", prompt)
+        self.assertIn("Use {'answer': 4}.", prompt)
+        self.assertIn('I think {"answer": 4}.', prompt)
+
     def test_stability_report_local_cross_check_passes_threshold(self) -> None:
         primary = [
             JudgeVerdict("c1", "primary", CORRECT_VERDICT, "correct"),

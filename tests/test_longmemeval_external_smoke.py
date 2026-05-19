@@ -23,6 +23,7 @@ class LongMemEvalSmokeArtifactTests(unittest.TestCase):
         self.assertEqual(manifest["case_limit"], 6)
         self.assertTrue(manifest["candidate_stream_hash_invariant_passed"])
         self.assertTrue(manifest["policy_smoke_passed"])
+        self.assertTrue(manifest["post_execution_candidate_hash_check_passed"])
         self.assertGreaterEqual(manifest["policy_count"], 3)
         self.assertIn("consolidation_queue_lite", manifest["policy_names"])
         self.assertIn("source_provenance", manifest)
@@ -39,9 +40,11 @@ class LongMemEvalSmokeArtifactTests(unittest.TestCase):
         policy_smoke = summary["policy_smoke"]
         self.assertEqual(policy_smoke["scenario_count"], 6)
         self.assertTrue(policy_smoke["policy_smoke_passed"])
+        self.assertTrue(policy_smoke["post_execution_candidate_hash_check_passed"])
         self.assertIn("reflection_eager_write_lite", policy_smoke["policy_names"])
         for policy_run in policy_smoke["policies"]:
             self.assertEqual(policy_run["scenario_count"], 6)
+            self.assertIn("post_execution_candidate_hash_check_passed", policy_run)
             self.assertEqual(len(policy_run["per_scenario"]), 6)
             self.assertIn("summary", policy_run)
 
