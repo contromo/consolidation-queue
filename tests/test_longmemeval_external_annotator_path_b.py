@@ -75,11 +75,22 @@ class LongMemEvalAnnotatorPathBTests(unittest.TestCase):
         self.assertNotIn("_STOPWORDS", source)
 
     def test_path_b_canonicalizer_has_independent_surface_behavior(self) -> None:
-        question = "How often do I see my therapist, Dr. Smith?"
-        self.assertNotEqual(
-            path_a.derive_relevant_canonical_id(question),
-            path_b.lookup_slot_id(question),
-        )
+        questions = [
+            "What was my personal best time in the charity 5K run?",
+            "How many bikes do I currently own?",
+            "How often do I see Mr. Adams for guitar lessons?",
+            "What is the population of Tokyo according to current data?",
+        ]
+        pairs = [
+            (
+                path_a.derive_relevant_canonical_id(question),
+                path_b.lookup_slot_id(question),
+            )
+            for question in questions
+        ]
+
+        self.assertTrue(any(left != right for left, right in pairs))
+        self.assertTrue(any(left == right for left, right in pairs))
 
 
 def _write_feasibility(path: Path) -> None:

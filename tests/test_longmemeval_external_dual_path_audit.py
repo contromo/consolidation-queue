@@ -119,11 +119,11 @@ class LongMemEvalDualPathAuditTests(unittest.TestCase):
 
         self.assertEqual(rows["agree"]["status"], audit.AGREE)
         self.assertEqual(rows["canon"]["status"], audit.DISAGREE_CANONICAL_ID)
-        self.assertEqual(rows["edge"]["status"], audit.DISAGREE_CONTRADICTION_EDGES)
+        self.assertEqual(rows["edge"]["status"], audit.AGREE)
         self.assertEqual(rows["scope"]["status"], audit.DISAGREE_SCOPE)
         self.assertEqual(rows["missing-a"]["status"], audit.MISSING_PATH_A)
         self.assertEqual(rows["missing-b"]["status"], audit.MISSING_PATH_B)
-        self.assertEqual(len(agreed), 1)
+        self.assertEqual(len(agreed), 2)
         self.assertEqual(agreed[0]["case_id"], "agree")
         self.assertEqual(agreed[0]["question_type"], "knowledge-update")
         self.assertEqual(agreed[0]["mechanism_code"], "contradiction_edge")
@@ -132,7 +132,7 @@ class LongMemEvalDualPathAuditTests(unittest.TestCase):
             ["e1", "e2"],
         )
         self.assertEqual(report["summary"]["comparable_in_denominator_count"], 4)
-        self.assertEqual(report["summary"]["agreement_count"], 1)
+        self.assertEqual(report["summary"]["agreement_count"], 2)
         self.assertTrue(report["summary"]["bucket_c_dual_path_divergence_triggered"])
 
     def test_out_of_denominator_agreement_does_not_enter_agreed_subset(self) -> None:

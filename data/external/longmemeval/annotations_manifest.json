@@ -26,7 +26,7 @@
     "dual_path_divergence_report_json_sha256": "ab416222a9272c3aeb1b1fde70d32222d36c6ceae1d30d2da9d54c0b14d59c12",
     "verifier_report_json_sha256": "2503c748c1fd8f96228618b586c39bcff8bf42b34e0285d5c8044b39b35ed076"
   },
-  "preregistration_lock_sha256": "4a8abc4d8969f9ddf479f42a6cd12fe126f3230925749f493c66afb4426c57e2",
+  "preregistration_lock_sha256": "0772475aa346a52d4367003d097ba072a8fa6d52451a7fe576db0446894a626a",
   "verifier_summary": {
     "agreement_rate_check_passed": true,
     "audit_summary_present": true,

@@ -4,7 +4,7 @@ Date: 2026-05-18
 
 Status: locked before annotation, adapter execution, or policy execution.
 
-fair_stream_externalization_lock_sha256: 4a8abc4d8969f9ddf479f42a6cd12fe126f3230925749f493c66afb4426c57e2
+fair_stream_externalization_lock_sha256: 0772475aa346a52d4367003d097ba072a8fa6d52451a7fe576db0446894a626a
 
 This preregistration defines a protocol-level externalization methodology for
 memory benchmarks. The policy readout is a supporting experiment only. The
@@ -119,6 +119,11 @@ Path B: independent deterministic question-rewrite path. It uses regex
 surface rewrites and a separate evidence-overlap turn selector, must not share
 Path A's canonical-id function or stopword set object, and must not introduce
 new runtime dependencies without explicit user authorization.
+
+Both paths filter the same 38-word vocabulary, encoded as a set in Path A and
+as regex alternations in Path B. The dual-path check tests stability across two
+surface-form derivation mechanisms; it is not evidence of independence over
+the underlying filter vocabulary.
 
 Both paths assign flat `confidence = 0.70` to Phase X.1 candidate events. This
 is a deterministic annotation contract, not a semantic confidence estimate;

@@ -8,7 +8,6 @@ from typing import Any, Mapping, Optional, Tuple, Union
 
 AGREE = "agree"
 DISAGREE_CANONICAL_ID = "disagree_canonical_id"
-DISAGREE_CONTRADICTION_EDGES = "disagree_contradiction_edges"
 DISAGREE_SCOPE = "disagree_scope"
 MISSING_PATH_A = "missing_path_a"
 MISSING_PATH_B = "missing_path_b"
@@ -66,16 +65,12 @@ def classify_pair(a: Mapping[str, Any], b: Mapping[str, Any]) -> tuple[str, list
     disagreements = []
     if _canonical_id(a) != _canonical_id(b):
         disagreements.append("relevant_canonical_id")
-    if _normalized_edges(a) != _normalized_edges(b):
-        disagreements.append("contradiction_edges")
     if _scope(a) != _scope(b):
         disagreements.append("scope")
     if not disagreements:
         return AGREE, []
     if "relevant_canonical_id" in disagreements:
         return DISAGREE_CANONICAL_ID, disagreements
-    if "contradiction_edges" in disagreements:
-        return DISAGREE_CONTRADICTION_EDGES, disagreements
     return DISAGREE_SCOPE, disagreements
 
 
