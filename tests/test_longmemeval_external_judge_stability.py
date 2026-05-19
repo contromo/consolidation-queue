@@ -1,4 +1,7 @@
+import io
 import unittest
+import urllib.error
+from unittest.mock import patch
 
 from cq.eval.external.longmemeval.judge_stability import (
     CORRECT_VERDICT,
@@ -8,6 +11,7 @@ from cq.eval.external.longmemeval.judge_stability import (
     CalibrationCase,
     JudgeVerdict,
     JudgeStabilityError,
+    _ollama_generate,
     parse_verdict,
     render_judge_prompt,
     run_judge,
@@ -171,6 +175,51 @@ class LongMemEvalJudgeStabilityTests(unittest.TestCase):
                 base_url="https://example.com",
             )
 
+    def test_ollama_generate_reports_http_status_and_body(self) -> None:
+        error = urllib.error.HTTPError(
+            url="http://127.0.0.1:11434/api/generate",
+            code=404,
+            msg="Not Found",
+            hdrs={},
+            fp=io.BytesIO(b'{"error":"model not found"}'),
+        )
+
+        with patch(
+            "cq.eval.external.longmemeval.judge_stability.urllib.request.urlopen",
+            side_effect=error,
+        ):
+            with self.assertRaises(JudgeStabilityError) as context:
+                _ollama_generate(
+                    base_url="http://127.0.0.1:11434",
+                    model_id="missing-model",
+                    prompt="Q",
+                    decoding_params={},
+                    request_timeout_seconds=1.0,
+                )
+
+        message = str(context.exception)
+        self.assertIn("status 404", message)
+        self.assertIn("Not Found", message)
+        self.assertIn("model not found", message)
+
+    def test_ollama_generate_reports_json_error_payload(self) -> None:
+        response = _FakeHTTPResponse(b'{"error":"model is loading"}')
+
+        with patch(
+            "cq.eval.external.longmemeval.judge_stability.urllib.request.urlopen",
+            return_value=response,
+        ):
+            with self.assertRaises(JudgeStabilityError) as context:
+                _ollama_generate(
+                    base_url="http://127.0.0.1:11434",
+                    model_id="qwen2.5:7b-instruct-q4_K_M",
+                    prompt="Q",
+                    decoding_params={},
+                    request_timeout_seconds=1.0,
+                )
+
+        self.assertIn("model is loading", str(context.exception))
+
     def test_verdict_artifact_row_hashes_raw_response_without_persisting_text(self) -> None:
         row = verdict_artifact_row(JudgeVerdict("c1", "p", CORRECT_VERDICT, "correct because gold"))
 
@@ -178,6 +227,20 @@ class LongMemEvalJudgeStabilityTests(unittest.TestCase):
         self.assertEqual(row["verdict"], CORRECT_VERDICT)
         self.assertEqual(row["raw_response_bytes"], len("correct because gold"))
         self.assertNotIn("raw_response", row)
+
+
+class _FakeHTTPResponse:
+    def __init__(self, body: bytes) -> None:
+        self._body = body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        return None
+
+    def read(self) -> bytes:
+        return self._body
 
 
 if __name__ == "__main__":

@@ -36,7 +36,7 @@
   policy input fields
 - added focused tests across the gold loader, scorer, judge stability, dirty
   worktree check, adapter hardening, redaction, lock normalization, and
-  committed smoke artifacts; all 68 LongMemEval external tests pass
+  committed smoke artifacts; all 70 LongMemEval external tests pass
 - hardened the hidden-answer boundary after pre-landing review: adapter
   provenance now exposes only deterministic opaque session tokens to policies,
   while the original LongMemEval session ids remain in adapter-side mapping

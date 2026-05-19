@@ -277,6 +277,15 @@ def _ollama_generate(
     try:
         with urllib.request.urlopen(request, timeout=request_timeout_seconds) as response:
             body = response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        raise JudgeStabilityError(
+            "Ollama request failed ({}) with status {} {}: {}".format(
+                url,
+                exc.code,
+                exc.reason,
+                _http_error_body_snippet(exc),
+            )
+        ) from exc
     except urllib.error.URLError as exc:
         raise JudgeStabilityError(
             "Ollama request failed ({}): {}".format(url, exc)
@@ -285,10 +294,24 @@ def _ollama_generate(
         parsed = json.loads(body)
     except json.JSONDecodeError as exc:
         raise JudgeStabilityError("Ollama response was not JSON: {}".format(exc)) from exc
+    if isinstance(parsed, dict) and isinstance(parsed.get("error"), str):
+        raise JudgeStabilityError(
+            "Ollama response contained error: {}".format(parsed["error"])
+        )
     text = parsed.get("response") if isinstance(parsed, dict) else None
     if not isinstance(text, str):
         raise JudgeStabilityError("Ollama response missing 'response' string")
     return text
+
+
+def _http_error_body_snippet(exc: urllib.error.HTTPError) -> str:
+    try:
+        body = exc.read().decode("utf-8", errors="replace").strip()
+    except Exception:
+        body = ""
+    if not body:
+        return "<empty response body>"
+    return body[:500]
 
 
 def _validate_loopback_base_url(base_url: str) -> None:
