@@ -247,12 +247,16 @@ Implemented:
   calibration scaffolding, runtime-guard helper, and committed N=6 smoke
   artifact. The gold loader is the only licensed reader of
   `answer_session_ids` (enforced by an import-graph test), the scorer
-  implements dialog-evidence-id PFLC@{1,5,10,20,50} with Wilson/bootstrap CIs
-  and a degeneracy diagnostic, the judge stability harness runs the locked
-  cross-judge pattern under preregistration §6 path 2, and the smoke artifact
-  is byte-stable across consecutive runs. This is still adapter plumbing only
-  plus scoring/calibration scaffolding; the 20-case judge stability run on
-  qwen2.5:32b + 7b and the policy comparison
+  implements dialog-evidence-id PFLC@{1,5,10,20,50} with Wilson/bootstrap CIs,
+  fail-closed per-policy denominator checks, and a degeneracy diagnostic, the
+  judge stability harness runs the locked cross-judge pattern under
+  preregistration §6 path 2 and cannot pass without the locked 20-case support,
+  and the smoke artifact is byte-stable across consecutive runs while executing
+  the Phase 2.5 policy set on the adapted scenarios. The smoke manifest records
+  source git provenance and the clean-worktree pre-run check result. This is
+  still a smoke/license gate, not a full external policy comparison; the
+  20-case judge stability run on qwen2.5:32b + 7b and the Phase X.4 comparison
+  remain pending.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
@@ -274,7 +278,7 @@ Not implemented yet:
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
-- LongMemEval smoke run, PFLC wrapper, judge calibration, and transfer policy run
+- LongMemEval judge calibration and transfer policy run
 - final writeup docs
 
 ## Repository Map

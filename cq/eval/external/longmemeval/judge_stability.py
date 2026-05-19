@@ -23,17 +23,19 @@ Kill criterion 10 (preregistration §8): agreement below ``0.85`` on the locked
 20-case subset escalates to the user before any policy run.
 
 Scaffolding-only by default. The module exposes a callable that runs the
-ollama HTTP API, but the CLI defaults to ``--dry-run``; a full calibration
-run requires explicit ``--run`` and meaningful wall-clock time on the 32B
-model.
+ollama HTTP API, but the CLI defaults to writing a ``--dry-run`` plan; a full
+calibration run requires explicit ``--run`` and meaningful wall-clock time on
+the 32B model.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
+from urllib.parse import urlparse
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -46,6 +48,7 @@ DEFAULT_SECONDARY_JUDGE = "qwen2.5:7b-instruct-q4_K_M"
 DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 JUDGE_AGREEMENT_FLOOR = 0.85
 CALIBRATION_SET_SIZE = 20
+LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
 CORRECT_VERDICT = "correct"
 INCORRECT_VERDICT = "incorrect"
@@ -136,6 +139,7 @@ def stability_report(
     primary_model_id: str,
     secondary_model_id: str,
     minimum_agreement: float = JUDGE_AGREEMENT_FLOOR,
+    minimum_case_count: int = CALIBRATION_SET_SIZE,
     reference_verdicts: Optional[Mapping[str, str]] = None,
 ) -> dict[str, object]:
     primary_by_case = {v.case_id: v for v in verdicts_primary}
@@ -173,7 +177,7 @@ def stability_report(
     )
     primary_label = (
         "reference_calibration"
-        if reference_verdicts
+        if reference_verdicts is not None
         else "judge_stability_local_cross_check"
     )
     primary_agreement = (
@@ -181,8 +185,14 @@ def stability_report(
         if reference_verdicts is not None
         else cross_judge_agreement
     )
+    support_count = (
+        reference_present
+        if reference_verdicts is not None
+        else paired_total
+    )
+    support_count_check_passed = support_count >= minimum_case_count
     threshold_met = (
-        primary_agreement >= minimum_agreement
+        support_count_check_passed and primary_agreement >= minimum_agreement
         if primary_agreement is not None
         else False
     )
@@ -190,8 +200,11 @@ def stability_report(
         "primary_model_id": primary_model_id,
         "secondary_model_id": secondary_model_id,
         "minimum_agreement": minimum_agreement,
+        "minimum_case_count": minimum_case_count,
         "calibration_path": primary_label,
         "paired_total": paired_total,
+        "support_count": support_count,
+        "support_count_check_passed": support_count_check_passed,
         "indeterminate_count": indeterminate_count,
         "cross_judge_matches": cross_judge_matches,
         "cross_judge_agreement": cross_judge_agreement,
@@ -217,6 +230,7 @@ def run_judge(
     Network call — only runs when the CLI is invoked with ``--run``.
     """
 
+    _validate_loopback_base_url(base_url)
     verdicts = []
     for case in cases:
         prompt = render_judge_prompt(case)
@@ -276,12 +290,33 @@ def _ollama_generate(
     return text
 
 
+def _validate_loopback_base_url(base_url: str) -> None:
+    parsed = urlparse(base_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise JudgeStabilityError("Ollama base URL must be an HTTP(S) URL")
+    if parsed.hostname not in LOOPBACK_HOSTS:
+        raise JudgeStabilityError(
+            "Ollama base URL must use a loopback host unless the "
+            "preregistration records an external judge exception"
+        )
+
+
 def write_json(path: Union[str, Path], payload: Mapping[str, object]) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     Path(path).write_text(
         json.dumps(payload, sort_keys=True, indent=2) + "\n",
         encoding="utf-8",
     )
+
+
+def verdict_artifact_row(verdict: JudgeVerdict) -> dict[str, object]:
+    raw_bytes = verdict.raw_response.encode("utf-8")
+    return {
+        "case_id": verdict.case_id,
+        "verdict": verdict.verdict,
+        "raw_response_sha256": hashlib.sha256(raw_bytes).hexdigest(),
+        "raw_response_bytes": len(raw_bytes),
+    }
 
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -322,13 +357,19 @@ def main(argv: Optional[list[str]] = None) -> int:
         help="Kill criterion 10 floor (default 0.85).",
     )
     parser.add_argument(
+        "--minimum-case-count",
+        type=int,
+        default=CALIBRATION_SET_SIZE,
+        help="Minimum paired/reference cases required before the agreement floor can pass.",
+    )
+    parser.add_argument(
         "--base-url",
         default=os.environ.get("OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL),
     )
     parser.add_argument(
         "--run",
         action="store_true",
-        help="Actually invoke ollama judges. Without this flag, prints a dry-run plan.",
+        help="Actually invoke ollama judges. Without this flag, writes a dry-run plan.",
     )
     args = parser.parse_args(argv)
 
@@ -347,6 +388,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             "primary_model": args.primary_model,
             "secondary_model": args.secondary_model,
             "minimum_agreement": args.minimum_agreement,
+            "minimum_case_count": args.minimum_case_count,
             "ollama_base_url": args.base_url,
             "reference_verdicts_provided": bool(args.reference_verdicts_json),
             "note": (
@@ -373,15 +415,14 @@ def main(argv: Optional[list[str]] = None) -> int:
         primary_model_id=args.primary_model,
         secondary_model_id=args.secondary_model,
         minimum_agreement=args.minimum_agreement,
+        minimum_case_count=args.minimum_case_count,
         reference_verdicts=reference_verdicts,
     )
     report["primary_verdicts"] = [
-        {"case_id": v.case_id, "verdict": v.verdict, "raw_response": v.raw_response}
-        for v in verdicts_primary
+        verdict_artifact_row(verdict) for verdict in verdicts_primary
     ]
     report["secondary_verdicts"] = [
-        {"case_id": v.case_id, "verdict": v.verdict, "raw_response": v.raw_response}
-        for v in verdicts_secondary
+        verdict_artifact_row(verdict) for verdict in verdicts_secondary
     ]
     write_json(args.output_json, report)
     return 0

@@ -20,6 +20,15 @@ class DirtyWorktreeError(RuntimeError):
 def assert_clean_worktree(repo_root: Optional[Path] = None) -> None:
     """Raise ``DirtyWorktreeError`` if ``git status --porcelain`` is non-empty."""
 
+    output = worktree_status_porcelain(repo_root)
+    if output:
+        raise DirtyWorktreeError(
+            "Dirty worktree before run; the preregistration §10 contract "
+            "requires a clean tree:\n{}".format(output)
+        )
+
+
+def worktree_status_porcelain(repo_root: Optional[Path] = None) -> str:
     repo = repo_root or _detect_repo_root()
     try:
         completed = subprocess.run(
@@ -34,12 +43,7 @@ def assert_clean_worktree(repo_root: Optional[Path] = None) -> None:
         raise DirtyWorktreeError(
             "git status failed: {}".format(exc.stderr.strip() or exc.returncode)
         ) from exc
-    output = completed.stdout.strip()
-    if output:
-        raise DirtyWorktreeError(
-            "Dirty worktree before run; the preregistration §10 contract "
-            "requires a clean tree:\n{}".format(output)
-        )
+    return completed.stdout.strip()
 
 
 def current_commit_sha(repo_root: Optional[Path] = None) -> str:

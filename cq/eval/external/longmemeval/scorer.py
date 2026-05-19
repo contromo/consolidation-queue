@@ -30,7 +30,7 @@ from pathlib import Path
 from statistics import median
 from typing import Any, Iterable, Mapping, Sequence, Union
 
-from cq.eval.external.longmemeval.gold_loader import GoldCase
+from cq.eval.external.longmemeval.gold_loader import GoldCase, load_gold_cases
 
 
 DEFAULT_K = (1, 5, 10, 20, 50)
@@ -49,25 +49,29 @@ def score_predictions(
     predictions: Iterable[PolicyPrediction],
     gold_cases: Iterable[GoldCase],
     *,
+    expected_case_ids: Iterable[str] | None = None,
     ks: Sequence[int] = DEFAULT_K,
     bootstrap_seed: int = 1729,
     bootstrap_samples: int = 5000,
 ) -> dict[str, Any]:
     gold_by_case = {case.case_id: case for case in gold_cases}
+    expected_ids = _expected_case_id_set(
+        expected_case_ids if expected_case_ids is not None else gold_by_case
+    )
+    predictions_list = list(predictions)
+    _validate_exact_prediction_denominator(predictions_list, expected_ids, gold_by_case)
+
     rows = []
-    missing_gold: list[str] = []
-    for prediction in predictions:
-        gold = gold_by_case.get(prediction.case_id)
-        if gold is None:
-            missing_gold.append(prediction.case_id)
-            continue
+    for prediction in predictions_list:
+        gold = gold_by_case[prediction.case_id]
         rows.append(_score_row(prediction, gold, ks))
     return {
         "rows": rows,
         "summary": _summarize(
             rows,
             ks=ks,
-            missing_gold=missing_gold,
+            missing_gold=[],
+            expected_case_ids=expected_ids,
             bootstrap_seed=bootstrap_seed,
             bootstrap_samples=bootstrap_samples,
         ),
@@ -158,6 +162,7 @@ def _summarize(
     *,
     ks: Sequence[int],
     missing_gold: Sequence[str],
+    expected_case_ids: set[str],
     bootstrap_seed: int,
     bootstrap_samples: int,
 ) -> dict[str, Any]:
@@ -220,6 +225,8 @@ def _summarize(
 
     return {
         "scored_rows": total,
+        "expected_case_count": len(expected_case_ids),
+        "policy_count": len({str(row["policy_name"]) for row in rows}),
         "lookup_relevant_rows": lookup_total,
         "missing_gold_case_ids": list(missing_gold)[:20],
         "missing_gold_case_count": len(list(missing_gold)),
@@ -233,6 +240,57 @@ def _summarize(
         "metrics": metrics,
         "by_question_type": per_type_summary,
     }
+
+
+def _expected_case_id_set(case_ids: Iterable[str]) -> set[str]:
+    expected = {str(case_id) for case_id in case_ids if str(case_id)}
+    if not expected:
+        raise ValueError("Expected case denominator is empty")
+    return expected
+
+
+def _validate_exact_prediction_denominator(
+    predictions: Sequence[PolicyPrediction],
+    expected_case_ids: set[str],
+    gold_by_case: Mapping[str, GoldCase],
+) -> None:
+    missing_gold = sorted(case_id for case_id in expected_case_ids if case_id not in gold_by_case)
+    predictions_by_policy: dict[str, set[str]] = defaultdict(set)
+    duplicate_keys = []
+    unexpected_case_ids = []
+    for prediction in predictions:
+        if prediction.case_id in predictions_by_policy[prediction.policy_name]:
+            duplicate_keys.append("{}:{}".format(prediction.policy_name, prediction.case_id))
+        predictions_by_policy[prediction.policy_name].add(prediction.case_id)
+        if prediction.case_id not in expected_case_ids:
+            unexpected_case_ids.append("{}:{}".format(prediction.policy_name, prediction.case_id))
+    missing_predictions = {
+        policy_name: sorted(expected_case_ids - case_ids)
+        for policy_name, case_ids in sorted(predictions_by_policy.items())
+        if expected_case_ids - case_ids
+    }
+    if expected_case_ids and not predictions_by_policy:
+        missing_predictions["<no-policy>"] = sorted(expected_case_ids)
+
+    errors = []
+    if missing_gold:
+        errors.append("expected cases missing gold: {}".format(", ".join(missing_gold[:10])))
+    if duplicate_keys:
+        errors.append("duplicate predictions: {}".format(", ".join(sorted(duplicate_keys)[:10])))
+    if unexpected_case_ids:
+        errors.append(
+            "predictions outside expected denominator: {}".format(
+                ", ".join(sorted(unexpected_case_ids)[:10])
+            )
+        )
+    if missing_predictions:
+        rendered = [
+            "{} missing {}".format(policy_name, ", ".join(case_ids[:10]))
+            for policy_name, case_ids in missing_predictions.items()
+        ]
+        errors.append("incomplete predictions by policy: {}".format("; ".join(rendered[:10])))
+    if errors:
+        raise ValueError("LongMemEval PFLC denominator check failed: {}".format(" | ".join(errors)))
 
 
 def _wilson(successes: int, total: int, z: float = 1.959963984540054) -> dict[str, float]:
@@ -294,18 +352,40 @@ def load_policy_predictions(path: Union[str, Path]) -> list[PolicyPrediction]:
     if not isinstance(rows, list):
         raise ValueError("Expected predictions list in {}".format(path))
     parsed = []
-    for row in rows:
+    for row_index, row in enumerate(rows):
         if not isinstance(row, dict):
             raise ValueError("Prediction rows must be objects")
+        case_id = _required_prediction_text(row, "case_id", row_index)
+        policy_name = _required_prediction_text(row, "policy_name", row_index)
+        ranked = row.get("predicted_session_ids_ranked")
+        if not isinstance(ranked, list) or any(not isinstance(item, str) for item in ranked):
+            raise ValueError(
+                "Prediction row {} must include predicted_session_ids_ranked as a list of strings".format(
+                    row_index
+                )
+            )
+        answer_correct = row.get("answer_correct")
+        if not isinstance(answer_correct, bool):
+            raise ValueError("Prediction row {} answer_correct must be boolean".format(row_index))
+        candidate_answer = row.get("candidate_answer")
+        if candidate_answer is None:
+            candidate_answer = ""
+        if not isinstance(candidate_answer, str):
+            raise ValueError("Prediction row {} candidate_answer must be a string".format(row_index))
         parsed.append(
             PolicyPrediction(
-                case_id=str(row.get("case_id") or ""),
-                policy_name=str(row.get("policy_name") or ""),
-                predicted_session_ids_ranked=[
-                    str(item) for item in (row.get("predicted_session_ids_ranked") or [])
-                ],
-                candidate_answer=str(row.get("candidate_answer") or ""),
-                answer_correct=bool(row.get("answer_correct")),
+                case_id=case_id,
+                policy_name=policy_name,
+                predicted_session_ids_ranked=list(ranked),
+                candidate_answer=candidate_answer,
+                answer_correct=answer_correct,
             )
         )
     return parsed
+
+
+def _required_prediction_text(row: Mapping[str, Any], key: str, row_index: int) -> str:
+    value = row.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("Prediction row {} must include non-empty string {}".format(row_index, key))
+    return value

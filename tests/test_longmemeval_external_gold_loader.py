@@ -60,14 +60,19 @@ class LongMemEvalGoldLoaderTests(unittest.TestCase):
                 load_gold_cases(path)
 
     def test_gold_loader_is_not_imported_by_protected_modules(self) -> None:
-        forbidden_importers = (
-            "cq.eval.external.longmemeval.annotator_path_a",
-            "cq.eval.external.longmemeval.annotator_path_b",
-            "cq.eval.external.longmemeval.dual_path_audit",
-            "cq.eval.external.longmemeval.verifier",
-            "cq.eval.external.longmemeval.redacted_loader",
-            "cq.eval.external.longmemeval.adapter",
-        )
+        allowed_importers = {
+            "cq.eval.external.longmemeval.scorer",
+            "cq.eval.external.longmemeval.judge_stability",
+        }
+        package_dir = Path(__file__).resolve().parents[1] / "cq" / "eval" / "external" / "longmemeval"
+        forbidden_importers = []
+        for source_path in package_dir.glob("*.py"):
+            if source_path.stem == "gold_loader":
+                continue
+            module_name = "cq.eval.external.longmemeval.{}".format(source_path.stem)
+            if module_name in allowed_importers or module_name.endswith(".__init__"):
+                continue
+            forbidden_importers.append(module_name)
         for module_name in forbidden_importers:
             module = importlib.import_module(module_name)
             source = inspect.getsource(module)
