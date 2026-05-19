@@ -1,5 +1,40 @@
 # Product Progress
 
+## 2026-05-19 — LongMemEval Phase X.2 adapter pin lands
+
+### What shipped
+
+- added `cq/eval/external/longmemeval/adapter.py`: converts the Phase X.1
+  agreed annotation events into shared `Scenario` and `CandidateUpdate` objects
+  under the hidden-answer protocol
+- added `docs/longmemeval_adapter_pin.json`: pins the adapter SHA
+  (`decc87aa666736333071e052130af21818d298949a891e140c974aadb0eb1c2f`)
+  against the locked fair-stream externalization preregistration SHA
+  (`0772475aa346a52d4367003d097ba072a8fa6d52451a7fe576db0446894a626a`)
+- added `tests/test_longmemeval_external_adapter.py` and the
+  `longmemeval_external` `TaskFamily` enum value
+- exercised the adapter CLI on the N=6 dry-run subset with `--check-pin`
+
+### Why it matters
+
+- Phase X.2 now has a policy-facing adapter contract without running any
+  policy: the dry run emitted 6 scenarios, 12 candidates, zero adapter drops,
+  and identical candidate-stream hashes across the CQ, Reflection, and
+  `Mem0Lite` placeholder policy names
+- the full agreed-subset adapter pass emitted 71 scenarios and 142 candidates
+  with zero drops and the same stream-hash invariant intact
+- adapter pin validation now fails closed on live adapter SHA or
+  preregistration-lock drift
+- the LongMemEval workstream has moved from annotation freeze to pinned stream
+  construction while preserving the same-upstream-candidate invariant
+
+### Open issues / next
+
+- run the Phase X.3 smoke path before any full policy transfer comparison
+- build the LongMemEval PFLC wrapper and judge calibration/stability report
+- continue to report this as adapter plumbing only, not an external CQ policy
+  result
+
 ## 2026-05-18 — LongMemEval Phase X.1 dual-path annotations freeze
 
 ### What shipped
@@ -36,9 +71,8 @@
 
 ### Open issues / next
 
-- build and pin the LongMemEval adapter before any policy run
-- run the stream-hash invariant, N=6 smoke, PFLC wrapper, and judge
-  calibration gates before licensing Phase X.4
+- run the N=6 smoke, PFLC wrapper, and judge calibration gates before
+  licensing Phase X.4
 - continue to report this as an externalization-methodology pilot, not an
   external CQ transfer result
 

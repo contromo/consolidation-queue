@@ -119,8 +119,12 @@ of 72 comparable in-denominator `contradiction_edge` cases, the one canonical-id
 divergence is retained as an audit row, the hidden-answer verifier passes, and
 the agreed annotation artifact includes candidate events for the adapter. Phase
 X.1 leaves contradiction edges empty rather than inventing adjacent-session
-links. This does not authorize a policy run. The next step is adapter
-construction, stream-hash pinning, smoke testing, PFLC scoring, and judge
+links. Phase X.2 has now landed adapter construction and stream-hash pinning:
+the agreed events map into shared `Scenario` and `CandidateUpdate` objects, the
+adapter SHA is pinned against the preregistration lock, and the N=6 adapter
+dry run reports zero drops with identical candidate-stream hashes across the
+CQ, Reflection, and `Mem0Lite` placeholder policy names. This does not
+authorize a policy run. The next step is smoke testing, PFLC scoring, and judge
 calibration under the locked protocol.
 
 ## Research Posture
@@ -260,17 +264,21 @@ Status:
 - Phase X.1 annotation output is frozen: 72 comparable cases, 71 dual-path
   agreements, one canonical-id divergence, verifier pass, and adapter-ready
   agreed candidate events with contradiction links left empty.
+- Phase X.2 adapter construction and pinning is complete: the adapter emits
+  shared `Scenario`/`CandidateUpdate` objects, validates
+  `docs/longmemeval_adapter_pin.json`, and passes the N=6 stream-hash
+  invariant dry run with zero drops.
 - Redacted loader, dual-path audit, verifier, annotator paths, manifest writer,
-  and lock primitives exist with focused tests.
-- No adapter pin, smoke run, judge calibration, or policy comparison has been
-  executed.
+  adapter, and lock primitives exist with focused tests.
+- No smoke policy run, PFLC wrapper, judge calibration, or policy comparison
+  has been executed.
 
 Remaining design requirements before policy execution:
 
-1. Preserve the frozen 72-case dual-path-agreed denominator when building the
-   adapter.
-2. Define how CQ, ReflectionEagerWrite, and `Mem0Lite` receive comparable
-   upstream inputs through a pinned adapter.
+1. Preserve the frozen 71-case dual-path-agreed denominator when running the
+   adapter-backed smoke and transfer cells.
+2. Preserve the pinned adapter and stream-hash invariant so CQ,
+   ReflectionEagerWrite, and `Mem0Lite` receive comparable upstream inputs.
 3. Preserve the dual-path disagreement report as an audit artifact; future
    sensitivity cells may use path-A-only and path-B-only subsets, but the
    primary contract is the agreed subset.
@@ -324,8 +332,13 @@ Required pieces:
    comparison.**
 9. LongMemEval Phase X.1 dual-path annotation layer: redacted local-first
    annotation paths, dual-path audit, agreed annotations, verifier report, and
-   byte-stable manifest. **Landed as annotation freeze only; no adapter or
-   policy execution.**
+   byte-stable manifest. **Landed as annotation freeze only; no policy
+   execution.**
+10. LongMemEval Phase X.2 adapter construction and pinning: agreed annotation
+    events map into shared scenarios and candidate streams, the live adapter SHA
+    is pinned against the preregistration lock, and the N=6 dry-run stream-hash
+    invariant passes with zero drops. **Landed as adapter plumbing only; no
+    smoke policy run, PFLC scoring, judge calibration, or transfer comparison.**
 
 Next-next, none of which is licensed by this plan without a separate
 preregistration:
@@ -336,9 +349,8 @@ preregistration:
 - a policy-facing adapter-contract experiment that runs the CQR Section C
   cross-tab (QR-canon hit vs per-policy answer success) on a fresh Phase 4
   baseline or a separately archived locked-input environment
-- LongMemEval adapter construction, stream-hash pinning, N=6 smoke, PFLC
-  wrapper, and judge calibration under the already-locked externalization
-  protocol
+- LongMemEval smoke execution, PFLC wrapper, and judge calibration under the
+  already-locked externalization protocol
 - threshold or prompt or validator changes — explicitly forbidden by the
   Kill Criteria below
 

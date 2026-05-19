@@ -1,0 +1,5 @@
+{
+  "adapter_path": "cq/eval/external/longmemeval/adapter.py",
+  "candidate_adapter_sha256": "decc87aa666736333071e052130af21818d298949a891e140c974aadb0eb1c2f",
+  "preregistration_lock_sha256": "0772475aa346a52d4367003d097ba072a8fa6d52451a7fe576db0446894a626a"
+}

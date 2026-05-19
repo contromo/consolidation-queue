@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-18 (LongMemEval Phase X.1 dual-path annotation artifacts landed)
+Last updated: 2026-05-19 (LongMemEval Phase X.2 adapter pin landed)
 
 ## Goal
 
@@ -231,8 +231,20 @@ Implemented:
   canonical-id divergence in the audit report, and pass the hidden-answer
   verifier. Phase X.1 does not invent contradiction edges; those remain
   deferred to the adapter/extractor phase. This freezes the annotation layer
-  only; no adapter pin, smoke run, judge calibration, or external policy
-  comparison has been executed.
+  only and does not by itself authorize smoke, judge calibration, or external
+  policy execution.
+- `cq/eval/external/longmemeval/adapter.py`,
+  `docs/longmemeval_adapter_pin.json`, and
+  `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
+  and pinning for the LongMemEval v1 controlled-pilot denominator. The adapter
+  maps the agreed annotation events into CQ `Scenario` and `CandidateUpdate`
+  objects, preserves hidden-answer protocol fields by leaving gold and
+  forbidden candidate ids empty, records per-scenario candidate-stream hashes
+  and adapter drops, validates the live adapter SHA plus preregistration lock
+  SHA, and exposes an N=6 dry-run CLI that reports zero drops and identical
+  candidate-stream hashes across the CQ, Reflection, and `Mem0Lite` placeholder
+  policy names. This is still adapter plumbing only; no smoke policy run, PFLC
+  scoring, judge calibration, or external policy comparison has been executed.
 - running product progress notes in `docs/product_progress.md`
 - regression coverage for contradiction branches, scope matching, and metric edge cases
 
@@ -241,7 +253,7 @@ Not implemented yet:
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
-- LongMemEval adapter pin, smoke run, judge calibration, and transfer policy run
+- LongMemEval smoke run, PFLC wrapper, judge calibration, and transfer policy run
 - final writeup docs
 
 ## Repository Map
@@ -670,9 +682,9 @@ The first deterministic forced-contradiction local-model command/prompt, compone
 
 1. The CQR path-normalized replay repair landed and was exercised on 2026-05-16; a second Bucket D was recorded under the repaired equivalence rule. The null-row attribution remains unsettled. Do not attempt a third CQR audit attempt without first re-establishing a locked Phase 4 baseline that includes committed (or separately archived) run-JSON payloads.
 2. Use `docs/noisy_policy_mechanism_audit.md` as the Phase 4 writeup anchor until CQR emits a non-abort result: clean survival on forced contradiction, partial survival on preference drift, and unattributed nulls elsewhere unless directly supported by 32B artifacts.
-3. The methodology spine promotion landed on 2026-05-16: `docs/benchmark_methodology_draft.md` now carries an Abstract, two new §5 subsections (the `CQDatedContestation` partial preregistered success and the 2026-05-16 CQR repair-attempt second Bucket D), an updated §6 Discussion integrating both 2026-05-16 outcomes, an expanded §8 Limits separating CQDated and CQR boundary claims, and a §9 Next Work that gated LongMemEval feasibility on the spine landing. The LongMemEval feasibility memo landed on 2026-05-17 with decision (b), descriptive-only future work: 72 official `knowledge-update` cases map to `contradiction_edge`, but a fair transfer run is blocked until a separate adapter/annotation preregistration creates a shared candidate stream and policy-query contract.
+3. The methodology spine promotion landed on 2026-05-16: `docs/benchmark_methodology_draft.md` now carries an Abstract, two new §5 subsections (the `CQDatedContestation` partial preregistered success and the 2026-05-16 CQR repair-attempt second Bucket D), an updated §6 Discussion integrating both 2026-05-16 outcomes, an expanded §8 Limits separating CQDated and CQR boundary claims, and a §9 Next Work that gated LongMemEval feasibility on the spine landing. The LongMemEval feasibility memo landed on 2026-05-17 with decision (b), and the later fair-stream externalization workstream has now locked the preregistration, frozen the agreed annotation subset, and pinned the adapter. A fair transfer run remains blocked until smoke execution, PFLC scoring, and judge calibration pass.
 4. Keep Bucket C abstention, LongMemEval transfer, prompt changes, validator changes, and new mechanism families out of scope unless a future preregistered follow-up explicitly justifies them from the audit's mechanism-local interpretation. (`CQDatedContestation` is removed from this exclusion list because the preregistered follow-up landed on 2026-05-16 as partial preregistered success — base-CQ repair with the Reflection win criterion not cleared on the `temporal_skew` lane; see `docs/adversarial_upstream_noise_dated_followup_results.md`.)
-5. Use `docs/paper_outline.md` as the packaging spine for the report. The next licensed original-research move should be one of three preregistered paths: a policy-facing adapter-contract audit, a fresh Phase 4 baseline with committed or archived run-JSON payloads, or a LongMemEval adapter/annotation preregistration that creates a shared candidate stream and canonical-query contract before any policy run.
+5. Use `docs/paper_outline.md` as the packaging spine for the report. The next licensed original-research move should be one of three preregistered paths: a policy-facing adapter-contract audit, a fresh Phase 4 baseline with committed or archived run-JSON payloads, or the Phase X.3 LongMemEval smoke/PFLC/judge-calibration gates under the already-locked externalization protocol.
 6. The 2026-05-17 registered post-hoc QR-canon audit landed and is the most recent reframing artifact for the paper. It reuses the locked CQR Section A `cqr_set_membership` metric and the locked CQR alias function verbatim, reads only the committed `data/results/qr_canon_source_table.csv` at audit time, and reattributes the four perfect-clustering null rows from "unattributed null" to "policy-facing query interface contract failure" without unlocking the locked CQR audit or amending any policy verdict. See `docs/qr_canon_audit_results.md`. The CQR Section C cross-tab (QR-canon hit vs per-policy answer success) remains the natural follow-on diagnostic but is blocked on the same replay path; it is not licensed against the existing locked Phase 4 manifests.
 7. Workstream A.6 (PFLC field-level diagnostic generalization) landed on 2026-05-18 at outcome bucket B-3 (artifact-blocked) for its original anchor set. The registration `docs/policy_facing_lookup_contract_registration.md` locks the contract; the proposition `docs/policy_facing_lookup_contract_proposition.md` gives the formal core. Four per-anchor feasibility memos (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) all landed at descriptive-only. Four synthetic counterexample rows ship in `data/results/qr_canon_field_diagnostic_metrics.csv`. The consolidated readout is `docs/qr_canon_field_diagnostic_results.md`; methodology spine §5 and paper outline §1, §3, §4, §5, §8 are updated. BEAM remains in the field-exclusion table because its conditional promotion rule (Mem0/LoCoMo = blocked) did not fire.
 8. The post-A.6 LoCoMo published-output PFLC follow-up landed in `docs/locomo_baseline_replay_survey.md`. A current artifact sweep found that the Agent Memory Benchmark publishes per-question LoCoMo Hindsight and hybrid-search run gzips with injected contexts containing recoverable LoCoMo `dia_id` values. `scripts/score_locomo_amb_pflc.py` scores those IDs against official LoCoMo `qa[].evidence` and emits `data/results/locomo_amb_pflc_rows.csv` plus `data/results/locomo_amb_pflc_summary.json`. This upgrades the LoCoMo axis from universal artifact-blocked to a narrow `published-output/context-derived` replay for AMB outputs only. The next licensed step is report integration and, if useful, a separately registered expansion to additional AMB providers or stricter compact-retrieval cutoffs; do not convert this into a CQ-vs-external policy comparison without preserving the same-candidate-stream/substrate invariants or explicitly labeling it descriptive-only.
@@ -682,12 +694,13 @@ The first deterministic forced-contradiction local-model command/prompt, compone
    descriptive evidence-exposure work because V2's public files strip the
    gold-side labels needed for matched PFLC. `docs/fair_stream_externalization_preregistration.md`
    is locked, and the redacted-loader, dual-path-audit, verifier, annotator
-   paths, manifest writer, and lock primitives have focused tests. Phase X.1
-   now freezes 71 agreed annotations from 72 comparable cases, with the single
-   canonical-id divergence retained as an audit row. The next licensed step is
-   Phase X.2 adapter construction and pinning. Do not run CQ, Reflection, or
-   `Mem0Lite` on LongMemEval before the adapter pin, stream-hash invariant,
-   smoke run, PFLC wrapper, and judge calibration gates pass.
+   paths, manifest writer, adapter, and lock primitives have focused tests.
+   Phase X.1 freezes 71 agreed annotations from 72 comparable cases, with the
+   single canonical-id divergence retained as an audit row. Phase X.2 now pins
+   the adapter and verifies the N=6 dry-run stream-hash invariant. The next
+   licensed step is Phase X.3 smoke execution, PFLC wrapper construction, and
+   judge calibration. Do not run the full CQ, Reflection, or `Mem0Lite`
+   LongMemEval transfer comparison before those gates pass.
 
 ## Working Rules
 
