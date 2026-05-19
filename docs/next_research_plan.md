@@ -121,9 +121,12 @@ the agreed annotation artifact includes candidate events for the adapter. Phase
 X.1 leaves contradiction edges empty rather than inventing adjacent-session
 links. Phase X.2 has now landed adapter construction and stream-hash pinning:
 the agreed events map into shared `Scenario` and `CandidateUpdate` objects, the
-adapter SHA is pinned against the preregistration lock, and the N=6 adapter
-dry run reports zero drops with identical candidate-stream hashes across the
-CQ, Reflection, and `Mem0Lite` placeholder policy names. This does not
+adapter SHA is pinned against the preregistration lock, the adapter validates
+the pin by default, and the N=6 adapter dry run reports zero drops with
+identical candidate-stream hashes across the CQ, Reflection, and `Mem0Lite`
+placeholder policy names. Because the current deterministic adapter does not
+create event-level contradiction edges, contradiction recovery is out of scope
+unless a later registered extractor amendment adds that support. This does not
 authorize a policy run. The next step is smoke testing, PFLC scoring, and judge
 calibration under the locked protocol.
 

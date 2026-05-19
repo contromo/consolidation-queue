@@ -2,9 +2,12 @@
 
 Date: 2026-05-18
 
-Status: locked before annotation, adapter execution, or policy execution.
+Status: locked before annotation, adapter execution, or policy execution;
+relocked on 2026-05-19 after Phase X.2 review to make pin validation default
+and remove the unmeasurable contradiction-recovery metric before Phase X.3
+smoke or policy execution.
 
-fair_stream_externalization_lock_sha256: 0772475aa346a52d4367003d097ba072a8fa6d52451a7fe576db0446894a626a
+fair_stream_externalization_lock_sha256: a7b8b5df50d3dbe41bbf8922c2ba1bbd9b98775c302f25d29313ece093000f53
 
 This preregistration defines a protocol-level externalization methodology for
 memory benchmarks. The policy readout is a supporting experiment only. The
@@ -131,9 +134,11 @@ policy-facing use of confidence must remain identical across all compared
 policies.
 
 Both paths emit `contradiction_edges = []` and empty per-event
-`contradicts_event_ids` in Phase X.1. Any contradiction edge used by Phase X.2+
-must come from the locked adapter/extractor step, not from an adjacent-session
-chain assumption.
+`contradicts_event_ids` in Phase X.1. The Phase X.2 deterministic adapter does
+not synthesize contradiction edges. Contradiction recovery is therefore not a
+primary LongMemEval transfer metric under this locked adapter; it may only be
+added by a separate registered extractor/edge-construction amendment, not by an
+adjacent-session chain assumption.
 
 Path outputs are compared by
 `cq.eval.external.longmemeval.dual_path_audit` per case. Cases are labeled:
@@ -188,10 +193,16 @@ PFLC cutoffs: `1`, `5`, `10`, `20`, `50`.
 Policy metrics:
 
 - `answer_correctness`;
-- `contradiction_recovery_rate`;
 - `false_assertion_rate`;
 - dialog-evidence-id PFLC at the locked cutoffs;
 - fixed-seed paired bootstrap CIs for CQ-vs-Reflection and CQ-vs-`Mem0Lite`.
+
+`contradiction_recovery_rate` is explicitly out of scope for the current
+LongMemEval transfer adapter because the agreed Phase X.1 annotations and the
+Phase X.2 deterministic adapter produce no contradiction edges. If a later
+registered extractor amendment adds event-level contradiction support, that
+amendment must relock the metric list before any policy execution that reports
+contradiction recovery.
 
 Judge/scoring default: local `qwen2.5:32b-instruct-q4_K_M`, reusing the Phase 4
 local unlock digest discipline. Published judge logs are preferred for

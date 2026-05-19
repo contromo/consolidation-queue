@@ -8,12 +8,13 @@
   agreed annotation events into shared `Scenario` and `CandidateUpdate` objects
   under the hidden-answer protocol
 - added `docs/longmemeval_adapter_pin.json`: pins the adapter SHA
-  (`decc87aa666736333071e052130af21818d298949a891e140c974aadb0eb1c2f`)
+  (`305cc3c1e475bb4ea21b34958267fc7c8aed4764b4389e392de0ac187dcdaea5`)
   against the locked fair-stream externalization preregistration SHA
-  (`0772475aa346a52d4367003d097ba072a8fa6d52451a7fe576db0446894a626a`)
+  (`a7b8b5df50d3dbe41bbf8922c2ba1bbd9b98775c302f25d29313ece093000f53`)
 - added `tests/test_longmemeval_external_adapter.py` and the
   `longmemeval_external` `TaskFamily` enum value
-- exercised the adapter CLI on the N=6 dry-run subset with `--check-pin`
+- exercised the adapter CLI on the N=6 dry-run subset with default pin
+  validation
 
 ### Why it matters
 
@@ -23,8 +24,14 @@
   `Mem0Lite` placeholder policy names
 - the full agreed-subset adapter pass emitted 71 scenarios and 142 candidates
   with zero drops and the same stream-hash invariant intact
-- adapter pin validation now fails closed on live adapter SHA or
-  preregistration-lock drift
+- adapter pin validation now runs by default and fails closed on live adapter
+  SHA or preregistration-lock drift; the CLI escape hatch is reserved for
+  first-time pin generation only
+- adapter input loading now rejects answer-side/gold/rubric/label keys at the
+  boundary rather than relying only on the upstream agreed-annotation convention
+- the preregistration removes `contradiction_recovery_rate` from the current
+  primary LongMemEval transfer metric list because this deterministic adapter
+  does not create event-level contradiction edges
 - the LongMemEval workstream has moved from annotation freeze to pinned stream
   construction while preserving the same-upstream-candidate invariant
 

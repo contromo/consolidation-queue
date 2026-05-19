@@ -100,6 +100,50 @@ class LongMemEvalAdapterTests(unittest.TestCase):
             with self.assertRaises(adapter.LongMemEvalAdapterError):
                 adapter.validate_adapter_pin(pin_path=pin_path)
 
+    def test_dry_run_summary_validates_pin_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            annotations_path = Path(tmpdir) / "annotations.json"
+            annotations_path.write_text(
+                json.dumps({"annotations": [_annotation_row()]}),
+                encoding="utf-8",
+            )
+            pin_path = Path(tmpdir) / "pin.json"
+            pin_path.write_text(
+                json.dumps(
+                    {
+                        "candidate_adapter_sha256": "0" * 64,
+                        "preregistration_lock_sha256": validate_fair_stream_externalization_lock(),
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(adapter.LongMemEvalAdapterError):
+                adapter.build_dry_run_summary(
+                    annotations_path=annotations_path,
+                    adapter_pin_path=pin_path,
+                )
+
+            summary = adapter.build_dry_run_summary(
+                annotations_path=annotations_path,
+                adapter_pin_path=pin_path,
+                validate_pin=False,
+            )
+
+        self.assertEqual(summary["scenario_count"], 1)
+
+    def test_load_agreed_annotations_rejects_answer_side_keys(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "annotations.json"
+            row = _annotation_row()
+            row["answer"] = "25:50"
+            path.write_text(json.dumps({"annotations": [row]}), encoding="utf-8")
+
+            with self.assertRaises(adapter.LongMemEvalAdapterError) as context:
+                adapter.load_agreed_annotations(path)
+
+        self.assertIn("Forbidden answer-side keys", str(context.exception))
+
     def test_dry_run_summary_respects_case_limit(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "annotations.json"

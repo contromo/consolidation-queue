@@ -12,6 +12,7 @@ from cq.eval.external.longmemeval.preregistration_lock import (
     PREREGISTRATION_PATH,
     validate_fair_stream_externalization_lock,
 )
+from cq.eval.external.longmemeval.verifier import forbidden_answer_key_paths
 from cq.eval.extracted_candidate_runner import candidate_stream_sha256
 from cq.schemas.memory import (
     CandidateUpdate,
@@ -82,6 +83,14 @@ def validate_adapter_pin(
 
 def load_agreed_annotations(path: str | Path) -> list[dict[str, Any]]:
     payload = _read_json(Path(path))
+    forbidden_paths = forbidden_answer_key_paths(payload)
+    if forbidden_paths:
+        raise LongMemEvalAdapterError(
+            "Forbidden answer-side keys in annotation input {}: {}".format(
+                path,
+                ", ".join(forbidden_paths[:10]),
+            )
+        )
     annotations = payload.get("annotations")
     if not isinstance(annotations, list):
         raise LongMemEvalAdapterError("No annotations list in {}".format(path))
@@ -239,6 +248,12 @@ def candidate_stream_hash_report(
     streams: Mapping[str, AdaptedCandidateStream],
     policy_names: Sequence[str],
 ) -> dict[str, object]:
+    """Label one policy-blind adapter stream under each policy name.
+
+    The invariant is structural: this adapter has no policy branches, so the
+    same adapted candidate stream is the only stream any policy may receive.
+    """
+
     hashes_by_policy = {
         policy_name: {
             scenario_id: stream.candidate_stream_sha256
@@ -392,12 +407,16 @@ def build_dry_run_summary(
     *,
     annotations_path: Path,
     case_limit: Optional[int] = None,
+    validate_pin: bool = True,
+    adapter_pin_path: str | Path = ADAPTER_PIN_PATH,
     policy_names: Sequence[str] = (
         "consolidation_queue_lite",
         "reflection_eager_write_lite",
         "mem0_lite",
     ),
 ) -> dict[str, object]:
+    if validate_pin:
+        validate_adapter_pin(pin_path=adapter_pin_path)
     scenarios, streams = adapt_annotations(
         load_agreed_annotations(annotations_path),
         case_limit=case_limit,
@@ -431,14 +450,27 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--annotations-json", default=str(DEFAULT_ANNOTATIONS_PATH))
     parser.add_argument("--case-limit", type=int)
     parser.add_argument("--output-json")
-    parser.add_argument("--check-pin", action="store_true")
+    parser.add_argument(
+        "--check-pin",
+        action="store_true",
+        help="Deprecated compatibility flag; adapter pin validation runs by default.",
+    )
+    parser.add_argument(
+        "--skip-pin-check",
+        action="store_true",
+        help=(
+            "Skip adapter pin validation only while generating or updating "
+            "docs/longmemeval_adapter_pin.json before a valid pin exists."
+        ),
+    )
     args = parser.parse_args(argv)
 
-    if args.check_pin:
-        validate_adapter_pin()
+    if args.check_pin and args.skip_pin_check:
+        parser.error("--check-pin and --skip-pin-check cannot be combined")
     summary = build_dry_run_summary(
         annotations_path=Path(args.annotations_json),
         case_limit=args.case_limit,
+        validate_pin=not args.skip_pin_check,
     )
     if args.output_json:
         write_json(args.output_json, summary)

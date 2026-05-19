@@ -229,19 +229,22 @@ Implemented:
   71 of 72 comparable in-denominator cases (`agreement_rate = 0.9861`), emit
   adapter-ready candidate events in the agreed file, record the one
   canonical-id divergence in the audit report, and pass the hidden-answer
-  verifier. Phase X.1 does not invent contradiction edges; those remain
-  deferred to the adapter/extractor phase. This freezes the annotation layer
-  only and does not by itself authorize smoke, judge calibration, or external
-  policy execution.
+  verifier. Phase X.1 does not invent contradiction edges; the current
+  deterministic adapter also does not synthesize them, so contradiction
+  recovery is out of scope unless a later registered extractor amendment adds
+  event-level edge support. This freezes the annotation layer only and does
+  not by itself authorize smoke, judge calibration, or external policy
+  execution.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
   and pinning for the LongMemEval v1 controlled-pilot denominator. The adapter
   maps the agreed annotation events into CQ `Scenario` and `CandidateUpdate`
   objects, preserves hidden-answer protocol fields by leaving gold and
-  forbidden candidate ids empty, records per-scenario candidate-stream hashes
-  and adapter drops, validates the live adapter SHA plus preregistration lock
-  SHA, and exposes an N=6 dry-run CLI that reports zero drops and identical
+  forbidden candidate ids empty, rejects answer-side keys at the adapter
+  boundary, records per-scenario candidate-stream hashes and adapter drops,
+  validates the live adapter SHA plus preregistration lock SHA by default, and
+  exposes an N=6 dry-run CLI that reports zero drops and identical
   candidate-stream hashes across the CQ, Reflection, and `Mem0Lite` placeholder
   policy names. This is still adapter plumbing only; no smoke policy run, PFLC
   scoring, judge calibration, or external policy comparison has been executed.
