@@ -6,8 +6,9 @@ externalization workstream.
 
 Strict scoping rules — preregistration §1 invariants:
 
-- Importable from scorer (``cq.eval.external.longmemeval.scorer``) and judge
-  stability (``cq.eval.external.longmemeval.judge_stability``) only.
+- Importable from scorer (``cq.eval.external.longmemeval.scorer``), judge
+  stability (``cq.eval.external.longmemeval.judge_stability``), and the
+  scoring-side LongMemEval calibration/transfer helpers only.
 - MUST NOT be imported by ``annotator_path_a``, ``annotator_path_b``,
   ``dual_path_audit``, ``verifier``, ``redacted_loader``, ``adapter``, or any
   policy code.

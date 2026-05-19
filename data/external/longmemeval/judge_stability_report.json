@@ -1,0 +1,634 @@
+{
+  "agreement_threshold_met": true,
+  "calibration_path": "judge_stability_local_cross_check",
+  "cross_judge_agreement": 0.96,
+  "cross_judge_matches": 24,
+  "indeterminate_count": 0,
+  "kill_criterion_10_triggered": false,
+  "minimum_agreement": 0.85,
+  "minimum_case_count": 20,
+  "paired_rows": [
+    {
+      "case_id": "01493427",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "01493427",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "031748ae",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "031748ae",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "06db6396",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "06db6396",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "07741c44",
+      "cross_judge_match": false,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "correct",
+      "source_case_id": "07741c44",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "07741c45",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "07741c45",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "08e075c7",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "08e075c7",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "0977f2af",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "0977f2af",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "0ddfec37",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "0ddfec37",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "0e4e4c46",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "0e4e4c46",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "0f05491a",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "0f05491a",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "10e09553",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "10e09553",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "184da446",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "184da446",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "18bc8abd",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "18bc8abd",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "1cea1afa",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "1cea1afa",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "2133c1b5",
+      "cross_judge_match": true,
+      "expected_verdict": null,
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "2133c1b5",
+      "stratum": "realistic"
+    },
+    {
+      "case_id": "22d2cb42::control_negative",
+      "cross_judge_match": true,
+      "expected_verdict": "incorrect",
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "22d2cb42",
+      "stratum": "control_negative"
+    },
+    {
+      "case_id": "22d2cb42::control_positive",
+      "cross_judge_match": true,
+      "expected_verdict": "correct",
+      "primary_verdict": "correct",
+      "reference_verdict": null,
+      "secondary_verdict": "correct",
+      "source_case_id": "22d2cb42",
+      "stratum": "control_positive"
+    },
+    {
+      "case_id": "26bdc477::control_negative",
+      "cross_judge_match": true,
+      "expected_verdict": "incorrect",
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "26bdc477",
+      "stratum": "control_negative"
+    },
+    {
+      "case_id": "26bdc477::control_positive",
+      "cross_judge_match": true,
+      "expected_verdict": "correct",
+      "primary_verdict": "correct",
+      "reference_verdict": null,
+      "secondary_verdict": "correct",
+      "source_case_id": "26bdc477",
+      "stratum": "control_positive"
+    },
+    {
+      "case_id": "3ba21379::control_negative",
+      "cross_judge_match": true,
+      "expected_verdict": "incorrect",
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "3ba21379",
+      "stratum": "control_negative"
+    },
+    {
+      "case_id": "3ba21379::control_positive",
+      "cross_judge_match": true,
+      "expected_verdict": "correct",
+      "primary_verdict": "correct",
+      "reference_verdict": null,
+      "secondary_verdict": "correct",
+      "source_case_id": "3ba21379",
+      "stratum": "control_positive"
+    },
+    {
+      "case_id": "41698283::control_negative",
+      "cross_judge_match": true,
+      "expected_verdict": "incorrect",
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "41698283",
+      "stratum": "control_negative"
+    },
+    {
+      "case_id": "41698283::control_positive",
+      "cross_judge_match": true,
+      "expected_verdict": "correct",
+      "primary_verdict": "correct",
+      "reference_verdict": null,
+      "secondary_verdict": "correct",
+      "source_case_id": "41698283",
+      "stratum": "control_positive"
+    },
+    {
+      "case_id": "42ec0761::control_negative",
+      "cross_judge_match": true,
+      "expected_verdict": "incorrect",
+      "primary_verdict": "incorrect",
+      "reference_verdict": null,
+      "secondary_verdict": "incorrect",
+      "source_case_id": "42ec0761",
+      "stratum": "control_negative"
+    },
+    {
+      "case_id": "42ec0761::control_positive",
+      "cross_judge_match": true,
+      "expected_verdict": "correct",
+      "primary_verdict": "correct",
+      "reference_verdict": null,
+      "secondary_verdict": "correct",
+      "source_case_id": "42ec0761",
+      "stratum": "control_positive"
+    }
+  ],
+  "paired_total": 25,
+  "primary_agreement": 0.9333333333333333,
+  "primary_model_id": "qwen2.5:32b-instruct-q4_K_M",
+  "primary_verdicts": [
+    {
+      "case_id": "01493427",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "031748ae",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "06db6396",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "07741c44",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "07741c45",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "08e075c7",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "0977f2af",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "0ddfec37",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "0e4e4c46",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "0f05491a",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "10e09553",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "184da446",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "18bc8abd",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "1cea1afa",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "2133c1b5",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "22d2cb42::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "22d2cb42::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "26bdc477::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "26bdc477::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "3ba21379::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "3ba21379::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "41698283::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "41698283::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "42ec0761::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "42ec0761::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    }
+  ],
+  "reference_agreement": null,
+  "reference_matches": 0,
+  "reference_verdicts_present": 0,
+  "secondary_model_id": "qwen2.5:7b-instruct-q4_K_M",
+  "secondary_verdicts": [
+    {
+      "case_id": "01493427",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "031748ae",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "06db6396",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "07741c44",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "07741c45",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "08e075c7",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "0977f2af",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "0ddfec37",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "0e4e4c46",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "0f05491a",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "10e09553",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "184da446",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "18bc8abd",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "1cea1afa",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "2133c1b5",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "22d2cb42::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "22d2cb42::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "26bdc477::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "26bdc477::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "3ba21379::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "3ba21379::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "41698283::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "41698283::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    },
+    {
+      "case_id": "42ec0761::control_positive",
+      "raw_response_bytes": 7,
+      "raw_response_sha256": "15a596e3c98c407e043751ff3b21ff0358a1bdfdf3fe948b1523893a8e5de2e8",
+      "verdict": "correct"
+    },
+    {
+      "case_id": "42ec0761::control_negative",
+      "raw_response_bytes": 9,
+      "raw_response_sha256": "203d3536bd62ad33ac70b7ea3d4f5e10b6d52ebd0cb7582841a053aebb7186a3",
+      "verdict": "incorrect"
+    }
+  ],
+  "stratum_metrics": {
+    "control_negative": {
+      "cross_judge_agreement": 1.0,
+      "cross_judge_matches": 5,
+      "expected_verdict_count": 5,
+      "primary_expected_accuracy": 1.0,
+      "primary_expected_matches": 5,
+      "secondary_expected_accuracy": 1.0,
+      "secondary_expected_matches": 5,
+      "support_count": 5
+    },
+    "control_positive": {
+      "cross_judge_agreement": 1.0,
+      "cross_judge_matches": 5,
+      "expected_verdict_count": 5,
+      "primary_expected_accuracy": 1.0,
+      "primary_expected_matches": 5,
+      "secondary_expected_accuracy": 1.0,
+      "secondary_expected_matches": 5,
+      "support_count": 5
+    },
+    "realistic": {
+      "cross_judge_agreement": 0.9333333333333333,
+      "cross_judge_matches": 14,
+      "expected_verdict_count": 0,
+      "primary_expected_accuracy": null,
+      "primary_expected_matches": 0,
+      "secondary_expected_accuracy": null,
+      "secondary_expected_matches": 0,
+      "support_count": 15
+    }
+  },
+  "support_count": 25,
+  "support_count_check_passed": true,
+  "synthetic_correctness_floor": {
+    "applicable": true,
+    "failed_strata": [],
+    "passed": true,
+    "strata": {
+      "control_negative": {
+        "applicable": true,
+        "expected_verdict_count": 5,
+        "maximum_errors_per_judge": 1,
+        "passed": true,
+        "primary_expected_matches": 5,
+        "primary_passed": true,
+        "secondary_expected_matches": 5,
+        "secondary_passed": true
+      },
+      "control_positive": {
+        "applicable": true,
+        "expected_verdict_count": 5,
+        "maximum_errors_per_judge": 1,
+        "passed": true,
+        "primary_expected_matches": 5,
+        "primary_passed": true,
+        "secondary_expected_matches": 5,
+        "secondary_passed": true
+      }
+    }
+  }
+}

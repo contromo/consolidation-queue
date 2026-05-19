@@ -3,7 +3,8 @@
 Implements preregistration §6 path 2: when no published reference judge logs
 exist, calibrate the primary local judge (``qwen2.5:32b-instruct-q4_K_M``) for
 LongMemEval QA scoring by checking its verdict agreement against a second
-locked local model (``qwen2.5:7b-instruct-q4_K_M``) on a 20-case held-out set.
+locked local model (``qwen2.5:7b-instruct-q4_K_M``) on a stratified held-out
+set.
 
 Preregistration §6 path ordering (this module is path 2):
 
@@ -19,8 +20,9 @@ Preregistration §6 path ordering (this module is path 2):
    authorization recorded in the preregistration; no API calls happen in this
    module.
 
-Kill criterion 10 (preregistration §8): agreement below ``0.85`` on the locked
-20-case subset escalates to the user before any policy run.
+Kill criterion 10 (preregistration §8): realistic-stratum agreement below
+``0.85`` or failed synthetic controls escalates to the user before any policy
+run. The support floor remains 20 paired/reference cases.
 
 Scaffolding-only by default. The module exposes a callable that runs the
 ollama HTTP API, but the CLI defaults to writing a ``--dry-run`` plan; a full
@@ -79,6 +81,10 @@ class CalibrationCase:
     question: str
     gold_answer: str
     candidate_answer: str
+    stratum: str = "realistic"
+    expected_verdict: Optional[str] = None
+    source_case_id: Optional[str] = None
+    source_policy: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -128,6 +134,10 @@ def load_calibration_set(path: Union[str, Path]) -> list[CalibrationCase]:
                 question=str(row.get("question") or ""),
                 gold_answer=str(row.get("gold_answer") or ""),
                 candidate_answer=str(row.get("candidate_answer") or ""),
+                stratum=str(row.get("stratum") or "realistic"),
+                expected_verdict=_optional_verdict(row.get("expected_verdict")),
+                source_case_id=_optional_text(row.get("source_case_id")),
+                source_policy=_optional_text(row.get("source_policy")),
             )
         )
     return cases
@@ -142,9 +152,13 @@ def stability_report(
     minimum_agreement: float = JUDGE_AGREEMENT_FLOOR,
     minimum_case_count: int = CALIBRATION_SET_SIZE,
     reference_verdicts: Optional[Mapping[str, str]] = None,
+    calibration_cases: Optional[Sequence[CalibrationCase]] = None,
 ) -> dict[str, object]:
     primary_by_case = {v.case_id: v for v in verdicts_primary}
     secondary_by_case = {v.case_id: v for v in verdicts_secondary}
+    calibration_by_case = {
+        case.case_id: case for case in (calibration_cases or [])
+    }
     overlap = sorted(set(primary_by_case) & set(secondary_by_case))
     paired_rows = []
     cross_judge_matches = 0
@@ -154,6 +168,7 @@ def stability_report(
     for case_id in overlap:
         primary = primary_by_case[case_id]
         secondary = secondary_by_case[case_id]
+        calibration_case = calibration_by_case.get(case_id)
         cross_match = primary.verdict == secondary.verdict
         cross_judge_matches += int(cross_match)
         if INDETERMINATE_VERDICT in (primary.verdict, secondary.verdict):
@@ -169,10 +184,19 @@ def stability_report(
                 "secondary_verdict": secondary.verdict,
                 "cross_judge_match": cross_match,
                 "reference_verdict": reference_verdict,
+                "stratum": calibration_case.stratum if calibration_case else None,
+                "expected_verdict": (
+                    calibration_case.expected_verdict if calibration_case else None
+                ),
+                "source_case_id": (
+                    calibration_case.source_case_id if calibration_case else None
+                ),
             }
         )
     paired_total = len(paired_rows)
     cross_judge_agreement = cross_judge_matches / paired_total if paired_total else 0.0
+    stratum_metrics = _stratum_metrics(paired_rows)
+    synthetic_floor = _synthetic_correctness_floor(stratum_metrics)
     reference_agreement = (
         reference_matches / reference_present if reference_present else None
     )
@@ -181,22 +205,26 @@ def stability_report(
         if reference_verdicts is not None
         else "judge_stability_local_cross_check"
     )
-    primary_agreement = (
-        reference_agreement
-        if reference_verdicts is not None
-        else cross_judge_agreement
-    )
+    if reference_verdicts is not None:
+        primary_agreement = reference_agreement
+    else:
+        realistic_metrics = stratum_metrics.get("realistic", {})
+        primary_agreement = realistic_metrics.get(
+            "cross_judge_agreement",
+            cross_judge_agreement,
+        )
     support_count = (
         reference_present
         if reference_verdicts is not None
         else paired_total
     )
     support_count_check_passed = support_count >= minimum_case_count
-    threshold_met = (
+    agreement_threshold_met = (
         support_count_check_passed and primary_agreement >= minimum_agreement
         if primary_agreement is not None
         else False
     )
+    threshold_met = agreement_threshold_met and synthetic_floor["passed"]
     return {
         "primary_model_id": primary_model_id,
         "secondary_model_id": secondary_model_id,
@@ -213,8 +241,118 @@ def stability_report(
         "reference_matches": reference_matches,
         "reference_agreement": reference_agreement,
         "primary_agreement": primary_agreement,
+        "agreement_threshold_met": agreement_threshold_met,
+        "stratum_metrics": stratum_metrics,
+        "synthetic_correctness_floor": synthetic_floor,
         "kill_criterion_10_triggered": not threshold_met,
         "paired_rows": paired_rows,
+    }
+
+
+def _optional_text(value: object) -> Optional[str]:
+    if value is None:
+        return None
+    text = str(value)
+    return text if text else None
+
+
+def _optional_verdict(value: object) -> Optional[str]:
+    if value is None or value == "":
+        return None
+    text = str(value)
+    if text not in {CORRECT_VERDICT, INCORRECT_VERDICT}:
+        raise JudgeStabilityError(
+            "expected_verdict must be '{}' or '{}', got {!r}".format(
+                CORRECT_VERDICT,
+                INCORRECT_VERDICT,
+                value,
+            )
+        )
+    return text
+
+
+def _stratum_metrics(paired_rows: Sequence[Mapping[str, object]]) -> dict[str, object]:
+    grouped: dict[str, list[Mapping[str, object]]] = {}
+    for row in paired_rows:
+        stratum = str(row.get("stratum") or "unlabeled")
+        grouped.setdefault(stratum, []).append(row)
+    metrics = {}
+    for stratum, rows in sorted(grouped.items()):
+        expected_rows = [row for row in rows if row.get("expected_verdict")]
+        cross_matches = sum(1 for row in rows if row.get("cross_judge_match"))
+        primary_expected_matches = sum(
+            1
+            for row in expected_rows
+            if row.get("primary_verdict") == row.get("expected_verdict")
+        )
+        secondary_expected_matches = sum(
+            1
+            for row in expected_rows
+            if row.get("secondary_verdict") == row.get("expected_verdict")
+        )
+        metrics[stratum] = {
+            "support_count": len(rows),
+            "cross_judge_matches": cross_matches,
+            "cross_judge_agreement": cross_matches / len(rows) if rows else 0.0,
+            "expected_verdict_count": len(expected_rows),
+            "primary_expected_matches": primary_expected_matches,
+            "primary_expected_accuracy": (
+                primary_expected_matches / len(expected_rows)
+                if expected_rows
+                else None
+            ),
+            "secondary_expected_matches": secondary_expected_matches,
+            "secondary_expected_accuracy": (
+                secondary_expected_matches / len(expected_rows)
+                if expected_rows
+                else None
+            ),
+        }
+    return metrics
+
+
+def _synthetic_correctness_floor(
+    stratum_metrics: Mapping[str, object],
+) -> dict[str, object]:
+    checked_strata = ("control_positive", "control_negative")
+    floors = {}
+    failures = []
+    any_expected = False
+    for stratum in checked_strata:
+        metrics = stratum_metrics.get(stratum)
+        if not isinstance(metrics, Mapping):
+            floors[stratum] = {
+                "applicable": False,
+                "passed": True,
+                "primary_expected_matches": 0,
+                "secondary_expected_matches": 0,
+                "expected_verdict_count": 0,
+            }
+            continue
+        expected_count = int(metrics.get("expected_verdict_count") or 0)
+        primary_matches = int(metrics.get("primary_expected_matches") or 0)
+        secondary_matches = int(metrics.get("secondary_expected_matches") or 0)
+        any_expected = any_expected or expected_count > 0
+        primary_passed = expected_count == 0 or primary_matches >= max(0, expected_count - 1)
+        secondary_passed = expected_count == 0 or secondary_matches >= max(0, expected_count - 1)
+        passed = primary_passed and secondary_passed
+        floors[stratum] = {
+            "applicable": expected_count > 0,
+            "passed": passed,
+            "primary_passed": primary_passed,
+            "secondary_passed": secondary_passed,
+            "primary_expected_matches": primary_matches,
+            "secondary_expected_matches": secondary_matches,
+            "expected_verdict_count": expected_count,
+            "maximum_errors_per_judge": 1 if expected_count else 0,
+        }
+        if not passed:
+            failures.append(stratum)
+    return {
+        "applicable": any_expected,
+        "passed": not failures,
+        "failed_strata": failures,
+        "strata": floors,
     }
 
 
@@ -400,7 +538,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     cases = load_calibration_set(args.calibration_json)
     if len(cases) < CALIBRATION_SET_SIZE:
         print(
-            "WARNING: calibration set has {} cases (preregistration §6 expects {}).".format(
+            "WARNING: calibration set has {} cases (minimum support floor is {}).".format(
                 len(cases),
                 CALIBRATION_SET_SIZE,
             )
@@ -441,6 +579,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         minimum_agreement=args.minimum_agreement,
         minimum_case_count=args.minimum_case_count,
         reference_verdicts=reference_verdicts,
+        calibration_cases=cases,
     )
     report["primary_verdicts"] = [
         verdict_artifact_row(verdict) for verdict in verdicts_primary

@@ -1,5 +1,53 @@
 # Product Progress
 
+## 2026-05-19 — LongMemEval Phase X.3.5 judge calibration lands
+
+### What shipped
+
+- added `docs/longmemeval_reference_judge_log_survey.md`: records the path-1
+  survey across the official LongMemEval repository, HuggingFace cleaned
+  dataset, arXiv page, and visible third-party result repositories. No official
+  per-case reference judge verdict log was found, so the workstream proceeds
+  through preregistration §6 path 2
+- added `cq/eval/external/longmemeval/judge_calibration_set.py` and
+  `scripts/build_longmemeval_judge_calibration_set.py`: deterministic
+  25-row calibration-set construction with 15 realistic source-policy rows,
+  five positive controls, five negative controls, manifest SHA recording, and
+  scoring-side gold access restricted to `gold_loader`
+- extended `cq/eval/external/longmemeval/judge_stability.py` with stratum
+  metadata, realistic-stratum agreement, and a synthetic-control correctness
+  floor. The local run wrote
+  `data/external/longmemeval/judge_stability_report.json` and
+  `judge_stability_manifest.json`
+- added `cq/eval/external/longmemeval/transfer.py`,
+  `scripts/run_longmemeval_transfer.py`, and transfer tests: the Phase X.4
+  runner now validates the adapter pin and judge report, executes policies over
+  the primary/sensitivity cells, maps resolved candidates back to LongMemEval
+  session ids for PFLC, and emits summary/per-case/manifest artifacts when run
+
+### Why it matters
+
+- kill criterion 10 is now cleared for the local judge path:
+  `support_count = 25`, realistic-stratum agreement `14/15 = 0.9333`,
+  no indeterminate verdicts, and both judges hit 5/5 on positive controls and
+  5/5 on negative controls
+- the calibration set makes the judge gate less vacuous than cross-judge
+  agreement alone: realistic rows test answer-distribution stability, while
+  synthetic controls catch judges that agree with each other but fail obvious
+  correctness cases
+- Phase X.4 is now blocked by compute/execution, not missing infrastructure.
+  The full judged transfer remains unrun; dry-run CLI smoke verified policy
+  execution and PFLC row construction without making judge calls
+
+### Open issues / next
+
+- run `scripts/run_longmemeval_transfer.py --include-ablations
+  --include-sensitivity-cells --run-local-judge` from a clean worktree to emit
+  the actual Phase X.4 policy-transfer result
+- do not write the Phase X.5 results document until the judged X.4 transfer
+  artifact exists; the current result is a judge-calibration unlock, not a
+  policy comparison
+
 ## 2026-05-19 — LongMemEval Phase X.3 scorer, judge stability, and smoke artifact land
 
 ### What shipped

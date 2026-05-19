@@ -61,14 +61,26 @@ class LongMemEvalGoldLoaderTests(unittest.TestCase):
     def test_gold_loader_is_not_imported_by_protected_modules(self) -> None:
         package_dir = Path(__file__).resolve().parents[1] / "cq" / "eval" / "external" / "longmemeval"
         protected_sources = []
+        allowed_package_modules = {
+            "gold_loader",
+            "judge_calibration_set",
+            "judge_stability",
+            "scorer",
+            "transfer",
+        }
         for source_path in package_dir.glob("*.py"):
-            if source_path.stem in {"gold_loader", "scorer"} or source_path.name == "__init__.py":
+            if source_path.stem in allowed_package_modules or source_path.name == "__init__.py":
                 continue
             protected_sources.append(source_path)
 
         scripts_dir = Path(__file__).resolve().parents[1] / "scripts"
+        allowed_scripts = {
+            "build_longmemeval_judge_calibration_set.py",
+            "run_longmemeval_transfer.py",
+            "score_longmemeval_pflc.py",
+        }
         for source_path in scripts_dir.glob("*longmemeval*.py"):
-            if source_path.name == "score_longmemeval_pflc.py":
+            if source_path.name in allowed_scripts:
                 continue
             protected_sources.append(source_path)
 

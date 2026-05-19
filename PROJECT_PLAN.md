@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-19 (LongMemEval Phase X.3 review hardening landed)
+Last updated: 2026-05-19 (LongMemEval Phase X.3.5 judge calibration landed)
 
 ## Goal
 
@@ -258,9 +258,34 @@ Implemented:
   post-execution policy-visible candidate hashes in the smoke summary, relocks
   `annotations_manifest.json` to the current fair-stream preregistration SHA,
   fixes brace-safe judge prompt rendering, and tightens the gold-loader import
-  boundary. This is still a smoke/license gate, not a full external policy
-  comparison; the 20-case judge stability run on qwen2.5:32b + 7b and the
-  Phase X.4 comparison remain pending.
+  boundary. This was still a smoke/license gate, not a full external policy
+  comparison; the follow-on X.3.5 calibration and X.4 transfer runner are
+  recorded separately below.
+- `docs/longmemeval_reference_judge_log_survey.md`,
+  `cq/eval/external/longmemeval/judge_calibration_set.py`,
+  `scripts/build_longmemeval_judge_calibration_set.py`,
+  `data/external/longmemeval/judge_calibration_set.json`,
+  `data/external/longmemeval/judge_calibration_set_manifest.json`,
+  `data/external/longmemeval/judge_stability_report.json`, and
+  `data/external/longmemeval/judge_stability_manifest.json`: Phase X.3.5
+  judge-calibration closeout. The path-1 survey found no official per-case
+  LongMemEval reference judge verdict log, so the workstream used path 2 with
+  a deterministic 25-row stratified set: 15 realistic CQ-answer rows plus five
+  positive and five negative synthetic controls. The local 32B/7B run passed
+  kill criterion 10 with `support_count = 25`, realistic-stratum agreement
+  `14/15 = 0.9333`, no indeterminate verdicts, and 5/5 positive plus 5/5
+  negative control correctness for both judges. The calibration unlocks X.4
+  execution but does not itself emit a policy-transfer result.
+- `cq/eval/external/longmemeval/transfer.py`,
+  `scripts/run_longmemeval_transfer.py`, and
+  `tests/test_longmemeval_external_transfer.py`: Phase X.4 runner plumbing for
+  the full fair-stream transfer comparison. The runner validates the adapter
+  pin, judge report, clean-worktree guard, and candidate-stream hash invariant;
+  executes the Phase 2.5 policy set over the primary and four sensitivity
+  cells; maps resolved candidates back to LongMemEval session ids for PFLC;
+  and writes summary, per-case CSV, manifest, and per-cell artifacts. Full
+  judged X.4 execution remains pending because it requires the local judge over
+  all policy/cell/case answer rows.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
@@ -282,7 +307,7 @@ Not implemented yet:
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
-- LongMemEval judge calibration and transfer policy run
+- LongMemEval full judged transfer policy run
 - final writeup docs
 
 ## Repository Map

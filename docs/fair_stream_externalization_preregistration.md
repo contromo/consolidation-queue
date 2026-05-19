@@ -303,3 +303,29 @@ Recompute:
 ```bash
 python3 -m cq.eval.external.longmemeval.preregistration_lock --recompute
 ```
+
+## Post-Lock Phase X.3.5 Calibration Amendment
+
+Date: 2026-05-19
+
+This amendment is intentionally outside the locked protocol block above. It
+does not change the candidate stream, policy set, PFLC target, sensitivity
+cells, or outcome buckets.
+
+Because the preferred path-1 survey found no official per-case LongMemEval
+reference judge log, Phase X.3.5 uses path 2 with a stratified calibration set:
+
+- 15 realistic rows from deterministic source-policy execution on sorted agreed
+  case ids;
+- 5 synthetic positive-control rows with `candidate_answer = gold_answer`;
+- 5 synthetic negative-control rows with `candidate_answer = "I do not know."`.
+
+The path-2 stability gate is interpreted as:
+
+- `>= 0.85` cross-judge agreement on the realistic stratum;
+- `>= 20` paired judge verdicts total;
+- at most one error per judge on each 5-row synthetic control stratum.
+
+Gold-answer access for constructing the synthetic control rows is restricted to
+the scoring-side `gold_loader` path and remains outside policy input,
+annotation, adapter, and verifier code.

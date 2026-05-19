@@ -137,6 +137,110 @@ class LongMemEvalJudgeStabilityTests(unittest.TestCase):
         self.assertTrue(report["support_count_check_passed"])
         self.assertFalse(report["kill_criterion_10_triggered"])
 
+    def test_stability_report_uses_realistic_stratum_for_primary_agreement(self) -> None:
+        cases = [
+            CalibrationCase("r{}".format(index), "Q", "A", "B", stratum="realistic")
+            for index in range(20)
+        ]
+        cases.extend(
+            [
+                CalibrationCase(
+                    "p{}".format(index),
+                    "Q",
+                    "A",
+                    "A",
+                    stratum="control_positive",
+                    expected_verdict=CORRECT_VERDICT,
+                )
+                for index in range(5)
+            ]
+        )
+        cases.extend(
+            [
+                CalibrationCase(
+                    "n{}".format(index),
+                    "Q",
+                    "A",
+                    "I do not know.",
+                    stratum="control_negative",
+                    expected_verdict=INCORRECT_VERDICT,
+                )
+                for index in range(5)
+            ]
+        )
+        primary = []
+        secondary = []
+        for index, case in enumerate(cases):
+            if case.stratum == "realistic":
+                primary_verdict = CORRECT_VERDICT
+                secondary_verdict = CORRECT_VERDICT if index < 17 else INCORRECT_VERDICT
+            else:
+                primary_verdict = case.expected_verdict
+                secondary_verdict = case.expected_verdict
+            primary.append(JudgeVerdict(case.case_id, "p", primary_verdict, primary_verdict))
+            secondary.append(JudgeVerdict(case.case_id, "s", secondary_verdict, secondary_verdict))
+
+        report = stability_report(
+            primary,
+            secondary,
+            primary_model_id="p",
+            secondary_model_id="s",
+            calibration_cases=cases,
+        )
+
+        self.assertEqual(report["support_count"], 30)
+        self.assertAlmostEqual(report["primary_agreement"], 0.85)
+        self.assertTrue(report["agreement_threshold_met"])
+        self.assertTrue(report["synthetic_correctness_floor"]["passed"])
+        self.assertFalse(report["kill_criterion_10_triggered"])
+
+    def test_stability_report_fails_when_synthetic_controls_fail_floor(self) -> None:
+        cases = [
+            CalibrationCase("r{}".format(index), "Q", "A", "B", stratum="realistic")
+            for index in range(20)
+        ]
+        cases.extend(
+            [
+                CalibrationCase(
+                    "p{}".format(index),
+                    "Q",
+                    "A",
+                    "A",
+                    stratum="control_positive",
+                    expected_verdict=CORRECT_VERDICT,
+                )
+                for index in range(5)
+            ]
+        )
+        primary = [
+            JudgeVerdict(case.case_id, "p", CORRECT_VERDICT, "correct")
+            for case in cases
+        ]
+        secondary = [
+            JudgeVerdict(
+                case.case_id,
+                "s",
+                INCORRECT_VERDICT if case.stratum == "control_positive" else CORRECT_VERDICT,
+                "verdict",
+            )
+            for case in cases
+        ]
+
+        report = stability_report(
+            primary,
+            secondary,
+            primary_model_id="p",
+            secondary_model_id="s",
+            calibration_cases=cases,
+        )
+
+        self.assertFalse(report["synthetic_correctness_floor"]["passed"])
+        self.assertIn(
+            "control_positive",
+            report["synthetic_correctness_floor"]["failed_strata"],
+        )
+        self.assertTrue(report["kill_criterion_10_triggered"])
+
     def test_empty_reference_verdicts_uses_reference_path_and_fails_closed(self) -> None:
         primary = [JudgeVerdict("c1", "p", CORRECT_VERDICT, "correct")]
         secondary = [JudgeVerdict("c1", "s", CORRECT_VERDICT, "correct")]
