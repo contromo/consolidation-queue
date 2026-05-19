@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from cq.eval.external.longmemeval.transfer import (
+    HEADLINE_METRIC,
     LongMemEvalTransferError,
     _bucket_verdict,
     _predicted_session_ids,
@@ -70,7 +71,7 @@ class LongMemEvalTransferTests(unittest.TestCase):
             with self.assertRaises(LongMemEvalTransferError):
                 validate_judge_report(path)
 
-    def test_build_sensitivity_cells_applies_contract_variants(self) -> None:
+    def test_build_sensitivity_cells_keeps_only_meaningful_contract_variants(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             annotations_path = Path(tmpdir) / "annotations.json"
             annotations_path.write_text(
@@ -83,19 +84,16 @@ class LongMemEvalTransferTests(unittest.TestCase):
                 primary_annotations_path=annotations_path,
             )
 
-        self.assertEqual([cell["cell_id"] for cell in cells[:3]], [
+        self.assertEqual([cell["cell_id"] for cell in cells], [
             "primary_contract",
-            "alternate_canonicalizer",
-            "flat_user_global_scope",
+            "path_a_only_denominator",
+            "path_b_only_denominator",
         ])
         primary = cells[0]["annotations"][0]
-        alternate = cells[1]["annotations"][0]
-        flat = cells[2]["annotations"][0]
         self.assertEqual(primary["relevant_canonical_id"], "slot-c1")
-        self.assertEqual(alternate["relevant_canonical_id"], "alt-lme-c1")
-        self.assertEqual(alternate["candidate_events"][0]["canonical_id"], "alt-lme-c1")
-        self.assertEqual(flat["scope_level"], "user_global")
-        self.assertEqual(flat["candidate_events"][0]["scope_key"], "longmemeval:user")
+
+    def test_headline_metric_uses_pflc_side_metric(self) -> None:
+        self.assertEqual(HEADLINE_METRIC, "all_hit_at_50")
 
     def test_predicted_session_ids_preserve_unique_resolved_order(self) -> None:
         result = _predicted_session_ids(
@@ -110,7 +108,7 @@ class LongMemEvalTransferTests(unittest.TestCase):
             "primary_contract": {
                 "cq_vs_reflection": {"sign": "positive"},
             },
-            "alternate_canonicalizer": {
+            "path_a_only_denominator": {
                 "cq_vs_reflection": {"sign": "negative"},
             },
         }

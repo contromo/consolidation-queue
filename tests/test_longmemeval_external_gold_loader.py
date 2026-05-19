@@ -76,6 +76,7 @@ class LongMemEvalGoldLoaderTests(unittest.TestCase):
         scripts_dir = Path(__file__).resolve().parents[1] / "scripts"
         allowed_scripts = {
             "build_longmemeval_judge_calibration_set.py",
+            "run_longmemeval_answer_correct_smoke.py",
             "run_longmemeval_transfer.py",
             "score_longmemeval_pflc.py",
         }

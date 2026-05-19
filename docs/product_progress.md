@@ -1,5 +1,46 @@
 # Product Progress
 
+## 2026-05-19 — LongMemEval X.4 headline metric and sensitivity audit amended
+
+### What shipped
+
+- added `scripts/run_longmemeval_answer_correct_smoke.py` and
+  `data/external/longmemeval/answer_correct_smoke.json`: a 3-case by 9-policy
+  primary-judge smoke over realistic LongMemEval transfer outputs. The locked
+  primary judge marked 0/27 candidate answers correct, confirming that policy
+  `answer_text` is currently a structured trace surface rather than a
+  natural-language answer suitable for headline answer-correctness claims
+- changed the X.4 transfer headline bucket metric from `answer_correct` to the
+  preregistered PFLC-side metric `all_hit_at_50`. `answer_correct` remains in
+  per-case rows and score summaries as a diagnostic, but no longer determines
+  Bucket A/B/C/D
+- narrowed the X.4 sensitivity audit to the three meaningful cells:
+  `primary_contract`, `path_a_only_denominator`, and
+  `path_b_only_denominator`. The removed alternate-canonicalizer and
+  flat-USER_GLOBAL cells were vacuous under the locked deterministic adapter:
+  the first was only a one-to-one slot rename, and the second matched the
+  already-universal `user_global` annotation scope
+
+### Why it matters
+
+- prevents a structurally preordained Bucket B result from an all-zero
+  answer-correctness headline
+- keeps the transfer claim tied to the observable behavior the current policy
+  interface actually produces: whether policies preserve the gold evidence
+  sessions in their ranked resolved context
+- makes the contract-sensitivity claim smaller but sharper; X.4 should now
+  report stability across three real cells, not five cells with two no-ops
+
+### Open issues / next
+
+- run the full judged X.4 transfer with `--include-ablations
+  --include-sensitivity-cells --run-local-judge` from a clean worktree. The
+  headline bucket will use `all_hit_at_50`; the judge still supplies
+  `answer_correct` diagnostics for joint-count interpretation
+- Phase X.5 should disclose that judge calibration realistic rows and the
+  smoke both show trace-shaped candidate answers, so answer correctness is not
+  the load-bearing transfer metric in this implementation
+
 ## 2026-05-19 — LongMemEval Phase X.3.5 judge calibration lands
 
 ### What shipped

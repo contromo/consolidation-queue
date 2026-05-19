@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-19 (LongMemEval Phase X.3.5 judge calibration landed)
+Last updated: 2026-05-19 (LongMemEval X.4 headline metric and sensitivity audit amended)
 
 ## Goal
 
@@ -281,11 +281,20 @@ Implemented:
   `tests/test_longmemeval_external_transfer.py`: Phase X.4 runner plumbing for
   the full fair-stream transfer comparison. The runner validates the adapter
   pin, judge report, clean-worktree guard, and candidate-stream hash invariant;
-  executes the Phase 2.5 policy set over the primary and four sensitivity
-  cells; maps resolved candidates back to LongMemEval session ids for PFLC;
-  and writes summary, per-case CSV, manifest, and per-cell artifacts. Full
+  executes the Phase 2.5 policy set over the primary cell plus the meaningful
+  Path A-only and Path B-only denominator sensitivity cells; maps resolved
+  candidates back to LongMemEval session ids for PFLC; uses `all_hit_at_50`
+  as the X.4 headline bucket metric after an answer-correctness smoke found
+  0/27 primary-judge-correct policy answers across three realistic cases; and
+  writes summary, per-case CSV, manifest, and per-cell artifacts. Full
   judged X.4 execution remains pending because it requires the local judge over
   all policy/cell/case answer rows.
+- `scripts/run_longmemeval_answer_correct_smoke.py` and
+  `data/external/longmemeval/answer_correct_smoke.json`: empirical guardrail
+  artifact for the X.4 headline-metric amendment. The locked primary judge
+  scored all 27 candidate answers incorrect across 3 cases and 9 policies,
+  confirming that generated `answer_correct` is currently a diagnostic for
+  judgeability rather than a discriminating transfer headline.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction

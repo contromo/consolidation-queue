@@ -309,8 +309,9 @@ python3 -m cq.eval.external.longmemeval.preregistration_lock --recompute
 Date: 2026-05-19
 
 This amendment is intentionally outside the locked protocol block above. It
-does not change the candidate stream, policy set, PFLC target, sensitivity
-cells, or outcome buckets.
+does not change the candidate stream, policy set, or PFLC target. A later X.4
+amendment below changes the headline bucket metric and sensitivity-cell set
+after empirical smoke testing.
 
 Because the preferred path-1 survey found no official per-case LongMemEval
 reference judge log, Phase X.3.5 uses path 2 with a stratified calibration set:
@@ -329,3 +330,47 @@ The path-2 stability gate is interpreted as:
 Gold-answer access for constructing the synthetic control rows is restricted to
 the scoring-side `gold_loader` path and remains outside policy input,
 annotation, adapter, and verifier code.
+
+## Post-Lock Phase X.4 Transfer Metric And Sensitivity Amendment
+
+Date: 2026-05-19
+
+This amendment is intentionally outside the locked protocol block above. It
+narrows the transfer claim after implementation-level smoke testing exposed two
+vacuities in the originally planned X.4 execution surface.
+
+### Headline Metric
+
+`answer_correct` is demoted from the X.4 headline bucket metric to a diagnostic
+tracked in per-case rows and joint-count summaries.
+
+Empirical trigger: `scripts/run_longmemeval_answer_correct_smoke.py` wrote
+`data/external/longmemeval/answer_correct_smoke.json`, a 3-case by 9-policy
+smoke with the locked primary judge (`qwen2.5:32b-instruct-q4_K_M`). The judge
+marked 0/27 realistic policy candidate answers correct. The policy interface
+currently emits structured memory-trace strings rather than natural-language
+answers, so using
+`answer_correct` as the bucket metric would make a transfer-null Bucket B result
+structurally likely regardless of policy behavior.
+
+X.4 bucket signs now use the preregistered PFLC-side metric `all_hit_at_50`,
+computed from resolved candidate ids mapped back to LongMemEval source session
+ids. This keeps the headline tied to the observable transfer behavior the
+current policy interface can fairly measure: whether a policy preserved all gold
+evidence sessions in its top-50 resolved context.
+
+### Sensitivity Cells
+
+The X.4 contract-sensitivity audit is narrowed to:
+
+- `primary_contract`;
+- `path_a_only_denominator`;
+- `path_b_only_denominator`.
+
+The originally planned `alternate_canonicalizer` and `flat_user_global_scope`
+cells are dropped. Under the locked deterministic adapter, the alternate
+canonicalizer was only a one-to-one slot rename, and the flat-USER_GLOBAL scope
+cell was identical to the already-universal annotation scope. Keeping those
+cells would inflate the apparent sensitivity surface without testing a
+meaningfully different contract. X.4 must therefore claim stability across
+three meaningful cells, not five nominal cells.

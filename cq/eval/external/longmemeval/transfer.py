@@ -6,7 +6,6 @@ import argparse
 import csv
 import hashlib
 import json
-from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
@@ -61,7 +60,7 @@ DEFAULT_SENSITIVITY_DIR = REPO_ROOT / "data" / "external" / "longmemeval" / "sen
 HEADLINE_POLICY = "consolidation_queue_lite"
 REFLECTION_POLICY = "reflection_eager_write_lite"
 MEM0_POLICY = "mem0_lite"
-HEADLINE_METRIC = "answer_correct"
+HEADLINE_METRIC = "all_hit_at_50"
 
 
 class LongMemEvalTransferError(RuntimeError):
@@ -110,18 +109,6 @@ def build_sensitivity_cells(
         return cells
     cells.extend(
         [
-            {
-                "cell_id": "alternate_canonicalizer",
-                "description": "alternate stable case-id canonicalizer plus primary scope mapping",
-                "annotations_path": _repo_relative(Path(primary_annotations_path)),
-                "annotations": _alternate_canonicalizer(primary),
-            },
-            {
-                "cell_id": "flat_user_global_scope",
-                "description": "primary canonicalizer plus flat USER_GLOBAL scope mapping",
-                "annotations_path": _repo_relative(Path(primary_annotations_path)),
-                "annotations": _flat_user_global_scope(primary),
-            },
             {
                 "cell_id": "path_a_only_denominator",
                 "description": "primary contract on Path A-only denominator",
@@ -194,6 +181,7 @@ def build_transfer_artifacts(
         "include_sensitivity_cells": include_sensitivity_cells,
         "judge_mode": "local_judge" if run_local_judge else "dry_run_unjudged",
         "judge_model": judge_model,
+        "headline_metric": HEADLINE_METRIC,
         "judge_report_path": _repo_relative(Path(judge_report_path)),
         "judge_report": _judge_report_summary(judge_report),
         "adapter_pin": adapter_pin,
@@ -539,31 +527,6 @@ def _cell_summary_for_top_level(payload: Mapping[str, Any]) -> dict[str, Any]:
         ]["candidate_stream_hash_mismatches"],
         "score_summary": score_summary,
     }
-
-
-def _alternate_canonicalizer(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    transformed = []
-    for row in rows:
-        item = deepcopy(dict(row))
-        slot = "alt-lme-{}".format(item["case_id"])
-        item["relevant_canonical_id"] = slot
-        for event in item.get("candidate_events", []):
-            event["canonical_id"] = slot
-        transformed.append(item)
-    return transformed
-
-
-def _flat_user_global_scope(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    transformed = []
-    for row in rows:
-        item = deepcopy(dict(row))
-        item["scope_level"] = "user_global"
-        item["scope_key"] = "longmemeval:user"
-        for event in item.get("candidate_events", []):
-            event["scope_level"] = "user_global"
-            event["scope_key"] = "longmemeval:user"
-        transformed.append(item)
-    return transformed
 
 
 def _source_provenance(*, allow_dirty_worktree: bool) -> dict[str, Any]:
