@@ -1,5 +1,74 @@
 # Product Progress
 
+## 2026-05-19 — LongMemEval Phase X.3 scorer, judge stability, and smoke artifact land
+
+### What shipped
+
+- added `cq/eval/external/longmemeval/gold_loader.py`: scoring-only access to
+  `answer_session_ids`, with strict scoping rules enforced by an import-graph
+  test that asserts no annotator, audit, verifier, redacted loader, or adapter
+  module references the gold loader
+- added `cq/eval/external/longmemeval/scorer.py` and
+  `scripts/score_longmemeval_pflc.py`: dialog-evidence-id PFLC scorer over
+  `answer_session_ids` at the locked cutoffs `k = 1, 5, 10, 20, 50`, with
+  Wilson confidence intervals, fixed-seed paired bootstrap, joint counts,
+  per-`question_type` breakdown, and a degeneracy diagnostic
+- added `cq/eval/external/longmemeval/judge_stability.py` and
+  `scripts/run_longmemeval_judge_stability.py`: preregistration §6 path-2 local
+  cross-judge harness (`qwen2.5:32b-instruct-q4_K_M` vs
+  `qwen2.5:7b-instruct-q4_K_M`) with deterministic verdict parsing, kill
+  criterion 10 at `>= 0.85` agreement, and an optional reference-judge verdict
+  path for the preferred path-1 calibration. The CLI defaults to `--dry-run`;
+  `--run` is required to invoke ollama
+- added `cq/eval/external/longmemeval/dirty_worktree_check.py`: the runtime
+  guard that Phase X.4 will call before any policy execution
+- added `scripts/run_longmemeval_smoke.py` plus committed
+  `data/external/longmemeval/smoke_summary.json` and
+  `data/external/longmemeval/smoke_manifest.json`: byte-stable Phase X.3 smoke
+  artifact emitting six adapted scenarios, twelve candidates, zero adapter
+  drops, and a passing candidate-stream-hash invariant
+- added 20 new focused tests across the gold loader, scorer, judge stability,
+  dirty worktree check, and committed smoke artifacts; all 51 LongMemEval
+  external tests pass
+
+### Why it matters
+
+- the LongMemEval externalization workstream now has every Phase X.3 deliverable
+  required by preregistration §10 except the actual judge stability *run* (a
+  20-case 32B + 7B ollama pass intentionally deferred to a user-triggered
+  step). The CLI scaffolding, scoring math, and verdict parsing are all in
+  place and tested
+- the scoring path enforces the hidden-answer protocol by structural
+  separation: `gold_loader` is the only licensed reader of
+  `answer_session_ids`, and an import-graph test fails closed if any
+  annotator, verifier, adapter, or audit module references it
+- the smoke artifact is byte-stable across consecutive runs (verified by a
+  dedicated regression test) and uses repo-relative paths so the manifest
+  reproduces identically across machines
+- the scorer ships a Phase X.3 finding directly: the degeneracy diagnostic
+  shows that on the LongMemEval oracle split,
+  `answer_session_ids = haystack_session_ids` for every one of the 500
+  cases (78/78 `knowledge-update` cases, all five other question types at
+  the same 100% rate). The oracle split is evidence-only by construction, so
+  PFLC@k on this anchor measures policy scope-filtering behavior (did the
+  policy preserve evidence it had access to) rather than retrieval quality
+  (did the policy locate evidence buried in distractors). The Phase X.5
+  writeup must frame the PFLC result accordingly
+
+### Open issues / next
+
+- decide whether to run the judge stability 20-case calibration via local
+  cross-judge or to first search for published LongMemEval reference-judge
+  logs on the official repository / HuggingFace dataset card
+- decide whether Phase X.4 should rely on PFLC@k as a scope-filter metric on
+  the oracle split, or whether the externalization should extend to the
+  LongMemEval-S full split (where `haystack` adds distractor sessions and
+  PFLC@k regains its retrieval-quality interpretation). The latter would
+  require a separate registered amendment because it changes the anchor data
+  scope
+- do not proceed to Phase X.4 until the judge stability report is committed
+  or its absence is explicitly recorded against preregistration §10
+
 ## 2026-05-19 — LongMemEval Phase X.2 adapter pin lands
 
 ### What shipped

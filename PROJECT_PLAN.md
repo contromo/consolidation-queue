@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-19 (LongMemEval Phase X.2 adapter pin landed)
+Last updated: 2026-05-19 (LongMemEval Phase X.3 scorer, judge stability scaffold, and smoke artifact landed)
 
 ## Goal
 
@@ -235,6 +235,24 @@ Implemented:
   event-level edge support. This freezes the annotation layer only and does
   not by itself authorize smoke, judge calibration, or external policy
   execution.
+- `cq/eval/external/longmemeval/gold_loader.py`,
+  `cq/eval/external/longmemeval/scorer.py`,
+  `cq/eval/external/longmemeval/judge_stability.py`,
+  `cq/eval/external/longmemeval/dirty_worktree_check.py`,
+  `scripts/score_longmemeval_pflc.py`,
+  `scripts/run_longmemeval_judge_stability.py`,
+  `scripts/run_longmemeval_smoke.py`,
+  `data/external/longmemeval/smoke_summary.json`, and
+  `data/external/longmemeval/smoke_manifest.json`: Phase X.3 scoring,
+  calibration scaffolding, runtime-guard helper, and committed N=6 smoke
+  artifact. The gold loader is the only licensed reader of
+  `answer_session_ids` (enforced by an import-graph test), the scorer
+  implements dialog-evidence-id PFLC@{1,5,10,20,50} with Wilson/bootstrap CIs
+  and a degeneracy diagnostic, the judge stability harness runs the locked
+  cross-judge pattern under preregistration §6 path 2, and the smoke artifact
+  is byte-stable across consecutive runs. This is still adapter plumbing only
+  plus scoring/calibration scaffolding; the 20-case judge stability run on
+  qwen2.5:32b + 7b and the policy comparison
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
@@ -699,10 +717,20 @@ The first deterministic forced-contradiction local-model command/prompt, compone
    is locked, and the redacted-loader, dual-path-audit, verifier, annotator
    paths, manifest writer, adapter, and lock primitives have focused tests.
    Phase X.1 freezes 71 agreed annotations from 72 comparable cases, with the
-   single canonical-id divergence retained as an audit row. Phase X.2 now pins
-   the adapter and verifies the N=6 dry-run stream-hash invariant. The next
-   licensed step is Phase X.3 smoke execution, PFLC wrapper construction, and
-   judge calibration. Do not run the full CQ, Reflection, or `Mem0Lite`
+   single canonical-id divergence retained as an audit row. Phase X.2 pins the
+   adapter and verifies the N=6 dry-run stream-hash invariant. Phase X.3 now
+   lands the PFLC scorer, judge stability scaffolding (preregistration §6
+   path 2), dirty-worktree runtime guard, and a byte-stable committed N=6
+   smoke artifact. The scorer's degeneracy diagnostic surfaces a Phase X.3
+   finding: on the LongMemEval oracle split, `answer_session_ids` equals
+   `haystack_session_ids` for all 500 cases (oracle split is evidence-only by
+   construction), so PFLC@k on this anchor measures policy scope-filter
+   behavior rather than retrieval quality; the writeup must frame the metric
+   accordingly. The next licensed step is the 20-case judge stability run
+   (local cross-judge or, if found, published-reference calibration) and a
+   decision on whether to keep PFLC on the oracle split as scope-filter
+   evidence or to extend the externalization to LongMemEval-S under a separate
+   registered amendment. Do not run the full CQ, Reflection, or `Mem0Lite`
    LongMemEval transfer comparison before those gates pass.
 
 ## Working Rules

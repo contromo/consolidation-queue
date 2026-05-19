@@ -1,0 +1,23 @@
+{
+  "adapter_sha256": "305cc3c1e475bb4ea21b34958267fc7c8aed4764b4389e392de0ac187dcdaea5",
+  "artifact": "longmemeval_externalization_smoke",
+  "artifact_class": "phase_x3_smoke",
+  "candidate_count": 12,
+  "candidate_stream_hash_invariant_passed": true,
+  "case_limit": 6,
+  "inputs": {
+    "adapter_pin_bytes": 263,
+    "adapter_pin_repo_path": "docs/longmemeval_adapter_pin.json",
+    "adapter_pin_sha256": "75de6f47467e38e69fa19f063e85790c830977fe2ef9c801fd2177524501c95c",
+    "annotations_json_bytes": 163698,
+    "annotations_json_repo_path": "data/external/longmemeval/annotations_agreed.json",
+    "annotations_json_sha256": "b23e7e5a8289c00132c2b8e557cfbdd46db9ee633e2bfcdba96461242d188385"
+  },
+  "outputs": {
+    "smoke_summary_bytes": 5427,
+    "smoke_summary_repo_path": "data/external/longmemeval/smoke_summary.json",
+    "smoke_summary_sha256": "39b0ae228a2686c8117210cdd5716111ccfb5e9d159a9111fe64649f9a91792e"
+  },
+  "preregistration_lock_sha256": "a7b8b5df50d3dbe41bbf8922c2ba1bbd9b98775c302f25d29313ece093000f53",
+  "scenario_count": 6
+}
