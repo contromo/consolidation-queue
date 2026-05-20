@@ -29,6 +29,7 @@ from cq.eval.external.longmemeval.adapter import (
 from cq.eval.external.longmemeval.dirty_worktree_check import (
     assert_clean_worktree,
     current_commit_sha,
+    detect_repo_root,
     worktree_status_porcelain,
 )
 from cq.eval.external.longmemeval.gold_loader import load_gold_cases
@@ -54,7 +55,7 @@ from cq.schemas.memory import jsonable
 from cq.schemas.scenario import TaskFamily
 
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+REPO_ROOT = detect_repo_root(Path(__file__))
 DEFAULT_ORACLE_JSON = Path("/tmp/longmemeval_oracle.json")
 PATH_A_ANNOTATIONS = REPO_ROOT / "data" / "external" / "longmemeval" / "annotations_path_a.json"
 PATH_B_ANNOTATIONS = REPO_ROOT / "data" / "external" / "longmemeval" / "annotations_path_b.json"

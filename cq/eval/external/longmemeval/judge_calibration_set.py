@@ -19,13 +19,14 @@ from cq.eval.external.longmemeval.adapter import (
     adapt_annotation,
     load_agreed_annotations,
 )
+from cq.eval.external.longmemeval.dirty_worktree_check import detect_repo_root
 from cq.eval.external.longmemeval.gold_loader import load_gold_cases
 from cq.eval.runner import POLICY_SET_PHASE_2_5, _policies_for_family
 from cq.schemas.memory import jsonable
 from cq.schemas.scenario import TaskFamily
 
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+REPO_ROOT = detect_repo_root(Path(__file__))
 DEFAULT_OUTPUT_PATH = (
     REPO_ROOT / "data" / "external" / "longmemeval" / "judge_calibration_set.json"
 )

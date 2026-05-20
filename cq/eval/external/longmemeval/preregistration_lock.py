@@ -6,8 +6,9 @@ import re
 from pathlib import Path
 from typing import List, Optional
 
+from cq.eval.external.longmemeval.dirty_worktree_check import detect_repo_root
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
+REPO_ROOT = detect_repo_root(Path(__file__))
 PREREGISTRATION_PATH = REPO_ROOT / "docs" / "fair_stream_externalization_preregistration.md"
 LOCK_FIELD = "fair_stream_externalization_lock_sha256"
 PROTOCOL_BLOCK_START = "<!-- FAIR_STREAM_EXTERNALIZATION_PROTOCOL_START -->"
