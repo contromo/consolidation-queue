@@ -1,5 +1,59 @@
 # Product Progress
 
+## 2026-05-20 — Pending multi-evidence LongMemEval follow-up lands
+
+### What Shipped
+
+- added `docs/cq_pending_multi_evidence_preregistration.md` and locked it
+  before implementation (`84b3c44148494c1b6f72e8201a8da886f8e1f48e49ce00197f535c7e08638840`)
+- added `MemoryStore.strongest_pending_candidates`,
+  `CQPendingMultiEvidence`, `ReflectionEagerWriteCardinalityCapped`, and the
+  `phase2_5_followup` policy set
+- added focused positive and negative-control tests for plural pending lookup,
+  unsafe sibling exclusion, the capped Reflection control, runner wiring, and
+  LongMemEval transfer summary shape
+- ran internal regression cells over forced contradiction, preference drift,
+  mechanism-diverse frozen held-out, adversarial upstream noise, and evidence
+  conflict spectrum
+- ran the full judged LongMemEval follow-up and saved
+  `data/external/longmemeval/transfer_followup_summary.json`,
+  `transfer_followup_per_case_rows.csv`, `transfer_followup_manifest.json`,
+  and the three sensitivity payloads under
+  `data/external/longmemeval/sensitivity_followup/`
+- added `docs/cq_pending_multi_evidence_results.md`
+
+### Result
+
+- follow-up outcome: Bucket A, interface repair confirmed
+- `cq_pending_multi_evidence` moves `all_hit_at_50` from base CQ's `0/71` to
+  `71/71` on the primary contract cell, and to `72/72` on both
+  denominator-sensitivity cells
+- `reflection_eager_write_cardinality_capped` falls from base Reflection's
+  `71/71` to `0/71` on the primary cell, reproducing base CQ's readout loss
+  while preserving Reflection's write path
+- the candidate-stream hash invariant passed in all three LongMemEval cells
+- internal regression metrics matched base CQ exactly on all checked overall
+  metrics across the five required families (`max_delta = 0.0`)
+
+### Framing Decision
+
+- this is a separate preregistered policy-interface repair, not a rewrite of
+  the original X.4 result
+- base `consolidation_queue_lite` still loses the completed X.4
+  evidence-completeness transfer probe by `-1.0` in every meaningful cell
+- the supported mechanism claim is readout cardinality: exposing all eligible
+  same-slot pending candidates closes the LongMemEval evidence-completeness
+  gap, and capping a winning eager baseline reproduces the loss
+
+### Open Issues / Next
+
+- finish report packaging around the follow-up as a mechanism-local repair with
+  explicit boundaries
+- do not promote the result into broad LongMemEval generalization, LongMemEval
+  V2/S claims, distractor-heavy retrieval claims, or natural-language QA claims
+- further LongMemEval work should require a new preregistration rather than
+  another rescue rerun
+
 ## 2026-05-19 — LongMemEval X.5 paper and methodology integration lands
 
 ### What Shipped

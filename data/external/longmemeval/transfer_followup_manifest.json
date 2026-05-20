@@ -1,0 +1,73 @@
+{
+  "artifact": "longmemeval_transfer_policy_comparison",
+  "artifact_class": "phase_x4_transfer",
+  "bucket": {
+    "bucket": "A",
+    "reason": "contract sensitivity sign stable",
+    "signs": [
+      "negative",
+      "negative",
+      "negative"
+    ]
+  },
+  "cell_ids": [
+    "primary_contract",
+    "path_a_only_denominator",
+    "path_b_only_denominator"
+  ],
+  "inputs": {
+    "adapter_pin_path": "docs/longmemeval_adapter_pin.json",
+    "adapter_pin_sha256": "9b0530a298da6995c1bf2643bda818198354d270b20a4b061cea9fa8e00f8d01",
+    "judge_report_path": "data/external/longmemeval/judge_stability_report.json",
+    "judge_report_sha256": "88336e2ba1962521a07a30582c03c43fd550ba28d44e44b784f25a48f68c04b6",
+    "oracle_json_path": "/tmp/longmemeval_oracle.json",
+    "oracle_json_sha256": "821a2034d219ab45846873dd14c14f12cfe7776e73527a483f9dac095d38620c",
+    "policy_set": "phase2_5_followup"
+  },
+  "judge_mode": "local_judge",
+  "outputs": {
+    "per_case_rows_bytes": 768148,
+    "per_case_rows_path": "data/external/longmemeval/transfer_followup_per_case_rows.csv",
+    "per_case_rows_sha256": "a56ef948c34034a835232c0641b90899a64e936e9279dc87b694c4201a40f2ad",
+    "sensitivity": {
+      "path_a_only_denominator": {
+        "bytes": 890249,
+        "path": "data/external/longmemeval/sensitivity_followup/path_a_only_denominator.json",
+        "sha256": "089a808ca2387e33e1e0c55d18377a77e854985affcc8ec9fd3a0dc0b87b6572"
+      },
+      "path_b_only_denominator": {
+        "bytes": 890189,
+        "path": "data/external/longmemeval/sensitivity_followup/path_b_only_denominator.json",
+        "sha256": "be933a755a37483e47a5426360af658c09f64f57640f8aaa1c67ca3c96dc3b3d"
+      },
+      "primary_contract": {
+        "bytes": 872621,
+        "path": "data/external/longmemeval/sensitivity_followup/primary_contract.json",
+        "sha256": "6155d17261af4d3ffc21b41073ca6314615f9550634b3107e4eafe9fc1a14bcc"
+      }
+    },
+    "summary_bytes": 33243,
+    "summary_path": "data/external/longmemeval/transfer_followup_summary.json",
+    "summary_sha256": "59368782ebdeaea16a884b0214139d29d677cb0a4b235cd81c3e2bfb76c1e2e8"
+  },
+  "policy_names": [
+    "reflection_eager_write_lite",
+    "consolidation_queue_lite",
+    "cq_no_contestation_demotion",
+    "cq_no_wider_scope_pending_override",
+    "cq_no_pending_lookup_use",
+    "cq_no_source_independence_gate",
+    "naive_eager_write_lite",
+    "no_memory_lite",
+    "mem0_lite",
+    "cq_pending_multi_evidence",
+    "reflection_eager_write_cardinality_capped"
+  ],
+  "source_provenance": {
+    "dirty_worktree_allowed": false,
+    "dirty_worktree_check_passed": true,
+    "git_commit_sha": "c0befcc3162317896730838ca4a64e5218707c23",
+    "git_status_porcelain": [],
+    "worktree_clean": true
+  }
+}

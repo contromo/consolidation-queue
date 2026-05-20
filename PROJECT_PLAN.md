@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-19 (LongMemEval X.5 paper/methodology integration landed)
+Last updated: 2026-05-20 (pending multi-evidence LongMemEval follow-up landed)
 
 ## Goal
 
@@ -286,9 +286,9 @@ Implemented:
   candidates back to LongMemEval session ids for PFLC; uses `all_hit_at_50`
   as the X.4 headline bucket metric after an answer-correctness smoke found
   0/27 primary-judge-correct policy answers across three realistic cases; and
-  writes summary, per-case CSV, manifest, and per-cell artifacts. Full
-  judged X.4 execution remains pending because it requires the local judge over
-  all policy/cell/case answer rows.
+  writes summary, per-case CSV, manifest, and per-cell artifacts. The runner
+  now also supports `--policy-set phase2_5_followup` for the preregistered
+  pending multi-evidence successor.
 - `scripts/run_longmemeval_answer_correct_smoke.py` and
   `data/external/longmemeval/answer_correct_smoke.json`: empirical guardrail
   artifact for the X.4 headline-metric amendment. The locked primary judge
@@ -318,6 +318,21 @@ Implemented:
   explicit: on the v1 oracle controlled pilot, PFLC measures
   evidence-exposure/completeness under a fixed same-stream policy surface, not
   open retrieval quality over distractor haystacks.
+- `docs/cq_pending_multi_evidence_preregistration.md`,
+  `cq/memory/cq_pending_multi_evidence.py`,
+  `cq/memory/reflection_eager_write_cardinality_capped.py`,
+  `MemoryStore.strongest_pending_candidates`, `phase2_5_followup` runner
+  wiring, focused unit tests, internal regression metrics, the full judged
+  LongMemEval follow-up artifacts under
+  `data/external/longmemeval/*followup*`, and
+  `docs/cq_pending_multi_evidence_results.md`: the 2026-05-20
+  preregistered follow-up records Outcome A as a policy-interface repair.
+  `CQPendingMultiEvidence` moves `all_hit_at_50` from base CQ's `0/71` to
+  `71/71` on the primary contract cell and to `72/72` on both denominator
+  sensitivity cells, matching Reflection and `Mem0Lite`; capped Reflection
+  falls to `0/71`, isolating answer-time evidence cardinality as the X.4
+  failure variable. The result does not rewrite the original X.4 negative
+  transfer verdict for base CQ.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
@@ -757,31 +772,35 @@ These are the highest-priority implementation steps right now.
 
 The active research-roadmap document is
 `docs/next_research_plan.md`. It reframes the next phase around original,
-mechanism-local research rather than adding benchmark breadth: first repair the
-path-sensitive CQR replay contract without retuning, then update the methodology
-draft from a non-abort CQR result or an explicitly reported second abort, then
-choose only one mechanism-justified follow-up such as `CQDatedContestation` or a
-preregistered LongMemEval transfer probe.
+mechanism-local research rather than adding benchmark breadth. The CQR replay
+repair, `CQDatedContestation`, LongMemEval X.4/X.5, and the pending
+multi-evidence LongMemEval follow-up have all landed. The active next step is
+report integration and only newly preregistered experiments for genuinely new
+boundaries.
 
 The first deterministic forced-contradiction local-model command/prompt, component scoring artifacts, and per-component failure examples are complete. The first diagnostic matrix attempt stopped on 2026-05-08 before broader rows because the Phase A prompt-regression guard caught a 32B `general_v1` candidate-detection regression on `forced_contradiction_006`. A family-neutral `general_v1` prompt revision cleared Phase A, and the diagnostic matrix completed with no statistical gate verdict issued. `docs/component_diagnostic_matrix.md` interpreted the completed matrix as diagnostic component evidence only. Its branch rule selected prompt/schema diagnostics first because scope drift and canonical split defects recur across at least two families at both 7B and 32B. The targeted `general_v2` diagnostic run completed, but the branch failed the adjusted acceptance rule (`scope_key_or_level_drift=5`, `canonical_split_or_merge=7`, six 7B scenario errors; branch resolution requires zero targeted-row scenario errors), so `general_v2` should not become the future diagnostic/gate default. The real 7B `general_v1` CI-aware gate run with required frozen sentinel completed on 2026-05-11 and stayed locked (`policy_comparison_unlocked=false`) despite passing Phase A and determinism. The completed 2026-05-12 follow-up evidence block then ran the descriptive 32B blocker-surface sweep and the full 7B schema-rescue run. Both mandatory runs reduced the preregistered common-surface schema-shaped burden from `26` to `0`, so the conditional `32B + schema` quadrant did not trigger. The 7B schema-rescue run still remained locked on observed per-family/frozen failures (`5` primary, `2` frozen), while the 32B descriptive rows cleared the same common-surface measured failures. `docs/component_gate_publication_outline.md` maps the publication package, `docs/component_gate_failure_taxonomy.md` records the locked-gate interpretation, and `docs/component_gate_followup_benchmark_memo.md` records the follow-up decomposition and next-step recommendation. The separate oracle-only `adversarial_upstream_noise` headline runs are now also recorded: CQ clears four of five preregistered mechanisms on `mixed`, loses only `temporal_skew`, and therefore triggers the separately preregistered `CQDatedContestation` follow-up rather than a retrofit of the original `phase2_5` policy set. The 2026-05-14 local unlock probe reproduced the 7B anchor exactly and both 32B primary cells unlocked, so the probe is Bucket A. The 2026-05-15 locked noisy policy comparison fired Bucket B: CQ wins versus Reflection only on forced contradiction and preference drift, ties the other countable rows, ties `Mem0Lite` on frozen sentinel primary metrics, and has no replicate contradictions. The canonical-id/query-resolution follow-up was preregistered and implemented as a standalone replay audit in `docs/canonical_id_resolution_audit_preregistration.md` and `scripts/run_canonical_id_resolution_audit.py`, but the 2026-05-15 replay aborted under Bucket D before metric emission because the locked forced-contradiction manifest SHA did not reproduce. Current investigation shows stable metrics and candidate-stream hashes under the locked Phase 4 worktree, but the run JSON hash is path-sensitive because the artifact embeds an absolute `predictions_path`; current-HEAD replay also changes adapter/git metadata. The null-row attribution remains unsettled. Next:
 
 1. The CQR path-normalized replay repair landed and was exercised on 2026-05-16; a second Bucket D was recorded under the repaired equivalence rule. The null-row attribution remains unsettled. Do not attempt a third CQR audit attempt without first re-establishing a locked Phase 4 baseline that includes committed (or separately archived) run-JSON payloads.
 2. Use `docs/noisy_policy_mechanism_audit.md` as the Phase 4 writeup anchor until CQR emits a non-abort result: clean survival on forced contradiction, partial survival on preference drift, and unattributed nulls elsewhere unless directly supported by 32B artifacts.
 3. The methodology spine promotion landed on 2026-05-16 and was updated again
-   on 2026-05-19 for LongMemEval X.5. `docs/benchmark_methodology_draft.md`
-   now treats LongMemEval as a completed controlled external transfer probe:
-   methodology gates pass, but current CQ loses the `all_hit_at_50`
-   evidence-completeness metric while tying eager baselines on `any_hit_at_50`.
+   on 2026-05-19 for LongMemEval X.5 and on 2026-05-20 for the pending
+   multi-evidence follow-up. `docs/benchmark_methodology_draft.md` now treats
+   LongMemEval as a completed controlled external transfer probe: methodology
+   gates pass, but base CQ loses the `all_hit_at_50` evidence-completeness
+   metric while tying eager baselines on `any_hit_at_50`; the follow-up is a
+   separate readout-cardinality repair.
 4. Keep Bucket C abstention, prompt changes, validator changes, and new
    mechanism families out of scope unless a future preregistered follow-up
    explicitly justifies them from the audit's mechanism-local interpretation.
-   LongMemEval X.4 is complete; any further LongMemEval work must be a fresh
-   preregistered follow-up, not a rerun to rescue the observed negative result.
+   LongMemEval X.4 and the pending multi-evidence follow-up are complete; any
+   further LongMemEval work must be a fresh preregistered follow-up, not a
+   rerun to rescue an observed metric.
 5. Use `docs/paper_outline.md` as the packaging spine for the report. The next
    licensed original-research move should be either a policy-facing
    adapter-contract audit, a fresh Phase 4 baseline with committed or archived
-   run-JSON payloads, or a separately preregistered pending multi-evidence
-   retrieval follow-up motivated by the LongMemEval evidence-completeness loss.
+   run-JSON payloads, or a newly preregistered external-transfer boundary. The
+   pending multi-evidence retrieval follow-up motivated by the LongMemEval
+   evidence-completeness loss is complete.
 6. The 2026-05-17 registered post-hoc QR-canon audit landed and is the most recent reframing artifact for the paper. It reuses the locked CQR Section A `cqr_set_membership` metric and the locked CQR alias function verbatim, reads only the committed `data/results/qr_canon_source_table.csv` at audit time, and reattributes the four perfect-clustering null rows from "unattributed null" to "policy-facing query interface contract failure" without unlocking the locked CQR audit or amending any policy verdict. See `docs/qr_canon_audit_results.md`. The CQR Section C cross-tab (QR-canon hit vs per-policy answer success) remains the natural follow-on diagnostic but is blocked on the same replay path; it is not licensed against the existing locked Phase 4 manifests.
 7. Workstream A.6 (PFLC field-level diagnostic generalization) landed on 2026-05-18 at outcome bucket B-3 (artifact-blocked) for its original anchor set. The registration `docs/policy_facing_lookup_contract_registration.md` locks the contract; the proposition `docs/policy_facing_lookup_contract_proposition.md` gives the formal core. Four per-anchor feasibility memos (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) all landed at descriptive-only. Four synthetic counterexample rows ship in `data/results/qr_canon_field_diagnostic_metrics.csv`. The consolidated readout is `docs/qr_canon_field_diagnostic_results.md`; methodology spine §5 and paper outline §1, §3, §4, §5, §8 are updated. BEAM remains in the field-exclusion table because its conditional promotion rule (Mem0/LoCoMo = blocked) did not fire.
 8. The post-A.6 LoCoMo published-output PFLC follow-up landed in `docs/locomo_baseline_replay_survey.md`. A current artifact sweep found that the Agent Memory Benchmark publishes per-question LoCoMo Hindsight and hybrid-search run gzips with injected contexts containing recoverable LoCoMo `dia_id` values. `scripts/score_locomo_amb_pflc.py` scores those IDs against official LoCoMo `qa[].evidence` and emits `data/results/locomo_amb_pflc_rows.csv` plus `data/results/locomo_amb_pflc_summary.json`. This upgrades the LoCoMo axis from universal artifact-blocked to a narrow `published-output/context-derived` replay for AMB outputs only. The next licensed step is report integration and, if useful, a separately registered expansion to additional AMB providers or stricter compact-retrieval cutoffs; do not convert this into a CQ-vs-external policy comparison without preserving the same-candidate-stream/substrate invariants or explicitly labeling it descriptive-only.
@@ -793,6 +812,12 @@ The first deterministic forced-contradiction local-model command/prompt, compone
    integrated the result into the paper/methodology spine. The result is
    stable and negative for CQ on evidence completeness; it is transfer-null on
    evidence exposure. Do not retrofit this into a CQ-positive claim.
+10. The 2026-05-20 pending multi-evidence LongMemEval follow-up is complete.
+    It is Outcome A as an interface repair: plural pending readout closes the
+    evidence-completeness gap across all three cells, capped Reflection
+    reproduces base CQ's loss, and internal regression checks match base CQ
+    exactly on all checked overall metrics. Treat it as a separate follow-up,
+    not a rewrite of X.4 or broad LongMemEval generalization.
 
 ## Working Rules
 

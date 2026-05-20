@@ -1,8 +1,8 @@
 # Next Research Plan
 
-Date: 2026-05-19
+Date: 2026-05-20
 
-Status: active roadmap with 2026-05-19 LongMemEval X.5 integration notes.
+Status: active roadmap with 2026-05-20 pending multi-evidence follow-up notes.
 
 ## Status Update — 2026-05-17
 
@@ -156,9 +156,32 @@ durable with both evidence candidates.
 
 Phase X.5 integrates this into the paper outline and methodology spine as a
 controlled external transfer probe, not a CQ-positive generalization claim and
-not a leaderboard result. The next licensed LongMemEval move would require a
-separate preregistration, likely around pending multi-evidence retrieval or a
-different LongMemEval split/adapter.
+not a leaderboard result. At that point, any next LongMemEval move required a
+separate preregistration; the pending multi-evidence branch landed the next
+day and is recorded below.
+
+## Status Update — 2026-05-20
+
+The separately preregistered pending multi-evidence LongMemEval follow-up
+landed. The preregistration lock is
+`84b3c44148494c1b6f72e8201a8da886f8e1f48e49ce00197f535c7e08638840`, and the
+follow-up ships `CQPendingMultiEvidence`,
+`ReflectionEagerWriteCardinalityCapped`, and the `phase2_5_followup` policy
+set.
+
+The readout is Outcome A as an interface repair. `cq_pending_multi_evidence`
+moves `all_hit_at_50` from base CQ's `0/71` to `71/71` on the primary
+contract cell and to `72/72` on both denominator-sensitivity cells, matching
+Reflection and `Mem0Lite`. The capped Reflection diagnostic falls to `0/71`
+on the primary cell while preserving the eager write path, so the mechanism is
+answer-time evidence cardinality rather than a richer CQ-only substrate.
+Internal regression metrics match base CQ exactly across the five required
+families (`max_delta = 0.0`).
+
+This does not rewrite X.4. The original controlled-pilot transfer remains a
+completed negative result for base `consolidation_queue_lite`; the follow-up
+is a separate preregistered policy-interface repair. Further LongMemEval work
+should be new preregistered science, not another rescue rerun.
 
 ## Research Posture
 
@@ -270,9 +293,9 @@ Allowed follow-ups:
 1. CQR or adapter-contract audit for the Phase 4 null rows.
 2. `CQDatedContestation` as the already-preregistered post-hoc repair for the
    `temporal_skew` weakness in `adversarial_upstream_noise`.
-3. A LongMemEval transfer check, but only after the internal mechanism-local
-   story is settled and only if it can be framed as transfer rather than a new
-   tuning target.
+3. LongMemEval follow-ups only when preregistered as mechanism-local transfer
+   questions. The pending multi-evidence repair has landed; further
+   LongMemEval work should target a new boundary rather than rerunning X.4.
 
 Not allowed without a new preregistration:
 
@@ -301,12 +324,15 @@ Status:
   shared `Scenario`/`CandidateUpdate` objects, validates
   `docs/longmemeval_adapter_pin.json`, and passes the N=6 stream-hash
   invariant dry run with zero drops.
-- Redacted loader, dual-path audit, verifier, annotator paths, manifest writer,
-  adapter, and lock primitives exist with focused tests.
-- No smoke policy run, PFLC wrapper, judge calibration, or policy comparison
-  has been executed.
+- Phase X.3/X.3.5 smoke, PFLC scorer, answer-correctness smoke, and local
+  judge calibration landed.
+- Phase X.4 full judged transfer landed as Bucket A-negative for base CQ on
+  `all_hit_at_50`.
+- Phase X.5 report integration landed.
+- The 2026-05-20 pending multi-evidence follow-up landed as a separate
+  preregistered interface repair.
 
-Remaining design requirements before policy execution:
+Completed design requirements:
 
 1. Preserve the frozen 71-case dual-path-agreed denominator when running the
    adapter-backed smoke and transfer cells.
@@ -323,6 +349,9 @@ Decision rule:
 - If the transfer setup cannot preserve the fairness invariants, do not run it
   as evidence for CQ. Mention it as future work or run a descriptive-only
   feasibility study.
+- For completed LongMemEval variants, preserve the result labels: X.4 is
+  negative for base CQ, and the pending multi-evidence successor is an
+  interface repair only.
 
 ### E. Finish The Report Package
 
@@ -382,6 +411,10 @@ Required pieces:
 13. Phase X.5 paper-outline and methodology-spine integration. **Landed:
     LongMemEval is now framed as a controlled external transfer failure of
     current CQ's evidence-completeness interface, not as a broad transfer win.**
+14. Pending multi-evidence LongMemEval follow-up. **Landed as Outcome A:
+    plural pending readout closes the evidence-completeness gap, capped
+    Reflection reproduces the loss, and internal regression checks match base
+    CQ exactly.**
 
 Next-next, none of which is licensed by this plan without a separate
 preregistration:
@@ -392,9 +425,9 @@ preregistration:
 - a policy-facing adapter-contract experiment that runs the CQR Section C
   cross-tab (QR-canon hit vs per-policy answer success) on a fresh Phase 4
   baseline or a separately archived locked-input environment
-- a separately preregistered LongMemEval follow-up, if any, focused on pending
-  multi-evidence retrieval or a different split/adapter; do not rerun X.4 to
-  rescue the metric after seeing the negative result
+- a further separately preregistered LongMemEval follow-up, if any, focused on
+  a new split, adapter, or stricter boundary; do not rerun X.4 or the
+  completed pending multi-evidence follow-up to rescue a metric
 - threshold or prompt or validator changes — explicitly forbidden by the
   Kill Criteria below
 
