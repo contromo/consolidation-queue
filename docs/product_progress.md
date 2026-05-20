@@ -12,6 +12,10 @@
 - added focused positive and negative-control tests for plural pending lookup,
   unsafe sibling exclusion, the capped Reflection control, runner wiring, and
   LongMemEval transfer summary shape
+- after pre-landing review, hardened the LongMemEval transfer runner with an
+  explicit missing-oracle setup error, runtime candidate-stream mutation
+  checks, guarded dev escape hatches, and a policy-set warning for
+  `phase2_5_followup`
 - ran internal regression cells over forced contradiction, preference drift,
   mechanism-diverse frozen held-out, adversarial upstream noise, and evidence
   conflict spectrum

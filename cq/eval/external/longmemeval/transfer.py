@@ -6,6 +6,7 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
@@ -16,6 +17,7 @@ from cq.eval.bootstrap import (
     paired_bootstrap_sample_means,
 )
 from cq.eval.end_to_end_eval import execute_scenario
+from cq.eval.extracted_candidate_runner import candidate_stream_sha256 as candidate_updates_sha256
 from cq.eval.external.longmemeval.adapter import (
     ADAPTER_PIN_PATH,
     DEFAULT_ANNOTATIONS_PATH,
@@ -63,6 +65,7 @@ DEFAULT_SUMMARY = REPO_ROOT / "data" / "external" / "longmemeval" / "transfer_su
 DEFAULT_ROWS = REPO_ROOT / "data" / "external" / "longmemeval" / "transfer_per_case_rows.csv"
 DEFAULT_MANIFEST = REPO_ROOT / "data" / "external" / "longmemeval" / "transfer_manifest.json"
 DEFAULT_SENSITIVITY_DIR = REPO_ROOT / "data" / "external" / "longmemeval" / "sensitivity"
+DEV_OVERRIDE_ENV = "LONGMEMEVAL_DEV_OVERRIDE"
 HEADLINE_POLICY = "consolidation_queue_lite"
 REFLECTION_POLICY = "reflection_eager_write_lite"
 MEM0_POLICY = "mem0_lite"
@@ -147,6 +150,11 @@ def build_transfer_artifacts(
     adapter_pin_path: str | Path = ADAPTER_PIN_PATH,
     policy_set: str | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
+    if allow_dirty_worktree:
+        _require_dev_override("--allow-dirty-worktree")
+    if skip_judge_validation:
+        _require_dev_override("--skip-judge-validation")
+
     provenance = _source_provenance(allow_dirty_worktree=allow_dirty_worktree)
     adapter_pin = validate_adapter_pin(pin_path=adapter_pin_path)
     judge_report = (
@@ -168,7 +176,7 @@ def build_transfer_artifacts(
         policy_set=policy_set,
     )
     policy_names = [policy.policy_name for policy in policy_classes]
-    gold_cases = load_gold_cases(oracle_json)
+    gold_cases = _load_gold_cases_for_transfer(oracle_json)
     gold_by_case = {case.case_id: case for case in gold_cases}
 
     cell_summaries = []
@@ -200,6 +208,7 @@ def build_transfer_artifacts(
         "judge_mode": "local_judge" if run_local_judge else "dry_run_unjudged",
         "judge_model": judge_model,
         "headline_metric": HEADLINE_METRIC,
+        "policy_set_warning": _policy_set_warning(policy_set),
         "judge_report_path": _repo_relative(Path(judge_report_path)),
         "judge_report": _judge_report_summary(judge_report),
         "adapter_pin": adapter_pin,
@@ -282,6 +291,11 @@ def _run_cell(
     judge_model: str,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     scenarios, streams = adapt_annotations(cell["annotations"])
+    expected_stream_hashes = _expected_scenario_stream_hashes(
+        scenarios=scenarios,
+        streams=streams,
+        cell_id=str(cell["cell_id"]),
+    )
     expected_case_ids = [
         str(scenario.latent_truth_graph["case_id"]) for scenario in scenarios
     ]
@@ -304,6 +318,12 @@ def _run_cell(
     for policy_cls in policy_classes:
         for scenario in scenarios:
             record = execute_scenario(policy_cls, scenario)
+            _assert_candidate_stream_unchanged(
+                scenario,
+                expected_stream_hashes[scenario.scenario_id],
+                policy_name=policy_cls.policy_name,
+                cell_id=str(cell["cell_id"]),
+            )
             trace = (record.get("question_traces") or [{}])[0]
             case_id = str(scenario.latent_truth_graph["case_id"])
             predicted_session_ids = _predicted_session_ids(
@@ -373,11 +393,102 @@ def _run_cell(
             "annotations_path": cell["annotations_path"],
             "scenario_count": len(scenarios),
             "candidate_stream_hash_report": hash_report,
+            "runtime_candidate_stream_mutation_check": {
+                "passed": True,
+                "description": "scenario candidate stream unchanged after each policy execution",
+            },
             "score_summary": scored["summary"],
             "rows": scored_rows,
         },
         scored_rows,
     )
+
+
+def _load_gold_cases_for_transfer(oracle_json: str | Path) -> list[Any]:
+    path = Path(oracle_json)
+    if not path.exists():
+        raise LongMemEvalTransferError(
+            "LongMemEval oracle JSON is missing: {}. Provide --oracle-json or "
+            "materialize the scoring-only oracle at the default path {}.".format(
+                path,
+                DEFAULT_ORACLE_JSON,
+            )
+        )
+    return load_gold_cases(path)
+
+
+def _require_dev_override(flag_name: str) -> None:
+    if os.environ.get(DEV_OVERRIDE_ENV) != "1":
+        raise LongMemEvalTransferError(
+            "{} requires {}=1 because it bypasses a preregistered runtime gate.".format(
+                flag_name,
+                DEV_OVERRIDE_ENV,
+            )
+        )
+
+
+def _policy_set_warning(policy_set: str) -> str:
+    if policy_set != POLICY_SET_PHASE_2_5_FOLLOWUP:
+        return ""
+    return (
+        "phase2_5_followup is a diagnostic follow-up policy set for the "
+        "preregistered pending multi-evidence repair; do not treat it as the "
+        "original X.4 phase2_5 headline comparison."
+    )
+
+
+def _expected_scenario_stream_hashes(
+    *,
+    scenarios: Sequence[Any],
+    streams: Mapping[str, Any],
+    cell_id: str,
+) -> dict[str, str]:
+    expected = {}
+    for scenario in scenarios:
+        scenario_hash = _scenario_candidate_stream_sha256(scenario)
+        adapter_hash = streams[scenario.scenario_id].candidate_stream_sha256
+        if scenario_hash != adapter_hash:
+            raise LongMemEvalTransferError(
+                "Adapted scenario stream hash mismatch in cell {} scenario {}: "
+                "scenario={}, adapter={}".format(
+                    cell_id,
+                    scenario.scenario_id,
+                    scenario_hash,
+                    adapter_hash,
+                )
+            )
+        expected[scenario.scenario_id] = scenario_hash
+    return expected
+
+
+def _scenario_candidate_stream_sha256(scenario: Any) -> str:
+    candidates = [
+        event.candidate
+        for event in scenario.sorted_events()
+        if event.candidate is not None
+    ]
+    return candidate_updates_sha256(candidates)
+
+
+def _assert_candidate_stream_unchanged(
+    scenario: Any,
+    expected_hash: str,
+    *,
+    policy_name: str,
+    cell_id: str,
+) -> None:
+    observed_hash = _scenario_candidate_stream_sha256(scenario)
+    if observed_hash != expected_hash:
+        raise LongMemEvalTransferError(
+            "Policy {} mutated the LongMemEval candidate stream in cell {} "
+            "scenario {}: before={}, after={}".format(
+                policy_name,
+                cell_id,
+                scenario.scenario_id,
+                expected_hash,
+                observed_hash,
+            )
+        )
 
 
 def _judge_predictions(

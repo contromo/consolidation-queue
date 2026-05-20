@@ -62,6 +62,11 @@ POLICY_SET_DEFAULT = "default"
 POLICY_SET_PHASE_2_5 = "phase2_5"
 POLICY_SET_FOLLOWUP = "followup"
 POLICY_SET_PHASE_2_5_FOLLOWUP = "phase2_5_followup"
+POLICY_SET_PHASE_2_5_FOLLOWUP_WARNING = (
+    "phase2_5_followup is a diagnostic follow-up policy set for the "
+    "preregistered pending multi-evidence repair and internal regression "
+    "controls; do not treat it as the original phase2_5 headline comparison."
+)
 POLICY_SET_CHOICES = (
     POLICY_SET_DEFAULT,
     POLICY_SET_PHASE_2_5,
@@ -472,6 +477,11 @@ def build_run_artifact(
         "scenario_count": len(scenarios),
         "template_mix": template_mix,
         "policy_set": policy_set,
+        "policy_set_warning": (
+            POLICY_SET_PHASE_2_5_FOLLOWUP_WARNING
+            if policy_set == POLICY_SET_PHASE_2_5_FOLLOWUP
+            else ""
+        ),
         "baseline_notes": baseline_notes,
         "ablation_notes": ablation_notes,
         "pairwise_template_id_comparisons": _build_pairwise_comparisons(

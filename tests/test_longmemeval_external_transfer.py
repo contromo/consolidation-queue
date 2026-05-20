@@ -1,19 +1,26 @@
 import json
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
+from cq.eval.external.longmemeval.adapter import adapt_annotations
 from cq.eval.external.longmemeval.transfer import (
+    DEV_OVERRIDE_ENV,
     FOLLOWUP_CQ_POLICY,
     HEADLINE_METRIC,
     HEADLINE_POLICY,
     LongMemEvalTransferError,
     REFLECTION_CAPPED_POLICY,
     REFLECTION_POLICY,
+    _assert_candidate_stream_unchanged,
     _bucket_verdict,
     _followup_outcome,
+    _load_gold_cases_for_transfer,
     _predicted_session_ids,
     _reflection_capped_is_strict_subset,
+    _require_dev_override,
+    _scenario_candidate_stream_sha256,
     build_sensitivity_cells,
     validate_judge_report,
 )
@@ -108,6 +115,38 @@ class LongMemEvalTransferTests(unittest.TestCase):
         )
 
         self.assertEqual(result, ["s2", "s1"])
+
+    def test_missing_oracle_json_reports_setup_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            missing = Path(tmpdir) / "missing_oracle.json"
+
+            with self.assertRaisesRegex(
+                LongMemEvalTransferError,
+                "LongMemEval oracle JSON is missing",
+            ):
+                _load_gold_cases_for_transfer(missing)
+
+    def test_dev_override_required_for_runtime_escape_hatches(self) -> None:
+        with mock.patch.dict("os.environ", {}, clear=True):
+            with self.assertRaisesRegex(LongMemEvalTransferError, DEV_OVERRIDE_ENV):
+                _require_dev_override("--skip-judge-validation")
+
+        with mock.patch.dict("os.environ", {DEV_OVERRIDE_ENV: "1"}, clear=True):
+            _require_dev_override("--skip-judge-validation")
+
+    def test_candidate_stream_mutation_check_detects_policy_side_mutation(self) -> None:
+        scenarios, _streams = adapt_annotations([_annotation_row("c1")])
+        scenario = scenarios[0]
+        expected_hash = _scenario_candidate_stream_sha256(scenario)
+        scenario.oracle_events[0].candidate.raw_claim = "Mutated by policy"
+
+        with self.assertRaisesRegex(LongMemEvalTransferError, "mutated the LongMemEval candidate stream"):
+            _assert_candidate_stream_unchanged(
+                scenario,
+                expected_hash,
+                policy_name="bad_policy",
+                cell_id="primary_contract",
+            )
 
     def test_bucket_verdict_reports_sign_flip(self) -> None:
         pairwise = {

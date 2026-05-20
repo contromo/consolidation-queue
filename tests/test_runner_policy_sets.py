@@ -13,6 +13,7 @@ from cq.eval.runner import (
     POLICY_SET_FOLLOWUP,
     POLICY_SET_PHASE_2_5,
     POLICY_SET_PHASE_2_5_FOLLOWUP,
+    POLICY_SET_PHASE_2_5_FOLLOWUP_WARNING,
     PREFERENCE_DRIFT,
     SCOPE_CONTAMINATION,
     USEFUL_PENDING_MEMORY,
@@ -178,6 +179,10 @@ class RunnerPolicySetTests(unittest.TestCase):
                 self.assertIn("mem0_lite", policy_names)
                 self.assertNotIn(CQDatedContestation.policy_name, policy_names)
                 self.assertEqual(artifact["policy_set"], POLICY_SET_PHASE_2_5_FOLLOWUP)
+                self.assertEqual(
+                    artifact["policy_set_warning"],
+                    POLICY_SET_PHASE_2_5_FOLLOWUP_WARNING,
+                )
                 self.assertIn(CQPendingMultiEvidence.policy_name, artifact["ablation_notes"])
                 self.assertIn(ReflectionEagerWriteCardinalityCapped.policy_name, artifact["ablation_notes"])
 
