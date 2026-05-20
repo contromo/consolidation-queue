@@ -745,9 +745,11 @@ def compute_longmemeval_external_metrics(
         false_assertion_rate=0.0,
         leakage_rate=0.0,
         premature_promotion_rate=_premature_promotion_rate(store_snapshot, scenario),
-        useful_recall=1.0 if resolved_candidate_ids else 0.0,
-        used_pending=1.0 if getattr(probe_trace, "used_pending", False) else 0.0,
-        durable_commit=1.0 if used_memory_ids else 0.0,
+        # LongMemEval transfer uses PFLC scoring later; these legacy runner metrics
+        # are binary smoke signals for whether the policy surfaced any memory.
+        useful_recall=float(bool(resolved_candidate_ids)),
+        used_pending=float(bool(getattr(probe_trace, "used_pending", False))),
+        durable_commit=float(bool(used_memory_ids)),
     )
 
 
