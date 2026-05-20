@@ -1,6 +1,6 @@
 # Paper Outline: Fair Policy Evaluation For Memory Governance
 
-Date: 2026-05-17
+Date: 2026-05-19
 
 Target: arXiv technical report first; workshop submission only after the
 argument is tight enough that unsupported claims are visibly out of scope.
@@ -28,7 +28,10 @@ component-gated noisy-mode unlock discipline, a mechanism audit for Bucket B,
 a query-resolvable canonical-id diagnostic that should accompany any
 clustering-quality component evaluation of memory-policy benchmarks, and a
 reproducibility posture strict enough to report a second Bucket D CQR abort
-instead of forcing a verdict.
+instead of forcing a verdict. A later LongMemEval controlled-pilot transfer
+probe shows the same discipline on an external task design: the adapter and
+judge gates pass, but CQ loses the headline evidence-completeness PFLC metric
+to immediate-write baselines while tying them on evidence exposure.
 
 ## 1. Introduction And Contributions
 
@@ -80,10 +83,18 @@ substrate.
    construction for retrieval@k content-based metrics (Lemma 1) and
    answer-accuracy text-based metrics (Lemma 2). A representative-anchor
    feasibility survey of four memory benchmarks (LongMemEval, Mem0/LoCoMo,
-   MemoryAgentBench, MemBench) finds none expose the artifacts needed for
-   empirical PFLC scoring (outcome bucket B-3). Each anchor receives a
+   MemoryAgentBench, MemBench) finds none expose released baseline artifacts
+   needed for empirical PFLC scoring (outcome bucket B-3). Each anchor receives a
    benchmark-targeted synthetic counterexample row, instantiating Lemma 1
    or Lemma 2.
+9. **Controlled external transfer probe.** A separately preregistered
+   LongMemEval v1 adapter creates a same-candidate-stream controlled pilot,
+   calibrates a local judge, and runs the Phase 2.5 policy set across three
+   meaningful sensitivity cells. The protocol reaches a stable Bucket A
+   readout, but the sign is negative for CQ on `all_hit_at_50`: CQ exposes one
+   gold evidence session per case (`any_hit_at_50` ties eager baselines) but
+   fails evidence completeness because pending lookup returns one
+   strongest/latest candidate while eager durable baselines retain both.
 
 Key artifacts:
 
@@ -105,6 +116,12 @@ Key artifacts:
 - `docs/qr_canon_memoryagentbench_feasibility.md`
 - `docs/qr_canon_membench_feasibility.md`
 - `data/results/qr_canon_field_diagnostic_metrics.csv`
+- `docs/fair_stream_externalization_preregistration.md`
+- `docs/longmemeval_transfer_results.md`
+- `data/external/longmemeval/transfer_summary.json`
+- `data/external/longmemeval/transfer_per_case_rows.csv`
+- `data/external/longmemeval/transfer_manifest.json`
+- `data/external/longmemeval/sensitivity/`
 
 ## 2. Benchmark And Policies
 
@@ -139,13 +156,18 @@ Key artifacts:
 
 LongMemEval evaluates long-term interactive chat memory across information
 extraction, multi-session reasoning, knowledge updates, temporal reasoning, and
-abstention ([arXiv:2410.10813](https://arxiv.org/abs/2410.10813)). It is the
-right external transfer target for this project only if a same-candidate-stream
-candidate layer and policy-query contract can be preserved. The 2026-05-17
-feasibility memo found 72 update/correction cases in its oracle split but
-classified the current transfer path as descriptive-only future work because
-the released fields do not expose CQ-style candidate streams, contradiction
-edges, or canonical query ids.
+abstention ([arXiv:2410.10813](https://arxiv.org/abs/2410.10813)). The
+2026-05-17 feasibility memo initially classified direct policy execution as
+descriptive-only because the released fields do not expose CQ-style candidate
+streams, contradiction edges, or canonical query ids. The later fair-stream
+externalization workstream created a controlled-pilot adapter for LongMemEval
+v1 instead of treating the benchmark as a leaderboard: two local annotation
+paths froze an agreed denominator, the adapter pinned a same candidate stream
+for all policies, the judge was calibrated locally, and the final X.4 run
+emitted a stable negative transfer readout for CQ. Because the oracle split is
+evidence-only (`answer_session_ids` equals `haystack_session_ids`), the PFLC
+metric is framed as evidence exposure/completeness under a fixed policy
+surface, not as retrieval from distractor sessions.
 
 MemoryAgentBench evaluates memory agents through incremental multi-turn
 interactions and emphasizes accurate retrieval, test-time learning,
@@ -258,8 +280,8 @@ The contribution has three layers:
 - **Per-anchor feasibility memos** for LongMemEval, Mem0/LoCoMo,
   MemoryAgentBench, and MemBench lock a decision call (empirical /
   descriptive-only / blocked) and a named PFLC instance per benchmark.
-  All four anchors land at descriptive-only; no released artifacts in
-  the surveyed anchor set support empirical PFLC scoring today. The
+  All four anchors land at descriptive-only; no released baseline artifacts
+  in the surveyed anchor set support empirical PFLC scoring today. The
   workstream lands at outcome bucket B-3 (artifact-blocked) per the
   registration's preregistered bucket scheme.
 
@@ -273,6 +295,31 @@ function, while retrieval-id, slot-id, fact-id, and answer-handle
 instances do not. The PFLC class never proposes a hard pass/fail
 threshold; it enters the field-level methodology as a required
 diagnostic alongside clustering / retrieval / accuracy metrics.
+
+### External Transfer Stage
+
+The LongMemEval fair-stream externalization workstream is the report's
+controlled external transfer stage. It is not a leaderboard run and not a
+claim that CQ beats LongMemEval systems. It asks a narrower question: after
+building a redacted same-stream adapter for a benchmark the project did not
+design, does the CQ-vs-baseline policy distinction transfer?
+
+Judge calibration passed preregistration §6 path 2 (path 1 absent per the
+2026-05-19 reference-judge-log survey): the locked qwen2.5:32b/qwen2.5:7b
+cross-judge cleared kill criterion 10 with 5/5 correctness on each synthetic
+control sub-stratum and 14/15 realistic-stratum cross-judge agreement,
+licensing the X.4 transfer execution.
+
+The answer is negative for current CQ on evidence completeness. The X.4 run
+uses `all_hit_at_50` as the headline PFLC metric and three meaningful cells:
+`primary_contract`, `path_a_only_denominator`, and `path_b_only_denominator`.
+CQ loses to Reflection and `Mem0Lite` by `-1.0` in every cell. The sibling
+metric `any_hit_at_50` is transfer-null: CQ finds at least one gold evidence
+session in every case, but immediate-write baselines retain both. This makes
+the PFLC framing decision explicit: LongMemEval v1 oracle-split PFLC measures
+scope-filtered evidence exposure and completeness, not open retrieval quality.
+`answer_correct` remains diagnostic only because all policy answer surfaces
+are structured memory traces rather than natural-language answers.
 
 ## 5. Evidence Ledger
 
@@ -288,7 +335,7 @@ diagnostic alongside clustering / retrieval / accuracy metrics.
 | The mechanism audit attributes only forced contradiction cleanly and preference drift partially. | Noisy audit | `docs/noisy_policy_mechanism_audit_hypothesis.md` | `docs/noisy_policy_mechanism_audit.md`; `data/results/noisy_policy_mechanism_audit_evidence.json`; three audit traces | `forced_contradiction` survives through contradiction edges and contestation/demotion; `preference_drift` partially survives; other rows remain unattributed or descriptive. | No noisy scope/source/pending/poisoning survival claim. |
 | CQR replay repair refused to emit a verdict under a second Bucket D. | Reproducibility audit | `docs/canonical_id_resolution_audit_preregistration.md`; `docs/canonical_id_resolution_audit_repair_preregistration.md` | `docs/canonical_id_resolution_audit_results.md`; `data/results/canonical_id_resolution_audit_stop_2026-05-15.json`; `data/results/canonical_id_resolution_audit_stop_2026-05-16.json` | The repair separated path-sensitive fields but still aborted on locked run-JSON non-reproducibility. | No CQR A/B/C attribution; null rows remain unsettled until QR-canon reattributed them. |
 | QR-canon exposes clustering-vs-lookup gap and reattributes four null rows. | Component diagnostic, registered post-hoc | `docs/qr_canon_audit_registration.md` (reuses CQR Section A metrics) | `docs/qr_canon_audit_results.md`; `data/results/qr_canon_audit_metrics.csv`; `data/results/qr_canon_source_table.csv`; synthetic counterexample row | Five of seven Phase 4 rows clear the B-cubed F1 `>= 0.65` floor while QR-canon (exact) is below 5 percent; locked CQR alias function also returns zero on four of those rows. | No QR-canon pass/fail gate; no CQR A/B/C verdict; no change to policy verdicts. |
-| LongMemEval is relevant but not yet a fair transfer run. | Feasibility only | `docs/next_research_plan.md` Workstream D; frozen coding rule in memo | `docs/longmemeval_feasibility_memo.md`; `data/results/longmemeval_feasibility_coding.csv` | 72 `knowledge-update` cases map to `contradiction_edge`, but candidate stream and policy-query invariants are not preserved. | Descriptive-only future work; no policy run. A future LongMemEval adapter must establish a QR-canon target before any policy run. |
+| LongMemEval controlled-pilot transfer executes and returns a stable CQ-negative readout. | External controlled transfer | `docs/fair_stream_externalization_preregistration.md`; adapter pin; X.3.5 judge calibration amendment; X.4 metric/sensitivity amendment | `docs/longmemeval_transfer_results.md`; `data/external/longmemeval/transfer_summary.json`; `data/external/longmemeval/transfer_per_case_rows.csv`; `data/external/longmemeval/transfer_manifest.json` | Methodology gates pass; Bucket A fires because signs are stable; CQ - Reflection on `all_hit_at_50` is `-1.0` in all three cells. CQ ties on `any_hit_at_50`, so the failure is evidence completeness, not total evidence exposure. | Not a CQ win, not a leaderboard result, and not retrieval-quality evidence on LongMemEval-S/full haystacks. |
 | The cluster-partition / lookup-contract gap holds formally for cluster-partition metrics; analogous gaps hold by construction for retrieval@k and answer-accuracy metrics. | Formal (Proposition 1) + constructive (Lemmas 1, 2) | `docs/policy_facing_lookup_contract_registration.md`; `docs/policy_facing_lookup_contract_proposition.md` | `tests/test_qr_canon_field_diagnostic.py::PropositionOneReproducibilityTests` (hand-computed B-cubed F1 = 1.00, set-membership PFLC = 0 under renaming `ρ(g*) ≠ g*` AND `g* ∉ image(ρ)`) | Proposition reproducible unit-test-deterministically; corollary: no cluster-partition, content-based retrieval, or text-based answer-accuracy metric is sufficient evidence of policy-facing lookup-contract success. | No pass/fail PFLC threshold; no modification of byte-locked CQR alias function. |
 | PFLC anchor feasibility survey lands at B-3 (artifact-blocked). | Descriptive feasibility | `docs/policy_facing_lookup_contract_registration.md` §4 outcome buckets; per-benchmark memos | `docs/qr_canon_longmemeval_feasibility.md`; `docs/qr_canon_mem0_locomo_feasibility.md`; `docs/qr_canon_memoryagentbench_feasibility.md`; `docs/qr_canon_membench_feasibility.md`; `docs/qr_canon_field_diagnostic_results.md`; `data/results/qr_canon_field_diagnostic_metrics.csv` | All four anchor benchmarks (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) land at descriptive-only. No anchor releases per-question system-emitted identifier artifacts standardly. BEAM's conditional promotion rule does not fire. Each anchor ships one synthetic counterexample row (Lemma 1 or Lemma 2). | Outcome bucket B-3 is itself a structural finding about released-artifact contracts; not a benchmark-design criticism. |
 
@@ -336,7 +383,9 @@ that later reached Bucket B.
 - extractor-floor convergence for `useful_pending_memory` or
   `memory_poisoning` under the current 32B artifacts
 - real-user, weeks-long helpfulness
-- LongMemEval or other external transfer
+- positive LongMemEval generalization for CQ; the completed controlled
+  transfer is stable but negative on evidence completeness
+- broad external transfer beyond the LongMemEval v1 controlled-pilot adapter
 - a hard QR-canon pass/fail threshold; QR-canon is a required diagnostic
   alongside clustering-quality metrics, not a new gate
 - semantic extractor failure as the cause of the QR-canon gap; the gap is
@@ -374,12 +423,15 @@ the locked CQR alias function and never substitutes for the exact metric.
 
 ### PFLC Field-Level Boundary
 
-The PFLC field-level generalization (contribution 8) produces no
-empirical row on any external benchmark. The workstream's outcome bucket
-B-3 is supported by a formal proposition, two constructive lemmas, four
-per-anchor feasibility memos, and four benchmark-targeted synthetic
-counterexamples; it is **not** supported by any empirical PFLC scoring
-of released system outputs. Specific unsupported claims:
+The original PFLC field-level generalization (contribution 8) produces no
+empirical row on any released external-baseline artifact. The workstream's
+outcome bucket B-3 is supported by a formal proposition, two constructive
+lemmas, four per-anchor feasibility memos, and four benchmark-targeted
+synthetic counterexamples; it is **not** supported by empirical PFLC scoring of
+released system outputs. The later LongMemEval controlled-pilot run is a
+separate same-stream adapter experiment over this repo's policies, not a
+retroactive promotion of the released-artifact survey. Specific unsupported
+claims:
 
 - a hard PFLC pass/fail threshold; PFLC is a required diagnostic
   alongside clustering / retrieval / accuracy metrics, never a gate.
@@ -398,13 +450,20 @@ of released system outputs. Specific unsupported claims:
   permits empirical-replay scoring of such artifacts; this workstream
   does not perform the locating step.
 
-### External Transfer Boundary
+### LongMemEval Controlled-Transfer Boundary
 
-The LongMemEval feasibility memo and per-case coding CSV found a relevant
-`knowledge-update` denominator, but no fair policy run is licensed yet. The
-released artifacts do not provide CQ-style candidate streams, contradiction
-edges, canonical ids, or a policy-query contract. A future LongMemEval-CQ run
-must first create and preregister that adapter/annotation layer.
+The LongMemEval controlled-pilot run licenses one external-transfer readout,
+and that readout is negative for current CQ on `all_hit_at_50`. It does not
+support:
+
+- a CQ-positive external generalization claim;
+- a claim about LongMemEval-V2 or LongMemEval-S;
+- retrieval-quality claims in the presence of distractor haystacks, because the
+  v1 oracle split used here is evidence-only;
+- a natural-language QA claim, because `answer_correct` is 0/1,935 and the
+  policy answer surface is a memory trace;
+- a claim that future CQ variants should be evaluated without a fresh
+  preregistration if they change pending multi-evidence lookup.
 
 ## 9. Future Work
 
@@ -415,13 +474,14 @@ must first create and preregister that adapter/annotation layer.
    success) is the natural follow-on diagnostic but remains blocked on the
    same replay path; it is not licensed against the existing locked Phase 4
    manifests.
-2. If LongMemEval remains the transfer target, write a separate adapter and
-   annotation preregistration that freezes candidate construction, canonical-id
-   query mapping, per-mechanism labels, metrics, baselines, and kill criteria
-   before any policy execution.
-3. If a future LongMemEval adapter cannot preserve the same-candidate-stream
-   invariant, keep LongMemEval as descriptive future work rather than evidence
-   for CQ.
+2. Treat the LongMemEval X.4 result as a clean negative-transfer result unless
+   a separately preregistered follow-up changes the policy interface. The
+   natural follow-up is pending multi-evidence retrieval: can CQ expose all
+   same-slot pending evidence without giving CQ a richer substrate than eager
+   baselines?
+3. If future work extends LongMemEval beyond the v1 controlled pilot
+   (LongMemEval-S, V2, or additional baselines), preregister the adapter,
+   denominator, PFLC instance, and kill criteria before policy execution.
 4. Package the report with a final claim table, baseline table, reproducibility
    appendix, and failure taxonomy appendix.
 

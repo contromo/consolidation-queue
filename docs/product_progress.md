@@ -1,5 +1,46 @@
 # Product Progress
 
+## 2026-05-19 — LongMemEval X.5 paper and methodology integration lands
+
+### What Shipped
+
+- updated `docs/paper_outline.md` so LongMemEval is no longer described as
+  future/descriptive-only: it is now a completed controlled external transfer
+  probe with a stable CQ-negative evidence-completeness result
+- updated `docs/benchmark_methodology_draft.md` with a LongMemEval controlled
+  transfer subsection, evidence-ledger integration, limitations, and next-work
+  framing
+- updated `docs/next_research_plan.md` and `PROJECT_PLAN.md` so the roadmap no
+  longer says X.4 is blocked on smoke/PFLC/judge calibration
+
+### Framing Decision
+
+- LongMemEval v1 controlled-pilot PFLC is framed as evidence
+  exposure/completeness under a fixed same-stream policy surface
+- it is not framed as distractor-heavy retrieval quality, because the v1 oracle
+  split used here is evidence-only
+- `all_hit_at_50` remains the formal headline bucket metric;
+  `any_hit_at_50` is surfaced as a sibling metric showing evidence exposure is
+  transfer-null
+- `answer_correct` remains diagnostic only
+
+### Why It Matters
+
+- closes the loop from feasibility → adapter/preregistration → calibration →
+  judged transfer → report integration
+- prevents the paper from using stale "future LongMemEval work" language after
+  the X.4 artifacts landed
+- keeps the negative result scientifically useful: current CQ finds relevant
+  evidence but fails multi-evidence completeness under pending lookup
+
+### Open Issues / Next
+
+- any LongMemEval follow-up now requires a fresh preregistration, most
+  plausibly around pending multi-evidence retrieval or a different
+  LongMemEval split/adapter
+- do not rerun X.4 to rescue the observed metric after seeing the negative
+  result
+
 ## 2026-05-19 — LongMemEval X.4 judged transfer run lands
 
 ### What shipped
