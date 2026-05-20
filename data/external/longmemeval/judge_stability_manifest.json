@@ -1,0 +1,28 @@
+{
+  "artifact": "longmemeval_judge_stability_report",
+  "artifact_class": "phase_x3_5_judge_stability",
+  "calibration_path": "judge_stability_local_cross_check",
+  "inputs": {
+    "calibration_set_bytes": 10532,
+    "calibration_set_path": "data/external/longmemeval/judge_calibration_set.json",
+    "calibration_set_sha256": "e486de35a5091134333185ec1b49bf8e1453e9a9e4cf28215a0ecc585878f6c3"
+  },
+  "judges": {
+    "primary_model_id": "qwen2.5:32b-instruct-q4_K_M",
+    "secondary_model_id": "qwen2.5:7b-instruct-q4_K_M"
+  },
+  "outputs": {
+    "judge_stability_report_bytes": 20088,
+    "judge_stability_report_path": "data/external/longmemeval/judge_stability_report.json",
+    "judge_stability_report_sha256": "88336e2ba1962521a07a30582c03c43fd550ba28d44e44b784f25a48f68c04b6"
+  },
+  "result": {
+    "kill_criterion_10_triggered": false,
+    "primary_agreement": 0.9333333333333333,
+    "support_count": 25,
+    "synthetic_correctness_floor_passed": true
+  },
+  "source_provenance": {
+    "git_commit_sha": "11ee44ebe525ab8b0ab67d6875549c6f17d3fdbd"
+  }
+}

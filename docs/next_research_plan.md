@@ -1,8 +1,8 @@
 # Next Research Plan
 
-Date: 2026-05-15
+Date: 2026-05-19
 
-Status: active roadmap with 2026-05-18 progress notes.
+Status: active roadmap with 2026-05-19 LongMemEval X.5 integration notes.
 
 ## Status Update — 2026-05-17
 
@@ -104,6 +104,61 @@ available, PFLC decomposes LoCoMo scores into evidence exposure, evidence
 rank/context saturation, and answer-generation residuals. This remains a
 published-output/context-derived benchmark-artifact diagnostic, not a CQ
 policy transfer claim.
+
+The LongMemEval fair-stream externalization workstream has now started under
+the heavy-integration plan. Phase X.-1 landed in
+`docs/longmemeval_externalization_anchor_gate.md`: V2 is verified as a real
+public release with 451 question rows, but its public files strip answer-
+bearing annotation labels, so V2 is demoted to descriptive evidence-exposure
+work and LongMemEval v1 remains the primary controlled-pilot anchor. Phase X.0
+also landed in `docs/fair_stream_externalization_preregistration.md`, with a
+lock checker and local primitives for redacted loading, dual-path divergence
+auditing, and hidden-answer verification. Phase X.1 has now frozen the
+LongMemEval v1 annotation layer: both local-first annotation paths agree on 71
+of 72 comparable in-denominator `contradiction_edge` cases, the one canonical-id
+divergence is retained as an audit row, the hidden-answer verifier passes, and
+the agreed annotation artifact includes candidate events for the adapter. Phase
+X.1 leaves contradiction edges empty rather than inventing adjacent-session
+links. Phase X.2 has now landed adapter construction and stream-hash pinning:
+the agreed events map into shared `Scenario` and `CandidateUpdate` objects, the
+adapter SHA is pinned against the preregistration lock, the adapter validates
+the pin by default, and the N=6 adapter dry run reports zero drops with
+identical candidate-stream hashes across the CQ, Reflection, and `Mem0Lite`
+placeholder policy names. Because the current deterministic adapter does not
+create event-level contradiction edges, contradiction recovery is out of scope
+unless a later registered extractor amendment adds that support. This does not
+authorize a policy run. The next step is smoke testing, PFLC scoring, and judge
+calibration under the locked protocol.
+
+## Status Update — 2026-05-19
+
+LongMemEval Phase X.3.5 through X.5 landed. The path-1 survey found no official
+per-case reference judge log, so X.3.5 used the local path-2 calibration:
+15 realistic CQ-sourced rows plus 5 positive and 5 negative synthetic controls.
+The locked 32B/7B judge run cleared kill criterion 10 with realistic-stratum
+agreement `14/15`, no indeterminate verdicts, and perfect synthetic-control
+correctness for both judges.
+
+Phase X.4 executed the full judged controlled-pilot transfer from a clean
+worktree. The run emitted 1,935 policy/cell/case rows over the Phase 2.5
+policy set and three meaningful cells (`primary_contract`,
+`path_a_only_denominator`, `path_b_only_denominator`). The headline PFLC metric
+is `all_hit_at_50`; `answer_correct` is diagnostic only after both the smoke
+and full run showed trace-shaped answers with 0 correct judge verdicts.
+
+The transfer result is Bucket A-negative: methodology gates pass and the sign
+is stable, but CQ loses `all_hit_at_50` to Reflection and `Mem0Lite` by `-1.0`
+in every cell. The sibling `any_hit_at_50` metric is transfer-null: CQ exposes
+at least one gold evidence session in every case, but it does not expose both.
+The mechanism is CQ's pending lookup interface, which returns one
+strongest/latest pending candidate; eager durable baselines reinforce one
+durable with both evidence candidates.
+
+Phase X.5 integrates this into the paper outline and methodology spine as a
+controlled external transfer probe, not a CQ-positive generalization claim and
+not a leaderboard result. The next licensed LongMemEval move would require a
+separate preregistration, likely around pending multi-evidence retrieval or a
+different LongMemEval split/adapter.
 
 ## Research Posture
 
@@ -234,16 +289,34 @@ also appears outside this benchmark.
 
 LongMemEval should be treated as a transfer probe, not a leaderboard target.
 
-Design requirements before implementation:
+Status:
 
-1. Identify LongMemEval cases that map to contradiction, correction, or stale
-   memory mechanisms.
-2. Define how CQ, ReflectionEagerWrite, and `Mem0Lite` receive comparable
-   upstream inputs.
-3. If a same-candidate-stream setup is not possible, label the result as
-   descriptive transfer only.
-4. Preregister the subset, metrics, baselines, and failure interpretation
-   before running any policy.
+- Phase X.-1 anchor gate is complete: LongMemEval v1 primary, V2 descriptive
+  evidence-exposure only.
+- Phase X.0 preregistration is locked.
+- Phase X.1 annotation output is frozen: 72 comparable cases, 71 dual-path
+  agreements, one canonical-id divergence, verifier pass, and adapter-ready
+  agreed candidate events with contradiction links left empty.
+- Phase X.2 adapter construction and pinning is complete: the adapter emits
+  shared `Scenario`/`CandidateUpdate` objects, validates
+  `docs/longmemeval_adapter_pin.json`, and passes the N=6 stream-hash
+  invariant dry run with zero drops.
+- Redacted loader, dual-path audit, verifier, annotator paths, manifest writer,
+  adapter, and lock primitives exist with focused tests.
+- No smoke policy run, PFLC wrapper, judge calibration, or policy comparison
+  has been executed.
+
+Remaining design requirements before policy execution:
+
+1. Preserve the frozen 71-case dual-path-agreed denominator when running the
+   adapter-backed smoke and transfer cells.
+2. Preserve the pinned adapter and stream-hash invariant so CQ,
+   ReflectionEagerWrite, and `Mem0Lite` receive comparable upstream inputs.
+3. Preserve the dual-path disagreement report as an audit artifact; future
+   sensitivity cells may use path-A-only and path-B-only subsets, but the
+   primary contract is the agreed subset.
+4. Validate the hidden-answer verifier, stream-hash invariant, and judge
+   calibration before running any policy.
 
 Decision rule:
 
@@ -277,8 +350,9 @@ Required pieces:
 4. Paper-outline pass focused on the mechanism-local thesis. **Landed.**
 5. Decide between `CQDatedContestation` and LongMemEval based on which one
    answers the most credible reviewer objection. **`CQDatedContestation`
-   landed as partial preregistered success; LongMemEval landed as
-   descriptive-only future work.**
+   landed as partial preregistered success; LongMemEval later landed as a
+   controlled-pilot external transfer probe with a stable CQ-negative
+   evidence-completeness result.**
 6. Registered post-hoc QR-canon audit reattributing the four
    perfect-clustering null rows. **Landed (Workstream A.5).**
 7. PFLC field-level diagnostic generalization: registration +
@@ -290,6 +364,24 @@ Required pieces:
    artifact gate + scorer + per-question rows + summary manifest. **Landed
    as a narrow published-output/context-derived replay, not a policy
    comparison.**
+9. LongMemEval Phase X.1 dual-path annotation layer: redacted local-first
+   annotation paths, dual-path audit, agreed annotations, verifier report, and
+   byte-stable manifest. **Landed as annotation freeze only; no policy
+   execution.**
+10. LongMemEval Phase X.2 adapter construction and pinning: agreed annotation
+    events map into shared scenarios and candidate streams, the live adapter SHA
+    is pinned against the preregistration lock, and the N=6 dry-run stream-hash
+    invariant passes with zero drops. **Landed as adapter plumbing only; no
+    smoke policy run, PFLC scoring, judge calibration, or transfer comparison.**
+11. LongMemEval Phase X.3/X.3.5 smoke, PFLC scorer, judge calibration, and
+    answer-correctness smoke. **Landed; `answer_correct` demoted to diagnostic,
+    `all_hit_at_50` selected as the X.4 headline PFLC metric.**
+12. LongMemEval Phase X.4 full judged transfer. **Landed as Bucket A-negative:
+    stable negative CQ-vs-Reflection and CQ-vs-`Mem0Lite` signs on
+    `all_hit_at_50`; transfer-null on `any_hit_at_50`.**
+13. Phase X.5 paper-outline and methodology-spine integration. **Landed:
+    LongMemEval is now framed as a controlled external transfer failure of
+    current CQ's evidence-completeness interface, not as a broad transfer win.**
 
 Next-next, none of which is licensed by this plan without a separate
 preregistration:
@@ -300,8 +392,9 @@ preregistration:
 - a policy-facing adapter-contract experiment that runs the CQR Section C
   cross-tab (QR-canon hit vs per-policy answer success) on a fresh Phase 4
   baseline or a separately archived locked-input environment
-- a LongMemEval adapter/annotation preregistration that establishes a
-  QR-canon target before any policy run
+- a separately preregistered LongMemEval follow-up, if any, focused on pending
+  multi-evidence retrieval or a different split/adapter; do not rerun X.4 to
+  rescue the metric after seeing the negative result
 - threshold or prompt or validator changes — explicitly forbidden by the
   Kill Criteria below
 

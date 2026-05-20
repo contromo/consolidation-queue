@@ -1,0 +1,266 @@
+{
+  "case_count": 25,
+  "cases": [
+    {
+      "candidate_answer": "[pending] lme-new-postcards-added-collection-since-started-collecting-again (strength 0.70)",
+      "case_id": "01493427",
+      "expected_verdict": null,
+      "gold_answer": "25",
+      "question": "How many new postcards have I added to my collection since I started collecting again?",
+      "source_case_id": "01493427",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-engineers-lead-just-started-new-role-as-senior-software-engineer (strength 0.70)",
+      "case_id": "031748ae",
+      "expected_verdict": null,
+      "gold_answer": "When you just started your new role as Senior Software Engineer, you led 4 engineers. Now, you lead 5 engineers",
+      "question": "How many engineers do I lead when I just started my new role as Senior Software Engineer? How many engineers do I lead now?",
+      "source_case_id": "031748ae",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-projects-completed-since-starting-painting-classes (strength 0.70)",
+      "case_id": "06db6396",
+      "expected_verdict": null,
+      "gold_answer": "5",
+      "question": "How many projects have I completed since starting painting classes?",
+      "source_case_id": "06db6396",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-initially-keep-old-sneakers (strength 0.70)",
+      "case_id": "07741c44",
+      "expected_verdict": null,
+      "gold_answer": "under my bed",
+      "question": "Where do I initially keep my old sneakers?",
+      "source_case_id": "07741c44",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-keep-old-sneakers (strength 0.70)",
+      "case_id": "07741c45",
+      "expected_verdict": null,
+      "gold_answer": "in a shoe rack in my closet",
+      "question": "Where do I currently keep my old sneakers?",
+      "source_case_id": "07741c45",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-long-been-using-fitbit-charge (strength 0.70)",
+      "case_id": "08e075c7",
+      "expected_verdict": null,
+      "gold_answer": "9 months",
+      "question": "How long have I been using my Fitbit Charge 3?",
+      "source_case_id": "08e075c7",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-new-kitchen-gadget-invest-before-getting-air-fryer (strength 0.70)",
+      "case_id": "0977f2af",
+      "expected_verdict": null,
+      "gold_answer": "Instant Pot",
+      "question": "What new kitchen gadget did I invest in before getting the Air Fryer?",
+      "source_case_id": "0977f2af",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-autographed-baseballs-added-collection-first-three-months-collection (strength 0.70)",
+      "case_id": "0ddfec37",
+      "expected_verdict": null,
+      "gold_answer": "15",
+      "question": "How many autographed baseballs have I added to my collection in the first three months of collection?",
+      "source_case_id": "0ddfec37",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-highest-score-ticket-ride (strength 0.70)",
+      "case_id": "0e4e4c46",
+      "expected_verdict": null,
+      "gold_answer": "132 points",
+      "question": "What is my current highest score in Ticket to Ride?",
+      "source_case_id": "0e4e4c46",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-stars-need-reach-gold-level-starbucks-rewards-app (strength 0.70)",
+      "case_id": "0f05491a",
+      "expected_verdict": null,
+      "gold_answer": "120",
+      "question": "How many stars do I need to reach the gold level on my Starbucks Rewards app?",
+      "source_case_id": "0f05491a",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-largemouth-bass-catch-alex-earlier-fishing-trip-lake-michigan-before-22-trip (strength 0.70)",
+      "case_id": "10e09553",
+      "expected_verdict": null,
+      "gold_answer": "7",
+      "question": "How many largemouth bass did I catch with Alex on the earlier fishing trip to Lake Michigan before the 7/22 trip?",
+      "source_case_id": "10e09553",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-pages-short-history-nearly-everything-read-so-far (strength 0.70)",
+      "case_id": "184da446",
+      "expected_verdict": null,
+      "gold_answer": "220",
+      "question": "How many pages of 'A Short History of Nearly Everything' have I read so far?",
+      "source_case_id": "184da446",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-brand-bbq-sauce-obsessed (strength 0.70)",
+      "case_id": "18bc8abd",
+      "expected_verdict": null,
+      "gold_answer": "Kansas City Masterpiece",
+      "question": "What brand of BBQ sauce am I currently obsessed with?",
+      "source_case_id": "18bc8abd",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-instagram-followers (strength 0.70)",
+      "case_id": "1cea1afa",
+      "expected_verdict": null,
+      "gold_answer": "600",
+      "question": "How many Instagram followers do I currently have?",
+      "source_case_id": "1cea1afa",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "[pending] lme-long-been-living-apartment-harajuku (strength 0.70)",
+      "case_id": "2133c1b5",
+      "expected_verdict": null,
+      "gold_answer": "3 months",
+      "question": "How long have I been living in my current apartment in Harajuku?",
+      "source_case_id": "2133c1b5",
+      "source_policy": "consolidation_queue_lite",
+      "stratum": "realistic"
+    },
+    {
+      "candidate_answer": "The music shop on Main St.",
+      "case_id": "22d2cb42::control_positive",
+      "expected_verdict": "correct",
+      "gold_answer": "The music shop on Main St.",
+      "question": "Where did I get my guitar serviced?",
+      "source_case_id": "22d2cb42",
+      "source_policy": "synthetic_gold_identity",
+      "stratum": "control_positive"
+    },
+    {
+      "candidate_answer": "I do not know.",
+      "case_id": "22d2cb42::control_negative",
+      "expected_verdict": "incorrect",
+      "gold_answer": "The music shop on Main St.",
+      "question": "Where did I get my guitar serviced?",
+      "source_case_id": "22d2cb42",
+      "source_policy": "synthetic_negative_sentinel",
+      "stratum": "control_negative"
+    },
+    {
+      "candidate_answer": "five",
+      "case_id": "26bdc477::control_positive",
+      "expected_verdict": "correct",
+      "gold_answer": "five",
+      "question": "How many trips have I taken my Canon EOS 80D camera on?",
+      "source_case_id": "26bdc477",
+      "source_policy": "synthetic_gold_identity",
+      "stratum": "control_positive"
+    },
+    {
+      "candidate_answer": "I do not know.",
+      "case_id": "26bdc477::control_negative",
+      "expected_verdict": "incorrect",
+      "gold_answer": "five",
+      "question": "How many trips have I taken my Canon EOS 80D camera on?",
+      "source_case_id": "26bdc477",
+      "source_policy": "synthetic_negative_sentinel",
+      "stratum": "control_negative"
+    },
+    {
+      "candidate_answer": "Ford F-150 pickup truck",
+      "case_id": "3ba21379::control_positive",
+      "expected_verdict": "correct",
+      "gold_answer": "Ford F-150 pickup truck",
+      "question": "What type of vehicle model am I currently working on?",
+      "source_case_id": "3ba21379",
+      "source_policy": "synthetic_gold_identity",
+      "stratum": "control_positive"
+    },
+    {
+      "candidate_answer": "I do not know.",
+      "case_id": "3ba21379::control_negative",
+      "expected_verdict": "incorrect",
+      "gold_answer": "Ford F-150 pickup truck",
+      "question": "What type of vehicle model am I currently working on?",
+      "source_case_id": "3ba21379",
+      "source_policy": "synthetic_negative_sentinel",
+      "stratum": "control_negative"
+    },
+    {
+      "candidate_answer": "a 70-200mm zoom lens",
+      "case_id": "41698283::control_positive",
+      "expected_verdict": "correct",
+      "gold_answer": "a 70-200mm zoom lens",
+      "question": "What type of camera lens did I purchase most recently?",
+      "source_case_id": "41698283",
+      "source_policy": "synthetic_gold_identity",
+      "stratum": "control_positive"
+    },
+    {
+      "candidate_answer": "I do not know.",
+      "case_id": "41698283::control_negative",
+      "expected_verdict": "incorrect",
+      "gold_answer": "a 70-200mm zoom lens",
+      "question": "What type of camera lens did I purchase most recently?",
+      "source_case_id": "41698283",
+      "source_policy": "synthetic_negative_sentinel",
+      "stratum": "control_negative"
+    },
+    {
+      "candidate_answer": "Yes",
+      "case_id": "42ec0761::control_positive",
+      "expected_verdict": "correct",
+      "gold_answer": "Yes",
+      "question": "Do I have a spare screwdriver for opening up my laptop?",
+      "source_case_id": "42ec0761",
+      "source_policy": "synthetic_gold_identity",
+      "stratum": "control_positive"
+    },
+    {
+      "candidate_answer": "I do not know.",
+      "case_id": "42ec0761::control_negative",
+      "expected_verdict": "incorrect",
+      "gold_answer": "Yes",
+      "question": "Do I have a spare screwdriver for opening up my laptop?",
+      "source_case_id": "42ec0761",
+      "source_policy": "synthetic_negative_sentinel",
+      "stratum": "control_negative"
+    }
+  ],
+  "control_case_count": 5,
+  "mode": "longmemeval_judge_calibration_set",
+  "realistic_case_count": 15,
+  "seed": 1729,
+  "selection_strategy": "sorted_agreed_case_ids",
+  "source_policy": "consolidation_queue_lite",
+  "stratum_counts": {
+    "control_negative": 5,
+    "control_positive": 5,
+    "realistic": 15
+  }
+}

@@ -75,6 +75,13 @@ def compute_policy_metrics(
             question_traces,
             store_snapshot,
         )
+    if scenario.task_family == TaskFamily.LONGMEMEVAL_EXTERNAL:
+        return compute_longmemeval_external_metrics(
+            policy_name,
+            scenario,
+            question_traces,
+            store_snapshot,
+        )
     raise ValueError("Unsupported task family: {}".format(scenario.task_family))
 
 
@@ -87,6 +94,7 @@ DIAGNOSTIC_PHASE_BY_FAMILY = {
     TaskFamily.MEMORY_POISONING: "poison_probe",
     TaskFamily.ADVERSARIAL_UPSTREAM_NOISE: "adversarial_probe",
     TaskFamily.EVIDENCE_CONFLICT_SPECTRUM: "evidence_conflict_probe",
+    TaskFamily.LONGMEMEVAL_EXTERNAL: "longmemeval_probe",
 }
 
 
@@ -123,6 +131,10 @@ ASSERTION_FAILURE_BY_FAMILY = {
         "false_assertion",
         "forbidden_conflict_candidate_asserted",
     ),
+    TaskFamily.LONGMEMEVAL_EXTERNAL: (
+        "false_assertion",
+        "forbidden_longmemeval_candidate_asserted",
+    ),
 }
 
 
@@ -135,6 +147,7 @@ PREMATURE_PROMOTION_REASON_BY_FAMILY = {
     TaskFamily.MEMORY_POISONING: "poison_candidate_promoted",
     TaskFamily.ADVERSARIAL_UPSTREAM_NOISE: "forbidden_adversarial_candidate_promoted",
     TaskFamily.EVIDENCE_CONFLICT_SPECTRUM: "forbidden_conflict_candidate_promoted",
+    TaskFamily.LONGMEMEVAL_EXTERNAL: "longmemeval_candidate_promoted_before_policy_gate",
 }
 
 
@@ -699,6 +712,42 @@ def compute_evidence_conflict_spectrum_metrics(
         useful_abstention_applicable=1.0 if abstention_ok else 0.0,
         harmful_abstention=1.0 if commit_required and abstained else 0.0,
         harmful_abstention_applicable=1.0 if commit_required else 0.0,
+    )
+
+
+def compute_longmemeval_external_metrics(
+    policy_name: str,
+    scenario: Scenario,
+    question_traces: List[object],
+    store_snapshot: Dict[str, object],
+) -> PolicyScenarioMetrics:
+    _, probe_trace = _probe_question_and_trace(
+        scenario,
+        question_traces,
+        "longmemeval_probe",
+    )
+    resolved_candidate_ids = list(getattr(probe_trace, "resolved_candidate_ids", []))
+    used_memory_ids = list(getattr(probe_trace, "used_memory_ids", []))
+    return PolicyScenarioMetrics(
+        scenario_id=scenario.scenario_id,
+        policy_name=policy_name,
+        useful_recall_before_contradiction=0.0,
+        used_pending_before_contradiction=0.0,
+        durable_commit_before_contradiction=0.0,
+        false_assertion_after_contradiction=0.0,
+        contradiction_recovery_rate=0.0,
+        answer_correctness_after_contradiction=0.0,
+        time_to_demotion=None,
+        # Gold-side answers remain outside the policy runtime. Phase X.3 smoke
+        # verifies execution, storage, and lookup plumbing; QA correctness is
+        # scored later by the LongMemEval judge/PFLC path.
+        answer_correctness=0.0,
+        false_assertion_rate=0.0,
+        leakage_rate=0.0,
+        premature_promotion_rate=_premature_promotion_rate(store_snapshot, scenario),
+        useful_recall=1.0 if resolved_candidate_ids else 0.0,
+        used_pending=1.0 if getattr(probe_trace, "used_pending", False) else 0.0,
+        durable_commit=1.0 if used_memory_ids else 0.0,
     )
 
 

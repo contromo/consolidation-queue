@@ -1,0 +1,322 @@
+{
+  "case_count": 3,
+  "case_ids": [
+    "01493427",
+    "031748ae",
+    "06db6396"
+  ],
+  "correct_by_policy": {
+    "consolidation_queue_lite": 0,
+    "cq_no_contestation_demotion": 0,
+    "cq_no_pending_lookup_use": 0,
+    "cq_no_source_independence_gate": 0,
+    "cq_no_wider_scope_pending_override": 0,
+    "mem0_lite": 0,
+    "naive_eager_write_lite": 0,
+    "no_memory_lite": 0,
+    "reflection_eager_write_lite": 0
+  },
+  "correct_total": 0,
+  "judge_model": "qwen2.5:32b-instruct-q4_K_M",
+  "mode": "longmemeval_answer_correct_smoke",
+  "policy_count": 9,
+  "rows": [
+    {
+      "candidate_answer": "[durable] lme-new-postcards-added-collection-since-started-collecting-again (confidence 0.73)",
+      "case_id": "01493427",
+      "judge_case_id": "smoke::reflection_eager_write_lite::01493427",
+      "judge_verdict": "incorrect",
+      "policy_name": "reflection_eager_write_lite",
+      "predicted_session_ids_ranked": [
+        "answer_a7b44747_1",
+        "answer_a7b44747_2"
+      ]
+    },
+    {
+      "candidate_answer": "[durable] lme-engineers-lead-just-started-new-role-as-senior-software-engineer (confidence 0.73)",
+      "case_id": "031748ae",
+      "judge_case_id": "smoke::reflection_eager_write_lite::031748ae",
+      "judge_verdict": "incorrect",
+      "policy_name": "reflection_eager_write_lite",
+      "predicted_session_ids_ranked": [
+        "answer_8748f791_1",
+        "answer_8748f791_2"
+      ]
+    },
+    {
+      "candidate_answer": "[durable] lme-projects-completed-since-starting-painting-classes (confidence 0.73)",
+      "case_id": "06db6396",
+      "judge_case_id": "smoke::reflection_eager_write_lite::06db6396",
+      "judge_verdict": "incorrect",
+      "policy_name": "reflection_eager_write_lite",
+      "predicted_session_ids_ranked": [
+        "answer_da72b1b4_1",
+        "answer_da72b1b4_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-new-postcards-added-collection-since-started-collecting-again (strength 0.70)",
+      "case_id": "01493427",
+      "judge_case_id": "smoke::consolidation_queue_lite::01493427",
+      "judge_verdict": "incorrect",
+      "policy_name": "consolidation_queue_lite",
+      "predicted_session_ids_ranked": [
+        "answer_a7b44747_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-engineers-lead-just-started-new-role-as-senior-software-engineer (strength 0.70)",
+      "case_id": "031748ae",
+      "judge_case_id": "smoke::consolidation_queue_lite::031748ae",
+      "judge_verdict": "incorrect",
+      "policy_name": "consolidation_queue_lite",
+      "predicted_session_ids_ranked": [
+        "answer_8748f791_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-projects-completed-since-starting-painting-classes (strength 0.70)",
+      "case_id": "06db6396",
+      "judge_case_id": "smoke::consolidation_queue_lite::06db6396",
+      "judge_verdict": "incorrect",
+      "policy_name": "consolidation_queue_lite",
+      "predicted_session_ids_ranked": [
+        "answer_da72b1b4_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-new-postcards-added-collection-since-started-collecting-again (strength 0.70)",
+      "case_id": "01493427",
+      "judge_case_id": "smoke::cq_no_contestation_demotion::01493427",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_contestation_demotion",
+      "predicted_session_ids_ranked": [
+        "answer_a7b44747_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-engineers-lead-just-started-new-role-as-senior-software-engineer (strength 0.70)",
+      "case_id": "031748ae",
+      "judge_case_id": "smoke::cq_no_contestation_demotion::031748ae",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_contestation_demotion",
+      "predicted_session_ids_ranked": [
+        "answer_8748f791_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-projects-completed-since-starting-painting-classes (strength 0.70)",
+      "case_id": "06db6396",
+      "judge_case_id": "smoke::cq_no_contestation_demotion::06db6396",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_contestation_demotion",
+      "predicted_session_ids_ranked": [
+        "answer_da72b1b4_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-new-postcards-added-collection-since-started-collecting-again (strength 0.70)",
+      "case_id": "01493427",
+      "judge_case_id": "smoke::cq_no_wider_scope_pending_override::01493427",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_wider_scope_pending_override",
+      "predicted_session_ids_ranked": [
+        "answer_a7b44747_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-engineers-lead-just-started-new-role-as-senior-software-engineer (strength 0.70)",
+      "case_id": "031748ae",
+      "judge_case_id": "smoke::cq_no_wider_scope_pending_override::031748ae",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_wider_scope_pending_override",
+      "predicted_session_ids_ranked": [
+        "answer_8748f791_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-projects-completed-since-starting-painting-classes (strength 0.70)",
+      "case_id": "06db6396",
+      "judge_case_id": "smoke::cq_no_wider_scope_pending_override::06db6396",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_wider_scope_pending_override",
+      "predicted_session_ids_ranked": [
+        "answer_da72b1b4_2"
+      ]
+    },
+    {
+      "candidate_answer": "No usable memory available.",
+      "case_id": "01493427",
+      "judge_case_id": "smoke::cq_no_pending_lookup_use::01493427",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_pending_lookup_use",
+      "predicted_session_ids_ranked": []
+    },
+    {
+      "candidate_answer": "No usable memory available.",
+      "case_id": "031748ae",
+      "judge_case_id": "smoke::cq_no_pending_lookup_use::031748ae",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_pending_lookup_use",
+      "predicted_session_ids_ranked": []
+    },
+    {
+      "candidate_answer": "No usable memory available.",
+      "case_id": "06db6396",
+      "judge_case_id": "smoke::cq_no_pending_lookup_use::06db6396",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_pending_lookup_use",
+      "predicted_session_ids_ranked": []
+    },
+    {
+      "candidate_answer": "[pending] lme-new-postcards-added-collection-since-started-collecting-again (strength 0.70)",
+      "case_id": "01493427",
+      "judge_case_id": "smoke::cq_no_source_independence_gate::01493427",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_source_independence_gate",
+      "predicted_session_ids_ranked": [
+        "answer_a7b44747_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-engineers-lead-just-started-new-role-as-senior-software-engineer (strength 0.70)",
+      "case_id": "031748ae",
+      "judge_case_id": "smoke::cq_no_source_independence_gate::031748ae",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_source_independence_gate",
+      "predicted_session_ids_ranked": [
+        "answer_8748f791_2"
+      ]
+    },
+    {
+      "candidate_answer": "[pending] lme-projects-completed-since-starting-painting-classes (strength 0.70)",
+      "case_id": "06db6396",
+      "judge_case_id": "smoke::cq_no_source_independence_gate::06db6396",
+      "judge_verdict": "incorrect",
+      "policy_name": "cq_no_source_independence_gate",
+      "predicted_session_ids_ranked": [
+        "answer_da72b1b4_2"
+      ]
+    },
+    {
+      "candidate_answer": "[durable] lme-new-postcards-added-collection-since-started-collecting-again (confidence 0.73)",
+      "case_id": "01493427",
+      "judge_case_id": "smoke::naive_eager_write_lite::01493427",
+      "judge_verdict": "incorrect",
+      "policy_name": "naive_eager_write_lite",
+      "predicted_session_ids_ranked": [
+        "answer_a7b44747_1",
+        "answer_a7b44747_2"
+      ]
+    },
+    {
+      "candidate_answer": "[durable] lme-engineers-lead-just-started-new-role-as-senior-software-engineer (confidence 0.73)",
+      "case_id": "031748ae",
+      "judge_case_id": "smoke::naive_eager_write_lite::031748ae",
+      "judge_verdict": "incorrect",
+      "policy_name": "naive_eager_write_lite",
+      "predicted_session_ids_ranked": [
+        "answer_8748f791_1",
+        "answer_8748f791_2"
+      ]
+    },
+    {
+      "candidate_answer": "[durable] lme-projects-completed-since-starting-painting-classes (confidence 0.73)",
+      "case_id": "06db6396",
+      "judge_case_id": "smoke::naive_eager_write_lite::06db6396",
+      "judge_verdict": "incorrect",
+      "policy_name": "naive_eager_write_lite",
+      "predicted_session_ids_ranked": [
+        "answer_da72b1b4_1",
+        "answer_da72b1b4_2"
+      ]
+    },
+    {
+      "candidate_answer": "No memory available.",
+      "case_id": "01493427",
+      "judge_case_id": "smoke::no_memory_lite::01493427",
+      "judge_verdict": "incorrect",
+      "policy_name": "no_memory_lite",
+      "predicted_session_ids_ranked": []
+    },
+    {
+      "candidate_answer": "No memory available.",
+      "case_id": "031748ae",
+      "judge_case_id": "smoke::no_memory_lite::031748ae",
+      "judge_verdict": "incorrect",
+      "policy_name": "no_memory_lite",
+      "predicted_session_ids_ranked": []
+    },
+    {
+      "candidate_answer": "No memory available.",
+      "case_id": "06db6396",
+      "judge_case_id": "smoke::no_memory_lite::06db6396",
+      "judge_verdict": "incorrect",
+      "policy_name": "no_memory_lite",
+      "predicted_session_ids_ranked": []
+    },
+    {
+      "candidate_answer": "[durable] lme-new-postcards-added-collection-since-started-collecting-again (confidence 0.73)",
+      "case_id": "01493427",
+      "judge_case_id": "smoke::mem0_lite::01493427",
+      "judge_verdict": "incorrect",
+      "policy_name": "mem0_lite",
+      "predicted_session_ids_ranked": [
+        "answer_a7b44747_1",
+        "answer_a7b44747_2"
+      ]
+    },
+    {
+      "candidate_answer": "[durable] lme-engineers-lead-just-started-new-role-as-senior-software-engineer (confidence 0.73)",
+      "case_id": "031748ae",
+      "judge_case_id": "smoke::mem0_lite::031748ae",
+      "judge_verdict": "incorrect",
+      "policy_name": "mem0_lite",
+      "predicted_session_ids_ranked": [
+        "answer_8748f791_1",
+        "answer_8748f791_2"
+      ]
+    },
+    {
+      "candidate_answer": "[durable] lme-projects-completed-since-starting-painting-classes (confidence 0.73)",
+      "case_id": "06db6396",
+      "judge_case_id": "smoke::mem0_lite::06db6396",
+      "judge_verdict": "incorrect",
+      "policy_name": "mem0_lite",
+      "predicted_session_ids_ranked": [
+        "answer_da72b1b4_1",
+        "answer_da72b1b4_2"
+      ]
+    }
+  ],
+  "total_judged": 27,
+  "verdict_counts_by_policy": {
+    "consolidation_queue_lite": {
+      "incorrect": 3
+    },
+    "cq_no_contestation_demotion": {
+      "incorrect": 3
+    },
+    "cq_no_pending_lookup_use": {
+      "incorrect": 3
+    },
+    "cq_no_source_independence_gate": {
+      "incorrect": 3
+    },
+    "cq_no_wider_scope_pending_override": {
+      "incorrect": 3
+    },
+    "mem0_lite": {
+      "incorrect": 3
+    },
+    "naive_eager_write_lite": {
+      "incorrect": 3
+    },
+    "no_memory_lite": {
+      "incorrect": 3
+    },
+    "reflection_eager_write_lite": {
+      "incorrect": 3
+    }
+  }
+}

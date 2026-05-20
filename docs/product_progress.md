@@ -1,5 +1,396 @@
 # Product Progress
 
+## 2026-05-19 — LongMemEval X.5 paper and methodology integration lands
+
+### What Shipped
+
+- updated `docs/paper_outline.md` so LongMemEval is no longer described as
+  future/descriptive-only: it is now a completed controlled external transfer
+  probe with a stable CQ-negative evidence-completeness result
+- updated `docs/benchmark_methodology_draft.md` with a LongMemEval controlled
+  transfer subsection, evidence-ledger integration, limitations, and next-work
+  framing
+- updated `docs/next_research_plan.md` and `PROJECT_PLAN.md` so the roadmap no
+  longer says X.4 is blocked on smoke/PFLC/judge calibration
+
+### Framing Decision
+
+- LongMemEval v1 controlled-pilot PFLC is framed as evidence
+  exposure/completeness under a fixed same-stream policy surface
+- it is not framed as distractor-heavy retrieval quality, because the v1 oracle
+  split used here is evidence-only
+- `all_hit_at_50` remains the formal headline bucket metric;
+  `any_hit_at_50` is surfaced as a sibling metric showing evidence exposure is
+  transfer-null
+- `answer_correct` remains diagnostic only
+
+### Why It Matters
+
+- closes the loop from feasibility → adapter/preregistration → calibration →
+  judged transfer → report integration
+- prevents the paper from using stale "future LongMemEval work" language after
+  the X.4 artifacts landed
+- keeps the negative result scientifically useful: current CQ finds relevant
+  evidence but fails multi-evidence completeness under pending lookup
+
+### Open Issues / Next
+
+- any LongMemEval follow-up now requires a fresh preregistration, most
+  plausibly around pending multi-evidence retrieval or a different
+  LongMemEval split/adapter
+- do not rerun X.4 to rescue the observed metric after seeing the negative
+  result
+
+## 2026-05-19 — LongMemEval X.4 judged transfer run lands
+
+### What shipped
+
+- ran `scripts/run_longmemeval_transfer.py --include-ablations
+  --include-sensitivity-cells --run-local-judge` from a clean worktree at
+  commit `5e079b32192894d62f9855eb048e9d68a21d3fa4`
+- added the full judged transfer artifacts:
+  `data/external/longmemeval/transfer_summary.json`,
+  `data/external/longmemeval/transfer_per_case_rows.csv`,
+  `data/external/longmemeval/transfer_manifest.json`, and the three
+  sensitivity payloads under `data/external/longmemeval/sensitivity/`
+- added `docs/longmemeval_transfer_results.md` to record the X.4 readout and
+  prevent the Bucket A label from being misread as a CQ win
+
+### Result
+
+- judge mode: `local_judge`
+- headline metric: `all_hit_at_50`
+- policy/cell/case rows: 1,935
+- meaningful cells: `primary_contract`, `path_a_only_denominator`,
+  `path_b_only_denominator`
+- candidate-stream hash invariant: pass in all cells
+- bucket: A, because the contract-sensitivity sign was stable
+- sign: negative in all three CQ-vs-Reflection cells
+- sibling metric nuance: CQ ties Reflection and Mem0 on `any_hit_at_50` in all
+  three cells; the negative sign is specific to `all_hit_at_50`
+
+Headline pairwise result:
+
+| Cell | CQ - Reflection on `all_hit_at_50` | CI | Sign |
+|---|---:|---|---|
+| `primary_contract` | -1.0 | [-1.0, -1.0] | negative |
+| `path_a_only_denominator` | -1.0 | [-1.0, -1.0] | negative |
+| `path_b_only_denominator` | -1.0 | [-1.0, -1.0] | negative |
+
+The same `-1.0` result holds for CQ-vs-`mem0_lite` in all three cells.
+
+### Interpretation
+
+- this is an external-transfer failure for current CQ under the LongMemEval v1
+  controlled-pilot adapter on evidence completeness, not a methodology failure
+- CQ retrieves at least one gold evidence session in every case, but never
+  retrieves both; `reflection_eager_write_lite`, `mem0_lite`, and
+  `naive_eager_write_lite` retrieve both evidence sessions for every case
+- the mechanism is CQ's pending lookup interface: `answer_question` uses
+  `MemoryStore.strongest_pending_candidate`, which returns a single
+  strongest/latest pending candidate. Eager durable baselines reinforce one
+  durable with both supporting candidates, so their resolved evidence set is
+  complete under `all_hit_at_50`
+- `answer_correct` is 0/1,935 across all judged policy rows, confirming it is
+  diagnostic only in this implementation
+
+### Open issues / next
+
+- decide whether to stop here as a clean negative-transfer result, or open a
+  separately preregistered policy-interface follow-up focused on why CQ stores
+  only one of two LongMemEval evidence sessions
+- do not retrofit the current X.4 run into a CQ-positive claim; the artifact is
+  valuable because it is a stable, inspectable loss
+
+## 2026-05-19 — LongMemEval X.4 headline metric and sensitivity audit amended
+
+### What shipped
+
+- added `scripts/run_longmemeval_answer_correct_smoke.py` and
+  `data/external/longmemeval/answer_correct_smoke.json`: a 3-case by 9-policy
+  primary-judge smoke over realistic LongMemEval transfer outputs. The locked
+  primary judge marked 0/27 candidate answers correct, confirming that policy
+  `answer_text` is currently a structured trace surface rather than a
+  natural-language answer suitable for headline answer-correctness claims
+- changed the X.4 transfer headline bucket metric from `answer_correct` to the
+  preregistered PFLC-side metric `all_hit_at_50`. `answer_correct` remains in
+  per-case rows and score summaries as a diagnostic, but no longer determines
+  Bucket A/B/C/D
+- narrowed the X.4 sensitivity audit to the three meaningful cells:
+  `primary_contract`, `path_a_only_denominator`, and
+  `path_b_only_denominator`. The removed alternate-canonicalizer and
+  flat-USER_GLOBAL cells were vacuous under the locked deterministic adapter:
+  the first was only a one-to-one slot rename, and the second matched the
+  already-universal `user_global` annotation scope
+
+### Why it matters
+
+- prevents a structurally preordained Bucket B result from an all-zero
+  answer-correctness headline
+- keeps the transfer claim tied to the observable behavior the current policy
+  interface actually produces: whether policies preserve the gold evidence
+  sessions in their ranked resolved context
+- makes the contract-sensitivity claim smaller but sharper; X.4 should now
+  report stability across three real cells, not five cells with two no-ops
+
+### Superseded next step
+
+The full judged X.4 run landed later on 2026-05-19. The headline bucket used
+`all_hit_at_50`; `answer_correct` remained diagnostic.
+
+## 2026-05-19 — LongMemEval Phase X.3.5 judge calibration lands
+
+### What shipped
+
+- added `docs/longmemeval_reference_judge_log_survey.md`: records the path-1
+  survey across the official LongMemEval repository, HuggingFace cleaned
+  dataset, arXiv page, and visible third-party result repositories. No official
+  per-case reference judge verdict log was found, so the workstream proceeds
+  through preregistration §6 path 2
+- added `cq/eval/external/longmemeval/judge_calibration_set.py` and
+  `scripts/build_longmemeval_judge_calibration_set.py`: deterministic
+  25-row calibration-set construction with 15 realistic source-policy rows,
+  five positive controls, five negative controls, manifest SHA recording, and
+  scoring-side gold access restricted to `gold_loader`
+- extended `cq/eval/external/longmemeval/judge_stability.py` with stratum
+  metadata, realistic-stratum agreement, and a synthetic-control correctness
+  floor. The local run wrote
+  `data/external/longmemeval/judge_stability_report.json` and
+  `judge_stability_manifest.json`
+- added `cq/eval/external/longmemeval/transfer.py`,
+  `scripts/run_longmemeval_transfer.py`, and transfer tests: the Phase X.4
+  runner now validates the adapter pin and judge report, executes policies over
+  the primary/sensitivity cells, maps resolved candidates back to LongMemEval
+  session ids for PFLC, and emits summary/per-case/manifest artifacts when run
+
+### Why it matters
+
+- kill criterion 10 is now cleared for the local judge path:
+  `support_count = 25`, realistic-stratum agreement `14/15 = 0.9333`,
+  no indeterminate verdicts, and both judges hit 5/5 on positive controls and
+  5/5 on negative controls
+- the calibration set makes the judge gate less vacuous than cross-judge
+  agreement alone: realistic rows test answer-distribution stability, while
+  synthetic controls catch judges that agree with each other but fail obvious
+  correctness cases
+- Phase X.4 is now blocked by compute/execution, not missing infrastructure.
+  The full judged transfer remains unrun; dry-run CLI smoke verified policy
+  execution and PFLC row construction without making judge calls
+
+### Open issues / next
+
+- run `scripts/run_longmemeval_transfer.py --include-ablations
+  --include-sensitivity-cells --run-local-judge` from a clean worktree to emit
+  the actual Phase X.4 policy-transfer result
+- do not write the Phase X.5 results document until the judged X.4 transfer
+  artifact exists; the current result is a judge-calibration unlock, not a
+  policy comparison
+
+## 2026-05-19 — LongMemEval Phase X.3 scorer, judge stability, and smoke artifact land
+
+### What shipped
+
+- added `cq/eval/external/longmemeval/gold_loader.py`: scoring-only access to
+  `answer_session_ids`, with strict scoping rules enforced by an import-graph
+  test that asserts no annotator, audit, verifier, redacted loader, or adapter
+  module references the gold loader
+- added `cq/eval/external/longmemeval/scorer.py` and
+  `scripts/score_longmemeval_pflc.py`: dialog-evidence-id PFLC scorer over
+  `answer_session_ids` at the locked cutoffs `k = 1, 5, 10, 20, 50`, with
+  Wilson confidence intervals, fixed-seed paired bootstrap, joint counts,
+  per-`question_type` breakdown, a degeneracy diagnostic, and fail-closed
+  exact-denominator checks for every policy
+- added `cq/eval/external/longmemeval/judge_stability.py` and
+  `scripts/run_longmemeval_judge_stability.py`: preregistration §6 path-2 local
+  cross-judge harness (`qwen2.5:32b-instruct-q4_K_M` vs
+  `qwen2.5:7b-instruct-q4_K_M`) with deterministic verdict parsing, kill
+  criterion 10 at `>= 0.85` agreement, and an optional reference-judge verdict
+  path for the preferred path-1 calibration. The CLI defaults to `--dry-run`;
+  `--run` is required to invoke ollama, and the stability report cannot pass
+  without the preregistered 20 paired/reference cases. Prompt rendering now
+  preserves literal `{...}` answer text instead of using `str.format`
+- added `cq/eval/external/longmemeval/dirty_worktree_check.py`: the runtime
+  guard that Phase X.3/X.4 policy execution calls before running policies
+- added `scripts/run_longmemeval_smoke.py` plus committed
+  `data/external/longmemeval/smoke_summary.json` and
+  `data/external/longmemeval/smoke_manifest.json`: byte-stable Phase X.3 smoke
+  artifact emitting six adapted scenarios, twelve candidates, zero adapter
+  drops, a passing candidate-stream-hash invariant, and actual execution of
+  the Phase 2.5 policy set over the adapted scenarios. The smoke summary also
+  records post-execution policy-visible candidate hashes for policies that
+  store the candidate stream, catching accidental in-place mutation of the
+  policy input fields
+- added focused tests across the gold loader, scorer, judge stability, dirty
+  worktree check, adapter hardening, redaction, lock normalization, and
+  committed smoke artifacts; all 70 LongMemEval external tests pass
+- hardened the hidden-answer boundary after pre-landing review: adapter
+  provenance now exposes only deterministic opaque session tokens to policies,
+  while the original LongMemEval session ids remain in adapter-side mapping
+  metadata for later PFLC joins; the annotation manifest has been relocked to
+  the current fair-stream preregistration SHA; the gold-loader boundary test is
+  AST-based and catches re-export bypasses; the scorer bootstrap interval uses
+  a documented `samples - 1` percentile-index convention
+
+### Why it matters
+
+- the LongMemEval externalization workstream now has every Phase X.3 deliverable
+  required by preregistration §10 except the actual judge stability *run* (a
+  20-case 32B + 7B ollama pass intentionally deferred to a user-triggered
+  step). The CLI scaffolding, scoring math, and verdict parsing are all in
+  place and tested
+- the scoring path enforces the hidden-answer protocol by structural
+  separation: `gold_loader` is the only licensed reader of
+  `answer_session_ids`, adapter `ProvenanceRecord.source_id` values no longer
+  contain raw LongMemEval session ids, and an AST import-graph test fails
+  closed if any protected annotator, verifier, adapter, audit module, or
+  LongMemEval runtime script references gold-loader symbols
+- the smoke summary is byte-stable across consecutive runs (verified by a
+  dedicated regression test), while the manifest records source git
+  provenance and the clean-worktree pre-run check result before policy
+  execution
+- the scorer ships a Phase X.3 finding directly: the degeneracy diagnostic
+  shows that on the LongMemEval oracle split,
+  `answer_session_ids = haystack_session_ids` for every one of the 500
+  cases (78/78 `knowledge-update` cases, all five other question types at
+  the same 100% rate). The oracle split is evidence-only by construction, so
+  PFLC@k on this anchor measures policy scope-filtering behavior (did the
+  policy preserve evidence it had access to) rather than retrieval quality
+  (did the policy locate evidence buried in distractors). The Phase X.5
+  writeup must frame the PFLC result accordingly
+
+### Open issues / next
+
+- decide whether to run the judge stability 20-case calibration via local
+  cross-judge or to first search for published LongMemEval reference-judge
+  logs on the official repository / HuggingFace dataset card
+- decide whether Phase X.4 should rely on PFLC@k as a scope-filter metric on
+  the oracle split, or whether the externalization should extend to the
+  LongMemEval-S full split (where `haystack` adds distractor sessions and
+  PFLC@k regains its retrieval-quality interpretation). The latter would
+  require a separate registered amendment because it changes the anchor data
+  scope
+- do not proceed to Phase X.4 until the judge stability report is committed
+  or its absence is explicitly recorded against preregistration §10
+
+## 2026-05-19 — LongMemEval Phase X.2 adapter pin lands
+
+### What shipped
+
+- added `cq/eval/external/longmemeval/adapter.py`: converts the Phase X.1
+  agreed annotation events into shared `Scenario` and `CandidateUpdate` objects
+  under the hidden-answer protocol
+- added `docs/longmemeval_adapter_pin.json`: pins the adapter SHA
+  (`028450fa90f5b46d5170d01b006864184416ab6a78519b7f3bef513492da0c84`)
+  against the locked fair-stream externalization preregistration SHA
+  (`a7b8b5df50d3dbe41bbf8922c2ba1bbd9b98775c302f25d29313ece093000f53`)
+- added `tests/test_longmemeval_external_adapter.py` and the
+  `longmemeval_external` `TaskFamily` enum value
+- exercised the adapter CLI on the N=6 dry-run subset with default pin
+  validation
+
+### Why it matters
+
+- Phase X.2 now has a policy-facing adapter contract without running any
+  policy: the dry run emitted 6 scenarios, 12 candidates, zero adapter drops,
+  and identical candidate-stream hashes across the CQ, Reflection, and
+  `Mem0Lite` placeholder policy names
+- the full agreed-subset adapter pass emitted 71 scenarios and 142 candidates
+  with zero drops and the same stream-hash invariant intact
+- adapter pin validation now runs by default and fails closed on live adapter
+  SHA or preregistration-lock drift; the CLI escape hatch is reserved for
+  first-time pin generation only
+- adapter input loading now rejects answer-side/gold/rubric/label keys at the
+  boundary rather than relying only on the upstream agreed-annotation convention
+- the preregistration removes `contradiction_recovery_rate` from the current
+  primary LongMemEval transfer metric list because this deterministic adapter
+  does not create event-level contradiction edges
+- the LongMemEval workstream has moved from annotation freeze to pinned stream
+  construction while preserving the same-upstream-candidate invariant
+
+### Open issues / next
+
+- run the Phase X.3 smoke path before any full policy transfer comparison
+- build the LongMemEval PFLC wrapper and judge calibration/stability report
+- continue to report this as adapter plumbing only, not an external CQ policy
+  result
+
+## 2026-05-18 — LongMemEval Phase X.1 dual-path annotations freeze
+
+### What shipped
+
+- added `cq/eval/external/longmemeval/annotator_path_a.py` and
+  `annotator_path_b.py`: two independent local-first annotation paths over
+  the redacted LongMemEval v1 oracle and the committed 72-case
+  `contradiction_edge` denominator
+- extended `dual_path_audit.py` so the agreed annotation file carries the
+  adapter-ready candidate events, not only the canonical id / scope /
+  contradiction-edge summary
+- added `cq/eval/external/longmemeval/annotation_manifest.py` plus
+  `data/external/longmemeval/annotations_path_a.json`,
+  `annotations_path_b.json`, `annotations_agreed.json`,
+  `dual_path_divergence_report.json`, `verifier_report.json`, and
+  `annotations_manifest.json`
+- tightened redaction export so nested sensitive keys in retained
+  `haystack_sessions` are scrubbed before downstream annotation code sees
+  them
+- added focused tests for both annotation paths and the manifest
+
+### Why it matters
+
+- Phase X.1 now has a frozen, inspectable annotation layer before any adapter
+  or policy execution. The audit reports 72 comparable in-denominator cases,
+  71 agreements, one canonical-id divergence, and `agreement_rate = 0.9861`
+- the hidden-answer verifier passes on the agreed annotations with no
+  forbidden answer/gold/rubric/label key paths, no forbidden annotator-source
+  references, and a binomial upper-tail p-value of `1.55e-20`
+- the agreed annotation file is now usable by Phase X.2 because it includes
+  per-session candidate events, canonical ids, scope, and raw evidence claims
+  derived from redacted sessions. Phase X.1 deliberately leaves contradiction
+  links empty until the adapter/extractor phase has event-level support
+
+### Open issues / next
+
+- run the N=6 smoke, PFLC wrapper, and judge calibration gates before
+  licensing Phase X.4
+- continue to report this as an externalization-methodology pilot, not an
+  external CQ transfer result
+
+## 2026-05-18 — LongMemEval fair-stream externalization gate and preregistration scaffold land
+
+### What shipped
+
+- added `docs/longmemeval_externalization_anchor_gate.md`: executes the
+  Phase X.-1 anchor decision. LongMemEval-V2 is verified from public metadata
+  as a real 451-question release, but its public files strip answer-bearing
+  annotation labels, so it is demoted to descriptive evidence-exposure work.
+  LongMemEval v1 remains the primary controlled-pilot anchor
+- added `docs/fair_stream_externalization_preregistration.md` plus
+  `cq/eval/external/longmemeval/preregistration_lock.py`: locks the protocol
+  before annotation, adapter execution, or policy execution
+- added `cq/eval/external/longmemeval/redacted_loader.py`,
+  `dual_path_audit.py`, and `verifier.py`: local primitives for hash-only
+  answer redaction, dual-path disagreement classification, and answer-blind
+  agreement verification
+- added 12 focused tests under `tests/test_longmemeval_external_*.py`
+
+### Why it matters
+
+- the external-transfer workstream now has the same abort-first discipline as
+  the internal noisy-policy path. The repo can start LongMemEval annotation
+  work without silently turning answer labels or V2 public answers into policy
+  inputs
+- V2 is not ignored, but it is scoped correctly: useful as a modern benchmark
+  artifact and evidence-exposure target, not yet a matched gold PFLC or
+  same-candidate-stream policy anchor
+
+### Open issues / next
+
+- implement the two independent annotation paths and freeze the divergence
+  report before adapter work
+- do not run CQ, Reflection, or `Mem0Lite` on LongMemEval until agreed
+  annotations, hidden-answer verification, adapter pinning, stream-hash checks,
+  and judge calibration all pass
+
 ## 2026-05-18 — LoCoMo AMB published-output PFLC replay lands
 
 ### What shipped

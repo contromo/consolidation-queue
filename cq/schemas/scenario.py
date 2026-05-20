@@ -17,6 +17,7 @@ class TaskFamily(str, Enum):
     MEMORY_POISONING = "memory_poisoning"
     ADVERSARIAL_UPSTREAM_NOISE = "adversarial_upstream_noise"
     EVIDENCE_CONFLICT_SPECTRUM = "evidence_conflict_spectrum"
+    LONGMEMEVAL_EXTERNAL = "longmemeval_external"
 
 
 class EventKind(str, Enum):

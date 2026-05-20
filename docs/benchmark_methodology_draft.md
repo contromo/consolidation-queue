@@ -30,10 +30,15 @@ mechanism audit's perfect-clustering null rows to policy-facing query
 interface contract failure without unlocking the locked CQR audit or
 changing any policy verdict. The shareable contribution is therefore
 mechanism-local plus methodological: a preregistered benchmark, attribution
-discipline, and a required query-resolvable canonical-id diagnostic that
-together expose when a memory-governance policy remains scientifically
-evaluable under shared noisy inputs — not a claim of broad noisy CQ
-superiority or a replacement persistent-agent memory system.
+discipline, a required query-resolvable canonical-id diagnostic, and a
+controlled external transfer probe that together expose when a
+memory-governance policy remains scientifically evaluable under shared noisy
+inputs. The LongMemEval controlled-pilot result is deliberately negative for
+CQ on evidence completeness: the adapter and judge gates pass, CQ ties eager
+baselines on evidence exposure, and CQ loses the headline `all_hit_at_50`
+metric because pending lookup exposes only one of two gold evidence sessions.
+This is not a claim of broad noisy CQ superiority or a replacement
+persistent-agent memory system.
 
 ## Draft Scope
 
@@ -47,7 +52,9 @@ This draft consolidates the contribution the repo can defend today:
 6. a mechanism audit that separates attributable survival from unattributed
    noisy nulls, and
 7. a registered post-hoc QR-canon audit that names a required policy-facing
-   query-contract diagnostic alongside clustering-quality component metrics.
+   query-contract diagnostic alongside clustering-quality component metrics,
+8. a controlled LongMemEval transfer probe that passes methodology gates but
+   records a stable CQ-negative evidence-completeness readout.
 
 The 2026-05-15 noisy policy comparison fired Bucket B. That is a completed
 noisy-mode policy result, but it is not broad CQ superiority: CQ wins versus
@@ -126,8 +133,12 @@ that CQ is a full replacement system.
 
 The lane for this project is narrower and more auditable:
 preregistered fair policy comparison plus component-gated noisy-mode discipline.
-LongMemEval belongs later as a transfer check only after a Bucket B follow-up
-justifies the mechanism-local bridge, not as a current empirical claim.
+LongMemEval has now moved from future positioning into a controlled external
+transfer probe, but only because the later fair-stream externalization
+workstream built the missing candidate stream, policy-query contract, PFLC
+scorer, and judge gate. The empirical result is not a CQ win: it is a stable
+negative readout on evidence completeness under the v1 controlled-pilot
+adapter.
 
 ## 4. Preregistration Discipline
 
@@ -624,8 +635,10 @@ Supported claims:
 
 Unsupported claims:
 
-- any empirical PFLC row on any external benchmark; the workstream is at
-  B-3 by design and by released-artifact availability.
+- any empirical PFLC row on released external-baseline artifacts from this
+  workstream; the released-artifact survey is at B-3 by design and by
+  artifact availability. The later LongMemEval controlled-pilot run is a
+  separate same-stream adapter experiment over this repo's policies.
 - any pass/fail PFLC threshold; PFLC enters the field-level methodology
   as a required diagnostic alongside clustering / retrieval / accuracy
   metrics, never a gate.
@@ -637,6 +650,70 @@ Unsupported claims:
 - any modification or generalization of the byte-locked CQR alias
   function; that function applies only to the canonical-id PFLC
   instance.
+
+### LongMemEval Controlled-Pilot Transfer
+
+Source: `docs/longmemeval_transfer_results.md`.
+
+Specific cells:
+
+- `primary_contract`, 71 cases
+- `path_a_only_denominator`, 72 cases
+- `path_b_only_denominator`, 72 cases
+
+Artifacts:
+
+- `docs/fair_stream_externalization_preregistration.md`
+- `docs/longmemeval_transfer_results.md`
+- `data/external/longmemeval/transfer_summary.json`
+- `data/external/longmemeval/transfer_per_case_rows.csv`
+- `data/external/longmemeval/transfer_manifest.json`
+- `data/external/longmemeval/sensitivity/*.json`
+
+Posture:
+
+- this is a controlled external transfer probe, not a leaderboard result.
+- the adapter preserves the same candidate stream across CQ, Reflection,
+  `Mem0Lite`, and ablations; the manifest records clean-worktree provenance.
+- the PFLC instance is dialog-evidence-id over LongMemEval v1
+  `answer_session_ids`, but because the oracle split is evidence-only, the
+  metric is interpreted as evidence exposure/completeness under a fixed policy
+  surface rather than distractor retrieval quality.
+- `answer_correct` is diagnostic only; it is 0/1,935 because policy answers are
+  structured memory traces rather than natural-language answers.
+
+Readout:
+
+| Cell | CQ - Reflection on `all_hit_at_50` | CQ - Reflection on `any_hit_at_50` | Sign used for bucket |
+| --- | ---: | ---: | --- |
+| `primary_contract` | -1.0 | 0.0 | negative |
+| `path_a_only_denominator` | -1.0 | 0.0 | negative |
+| `path_b_only_denominator` | -1.0 | 0.0 | negative |
+
+Bucket A fires because the contract-sensitivity sign is stable across all
+three meaningful cells. The sign is negative. Current CQ retrieves at least one
+gold evidence session in every case but never retrieves both; immediate-write
+baselines retain both evidence candidates in their durable memories.
+
+Supported claims:
+
+- The fair-stream externalization protocol can produce an inspectable external
+  transfer readout from LongMemEval v1 without leaking answer labels into
+  policy input.
+- Current CQ fails the evidence-completeness PFLC target against Reflection and
+  `Mem0Lite` under this adapter.
+- The failure mechanism is policy-facing: CQ pending lookup returns a single
+  strongest/latest pending candidate, while eager durable baselines reinforce a
+  durable with both supporting evidence candidates.
+
+Unsupported claims:
+
+- any positive CQ external generalization claim.
+- any claim about LongMemEval-S, LongMemEval-V2, or distractor-heavy retrieval
+  quality.
+- any natural-language QA result from `answer_correct`.
+- any follow-up CQ variant that changes pending multi-evidence retrieval
+  without a fresh preregistration.
 
 ## 6. Discussion
 
@@ -743,7 +820,9 @@ Current unsupported claims:
 
 - broad noisy-mode end-to-end CQ superiority
 - noisy separation from `Mem0Lite` on the frozen sentinel
-- LongMemEval or other external benchmark transfer
+- positive LongMemEval generalization for CQ; the completed controlled
+  transfer is stable but negative on evidence completeness
+- broad external transfer beyond the LongMemEval v1 controlled-pilot adapter
 - real-user long-horizon helpfulness
 - learned semantic scope inference
 - spectrum-family evidence as external validation
@@ -802,13 +881,11 @@ second Bucket D. The following claims are explicitly **not** supported:
    the natural next experiment but remains blocked on a CQR replay
    path that does not exist yet; it is not licensed to be retried against
    the existing locked Phase 4 manifests.
-3. The next named follow-on, gated on this spine landing, is the LongMemEval
-   feasibility memo (Workstream D of `docs/next_research_plan.md`). It must be
-   preregistered as a transfer probe before any policy is executed against it,
-   and it should be framed as descriptive future work if the
-   same-candidate-stream fairness invariants cannot be preserved. Any
-   LongMemEval adapter must establish a QR-canon target before any policy
-   run.
+3. Treat the LongMemEval X.4 controlled-pilot result as a completed negative
+   transfer probe. The natural next experiment, if pursued, is not a rerun to
+   rescue the metric; it is a separately preregistered pending multi-evidence
+   retrieval follow-up that asks whether CQ can expose all same-slot pending
+   evidence without receiving a richer substrate than eager baselines.
 
 The current shareable package is therefore a benchmark and methodology draft
 with honest oracle-policy results, a clear noisy-mode gate, a completed mixed
@@ -816,5 +893,6 @@ noisy policy comparison, a named post-hoc oracle-mode repair of base CQ's
 dated-evidence weakness, a second Bucket D CQR replay abort that the
 methodology refuses to wave away, and a registered post-hoc QR-canon audit
 that names a required policy-facing query-contract diagnostic alongside
-clustering-quality component metrics — not a completed persistent-agent
-memory-system claim.
+clustering-quality component metrics, plus a completed LongMemEval controlled
+transfer probe whose policy result is negative for CQ — not a completed
+persistent-agent memory-system claim.

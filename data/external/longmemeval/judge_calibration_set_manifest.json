@@ -1,0 +1,52 @@
+{
+  "artifact": "longmemeval_judge_calibration_set",
+  "artifact_class": "phase_x3_5_judge_calibration_set",
+  "case_count": 25,
+  "control_case_ids": [
+    "22d2cb42",
+    "26bdc477",
+    "3ba21379",
+    "41698283",
+    "42ec0761"
+  ],
+  "gold_access": "gold_loader_only",
+  "inputs": {
+    "agreed_annotations_path": "data/external/longmemeval/annotations_agreed.json",
+    "agreed_annotations_sha256": "b23e7e5a8289c00132c2b8e557cfbdd46db9ee633e2bfcdba96461242d188385",
+    "oracle_json_path": "/tmp/longmemeval_oracle.json",
+    "oracle_json_sha256": "821a2034d219ab45846873dd14c14f12cfe7776e73527a483f9dac095d38620c",
+    "smoke_summary_path": "data/external/longmemeval/smoke_summary.json",
+    "smoke_summary_sha256": "6edae3af6a514223a9266b00a3a3b2a83ee9a3c07661d0d67742b344200dd5eb"
+  },
+  "outputs": {
+    "calibration_set_bytes": 10532,
+    "calibration_set_path": "data/external/longmemeval/judge_calibration_set.json",
+    "calibration_set_sha256": "e486de35a5091134333185ec1b49bf8e1453e9a9e4cf28215a0ecc585878f6c3"
+  },
+  "realistic_candidate_answer_source": "dedicated_policy_execution",
+  "realistic_case_ids": [
+    "01493427",
+    "031748ae",
+    "06db6396",
+    "07741c44",
+    "07741c45",
+    "08e075c7",
+    "0977f2af",
+    "0ddfec37",
+    "0e4e4c46",
+    "0f05491a",
+    "10e09553",
+    "184da446",
+    "18bc8abd",
+    "1cea1afa",
+    "2133c1b5"
+  ],
+  "seed": 1729,
+  "selection_strategy": "sorted_agreed_case_ids",
+  "source_policy": "consolidation_queue_lite",
+  "stratum_counts": {
+    "control_negative": 5,
+    "control_positive": 5,
+    "realistic": 15
+  }
+}
