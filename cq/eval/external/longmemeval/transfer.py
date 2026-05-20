@@ -41,7 +41,13 @@ from cq.eval.external.longmemeval.scorer import (
     PolicyPrediction,
     score_predictions,
 )
-from cq.eval.runner import POLICY_SET_DEFAULT, POLICY_SET_PHASE_2_5, _policies_for_family
+from cq.eval.runner import (
+    POLICY_SET_CHOICES,
+    POLICY_SET_DEFAULT,
+    POLICY_SET_PHASE_2_5,
+    POLICY_SET_PHASE_2_5_FOLLOWUP,
+    _policies_for_family,
+)
 from cq.schemas.memory import jsonable
 from cq.schemas.scenario import TaskFamily
 
@@ -60,6 +66,8 @@ DEFAULT_SENSITIVITY_DIR = REPO_ROOT / "data" / "external" / "longmemeval" / "sen
 HEADLINE_POLICY = "consolidation_queue_lite"
 REFLECTION_POLICY = "reflection_eager_write_lite"
 MEM0_POLICY = "mem0_lite"
+FOLLOWUP_CQ_POLICY = "cq_pending_multi_evidence"
+REFLECTION_CAPPED_POLICY = "reflection_eager_write_cardinality_capped"
 HEADLINE_METRIC = "all_hit_at_50"
 
 
@@ -137,6 +145,7 @@ def build_transfer_artifacts(
     allow_dirty_worktree: bool = False,
     skip_judge_validation: bool = False,
     adapter_pin_path: str | Path = ADAPTER_PIN_PATH,
+    policy_set: str | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
     provenance = _source_provenance(allow_dirty_worktree=allow_dirty_worktree)
     adapter_pin = validate_adapter_pin(pin_path=adapter_pin_path)
@@ -145,7 +154,15 @@ def build_transfer_artifacts(
         if skip_judge_validation
         else validate_judge_report(judge_report_path)
     )
-    policy_set = POLICY_SET_PHASE_2_5 if include_ablations else POLICY_SET_DEFAULT
+    if policy_set is None:
+        policy_set = POLICY_SET_PHASE_2_5 if include_ablations else POLICY_SET_DEFAULT
+    if policy_set not in POLICY_SET_CHOICES:
+        raise LongMemEvalTransferError(
+            "Unsupported policy set '{}'. Allowed: {}".format(
+                policy_set,
+                ", ".join(POLICY_SET_CHOICES),
+            )
+        )
     policy_classes = _policies_for_family(
         TaskFamily.LONGMEMEVAL_EXTERNAL.value,
         policy_set=policy_set,
@@ -172,6 +189,7 @@ def build_transfer_artifacts(
         sensitivity_payloads[cell["cell_id"]] = cell_payload
 
     pairwise = _pairwise_comparisons_by_cell(sensitivity_payloads)
+    followup_outcome = _followup_outcome(sensitivity_payloads)
     bucket = _bucket_verdict(pairwise, judge_report=judge_report, run_local_judge=run_local_judge)
     summary = {
         "mode": "longmemeval_transfer_policy_comparison",
@@ -187,6 +205,7 @@ def build_transfer_artifacts(
         "adapter_pin": adapter_pin,
         "cell_summaries": cell_summaries,
         "pairwise_comparisons": pairwise,
+        "followup_outcome": followup_outcome,
         "bucket_verdict": bucket,
     }
     manifest = {
@@ -202,6 +221,7 @@ def build_transfer_artifacts(
             "judge_report_sha256": (
                 sha256_file(judge_report_path) if Path(judge_report_path).exists() else ""
             ),
+            "policy_set": policy_set,
         },
         "policy_names": policy_names,
         "cell_ids": [cell["cell_id"] for cell in cell_summaries],
@@ -428,7 +448,144 @@ def _pairwise_comparisons_by_cell(
                 metric_name=HEADLINE_METRIC,
             ),
         }
+        policy_names = {str(row["policy_name"]) for row in rows}
+        if FOLLOWUP_CQ_POLICY in policy_names:
+            comparisons[cell_id]["followup_cq_vs_base_cq"] = _pairwise_for_rows(
+                rows,
+                reference_policy=FOLLOWUP_CQ_POLICY,
+                comparator_policy=HEADLINE_POLICY,
+                metric_name=HEADLINE_METRIC,
+            )
+            comparisons[cell_id]["followup_cq_vs_reflection"] = _pairwise_for_rows(
+                rows,
+                reference_policy=FOLLOWUP_CQ_POLICY,
+                comparator_policy=REFLECTION_POLICY,
+                metric_name=HEADLINE_METRIC,
+            )
+        if REFLECTION_CAPPED_POLICY in policy_names:
+            comparisons[cell_id]["reflection_capped_vs_reflection"] = _pairwise_for_rows(
+                rows,
+                reference_policy=REFLECTION_CAPPED_POLICY,
+                comparator_policy=REFLECTION_POLICY,
+                metric_name=HEADLINE_METRIC,
+            )
+        if FOLLOWUP_CQ_POLICY in policy_names and REFLECTION_CAPPED_POLICY in policy_names:
+            comparisons[cell_id]["followup_cq_vs_reflection_capped"] = _pairwise_for_rows(
+                rows,
+                reference_policy=FOLLOWUP_CQ_POLICY,
+                comparator_policy=REFLECTION_CAPPED_POLICY,
+                metric_name=HEADLINE_METRIC,
+            )
     return comparisons
+
+
+def _followup_outcome(
+    sensitivity_payloads: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    if not sensitivity_payloads:
+        return {"applicable": False, "reason": "no sensitivity payloads"}
+    primary = sensitivity_payloads.get("primary_contract")
+    if primary is None:
+        return {"applicable": False, "reason": "no primary_contract cell"}
+    policy_names = {str(row["policy_name"]) for row in primary["rows"]}
+    if FOLLOWUP_CQ_POLICY not in policy_names or REFLECTION_CAPPED_POLICY not in policy_names:
+        return {"applicable": False, "reason": "follow-up policies absent"}
+
+    counts_by_cell = {
+        cell_id: _policy_metric_counts(payload["rows"], metric_name=HEADLINE_METRIC)
+        for cell_id, payload in sorted(sensitivity_payloads.items())
+    }
+    primary_counts = counts_by_cell["primary_contract"]
+    base_cq = primary_counts.get(HEADLINE_POLICY, {})
+    followup_cq = primary_counts.get(FOLLOWUP_CQ_POLICY, {})
+    capped = primary_counts.get(REFLECTION_CAPPED_POLICY, {})
+    reflection = primary_counts.get(REFLECTION_POLICY, {})
+    denominator = int(followup_cq.get("count", 0))
+    followup_hits = int(followup_cq.get("hits", 0))
+    base_hits = int(base_cq.get("hits", 0))
+    capped_hits = int(capped.get("hits", 0))
+    reflection_hits = int(reflection.get("hits", 0))
+    improvement_points = (
+        (followup_hits / denominator) - (base_hits / denominator)
+        if denominator
+        else 0.0
+    )
+    capped_reflection_active = _reflection_capped_is_strict_subset(primary["rows"])
+    stable_followup_success = all(
+        counts.get(FOLLOWUP_CQ_POLICY, {}).get("hits") == counts.get(FOLLOWUP_CQ_POLICY, {}).get("count")
+        for counts in counts_by_cell.values()
+    )
+
+    if not capped_reflection_active:
+        bucket = "D"
+        reason = "reflection cardinality-capped control did not form a strict subset"
+    elif denominator and followup_hits >= min(70, denominator) and capped_hits <= base_hits + 1:
+        bucket = "A"
+        reason = "pending multi-evidence repair succeeds and capped Reflection reproduces readout loss"
+    elif denominator and followup_hits >= min(70, denominator) and capped_hits == reflection_hits:
+        bucket = "A-weak"
+        reason = "pending multi-evidence succeeds but capped Reflection still passes"
+    elif improvement_points >= 0.50:
+        bucket = "B"
+        reason = "pending multi-evidence partially improves evidence completeness"
+    elif improvement_points < 0.10:
+        bucket = "C"
+        reason = "pending multi-evidence does not materially improve evidence completeness"
+    else:
+        bucket = "B"
+        reason = "pending multi-evidence improves without clearing the preregistered threshold"
+
+    return {
+        "applicable": True,
+        "bucket": bucket,
+        "reason": reason,
+        "headline_metric": HEADLINE_METRIC,
+        "primary_contract_counts": primary_counts,
+        "counts_by_cell": counts_by_cell,
+        "primary_improvement_points": improvement_points,
+        "reflection_capped_strict_subset_on_primary": capped_reflection_active,
+        "followup_success_all_cells": stable_followup_success,
+    }
+
+
+def _policy_metric_counts(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    metric_name: str,
+) -> dict[str, dict[str, int]]:
+    counts: dict[str, dict[str, int]] = {}
+    for row in rows:
+        policy_name = str(row["policy_name"])
+        counts.setdefault(policy_name, {"hits": 0, "count": 0})
+        counts[policy_name]["count"] += 1
+        if bool(row[metric_name]):
+            counts[policy_name]["hits"] += 1
+    return counts
+
+
+def _reflection_capped_is_strict_subset(rows: Sequence[Mapping[str, Any]]) -> bool:
+    base_by_case = {
+        str(row["case_id"]): set(row.get("resolved_candidate_ids") or [])
+        for row in rows
+        if row["policy_name"] == REFLECTION_POLICY
+    }
+    capped_by_case = {
+        str(row["case_id"]): set(row.get("resolved_candidate_ids") or [])
+        for row in rows
+        if row["policy_name"] == REFLECTION_CAPPED_POLICY
+    }
+    compared = sorted(set(base_by_case) & set(capped_by_case))
+    if not compared:
+        return False
+    strict_count = 0
+    for case_id in compared:
+        base = base_by_case[case_id]
+        capped = capped_by_case[case_id]
+        if not capped.issubset(base):
+            return False
+        if len(capped) < len(base):
+            strict_count += 1
+    return strict_count > 0
 
 
 def _pairwise_for_rows(
@@ -625,6 +782,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--sensitivity-dir", default=str(DEFAULT_SENSITIVITY_DIR))
     parser.add_argument("--include-ablations", action="store_true")
     parser.add_argument("--include-sensitivity-cells", action="store_true")
+    parser.add_argument("--policy-set", choices=POLICY_SET_CHOICES, default=None)
     parser.add_argument("--run-local-judge", action="store_true")
     parser.add_argument("--judge-model", default=DEFAULT_PRIMARY_JUDGE)
     parser.add_argument("--allow-dirty-worktree", action="store_true")
@@ -641,6 +799,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         allow_dirty_worktree=args.allow_dirty_worktree,
         skip_judge_validation=args.skip_judge_validation,
         adapter_pin_path=args.adapter_pin,
+        policy_set=args.policy_set,
     )
     write_transfer_artifacts(
         summary_path=args.out_summary,

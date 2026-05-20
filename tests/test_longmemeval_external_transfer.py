@@ -4,10 +4,16 @@ import unittest
 from pathlib import Path
 
 from cq.eval.external.longmemeval.transfer import (
+    FOLLOWUP_CQ_POLICY,
     HEADLINE_METRIC,
+    HEADLINE_POLICY,
     LongMemEvalTransferError,
+    REFLECTION_CAPPED_POLICY,
+    REFLECTION_POLICY,
     _bucket_verdict,
+    _followup_outcome,
     _predicted_session_ids,
+    _reflection_capped_is_strict_subset,
     build_sensitivity_cells,
     validate_judge_report,
 )
@@ -121,6 +127,40 @@ class LongMemEvalTransferTests(unittest.TestCase):
 
         self.assertEqual(bucket["bucket"], "C")
 
+    def test_reflection_capped_subset_helper_requires_strict_subset(self) -> None:
+        rows = [
+            _row("case-1", REFLECTION_POLICY, True, ["c1", "c2"]),
+            _row("case-1", REFLECTION_CAPPED_POLICY, False, ["c2"]),
+        ]
+
+        self.assertTrue(_reflection_capped_is_strict_subset(rows))
+
+    def test_followup_outcome_confirms_interface_repair_when_cardinality_control_fails(self) -> None:
+        payloads = {
+            cell_id: {
+                "rows": [
+                    _row("case-1", HEADLINE_POLICY, False, ["c1"]),
+                    _row("case-1", FOLLOWUP_CQ_POLICY, True, ["c1", "c2"]),
+                    _row("case-1", REFLECTION_POLICY, True, ["c1", "c2"]),
+                    _row("case-1", REFLECTION_CAPPED_POLICY, False, ["c2"]),
+                    _row("case-2", HEADLINE_POLICY, False, ["c3"]),
+                    _row("case-2", FOLLOWUP_CQ_POLICY, True, ["c3", "c4"]),
+                    _row("case-2", REFLECTION_POLICY, True, ["c3", "c4"]),
+                    _row("case-2", REFLECTION_CAPPED_POLICY, False, ["c4"]),
+                ]
+            }
+            for cell_id in [
+                "primary_contract",
+                "path_a_only_denominator",
+                "path_b_only_denominator",
+            ]
+        }
+
+        outcome = _followup_outcome(payloads)
+
+        self.assertEqual(outcome["bucket"], "A")
+        self.assertTrue(outcome["reflection_capped_strict_subset_on_primary"])
+
 
 def _annotation_row(case_id: str) -> dict:
     return {
@@ -147,6 +187,15 @@ def _annotation_row(case_id: str) -> dict:
                 "contradicts_event_ids": [],
             }
         ],
+    }
+
+
+def _row(case_id: str, policy_name: str, all_hit: bool, resolved_candidate_ids: list[str]) -> dict:
+    return {
+        "case_id": case_id,
+        "policy_name": policy_name,
+        HEADLINE_METRIC: all_hit,
+        "resolved_candidate_ids": resolved_candidate_ids,
     }
 
 

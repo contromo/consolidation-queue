@@ -28,9 +28,11 @@ from cq.memory.consolidation_queue import (
     CQNoWiderScopePendingOverride,
     ConsolidationQueueLite,
 )
+from cq.memory.cq_pending_multi_evidence import CQPendingMultiEvidence
 from cq.memory.mem0_lite import Mem0Lite
 from cq.memory.naive_eager_write import NaiveEagerWriteLite
 from cq.memory.no_memory import NoMemoryLite
+from cq.memory.reflection_eager_write_cardinality_capped import ReflectionEagerWriteCardinalityCapped
 from cq.memory.reflection_eager_write import ReflectionEagerWriteLite
 from cq.memory.scope_blind_transcript_rag import ScopeBlindTranscriptRAGLite
 from cq.schemas.memory import jsonable
@@ -59,7 +61,13 @@ MECHANISM_DIVERSE_HELDOUT = "mechanism_diverse_heldout"
 POLICY_SET_DEFAULT = "default"
 POLICY_SET_PHASE_2_5 = "phase2_5"
 POLICY_SET_FOLLOWUP = "followup"
-POLICY_SET_CHOICES = (POLICY_SET_DEFAULT, POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP)
+POLICY_SET_PHASE_2_5_FOLLOWUP = "phase2_5_followup"
+POLICY_SET_CHOICES = (
+    POLICY_SET_DEFAULT,
+    POLICY_SET_PHASE_2_5,
+    POLICY_SET_FOLLOWUP,
+    POLICY_SET_PHASE_2_5_FOLLOWUP,
+)
 MODE_ORACLE = "oracle"
 MODE_EXTRACTED = "extracted"
 MODE_CHOICES = (MODE_ORACLE, MODE_EXTRACTED)
@@ -357,7 +365,7 @@ def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
         ReflectionEagerWriteLite,
         ConsolidationQueueLite,
     ]
-    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP):
+    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP, POLICY_SET_PHASE_2_5_FOLLOWUP):
         policies.extend(CQ_ABLATION_POLICIES)
     policies.extend(
         [
@@ -376,10 +384,17 @@ def _policies_for_family(family: str, policy_set: str = POLICY_SET_DEFAULT):
         MECHANISM_DIVERSE_HELDOUT,
     }:
         policies.append(ScopeBlindTranscriptRAGLite)
-    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP):
+    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP, POLICY_SET_PHASE_2_5_FOLLOWUP):
         policies.append(Mem0Lite)
     if policy_set == POLICY_SET_FOLLOWUP:
         policies.append(CQDatedContestation)
+    if policy_set == POLICY_SET_PHASE_2_5_FOLLOWUP:
+        policies.extend(
+            [
+                CQPendingMultiEvidence,
+                ReflectionEagerWriteCardinalityCapped,
+            ]
+        )
     return policies
 
 
@@ -440,12 +455,17 @@ def build_run_artifact(
     )
     baseline_notes: Dict[str, str] = {}
     ablation_notes: Dict[str, str] = {}
-    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP):
+    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP, POLICY_SET_PHASE_2_5_FOLLOWUP):
         baseline_notes[Mem0Lite.policy_name] = Mem0Lite.partial_baseline_caveat
         for policy in CQ_ABLATION_POLICIES:
             ablation_notes[policy.policy_name] = policy.ablation_note
     if policy_set == POLICY_SET_FOLLOWUP:
         ablation_notes[CQDatedContestation.policy_name] = CQDatedContestation.ablation_note
+    if policy_set == POLICY_SET_PHASE_2_5_FOLLOWUP:
+        ablation_notes[CQPendingMultiEvidence.policy_name] = CQPendingMultiEvidence.ablation_note
+        ablation_notes[ReflectionEagerWriteCardinalityCapped.policy_name] = (
+            ReflectionEagerWriteCardinalityCapped.ablation_note
+        )
     return {
         "experiment": "{}_oracle".format(family),
         "family": family,
@@ -543,7 +563,7 @@ def _build_pairwise_comparisons(
             cq,
             reflection,
         )
-    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP):
+    if policy_set in (POLICY_SET_PHASE_2_5, POLICY_SET_FOLLOWUP, POLICY_SET_PHASE_2_5_FOLLOWUP):
         mem0 = run_records_by_policy.get(Mem0Lite.policy_name)
         if reflection is not None and mem0 is not None:
             comparisons["mem0_vs_reflection_by_template_id"] = _pairwise_metric_comparisons(
@@ -778,7 +798,8 @@ def main(argv: List[str] = None) -> int:
         default=POLICY_SET_DEFAULT,
         help=(
             "Policy set to run. Use phase2_5 to include Mem0Lite. Use followup to add "
-            "CQDatedContestation on adversarial_upstream_noise only."
+            "CQDatedContestation on adversarial_upstream_noise only. Use phase2_5_followup "
+            "for the pending multi-evidence LongMemEval follow-up variants."
         ),
     )
     parser.add_argument(

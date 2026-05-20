@@ -12,6 +12,7 @@ from cq.eval.runner import (
     MEMORY_POISONING,
     POLICY_SET_FOLLOWUP,
     POLICY_SET_PHASE_2_5,
+    POLICY_SET_PHASE_2_5_FOLLOWUP,
     PREFERENCE_DRIFT,
     SCOPE_CONTAMINATION,
     USEFUL_PENDING_MEMORY,
@@ -19,6 +20,8 @@ from cq.eval.runner import (
     write_outputs,
 )
 from cq.memory.consolidation_queue import CQDatedContestation
+from cq.memory.cq_pending_multi_evidence import CQPendingMultiEvidence
+from cq.memory.reflection_eager_write_cardinality_capped import ReflectionEagerWriteCardinalityCapped
 
 
 class RunnerPolicySetTests(unittest.TestCase):
@@ -149,6 +152,34 @@ class RunnerPolicySetTests(unittest.TestCase):
         self.assertEqual(artifact["policy_set"], POLICY_SET_FOLLOWUP)
         self.assertIn(CQDatedContestation.policy_name, artifact["ablation_notes"])
         self.assertIn("mem0_lite", artifact["baseline_notes"])
+
+    def test_phase2_5_followup_includes_pending_multi_evidence_controls_on_all_families(self) -> None:
+        for family in [
+            FORCED_CONTRADICTION,
+            SCOPE_CONTAMINATION,
+            PREFERENCE_DRIFT,
+            USEFUL_PENDING_MEMORY,
+            FALSE_CORROBORATION,
+            MEMORY_POISONING,
+            ADVERSARIAL_UPSTREAM_NOISE,
+            EVIDENCE_CONFLICT_SPECTRUM,
+        ]:
+            with self.subTest(family=family):
+                artifact = build_run_artifact(
+                    1,
+                    template_mix="mixed",
+                    family=family,
+                    policy_set=POLICY_SET_PHASE_2_5_FOLLOWUP,
+                )
+                policy_names = [policy["policy_name"] for policy in artifact["policies"]]
+
+                self.assertIn(CQPendingMultiEvidence.policy_name, policy_names)
+                self.assertIn(ReflectionEagerWriteCardinalityCapped.policy_name, policy_names)
+                self.assertIn("mem0_lite", policy_names)
+                self.assertNotIn(CQDatedContestation.policy_name, policy_names)
+                self.assertEqual(artifact["policy_set"], POLICY_SET_PHASE_2_5_FOLLOWUP)
+                self.assertIn(CQPendingMultiEvidence.policy_name, artifact["ablation_notes"])
+                self.assertIn(ReflectionEagerWriteCardinalityCapped.policy_name, artifact["ablation_notes"])
 
     def test_phase2_5_csv_includes_mem0_bootstrap_comparison_rows(self) -> None:
         artifact = build_run_artifact(
