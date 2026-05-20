@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360">
+  <rect width="900" height="360" fill="#ffffff"/>
+  <text x="40" y="45" font-family="Arial, sans-serif" font-size="24" font-weight="700">PFLC formal gap</text>
+  <text x="40" y="78" font-family="Arial, sans-serif" font-size="15" fill="#333333">Same partition, different policy-facing labels.</text>
+  <rect x="55" y="120" width="260" height="150" rx="8" fill="#e8f1ff" stroke="#2f67b2" stroke-width="2"/>
+  <text x="80" y="150" font-family="Arial, sans-serif" font-size="18" font-weight="700">Gold partition</text>
+  <circle cx="105" cy="195" r="20" fill="#2f67b2"/>
+  <circle cx="160" cy="195" r="20" fill="#2f67b2"/>
+  <circle cx="215" cy="195" r="20" fill="#5aa469"/>
+  <text x="91" y="201" font-family="Arial, sans-serif" font-size="16" fill="#ffffff">g*</text>
+  <text x="148" y="201" font-family="Arial, sans-serif" font-size="16" fill="#ffffff">g1</text>
+  <text x="203" y="201" font-family="Arial, sans-serif" font-size="16" fill="#ffffff">g2</text>
+  <text x="80" y="242" font-family="Arial, sans-serif" font-size="15">Queried id: g*</text>
+  <path d="M340 190 L520 190" stroke="#333333" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="375" y="174" font-family="Arial, sans-serif" font-size="15">injective relabeling rho</text>
+  <rect x="545" y="120" width="300" height="150" rx="8" fill="#fff4df" stroke="#b76e00" stroke-width="2"/>
+  <text x="570" y="150" font-family="Arial, sans-serif" font-size="18" font-weight="700">Predicted partition</text>
+  <circle cx="600" cy="195" r="20" fill="#2f67b2"/>
+  <circle cx="655" cy="195" r="20" fill="#2f67b2"/>
+  <circle cx="710" cy="195" r="20" fill="#5aa469"/>
+  <text x="588" y="201" font-family="Arial, sans-serif" font-size="16" fill="#ffffff">a0</text>
+  <text x="643" y="201" font-family="Arial, sans-serif" font-size="16" fill="#ffffff">a1</text>
+  <text x="698" y="201" font-family="Arial, sans-serif" font-size="16" fill="#ffffff">a2</text>
+  <text x="570" y="242" font-family="Arial, sans-serif" font-size="15">g* not in predicted label set</text>
+  <rect x="150" y="302" width="250" height="38" rx="6" fill="#eef7ed" stroke="#5aa469"/>
+  <text x="175" y="326" font-family="Arial, sans-serif" font-size="16">Cluster metric = 1.00</text>
+  <rect x="500" y="302" width="250" height="38" rx="6" fill="#fdecec" stroke="#c64545"/>
+  <text x="525" y="326" font-family="Arial, sans-serif" font-size="16">Set-membership PFLC = 0</text>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333333"/>
+    </marker>
+  </defs>
+</svg>

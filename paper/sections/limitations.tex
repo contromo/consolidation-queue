@@ -1,0 +1,34 @@
+\section{Limitations}
+
+This report does not claim broad noisy-mode CQ superiority. CQ separates from
+\reflection{} on forced contradiction and partially on preference drift under
+the current 32B artifacts; it does not separate from \memzero{} on the frozen
+sentinel and does not produce noisy source-independence, scope-contamination,
+useful-pending, or poisoning-defense wins under the current evidence.
+
+The LongMemEval result is also bounded. The completed X.4 transfer is stable
+and negative for base CQ on evidence completeness. The pending multi-evidence
+follow-up supports a readout-cardinality repair, not broad LongMemEval
+generalization. The work does not claim LongMemEval-V2, LongMemEval-S,
+distractor-heavy retrieval quality, or natural-language QA success; the
+\code{answer_correct} surface is diagnostic-only in X.4 because policy answers
+are trace-shaped.
+
+PFLC is a diagnostic class, not a new pass/fail gate. The field-level survey
+does not criticize benchmark designs for lacking possible annotations; it
+records what released baseline artifacts expose. LoCoMo's evidence field is a
+clean gold-side target, and MemoryAgentBench's conflict-resolution tasks are
+PFLC-relevant. The B-3 outcome is about released artifact contracts and
+standard output surfaces.
+
+The CQR replay repair remains Bucket D. The QR-canon audit does not unlock or
+supersede that aborted audit, does not change the Phase 4 Bucket B verdict, and
+does not run the blocked cross-tab of QR-canon hit versus per-policy answer
+success. A third CQR attempt would require either materializing the original
+locked run JSON payloads or preregistering a fresh Phase 4 baseline with
+archived payloads.
+
+Finally, all experiments are local-first prototypes. They do not test real-user
+weeks-long helpfulness, learned semantic scope inference, production retrieval
+stacks, or API-hosted extractors. Those are future evaluation targets, not
+claims made by this draft.

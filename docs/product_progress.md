@@ -1,5 +1,42 @@
 # Product Progress
 
+## 2026-05-20 — Initial arXiv paper draft package starts
+
+### What Shipped
+
+- added `paper/` with a compile-oriented LaTeX draft for the ship-now Phase Z
+  path: title page, abstract, main sections, appendices, bibliography stub,
+  draft SVG figure assets, and a reviewer-facing reproducibility README
+- added PDFLaTeX-compatible high-resolution PNG derivatives for the six figure
+  assets, wired the figures into the LaTeX draft, and added
+  `paper/repro/render_figures.py` so the PNGs can be regenerated without a
+  system SVG renderer
+- replaced the bibliography stub with populated arXiv/conference metadata for
+  LongMemEval, LoCoMo, Mem0, A-MEM, MemoryAgentBench, MemBench, MemGPT, Zep,
+  and Cognee, with related-work citations updated accordingly
+- structured the draft around the locked four-claim framing: fair-stream
+  evaluation, PFLC diagnostics, controlled external transfer with preserved
+  negative results, and the cardinality-controlled LongMemEval repair
+- recorded the branch-pinning route for the paper package because a
+  fast-forward merge from `longmemeval-externalization-gate` to `main` was not
+  possible in this worktree
+
+### Framing Decision
+
+- this is report integration, not a new empirical result
+- the draft keeps base CQ's X.4 `all_hit_at_50` loss and the
+  `CQPendingMultiEvidence` follow-up repair as separate claims
+- venue-specific formatting, final affiliation text if needed, and
+  reproducibility hosting remain open pre-submission items
+
+### Open Issues / Next
+
+- run a full cross-document numeric/path consistency sweep before submission
+- polish figure design and table layout once venue style and hosting decisions
+  are known
+- do not add new empirical claims to the paper unless they are backed by a
+  separately preregistered workstream
+
 ## 2026-05-20 — Pending multi-evidence LongMemEval follow-up lands
 
 ### What Shipped

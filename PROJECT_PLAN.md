@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-20 (pending multi-evidence LongMemEval follow-up landed)
+Last updated: 2026-05-20 (paper draft package started)
 
 ## Goal
 
@@ -333,6 +333,12 @@ Implemented:
   falls to `0/71`, isolating answer-time evidence cardinality as the X.4
   failure variable. The result does not rewrite the original X.4 negative
   transfer verdict for base CQ.
+- `paper/`: an initial arXiv technical-report draft package for the ship-now
+  Phase Z path, with a LaTeX entry point, abstract, main sections, appendices,
+  bibliography stub, draft SVG figure assets, and a reviewer-facing
+  reproducibility README. The package is report integration only; it adds no
+  new empirical result and keeps the LongMemEval X.4 loss plus the pending
+  multi-evidence repair as separate claims.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
@@ -354,7 +360,8 @@ Not implemented yet:
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
-- final writeup docs
+- submission-ready final manuscript, polished figures, and hosted
+  reproducibility bundle
 
 ## Repository Map
 
@@ -795,12 +802,13 @@ The first deterministic forced-contradiction local-model command/prompt, compone
    LongMemEval X.4 and the pending multi-evidence follow-up are complete; any
    further LongMemEval work must be a fresh preregistered follow-up, not a
    rerun to rescue an observed metric.
-5. Use `docs/paper_outline.md` as the packaging spine for the report. The next
-   licensed original-research move should be either a policy-facing
-   adapter-contract audit, a fresh Phase 4 baseline with committed or archived
-   run-JSON payloads, or a newly preregistered external-transfer boundary. The
-   pending multi-evidence retrieval follow-up motivated by the LongMemEval
-   evidence-completeness loss is complete.
+5. Use `docs/paper_outline.md` and the initial `paper/` LaTeX package as the
+   packaging spine for the report. The next licensed original-research move
+   should be either a policy-facing adapter-contract audit, a fresh Phase 4
+   baseline with committed or archived run-JSON payloads, or a newly
+   preregistered external-transfer boundary. The pending multi-evidence
+   retrieval follow-up motivated by the LongMemEval evidence-completeness loss
+   is complete.
 6. The 2026-05-17 registered post-hoc QR-canon audit landed and is the most recent reframing artifact for the paper. It reuses the locked CQR Section A `cqr_set_membership` metric and the locked CQR alias function verbatim, reads only the committed `data/results/qr_canon_source_table.csv` at audit time, and reattributes the four perfect-clustering null rows from "unattributed null" to "policy-facing query interface contract failure" without unlocking the locked CQR audit or amending any policy verdict. See `docs/qr_canon_audit_results.md`. The CQR Section C cross-tab (QR-canon hit vs per-policy answer success) remains the natural follow-on diagnostic but is blocked on the same replay path; it is not licensed against the existing locked Phase 4 manifests.
 7. Workstream A.6 (PFLC field-level diagnostic generalization) landed on 2026-05-18 at outcome bucket B-3 (artifact-blocked) for its original anchor set. The registration `docs/policy_facing_lookup_contract_registration.md` locks the contract; the proposition `docs/policy_facing_lookup_contract_proposition.md` gives the formal core. Four per-anchor feasibility memos (LongMemEval, Mem0/LoCoMo, MemoryAgentBench, MemBench) all landed at descriptive-only. Four synthetic counterexample rows ship in `data/results/qr_canon_field_diagnostic_metrics.csv`. The consolidated readout is `docs/qr_canon_field_diagnostic_results.md`; methodology spine §5 and paper outline §1, §3, §4, §5, §8 are updated. BEAM remains in the field-exclusion table because its conditional promotion rule (Mem0/LoCoMo = blocked) did not fire.
 8. The post-A.6 LoCoMo published-output PFLC follow-up landed in `docs/locomo_baseline_replay_survey.md`. A current artifact sweep found that the Agent Memory Benchmark publishes per-question LoCoMo Hindsight and hybrid-search run gzips with injected contexts containing recoverable LoCoMo `dia_id` values. `scripts/score_locomo_amb_pflc.py` scores those IDs against official LoCoMo `qa[].evidence` and emits `data/results/locomo_amb_pflc_rows.csv` plus `data/results/locomo_amb_pflc_summary.json`. This upgrades the LoCoMo axis from universal artifact-blocked to a narrow `published-output/context-derived` replay for AMB outputs only. The next licensed step is report integration and, if useful, a separately registered expansion to additional AMB providers or stricter compact-retrieval cutoffs; do not convert this into a CQ-vs-external policy comparison without preserving the same-candidate-stream/substrate invariants or explicitly labeling it descriptive-only.

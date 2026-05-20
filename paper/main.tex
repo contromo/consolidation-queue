@@ -1,0 +1,58 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{xcolor}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\artifact}[1]{\path{#1}}
+\newcommand{\claim}[1]{\paragraph{#1.}}
+\newcommand{\cq}{\code{ConsolidationQueueLite}}
+\newcommand{\reflection}{\code{ReflectionEagerWriteLite}}
+\newcommand{\memzero}{\code{Mem0Lite}}
+
+\title{When Memory Metrics Hide Memory Policies\\
+\large Same-Stream Evaluation and Policy-Facing Lookup Contracts for Persistent-Agent Memory}
+\author{\href{https://manavm.com}{Manav Malhotra}}
+\date{Draft generated 2026-05-20}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\input{sections/intro}
+\input{sections/related}
+\input{sections/method}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/local_unlock}
+\input{sections/limitations}
+\input{sections/futurework}
+
+\bibliographystyle{plain}
+\bibliography{bibliography}
+
+\appendix
+\input{appendices/failure_taxonomy}
+\input{appendices/reproducibility}
+\input{appendices/prereg_locks}
+\input{appendices/artifacts}
+
+\end{document}

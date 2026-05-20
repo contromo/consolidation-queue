@@ -1,0 +1,49 @@
+\section{Related Work}
+
+\paragraph{External memory benchmarks.}
+LongMemEval evaluates long-term chat memory across information extraction,
+multi-session reasoning, knowledge updates, temporal reasoning, and
+abstention \cite{longmemeval2024}. In this repository it is not treated as a
+leaderboard. The released v1 oracle split becomes a controlled-pilot anchor
+only after a preregistered adapter creates a redacted same candidate stream for
+all local policies. The resulting PFLC target is dialog-evidence-id
+completeness over the v1 evidence-only oracle split, so the result should be
+read as evidence exposure and completeness under a fixed policy surface, not as
+distractor-heavy retrieval quality over LongMemEval-S or LongMemEval-V2.
+LoCoMo is the other key long-conversation benchmark used in the PFLC survey:
+it collects very long multimodal conversations and evaluates question
+answering, event summarization, and multimodal dialogue generation
+\cite{locomo2024}.
+
+MemoryAgentBench and MemBench are important external-evaluation references
+because they stress incremental interaction, long-range memory, factual memory,
+and selective forgetting \cite{memoryagentbench2025,membench2025}. They occupy
+the benchmark lane rather than the fair-policy-comparison lane: they do not, by
+themselves, enforce this report's same-candidate-stream and same-substrate
+constraints. The PFLC survey treats their released artifacts as a diagnostic
+question: do standard outputs expose the per-question identifiers needed to
+test whether a memory policy can query the right handle? The current answer is
+descriptive-only for the representative anchor set.
+
+\paragraph{Memory systems and write policies.}
+Mem0 proposes a production-oriented memory architecture with dynamic memory
+extraction, update, and retrieval, including a graph variant for relational
+memory \cite{mem02025}. A-MEM emphasizes dynamic indexing, memory linking, and
+memory evolution \cite{amem2025}. MemGPT/Letta frames stateful agents through
+virtual context management and self-editing memory tiers \cite{memgpt2024}.
+Zep/Graphiti and Cognee represent graph-oriented memory and retrieval stacks
+that motivate the related-system lane without defining this report's fair
+policy-comparison surface \cite{zep2025,cognee2025}. These systems motivate
+comparison targets and terminology, but this report does not claim to reproduce
+them fully. The local \memzero{} baseline is an ADD/UPDATE/NOOP write-time
+policy over the same candidate stream and substrate as CQ and \reflection. That
+narrowness is a feature: it keeps the policy comparison inspectable.
+
+\paragraph{Preregistration and audit discipline.}
+The methodological stance is closer to a preregistered evaluation audit than to
+a recall leaderboard. The project locks prediction grids, outcome buckets,
+adapter pins, judge gates, and follow-up boundaries before running each major
+comparison. It also records aborts as evidence. The canonical-id resolution
+audit, for example, refused to emit a verdict twice when locked run JSON
+payloads could not be reproduced. That posture prevents a methodology repair
+from becoming a post-hoc result rescue.

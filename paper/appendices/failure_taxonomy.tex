@@ -1,0 +1,18 @@
+\section{Failure Taxonomy}
+
+The Phase 3 taxonomy groups component failures into four recurring modes:
+required-field omission, ID-namespace confusion, durable-claim drift into
+temporary/session framing, and contradiction-edge misses. These categories are
+used to explain why the 7B aggregate-passing run stayed locked and why some
+32B rows remain unsafe to interpret as policy convergence.
+
+Representative inspection traces are:
+
+\begin{itemize}
+\item \artifact{data/results/audit_trace_forced_contradiction_default.html}
+\item \artifact{data/results/audit_trace_scope_contamination_default.html}
+\item \artifact{data/results/audit_trace_useful_pending_memory_default.html}
+\end{itemize}
+
+The traces are qualitative inspection aids. Numeric claims come from metrics,
+manifests, component summaries, and compact audit evidence.

@@ -1,0 +1,80 @@
+\section{Introduction}
+
+Persistent-agent memory systems are usually judged by whether they recall
+facts, retrieve useful context, or answer held-out questions. Those metrics are
+important, but they can hide the policy question that matters for memory
+governance: did the system succeed because its memory policy handled
+contradiction, scope, source independence, and reversibility, or because it
+received easier inputs, richer private state, or a metric that did not inspect
+the policy-facing handle being queried?
+
+This report argues for a stricter evaluation posture. Memory-policy
+comparisons should hold the upstream candidate stream fixed, use the same
+storage substrate for the policies being compared, separate oracle-mode policy
+claims from noisy-pipeline claims, and preserve artifacts that make failure
+cases inspectable. The running case study is a lightweight consolidation queue
+policy, \cq, compared with immediate-write baselines such as \reflection,
+\memzero, and ablations. The claim is not that CQ is a replacement memory
+system. The claim is that same-stream evaluation exposes which memory-policy
+distinctions survive the interfaces around them.
+
+The empirical arc is deliberately mixed. Internally, under a preregistered noisy
+policy comparison, CQ's contradiction-edge-driven contestation and demotion
+mechanism remains visible on forced contradiction and partially visible on
+preference drift. Other rows do not become wins by interpretation: they are
+recorded as nulls or policy-facing lookup-contract failures. Externally, a
+controlled LongMemEval v1 transfer probe produces a stable negative result for
+base CQ on evidence completeness. A later preregistered follow-up repairs that
+specific failure by exposing all eligible same-slot pending evidence at answer
+time, while a cardinality-capped Reflection control reproduces the original
+loss. The failure and the repair are both part of the result.
+
+The paper collapses the repository's detailed evidence ledger into four
+headline claims.
+
+\claim{Claim 1: Fair-stream memory-policy evaluation}
+The benchmark fixes the same upstream \code{CandidateUpdate} stream and the
+same scoped memory substrate across policies, then gates noisy-mode policy
+claims on component quality. This prevents CQ from winning through asymmetric
+inputs, asymmetric storage, or hidden extractor advantages. It also records
+lifecycle traces, manifests, failure examples, and replay checks rather than
+reducing the experiment to a single score.
+
+\claim{Claim 2: Policy-facing lookup contracts}
+PFLC diagnostics name a class of metric blind spots. Proposition 1 proves a
+cluster-partition/lookup-contract gap: a relabeling can preserve the gold
+partition and therefore score 1.00 under partition metrics while failing exact
+policy-query set membership. Constructive lemmas extend the same pattern to
+retrieval-at-k and answer-accuracy metrics. The QR-canon audit is the
+canonical-id instance of this class in the CQ benchmark; the field-level PFLC
+survey shows why released memory-benchmark artifacts should expose
+per-question policy-facing identifiers.
+
+\claim{Claim 3: Controlled external transfer with preserved negative results}
+The LongMemEval workstream builds a redacted same-stream adapter, dual-path
+annotation protocol, hidden-answer verifier, judge-calibration gate, PFLC
+scorer, and contract-sensitivity audit before policy execution. The result is
+stable and negative for base CQ on \code{all_hit_at_50}. CQ retrieves one gold
+evidence session in every case, tying eager baselines on
+\code{any_hit_at_50}, but it does not retrieve both evidence sessions.
+
+\claim{Claim 4: Cardinality-controlled mechanism repair}
+The follow-up does not rewrite the negative X.4 result. It tests a separately
+preregistered interface hypothesis: plural pending readout should close the
+evidence-completeness gap, and capping a winning eager baseline to one returned
+candidate should reproduce the loss. Both predictions hold. That is a
+mechanism-local repair pattern, not a claim that CQ broadly generalizes to
+LongMemEval or natural-language QA.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/evidence_ledger_summary.png}
+\caption{The draft evidence ledger is organized around four claims: fair-stream
+evaluation, PFLC diagnostics, controlled external transfer, and a
+cardinality-controlled repair.}
+\label{fig:evidence-ledger}
+\end{figure}
+
+All empirical claims in this draft cite committed artifacts. Where a result is
+diagnostic-only, descriptive-only, or blocked by missing artifacts, the paper
+keeps that boundary in the main text rather than relegating it to a caveat.

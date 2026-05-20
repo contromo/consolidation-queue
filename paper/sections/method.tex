@@ -1,0 +1,107 @@
+\section{Method}
+
+\subsection{Benchmark Objects}
+
+The benchmark centers on scoped candidate updates and a shared memory
+substrate. Candidate updates carry claim content, scope, provenance, evidence
+relations, and lifecycle state. Policies differ in when they promote, demote,
+contest, or expose these candidates; they do not receive different upstream
+observations. The load-bearing invariant is that CQ and the immediate-write
+baselines compare memory policy over the same inputs.
+
+The principal policies are \cq, \reflection, \memzero, \code{NaiveEagerWriteLite},
+\code{NoMemoryLite}, and CQ ablations that remove contestation/demotion,
+pending lookup, source-independence gating, or wider-scope pending override.
+Two follow-up policies are explicitly outside the original headline set:
+\code{CQDatedContestation}, an oracle-mode dated-evidence repair, and
+\code{CQPendingMultiEvidence}, the LongMemEval pending-readout repair. The
+LongMemEval follow-up also includes \code{ReflectionEagerWriteCardinalityCapped}
+as a diagnostic control.
+
+\subsection{Oracle Stage}
+
+The oracle stage tests policy behavior when candidate observations, scope keys,
+contradiction/support relations, and source metadata are known. It includes
+forced contradiction, scope contamination, preference drift, useful pending
+memory, false corroboration, memory poisoning, mechanism-diverse frozen
+held-out scenarios, adversarial upstream noise, and the evidence-conflict
+spectrum. Oracle results are not noisy-pipeline claims. They establish whether
+the policy mechanisms behave under controlled evidence before extraction
+quality enters the experiment.
+
+\subsection{Noisy Stage}
+
+The noisy stage renders transcripts, scores local extractor outputs against
+component labels, converts accepted predictions into shared candidate streams,
+and only then runs policies. The component gate has layered checks: aggregate
+confidence-bound gates, per-family observed gates, frozen mechanism-diverse
+sentinels, Phase A prompt regression, deterministic replay, and exact adapter
+pin validation. The 7B anchor passed aggregate gates but stayed locked because
+it had concentrated scenario errors and family/sentinel failures. The
+preregistered 32B cells cleared the gate and licensed the separate Phase 4
+policy comparison.
+
+\subsection{Attribution Stage}
+
+A policy result is not automatically an attribution. The Bucket B mechanism
+audit reads Phase 4 policy artifacts, component-eval artifacts, ablation
+patterns, exact policy-query canonical-id alignment, and representative traces.
+It attributes forced contradiction cleanly to contradiction-edge preservation
+and contestation/demotion. Preference drift is partial survival: the policy
+delta remains, but absolute CQ performance drops relative to oracle and the
+32B artifacts show residual drift. Other rows remain null, descriptive, or
+policy-facing lookup-contract failures unless an artifact directly supports a
+stronger claim.
+
+\subsection{Policy-Facing Lookup Contracts}
+
+PFLC diagnostics ask whether the system exposes the identifier or handle that a
+memory policy actually needs to query. The formal core has three parts.
+Proposition 1 shows that for non-singleton label alphabets and
+cluster-partition metrics invariant to injective relabeling, the predicted
+partition can equal the gold partition while set-membership PFLC is zero for a
+queried gold id. Lemma 1 constructs the same gap for retrieval-at-k metrics:
+retrieved content can be relevant while the policy-facing evidence id is
+missing. Lemma 2 constructs it for answer-accuracy metrics: a generated answer
+can be correct while the system fails to expose the handle needed for memory
+governance.
+
+QR-canon is the canonical-id PFLC instance used in the internal audit. It reuses
+the locked CQR Section A set-membership metric and alias function, reads a
+committed per-question source table, and reports Wilson intervals plus a joint
+B-cubed/lookup table. It does not introduce a pass/fail threshold or amend the
+Phase 4 policy verdict.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.90\linewidth]{figures/pflc_formal_gap.png}
+\caption{PFLC gap: a relabeling can preserve the cluster partition while
+removing the queried policy-facing identifier from the predicted label set.}
+\label{fig:pflc-gap}
+\end{figure}
+
+\subsection{Controlled External Transfer}
+
+The LongMemEval workstream adapts an external benchmark into a controlled
+same-stream pilot. The protocol selects LongMemEval v1 as the primary anchor,
+freezes dual-path annotations, verifies the hidden-answer boundary, pins the
+adapter, calibrates a local judge, and uses PFLC scoring over answer-session
+ids. The v1 oracle split is evidence-only, so the PFLC metric measures whether
+policies preserve and expose gold evidence sessions they received, not whether
+they search through distractor haystacks.
+
+The X.4 transfer uses \code{all_hit_at_50} as the headline metric and preserves
+\code{answer_correct} as diagnostic-only because policy answers are structured
+memory traces. The follow-up keeps the same adapter, judge, and headline metric
+but changes the policy-facing readout interface under a new preregistration:
+CQ exposes all eligible same-slot pending candidates, and capped Reflection
+returns only one durable candidate id at answer time.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/externalization_protocol.png}
+\caption{Controlled externalization flow: redacted dual-path annotation,
+adapter pinning, policy execution on the same stream, judge calibration, and
+PFLC scoring.}
+\label{fig:externalization-protocol}
+\end{figure}
