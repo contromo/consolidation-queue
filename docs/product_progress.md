@@ -1,5 +1,66 @@
 # Product Progress
 
+## 2026-05-19 — LongMemEval X.4 judged transfer run lands
+
+### What shipped
+
+- ran `scripts/run_longmemeval_transfer.py --include-ablations
+  --include-sensitivity-cells --run-local-judge` from a clean worktree at
+  commit `5e079b32192894d62f9855eb048e9d68a21d3fa4`
+- added the full judged transfer artifacts:
+  `data/external/longmemeval/transfer_summary.json`,
+  `data/external/longmemeval/transfer_per_case_rows.csv`,
+  `data/external/longmemeval/transfer_manifest.json`, and the three
+  sensitivity payloads under `data/external/longmemeval/sensitivity/`
+- added `docs/longmemeval_transfer_results.md` to record the X.4 readout and
+  prevent the Bucket A label from being misread as a CQ win
+
+### Result
+
+- judge mode: `local_judge`
+- headline metric: `all_hit_at_50`
+- policy/cell/case rows: 1,935
+- meaningful cells: `primary_contract`, `path_a_only_denominator`,
+  `path_b_only_denominator`
+- candidate-stream hash invariant: pass in all cells
+- bucket: A, because the contract-sensitivity sign was stable
+- sign: negative in all three CQ-vs-Reflection cells
+- sibling metric nuance: CQ ties Reflection and Mem0 on `any_hit_at_50` in all
+  three cells; the negative sign is specific to `all_hit_at_50`
+
+Headline pairwise result:
+
+| Cell | CQ - Reflection on `all_hit_at_50` | CI | Sign |
+|---|---:|---|---|
+| `primary_contract` | -1.0 | [-1.0, -1.0] | negative |
+| `path_a_only_denominator` | -1.0 | [-1.0, -1.0] | negative |
+| `path_b_only_denominator` | -1.0 | [-1.0, -1.0] | negative |
+
+The same `-1.0` result holds for CQ-vs-`mem0_lite` in all three cells.
+
+### Interpretation
+
+- this is an external-transfer failure for current CQ under the LongMemEval v1
+  controlled-pilot adapter on evidence completeness, not a methodology failure
+- CQ retrieves at least one gold evidence session in every case, but never
+  retrieves both; `reflection_eager_write_lite`, `mem0_lite`, and
+  `naive_eager_write_lite` retrieve both evidence sessions for every case
+- the mechanism is CQ's pending lookup interface: `answer_question` uses
+  `MemoryStore.strongest_pending_candidate`, which returns a single
+  strongest/latest pending candidate. Eager durable baselines reinforce one
+  durable with both supporting candidates, so their resolved evidence set is
+  complete under `all_hit_at_50`
+- `answer_correct` is 0/1,935 across all judged policy rows, confirming it is
+  diagnostic only in this implementation
+
+### Open issues / next
+
+- decide whether to stop here as a clean negative-transfer result, or open a
+  separately preregistered policy-interface follow-up focused on why CQ stores
+  only one of two LongMemEval evidence sessions
+- do not retrofit the current X.4 run into a CQ-positive claim; the artifact is
+  valuable because it is a stable, inspectable loss
+
 ## 2026-05-19 — LongMemEval X.4 headline metric and sensitivity audit amended
 
 ### What shipped
@@ -31,15 +92,10 @@
 - makes the contract-sensitivity claim smaller but sharper; X.4 should now
   report stability across three real cells, not five cells with two no-ops
 
-### Open issues / next
+### Superseded next step
 
-- run the full judged X.4 transfer with `--include-ablations
-  --include-sensitivity-cells --run-local-judge` from a clean worktree. The
-  headline bucket will use `all_hit_at_50`; the judge still supplies
-  `answer_correct` diagnostics for joint-count interpretation
-- Phase X.5 should disclose that judge calibration realistic rows and the
-  smoke both show trace-shaped candidate answers, so answer correctness is not
-  the load-bearing transfer metric in this implementation
+The full judged X.4 run landed later on 2026-05-19. The headline bucket used
+`all_hit_at_50`; `answer_correct` remained diagnostic.
 
 ## 2026-05-19 — LongMemEval Phase X.3.5 judge calibration lands
 

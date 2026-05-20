@@ -1,0 +1,70 @@
+{
+  "artifact": "longmemeval_transfer_policy_comparison",
+  "artifact_class": "phase_x4_transfer",
+  "bucket": {
+    "bucket": "A",
+    "reason": "contract sensitivity sign stable",
+    "signs": [
+      "negative",
+      "negative",
+      "negative"
+    ]
+  },
+  "cell_ids": [
+    "primary_contract",
+    "path_a_only_denominator",
+    "path_b_only_denominator"
+  ],
+  "inputs": {
+    "adapter_pin_path": "docs/longmemeval_adapter_pin.json",
+    "adapter_pin_sha256": "9b0530a298da6995c1bf2643bda818198354d270b20a4b061cea9fa8e00f8d01",
+    "judge_report_path": "data/external/longmemeval/judge_stability_report.json",
+    "judge_report_sha256": "88336e2ba1962521a07a30582c03c43fd550ba28d44e44b784f25a48f68c04b6",
+    "oracle_json_path": "/tmp/longmemeval_oracle.json",
+    "oracle_json_sha256": "821a2034d219ab45846873dd14c14f12cfe7776e73527a483f9dac095d38620c"
+  },
+  "judge_mode": "local_judge",
+  "outputs": {
+    "per_case_rows_bytes": 601137,
+    "per_case_rows_path": "data/external/longmemeval/transfer_per_case_rows.csv",
+    "per_case_rows_sha256": "ca74ff0cc7a0f97f6799bc971d67213ba7ed7e553daa5039d6676278f50c0f2a",
+    "sensitivity": {
+      "path_a_only_denominator": {
+        "bytes": 719238,
+        "path": "data/external/longmemeval/sensitivity/path_a_only_denominator.json",
+        "sha256": "e40d6a4e6f8a206b2a98bc249b37152298e32852f57d07ae1650881ddc3b0685"
+      },
+      "path_b_only_denominator": {
+        "bytes": 719196,
+        "path": "data/external/longmemeval/sensitivity/path_b_only_denominator.json",
+        "sha256": "301ac9ad7c2868f68e6d0e34b7ad0beab27d5eb9bfcd17727ed8899d97b8aae3"
+      },
+      "primary_contract": {
+        "bytes": 705019,
+        "path": "data/external/longmemeval/sensitivity/primary_contract.json",
+        "sha256": "fa5ac210370a184090b931f4d591ddac105f2ff1c012026cb6abdccc514f3016"
+      }
+    },
+    "summary_bytes": 24052,
+    "summary_path": "data/external/longmemeval/transfer_summary.json",
+    "summary_sha256": "408769d7035640d56fc371e29e9a0a3484725473ca16fdf6303b4f7625fd0dce"
+  },
+  "policy_names": [
+    "reflection_eager_write_lite",
+    "consolidation_queue_lite",
+    "cq_no_contestation_demotion",
+    "cq_no_wider_scope_pending_override",
+    "cq_no_pending_lookup_use",
+    "cq_no_source_independence_gate",
+    "naive_eager_write_lite",
+    "no_memory_lite",
+    "mem0_lite"
+  ],
+  "source_provenance": {
+    "dirty_worktree_allowed": false,
+    "dirty_worktree_check_passed": true,
+    "git_commit_sha": "5e079b32192894d62f9855eb048e9d68a21d3fa4",
+    "git_status_porcelain": [],
+    "worktree_clean": true
+  }
+}

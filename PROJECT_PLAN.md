@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-19 (LongMemEval X.4 headline metric and sensitivity audit amended)
+Last updated: 2026-05-19 (LongMemEval X.4 judged transfer run landed)
 
 ## Goal
 
@@ -295,6 +295,22 @@ Implemented:
   scored all 27 candidate answers incorrect across 3 cases and 9 policies,
   confirming that generated `answer_correct` is currently a diagnostic for
   judgeability rather than a discriminating transfer headline.
+- `data/external/longmemeval/transfer_summary.json`,
+  `data/external/longmemeval/transfer_per_case_rows.csv`,
+  `data/external/longmemeval/transfer_manifest.json`,
+  `data/external/longmemeval/sensitivity/`, and
+  `docs/longmemeval_transfer_results.md`: Phase X.4 full judged transfer run.
+  The run executed from clean commit
+  `5e079b32192894d62f9855eb048e9d68a21d3fa4`, used the local locked primary
+  judge, scored 1,935 policy/cell/case rows, and produced a stable negative
+  CQ-vs-Reflection sign on `all_hit_at_50` across all three meaningful cells.
+  Bucket A fired because the contract-sensitivity sign was stable, but the
+  sign is negative: this is an external-transfer loss for current CQ, not a CQ
+  win. The sibling `any_hit_at_50` metric is transfer-null because CQ retrieves
+  one gold evidence session in every case; the loss is specifically evidence
+  completeness, caused by pending lookup returning a single strongest/latest
+  candidate where eager durable baselines retain both supporting candidates.
+  `answer_correct` stayed 0/1,935 and remains diagnostic only.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
@@ -316,7 +332,6 @@ Not implemented yet:
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
-- LongMemEval full judged transfer policy run
 - final writeup docs
 
 ## Repository Map
