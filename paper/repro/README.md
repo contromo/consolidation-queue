@@ -65,11 +65,10 @@ builds:
 The SVG files remain the editable sources. Numeric claims should be checked
 against the artifact index in `paper/appendices/artifacts.tex`.
 
-Regenerate the PNGs with the bundled Python runtime or any Python environment
-with Pillow installed:
+Regenerate the PNGs with any Python environment that has Pillow installed:
 
 ```bash
-/Users/manav/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 paper/repro/render_figures.py
+python3 paper/repro/render_figures.py
 ```
 
 ## Venue And Hosting Placeholders
