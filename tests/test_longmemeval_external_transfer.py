@@ -237,6 +237,18 @@ class LongMemEvalTransferTests(unittest.TestCase):
         self.assertEqual(outcome["bucket"], "B")
         self.assertFalse(outcome["followup_success_all_cells"])
 
+    def test_followup_outcome_allows_preregistered_seventy_of_seventy_one_threshold(self) -> None:
+        outcome = _followup_outcome(
+            _followup_payloads(
+                denominator=71,
+                followup_hits=70,
+                capped_hits=0,
+            )
+        )
+
+        self.assertEqual(outcome["bucket"], "A")
+        self.assertTrue(outcome["followup_success_all_cells"])
+
     def test_followup_outcome_reports_b_for_partial_large_improvement(self) -> None:
         outcome = _followup_outcome(
             _followup_payloads(

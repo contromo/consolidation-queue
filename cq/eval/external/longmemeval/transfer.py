@@ -623,9 +623,9 @@ def _followup_outcome(
         else 0.0
     )
     capped_reflection_active = _reflection_capped_is_strict_subset(primary["rows"])
-    stable_followup_success = all(
-        counts.get(FOLLOWUP_CQ_POLICY, {}).get("hits") == counts.get(FOLLOWUP_CQ_POLICY, {}).get("count")
-        for counts in counts_by_cell.values()
+    primary_signs = _followup_cell_signs(primary_counts)
+    stable_followup_signs = all(
+        _followup_cell_signs(counts) == primary_signs for counts in counts_by_cell.values()
     )
 
     if not capped_reflection_active:
@@ -634,7 +634,7 @@ def _followup_outcome(
     elif (
         denominator
         and followup_hits >= min(70, denominator)
-        and not stable_followup_success
+        and not stable_followup_signs
     ):
         bucket = "B"
         reason = "pending multi-evidence succeeds on primary but is not stable across sensitivity cells"
@@ -667,7 +667,20 @@ def _followup_outcome(
         "counts_by_cell": counts_by_cell,
         "primary_improvement_points": improvement_points,
         "reflection_capped_strict_subset_on_primary": capped_reflection_active,
-        "followup_success_all_cells": stable_followup_success,
+        "followup_success_all_cells": stable_followup_signs,
+    }
+
+
+def _followup_cell_signs(counts: Mapping[str, Mapping[str, int]]) -> dict[str, str]:
+    base = int(counts.get(HEADLINE_POLICY, {}).get("hits", 0))
+    followup = int(counts.get(FOLLOWUP_CQ_POLICY, {}).get("hits", 0))
+    reflection = int(counts.get(REFLECTION_POLICY, {}).get("hits", 0))
+    capped = int(counts.get(REFLECTION_CAPPED_POLICY, {}).get("hits", 0))
+    return {
+        "followup_cq_vs_base_cq": _sign(followup - base),
+        "followup_cq_vs_reflection": _sign(followup - reflection),
+        "reflection_capped_vs_reflection": _sign(capped - reflection),
+        "followup_cq_vs_reflection_capped": _sign(followup - capped),
     }
 
 
