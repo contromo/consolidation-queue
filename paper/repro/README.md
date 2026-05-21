@@ -11,7 +11,7 @@ worktree because the branches had diverged after the earlier LongMemEval merge.
 
 This draft therefore follows the accepted pinning path:
 
-- working branch: `codex/ship-paper-draft`
+- working branch: `paper/ship-paper-draft`
 - source branch: `longmemeval-externalization-gate`
 - source branch head when drafting began: `cf949f9`
 
@@ -25,6 +25,11 @@ sh paper/repro/verify_artifact_paths.sh
 
 The script checks every `data/...`, `docs/...`, and `paper/figures/...` path
 referenced in the LaTeX source.
+
+Current-code note: the LongMemEval follow-up runner now emits
+`policy_set_warning` and per-cell `runtime_candidate_stream_mutation_check`
+diagnostics added after the committed follow-up artifacts were generated; these
+fields do not change the empirical counts, bucket, or candidate-stream hashes.
 
 ## Build The Draft
 

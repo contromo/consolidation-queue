@@ -631,7 +631,18 @@ def _followup_outcome(
     if not capped_reflection_active:
         bucket = "D"
         reason = "reflection cardinality-capped control did not form a strict subset"
-    elif denominator and followup_hits >= min(70, denominator) and capped_hits <= base_hits + 1:
+    elif (
+        denominator
+        and followup_hits >= min(70, denominator)
+        and not stable_followup_success
+    ):
+        bucket = "B"
+        reason = "pending multi-evidence succeeds on primary but is not stable across sensitivity cells"
+    elif (
+        denominator
+        and followup_hits >= min(70, denominator)
+        and capped_hits <= base_hits + 1
+    ):
         bucket = "A"
         reason = "pending multi-evidence repair succeeds and capped Reflection reproduces readout loss"
     elif denominator and followup_hits >= min(70, denominator) and capped_hits == reflection_hits:
