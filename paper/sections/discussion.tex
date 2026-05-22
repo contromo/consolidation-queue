@@ -2,16 +2,15 @@
 
 The result is a contingency map. When the noisy stream preserves contradiction
 edges and the policy-query surface stays aligned, CQ's contestation and
-demotion mechanism remains visible. When the stream or interface does not
-expose canonical slots, source identity, scope handles, or the relevant
-policy-facing identifier, policy ties are not evidence that the policies are
-equivalent. They are evidence that the current benchmark surface failed to
-expose the distinction.
+demotion mechanism remains visible. If the stream or interface omits canonical
+slots, source identity, scope handles, or the relevant policy-facing
+identifier, policy ties become evidence about the benchmark surface rather than
+about policy equivalence.
 
 This is why the negative and mixed rows are central rather than embarrassing.
 The 7B gate shows that aggregate component metrics can hide concentrated
-failures. The 32B Bucket B audit shows that even a valid unlock does not turn
-every tie into convergence. The QR-canon audit shows that clustering-quality
+failures. The 32B Bucket B audit leaves several ties as bounded nulls rather
+than convergence evidence. The QR-canon audit shows that clustering-quality
 metrics can pass perfectly while exact lookup handles fail. The LongMemEval
 transfer shows that an external adapter can pass methodology gates and still
 produce a stable CQ-negative result. The pending multi-evidence follow-up then
@@ -29,7 +28,6 @@ make both outcomes visible.
 The CQ case study also illustrates why immediate-write baselines must be strong
 and fair. Reflection wins some rows for mechanistically uninteresting reasons,
 such as overwriting into a durable state that happens to include both evidence
-sessions. That is still a valid comparison result. The proper response is not
-to weaken the baseline or change the metric after seeing the loss; it is to
+sessions. That is still a valid comparison result. The proper response is to
 name the mechanism, preregister a repair if warranted, and add a control that
 can reproduce the failure by changing only the suspected interface.

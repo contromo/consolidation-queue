@@ -2,7 +2,7 @@
 
 Table~\ref{tab:claims} maps the paper's four claims to their principal evidence
 anchors. The full artifact index is in Appendix~\ref{app:artifacts}; this
-section emphasizes what each result supports and what it does not support.
+section emphasizes each result's supported scope.
 
 \begin{longtable}{p{0.18\linewidth} p{0.22\linewidth} p{0.30\linewidth} p{0.20\linewidth}}
 \caption{Claim-level evidence ledger.}\label{tab:claims}\\
@@ -14,13 +14,13 @@ Claim & Evidence & Readout & Boundary\\
 Claim & Evidence & Readout & Boundary\\
 \midrule
 \endhead
-Fair-stream evaluation & Frozen oracle sweep; Phase 3 component gate; Phase 4 noisy comparison & All 108 frozen oracle deltas matched. The 7B gate blocked a false unlock. The 32B-gated Phase 4 comparison reaches Bucket B. & Not broad noisy CQ superiority.\\
+Fair-stream evaluation & Frozen oracle sweep; Phase 3 component gate; Phase 4 noisy comparison & All 108 frozen oracle deltas matched. The 7B gate blocked a false unlock. The 32B-gated Phase 4 comparison reaches Bucket B. & Mechanism-local noisy support.\\
 \addlinespace
-PFLC diagnostics & QR-canon audit; PFLC proposition and field survey & Five of seven Phase 4 rows pass the B-cubed floor while QR-canon exact match is below 5 percent; formal and constructive counterexamples cover clustering, retrieval, and answer metrics. & No hard PFLC threshold and no CQR A/B/C verdict.\\
+PFLC diagnostics & QR-canon audit; PFLC proposition and field survey & Five of seven Phase 4 rows pass the B-cubed floor while QR-canon exact match is below 5 percent; formal and constructive counterexamples cover clustering, retrieval, and answer metrics. & Diagnostic PFLC; CQR verdict unchanged.\\
 \addlinespace
-Controlled external transfer & LongMemEval X.4 transfer & Methodology gates pass, but CQ minus Reflection on \code{all_hit_at_50} is -1.0 in all three cells. & This is a stable negative result for base CQ, not a CQ win.\\
+Controlled external transfer & LongMemEval X.4 transfer & Methodology gates pass, but CQ minus Reflection on \code{all_hit_at_50} is -1.0 in all three cells. & Stable base-CQ transfer loss.\\
 \addlinespace
-Cardinality-controlled repair & Pending multi-evidence follow-up & \code{CQPendingMultiEvidence} moves base CQ from 0/71 to 71/71 on the primary cell; capped Reflection falls from 71/71 to 0/71. & Interface repair only; no broad LongMemEval generalization.\\
+Cardinality-controlled repair & Pending multi-evidence follow-up & \code{CQPendingMultiEvidence} moves base CQ from 0/71 to 71/71 on the primary cell; capped Reflection falls from 71/71 to 0/71. & Interface repair; external generalization out of scope.\\
 \bottomrule
 \end{longtable}
 
@@ -31,15 +31,15 @@ and \memzero{} tied on aggregate answer correctness, false assertion, poison
 promotion, clean durable displacement, and leakage. CQ's narrower advantage was
 lower premature promotion, especially on false-corroboration mixed-source rows.
 The result supports staged promotion as a way to reduce premature durable
-commitment under oracle inputs; it does not support broad answer-quality
-superiority over \memzero.
+commitment under oracle inputs; broad answer-quality superiority over
+\memzero{} remains outside the supported claim.
 
 The adversarial upstream-noise sweep is similarly mixed. CQ wins retraction,
 witness conflict, scope narrowing, and pending competition, but loses temporal
 skew. The post-hoc \code{CQDatedContestation} follow-up repairs base CQ's
 temporal-skew abstention into a correct answer from fresher dated evidence and
-preserves the four original wins. It does not clear the CQ-vs-Reflection win
-criterion because Reflection also lands at the correctness ceiling.
+preserves the four original wins. The CQ-vs-Reflection win criterion remains
+unmet because Reflection also lands at the correctness ceiling.
 
 \subsection{Noisy Component Gate and Policy Comparison}
 
@@ -57,15 +57,15 @@ lower confidence bound +0.07), records no countable directional losses, ties
 \memzero{} on frozen sentinel primary metrics, and has no replicate
 contradictions. The mechanism audit narrows this: forced contradiction is the
 clean mechanism-survival row, preference drift is partial survival, and the
-remaining rows should not be promoted into wins or extractor-floor convergence
-stories.
+remaining rows stay null, descriptive, or bounded by component evidence.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\linewidth]{figures/phase4_mechanism_audit.png}
 \caption{Phase 4 mechanism audit summary. Only forced contradiction is a clean
-survival row; preference drift is partial, and other rows remain bounded by
-component or lookup-contract evidence.}
+survival row; preference drift is partial, and other rows remain bounded,
+diagnostic, or descriptive evidence (component defects, lookup-contract
+failures, or the descriptive-only event-source proxy for false corroboration).}
 \label{fig:phase4-audit}
 \end{figure}
 
@@ -82,7 +82,7 @@ verdict does not change; the attribution changes from ``unattributed null'' to
 
 The field-level PFLC work generalizes this observation. Proposition 1 and
 Lemmas 1--2 show that clustering, retrieval, and answer-accuracy metrics are
-not sufficient evidence of policy-facing lookup success. The four-anchor
+insufficient evidence of policy-facing lookup success. The four-anchor
 survey over LongMemEval, Mem0/LoCoMo, MemoryAgentBench, and MemBench lands at
 B-3, artifact-blocked/descriptive-only for released baseline outputs, while
 also shipping benchmark-targeted synthetic counterexample rows.
@@ -113,15 +113,15 @@ Cell & \code{all_hit_at_50} delta & \code{any_hit_at_50} delta\\
 The stable sign fires Bucket A, but the sign is negative. CQ retrieves at least
 one gold evidence session in every case and therefore ties eager baselines on
 \code{any_hit_at_50}. It never retrieves both evidence sessions, so it loses
-\code{all_hit_at_50}. This is not a methodology failure and not a CQ-positive
-external result. It isolates a policy-facing pending-readout gap.
+\code{all_hit_at_50}. The methodology gate passes, but transfer is CQ-negative
+and isolates a policy-facing pending-readout gap.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.90\linewidth]{figures/longmemeval_x4_cells.png}
-\caption{LongMemEval X.4 pattern: CQ loses evidence completeness
-(\code{all_hit_at_50}) in every cell while tying evidence exposure
-(\code{any_hit_at_50}).}
+\caption{LongMemEval X.4 sensitivity status. The CQ-vs-Reflection delta is
+stable across the primary and denominator-sensitivity cells: -1.0 on
+\code{all_hit_at_50} and 0.0 on \code{any_hit_at_50}.}
 \label{fig:x4-cells}
 \end{figure}
 
@@ -154,13 +154,6 @@ adversarial upstream noise, and evidence-conflict spectrum. Focused
 negative-control tests confirm that below-floor poisoned siblings, contested
 siblings, wrong-scope siblings, mirrored-source weak siblings, and demoted
 siblings are not returned by plural pending lookup. The supported mechanism is
-readout cardinality, not a richer CQ-only memory substrate.
+readout cardinality rather than a richer CQ-only memory substrate.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.90\linewidth]{figures/phase_y_cardinality_control.png}
-\caption{Phase Y cardinality control: plural pending CQ closes the
-LongMemEval completeness gap, and capped Reflection reproduces base CQ's
-singleton-readout loss.}
-\label{fig:phase-y-cardinality}
-\end{figure}
+\input{figures/phase_y_cardinality_control.tex}

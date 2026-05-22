@@ -43,33 +43,32 @@ This produces `paper/main.pdf` when a standard LaTeX toolchain is installed.
 
 ## Figure Assets
 
-Draft vector figures live in `paper/figures/`:
+Four conceptual diagrams ship as TikZ source. They are compiled inline by
+PDFLaTeX when the paper builds; no separate render step is needed.
 
-- `pflc_formal_gap.svg`
-- `externalization_protocol.svg`
-- `phase4_mechanism_audit.svg`
-- `longmemeval_x4_cells.svg`
-- `phase_y_cardinality_control.svg`
-- `evidence_ledger_summary.svg`
+- `paper/figures/evidence_ledger_summary.tex` (claim dependency DAG)
+- `paper/figures/externalization_protocol.tex` (LongMemEval pipeline)
+- `paper/figures/pflc_formal_gap.tex` (Proposition 1 worked example)
+- `paper/figures/phase_y_cardinality_control.tex` (symmetric swap)
 
-High-resolution PNG derivatives are also committed for PDFLaTeX-compatible
-builds:
+Two matplotlib-rendered visuals ship as output artifacts. Both PNG (200 dpi
+for review) and PDF (vector for the final build) are committed.
 
-- `pflc_formal_gap.png`
-- `externalization_protocol.png`
-- `phase4_mechanism_audit.png`
-- `longmemeval_x4_cells.png`
-- `phase_y_cardinality_control.png`
-- `evidence_ledger_summary.png`
+- `paper/figures/phase4_mechanism_audit.{png,pdf}` (Phase 4 deltas)
+- `paper/figures/longmemeval_x4_cells.{png,pdf}` (X.4 sensitivity status)
 
-The SVG files remain the editable sources. Numeric claims should be checked
-against the artifact index in `paper/appendices/artifacts.tex`.
-
-Regenerate the PNGs with any Python environment that has Pillow installed:
+Regenerate the two visuals from the committed result artifacts:
 
 ```bash
-python3 paper/repro/render_figures.py
+python3 paper/repro/render_charts.py
 ```
+
+The script pulls numbers directly from
+`data/results/noisy_policy_comparison_summary.json`,
+`data/external/longmemeval/transfer_summary.json`, and
+`data/external/longmemeval/transfer_per_case_rows.csv`, so the figures
+cannot silently drift from the result documents. Numeric claims should be
+checked against the artifact index in `paper/appendices/artifacts.tex`.
 
 ## Venue And Hosting Placeholders
 

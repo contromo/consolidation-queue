@@ -16,10 +16,9 @@ cases inspectable. The running case study is a lightweight consolidation queue
 policy, \cq,\footnote{A non-archival design sketch is available at
 \href{https://www.manavm.com/writing/the-consolidation-queue/}{The
 Consolidation Queue: How Persistent AI Earns Durable Change}.} compared with
-immediate-write baselines such as \reflection, \memzero, and ablations. The
-claim is not that CQ is a replacement memory system. The claim is that
-same-stream evaluation exposes which memory-policy distinctions survive the
-interfaces around them.
+immediate-write baselines such as \reflection, \memzero, and ablations. We use
+CQ as a case-study policy for testing which memory-policy distinctions survive
+the interfaces around them.
 
 Concretely, CQ is a staged-write policy. Incoming candidate memories enter a
 queue with scope, provenance, support, contradiction, and lifecycle metadata.
@@ -32,8 +31,8 @@ globally overwriting it.
 The empirical arc is deliberately mixed. Internally, under a preregistered noisy
 policy comparison, CQ's contradiction-edge-driven contestation and demotion
 mechanism remains visible on forced contradiction and partially visible on
-preference drift. Other rows do not become wins by interpretation: they are
-recorded as nulls or policy-facing lookup-contract failures. Externally, a
+preference drift. Other rows stay recorded as nulls or policy-facing
+lookup-contract failures. Externally, a
 controlled LongMemEval v1 transfer probe produces a stable negative result for
 base CQ on evidence completeness. A later preregistered follow-up repairs that
 specific failure by exposing all eligible same-slot pending evidence at answer
@@ -46,10 +45,10 @@ headline claims.
 \claim{Claim 1: Fair-stream memory-policy evaluation}
 The benchmark fixes the same upstream \code{CandidateUpdate} stream and the
 same scoped memory substrate across policies, then gates noisy-mode policy
-claims on component quality. This prevents CQ from winning through asymmetric
-inputs, asymmetric storage, or hidden extractor advantages. It also records
-lifecycle traces, manifests, failure examples, and replay checks rather than
-reducing the experiment to a single score.
+claims on component quality. This removes asymmetric inputs, asymmetric
+storage, and hidden extractor advantages from the policy comparison. It also
+records lifecycle traces, manifests, failure examples, and replay checks rather
+than reducing the experiment to a single score.
 
 \claim{Claim 2: Policy-facing lookup contracts}
 PFLC diagnostics name a class of metric blind spots. Proposition 1 proves a
@@ -67,24 +66,18 @@ annotation protocol, hidden-answer verifier, judge-calibration gate, PFLC
 scorer, and contract-sensitivity audit before policy execution. The result is
 stable and negative for base CQ on \code{all_hit_at_50}. CQ retrieves one gold
 evidence session in every case, tying eager baselines on
-\code{any_hit_at_50}, but it does not retrieve both evidence sessions.
+\code{any_hit_at_50}; the missing second evidence session drives the
+\code{all_hit_at_50} loss.
 
 \claim{Claim 4: Cardinality-controlled mechanism repair}
-The follow-up does not rewrite the negative X.4 result. It tests a separately
+The follow-up preserves X.4 as a negative base-CQ result and tests a separately
 preregistered interface hypothesis: plural pending readout should close the
 evidence-completeness gap, and capping a winning eager baseline to one returned
-candidate should reproduce the loss. Both predictions hold. That is a
-mechanism-local repair pattern, not a claim that CQ broadly generalizes to
-LongMemEval or natural-language QA.
+candidate should reproduce the loss. Both predictions hold. The result is a
+mechanism-local repair pattern for this interface gap; broader LongMemEval and
+natural-language QA generalization remain outside its scope.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.92\linewidth]{figures/evidence_ledger_summary.png}
-\caption{The draft evidence ledger is organized around four claims: fair-stream
-evaluation, PFLC diagnostics, controlled external transfer, and a
-cardinality-controlled repair.}
-\label{fig:evidence-ledger}
-\end{figure}
+\input{figures/evidence_ledger_summary.tex}
 
 All empirical claims in this draft cite committed artifacts. Where a result is
 diagnostic-only, descriptive-only, or blocked by missing artifacts, the paper

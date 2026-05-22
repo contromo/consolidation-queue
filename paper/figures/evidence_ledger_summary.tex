@@ -1,0 +1,103 @@
+% Claim-dependency DAG (replaces evidence_ledger_summary.png).
+%
+% Usage: requires the same preamble additions as the other TikZ figures.
+% Replace the existing \begin{figure}...\includegraphics{evidence_ledger_summary.png}...\end{figure}
+% block in paper/sections/intro.tex with
+%   \input{figures/evidence_ledger_summary.tex}
+%
+% The DAG shows how the four headline claims depend on each other.
+% Claim 1 (fair-stream evaluation) is the methodological foundation.
+% Claim 2 (PFLC) was registered post-hoc after Claim 1's noisy comparison
+% produced null rows that clustering metrics could not explain.
+% Claim 3 (controlled external transfer) extends Claim 1's same-stream
+% protocol externally and uses Claim 2's PFLC scoring as the metric.
+% Claim 4 (cardinality-controlled repair) builds on Claim 3's stable
+% negative X.4 result via a preregistered interface variant + control.
+
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  node distance=8mm,
+  claim/.style={
+    rounded corners=3pt, draw, line width=0.7pt,
+    minimum width=42mm, minimum height=22mm,
+    align=center, inner sep=2mm,
+    font=\small,
+  },
+  c1/.style={claim, draw=blue!55!black,   fill=blue!5},
+  c2/.style={claim, draw=purple!55!black, fill=purple!5},
+  c3/.style={claim, draw=orange!65!black, fill=orange!6},
+  c4/.style={claim, draw=green!50!black,  fill=green!6},
+  edge/.style={-{Stealth[length=2.4mm]}, line width=0.7pt},
+  edgelbl/.style={font=\scriptsize, align=center,
+                  fill=white, draw=none, inner sep=1.5pt, text=black!70},
+  ctitle/.style={font=\small\bfseries},
+  cnum/.style={font=\footnotesize\bfseries, color=black!55},
+  cbullet/.style={font=\scriptsize, align=center, color=black!75},
+]
+
+% ---- Four claim boxes in a single row ----
+\node[c1] (c1) {
+  \begin{tabular}{@{}c@{}}
+    {\footnotesize\bfseries\color{black!55} Claim 1}\\[-1pt]
+    {\small\bfseries Fair-stream evaluation}\\[2pt]
+    {\scriptsize\color{black!75} same upstream stream}\\[-2pt]
+    {\scriptsize\color{black!75} same scoped substrate}\\[-2pt]
+    {\scriptsize\color{black!75} component-gated unlock}
+  \end{tabular}};
+\node[c2, right=22mm of c1] (c2) {
+  \begin{tabular}{@{}c@{}}
+    {\footnotesize\bfseries\color{black!55} Claim 2}\\[-1pt]
+    {\small\bfseries PFLC diagnostics}\\[2pt]
+    {\scriptsize\color{black!75} Proposition 1 + lemmas}\\[-2pt]
+    {\scriptsize\color{black!75} QR-canon audit}\\[-2pt]
+    {\scriptsize\color{black!75} anchor benchmark survey}
+  \end{tabular}};
+\node[c3, right=22mm of c2] (c3) {
+  \begin{tabular}{@{}c@{}}
+    {\footnotesize\bfseries\color{black!55} Claim 3}\\[-1pt]
+    {\small\bfseries Controlled external transfer}\\[2pt]
+    {\scriptsize\color{black!75} LongMemEval X.4 pilot}\\[-2pt]
+    {\scriptsize\color{black!75} stable negative on $\mathtt{all\_hit\_at\_50}$}\\[-2pt]
+    {\scriptsize\color{black!75} result preserved, not rescued}
+  \end{tabular}};
+\node[c4, right=22mm of c3] (c4) {
+  \begin{tabular}{@{}c@{}}
+    {\footnotesize\bfseries\color{black!55} Claim 4}\\[-1pt]
+    {\small\bfseries Cardinality-controlled repair}\\[2pt]
+    {\scriptsize\color{black!75} plural pending CQ (preregistered)}\\[-2pt]
+    {\scriptsize\color{black!75} capped Reflection control}\\[-2pt]
+    {\scriptsize\color{black!75} mechanism-local, not generalization}
+  \end{tabular}};
+
+% ---- Direct chain edges 1 -> 2 -> 3 -> 4 ----
+% Labels are placed inline on the arrow with a small white fill so they mask
+% the line without overlapping box content.
+\draw[edge] (c1.east) -- node[edgelbl]
+  {null rows motivate\\diagnostic} (c2.west);
+\draw[edge] (c2.east) -- node[edgelbl]
+  {PFLC scoring\\over X.4 ids} (c3.west);
+\draw[edge] (c3.east) -- node[edgelbl]
+  {X.4 negative\\motivates follow-up} (c4.west);
+
+% ---- Skip edge: Claim 1 also directly enables Claim 3 (same-stream protocol) ----
+\draw[edge, dashed, draw=black!55]
+  (c1.south) .. controls +(20mm,-14mm) and +(-20mm,-14mm) ..
+  node[edgelbl, pos=0.5]
+  {same-stream protocol\\carries over to external transfer}
+  (c3.south);
+
+\end{tikzpicture}%
+}
+\caption{Claim dependency graph. Claim~1 (fair-stream evaluation) is the
+  methodological foundation; its noisy Phase~4 null rows motivated Claim~2
+  (PFLC diagnostics), which then supplied the policy-facing scoring used by
+  Claim~3 (controlled external transfer). Claim~1's same-stream protocol
+  also carries over directly to Claim~3 (dashed edge). Claim~3's stable
+  negative X.4 result motivated the preregistered interface follow-up in
+  Claim~4 (cardinality-controlled repair). The contribution is the chain,
+  not any individual claim.}
+\label{fig:evidence-ledger}
+\end{figure}

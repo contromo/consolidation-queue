@@ -1,0 +1,131 @@
+% PFLC formal gap diagram (replaces pflc_formal_gap.png).
+%
+% Usage in main.tex: add the following to the preamble
+%   \usepackage{tikz}
+%   \usetikzlibrary{positioning,fit,backgrounds,arrows.meta,calc}
+% then replace \includegraphics{figures/pflc_formal_gap.png} with
+%   \input{figures/pflc_formal_gap.tex}
+%
+% The diagram instantiates the worked example from
+% docs/policy_facing_lookup_contract_proposition.md \S3: gold cluster
+% {g*, g1} with isolated g2, and a relabeling rho into Sigma whose image
+% {a0, a1, a2} avoids g*. The construction satisfies both
+%   (1) rho(g*) \neq g*    and    (2) g* \notin image(rho)
+% so M_cluster = 1.00 (the partition is unchanged) while set-membership
+% PFLC = 0 (no predicted cluster carries the label g*).
+
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  node distance=10mm,
+  every node/.style={transform shape},
+  item/.style={
+    circle, draw=black!70, line width=0.4pt,
+    minimum size=8mm, inner sep=0pt,
+    font=\small\bfseries,
+  },
+  itema/.style={item, fill=blue!20},
+  itemb/.style={item, fill=green!25},
+  cluster/.style={
+    rounded corners=2pt,
+    draw=black!50, line width=0.5pt,
+    dash pattern=on 2pt off 1.5pt,
+    inner sep=2.5mm,
+  },
+  panel/.style={
+    rounded corners=3pt,
+    draw, line width=0.6pt,
+    inner sep=4mm,
+  },
+  goldpanel/.style={panel, draw=blue!60!black, fill=blue!4},
+  predpanel/.style={panel, draw=orange!70!black, fill=orange!5},
+  annot/.style={font=\footnotesize, align=left},
+  good/.style={
+    rounded corners=2pt, draw=green!55!black, fill=green!8,
+    inner sep=2pt, font=\footnotesize\bfseries,
+  },
+  bad/.style={
+    rounded corners=2pt, draw=red!60!black, fill=red!8,
+    inner sep=2pt, font=\footnotesize\bfseries,
+  },
+  rhoedge/.style={
+    -{Stealth[length=2.4mm]},
+    line width=0.8pt,
+  },
+]
+
+% ---- Gold partition (left panel) ----
+% Title placed first so its position is fixed; items below it.
+\node[font=\bfseries] (goldtitle) at (0, 0) {Gold partition $C_{\text{gold}}$};
+
+\node[itema, below=6mm of goldtitle.south west, anchor=north west] (g0) {$g^{*}$};
+\node[itema, right=4mm of g0] (g1) {$g_{1}$};
+\node[itemb, right=10mm of g1] (g2) {$g_{2}$};
+
+\node[cluster, fit=(g0)(g1)] (cg0) {};
+\node[cluster, fit=(g2)] (cg2) {};
+
+% Cluster captions sit between the title and the items.
+\node[annot, anchor=north, at={($(cg0.south)+(0,-1mm)$)}] (cg0lbl) {$C_{1}$};
+\node[annot, anchor=north, at={($(cg2.south)+(0,-1mm)$)}] (cg2lbl) {$C_{2}$};
+
+\node[annot, anchor=north west, at={($(cg0lbl.south west)+(-2mm,-5mm)$)}]
+  (goldids) {$L_{\text{gold}} = \{g^{*},\, g_{1},\, g_{2}\}$\\
+             queried id $g^{*}$};
+
+% ---- Predicted partition (right panel) ----
+\node[font=\bfseries, right=58mm of goldtitle] (predtitle)
+  {Predicted partition $C_{\text{pred}} = C_{\text{gold}}$};
+
+\node[itema, below=6mm of predtitle.south west, anchor=north west] (a0) {$a_{0}$};
+\node[itema, right=4mm of a0]  (a1) {$a_{1}$};
+\node[itemb, right=10mm of a1] (a2) {$a_{2}$};
+
+\node[cluster, fit=(a0)(a1)] (ca0) {};
+\node[cluster, fit=(a2)] (ca2) {};
+
+\node[annot, anchor=north, at={($(ca0.south)+(0,-1mm)$)}] (ca0lbl) {$C_{1}'$};
+\node[annot, anchor=north, at={($(ca2.south)+(0,-1mm)$)}] (ca2lbl) {$C_{2}'$};
+
+\node[annot, anchor=north east, at={($(ca2lbl.south east)+(2mm,-5mm)$)}]
+  (predids) {$L_{\text{pred}} = \rho(L_{\text{gold}}) = \{a_{0},\, a_{1},\, a_{2}\}$\\
+             $g^{*} \notin \text{image}(\rho)$};
+
+% ---- Outcome chips (placed before panels so they exist for layout) ----
+\node[good, anchor=north, at={($(goldids.south)+(0,-4mm)$)}] (mcluster)
+  {$M_{\text{cluster}}(C_{\text{pred}},\, C_{\text{gold}}) = 1.00$};
+\node[bad, anchor=north, at={($(predids.south)+(0,-4mm)$)}] (mlookup)
+  {$M_{\text{lookup}}(q,\, C_{\text{pred}},\, L_{\text{pred}}) = 0$};
+
+% ---- Panels on background layer so they sit behind everything else ----
+\begin{scope}[on background layer]
+  \node[goldpanel, fit=(goldtitle)(g0)(g2)(cg0lbl)(cg2lbl)(goldids)] (gold) {};
+  \node[predpanel, fit=(predtitle)(a0)(a2)(ca0lbl)(ca2lbl)(predids)] (pred) {};
+\end{scope}
+
+% ---- Relabeling arrow between the two panels ----
+\draw[rhoedge]
+  ($(gold.east)!0.45!(pred.west)+(-12mm,0)$) -- node[above=0.5mm, font=\footnotesize]
+  {injective $\rho:\, L_{\text{gold}} \to \Sigma$}
+  node[below=0.5mm, font=\footnotesize]
+  {$\rho(g^{*}) \neq g^{*},\quad g^{*} \notin \text{image}(\rho)$}
+  ($(gold.east)!0.55!(pred.west)+(12mm,0)$);
+
+% Subtle connector lines so the chips read as derived from each panel
+\draw[densely dotted, gray] (gold.south) -- (mcluster.north);
+\draw[densely dotted, gray] (pred.south) -- (mlookup.north);
+
+\end{tikzpicture}%
+}
+\caption{PFLC formal gap (Proposition~1, worked example). The predicted
+  partition is identical to the gold partition, so any cluster-partition
+  metric ($M_{\text{cluster}}$: B-cubed F1, ARI, NMI, V-measure, pairwise
+  cluster F1) scores $1.00$. The injective relabeling $\rho$ maps
+  $L_{\text{gold}}$ into $\Sigma$ with image disjoint from $\{g^{*}\}$, so
+  set-membership PFLC for the queried id $g^{*}$ is $0$. The two outcomes
+  depend on disjoint properties of the same predicted state: partition
+  structure versus label image.}
+\label{fig:pflc-gap}
+\end{figure}
