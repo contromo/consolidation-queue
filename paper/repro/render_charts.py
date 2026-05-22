@@ -368,12 +368,24 @@ def render_phase4() -> None:
     ax.invert_yaxis()
     ax.set_xlim(-0.05, 1.05)
     ax.set_xlabel("CQ − Reflection delta on primary metric (95% LCB/UCB)", fontsize=10)
+    # Short title + subtitle, matching the X.4 chart layout. The single-line
+    # form previously overflowed the figure width and rendered as "five boun..."
     ax.set_title(
-        "Phase 4 mechanism audit: one clean survival, one partial,"
-        " five bounded/descriptive rows",
+        "Phase 4 mechanism audit",
         fontsize=12,
         fontweight="bold",
         loc="left",
+        pad=22,
+    )
+    # Subtitle in axes-relative coords so it sits just under the title,
+    # independent of the inverted y-axis used for the bar rows.
+    ax.text(
+        0.0, 1.02,
+        "One clean survival, one partial, five bounded/descriptive rows.",
+        transform=ax.transAxes,
+        fontsize=8.8,
+        color="#555555",
+        va="bottom",
     )
     ax.axvline(0, color="black", linewidth=0.8)
     ax.grid(axis="x", linestyle=":", linewidth=0.5, color="#bbbbbb")
