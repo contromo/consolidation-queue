@@ -342,15 +342,25 @@ def render_phase4() -> None:
         elinewidth=1.0,
         capsize=3,
     )
+    # Draw a small visible chip at x=0 for zero-delta rows so the attribution
+    # color (null/grey vs descriptive-only/red) is readable even when the bar
+    # has zero width.
+    ZERO_CHIP_WIDTH = 0.012
+    for yi, delta, fam, color in zip(y, deltas, families, colors):
+        if delta < 0.05:
+            ax.barh(yi, ZERO_CHIP_WIDTH, color=color, edgecolor="black",
+                    linewidth=0.6, height=0.62)
     for yi, delta, ucb, fam in zip(y, deltas, ucbs, families):
         if delta >= 0.05:
             # Place the label past the UCB whisker so it never overlaps the cap.
             ax.text(ucb + 0.02, yi, f"{delta:+.2f}", va="center", ha="left",
                     fontsize=9, fontweight="bold")
         else:
-            note = ROW_NOTE.get(fam, "")
+            note = ROW_NOTE.get(fam)
+            if note is None and fam == "false_corroboration":
+                note = "source proxy"
             text = "+0.00 (tie)" + (f"  —  {note}" if note else "")
-            ax.text(0.02, yi, text, va="center", ha="left",
+            ax.text(ZERO_CHIP_WIDTH + 0.02, yi, text, va="center", ha="left",
                     fontsize=9, color="#555555")
 
     ax.set_yticks(y)
@@ -359,7 +369,8 @@ def render_phase4() -> None:
     ax.set_xlim(-0.05, 1.05)
     ax.set_xlabel("CQ − Reflection delta on primary metric (95% LCB/UCB)", fontsize=10)
     ax.set_title(
-        "Phase 4 mechanism audit: one clean survival, one partial, five nulls",
+        "Phase 4 mechanism audit: one clean survival, one partial,"
+        " five bounded/descriptive rows",
         fontsize=12,
         fontweight="bold",
         loc="left",
