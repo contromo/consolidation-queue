@@ -65,20 +65,23 @@ remaining rows stay null, descriptive, or bounded by component evidence.
 \caption{Phase 4 mechanism audit summary. Only forced contradiction is a clean
 survival row; preference drift is partial, and other rows remain bounded,
 diagnostic, or descriptive evidence (component defects, lookup-contract
-failures, or the descriptive-only event-source proxy for false corroboration).}
+failures, the descriptive-only event-source proxy for false corroboration, or
+the frozen-sentinel held-out tie).}
 \label{fig:phase4-audit}
 \end{figure}
 
 \subsection{QR-Canon and PFLC}
 
-The QR-canon audit turns several null rows into a sharper diagnostic. On
+The QR-canon audit adds a second diagnostic layer to several tied rows. On
 \code{useful_pending_memory}, \code{memory_poisoning}, \code{false_corroboration},
 and the frozen sentinel, B-cubed F1 is at or near 1.00 while exact
 policy-query canonical-id agreement is 0.00. The locked alias-normalized
-variant also stays at zero on those rows. This means the extractor can look
-cluster-correct while the policy-facing lookup contract fails. The policy
-verdict does not change; the attribution changes from ``unattributed null'' to
-``policy-facing query interface contract failure.''
+variant also stays at zero on those rows. This does not replace the dominant
+mechanism-audit labels in Figure~\ref{fig:phase4-audit}: the
+\code{false_corroboration} row remains descriptive-only source-proxy evidence,
+and the mechanism-diverse row remains the frozen sentinel aggregate. It means
+the extractor can look cluster-correct while the policy-facing lookup contract
+fails. The policy verdict does not change.
 
 The field-level PFLC work generalizes this observation. Proposition 1 and
 Lemmas 1--2 show that clustering, retrieval, and answer-accuracy metrics are
