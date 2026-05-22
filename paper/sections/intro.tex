@@ -13,10 +13,21 @@ comparisons should hold the upstream candidate stream fixed, use the same
 storage substrate for the policies being compared, separate oracle-mode policy
 claims from noisy-pipeline claims, and preserve artifacts that make failure
 cases inspectable. The running case study is a lightweight consolidation queue
-policy, \cq, compared with immediate-write baselines such as \reflection,
-\memzero, and ablations. The claim is not that CQ is a replacement memory
-system. The claim is that same-stream evaluation exposes which memory-policy
-distinctions survive the interfaces around them.
+policy, \cq,\footnote{A non-archival design sketch is available at
+\href{https://www.manavm.com/writing/the-consolidation-queue/}{The
+Consolidation Queue: How Persistent AI Earns Durable Change}.} compared with
+immediate-write baselines such as \reflection, \memzero, and ablations. The
+claim is not that CQ is a replacement memory system. The claim is that
+same-stream evaluation exposes which memory-policy distinctions survive the
+interfaces around them.
+
+Concretely, CQ is a staged-write policy. Incoming candidate memories enter a
+queue with scope, provenance, support, contradiction, and lifecycle metadata.
+High-scoring candidates promote to durable memory; lower-scoring but usable
+candidates can remain pending and still answer scoped lookups. Contradictory
+evidence contests earlier candidates and can demote active durable memories,
+while narrower pending overrides can shadow a wider durable claim without
+globally overwriting it.
 
 The empirical arc is deliberately mixed. Internally, under a preregistered noisy
 policy comparison, CQ's contradiction-edge-driven contestation and demotion
