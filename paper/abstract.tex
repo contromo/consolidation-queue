@@ -1,18 +1,18 @@
 Persistent-agent memory systems can score well while hiding whether the
 underlying memory policy can govern, query, and repair the right evidence. We
 present a preregistered evaluation discipline for persistent-agent memory and
-demonstrate it on a consolidation-queue (CQ) case study. The discipline has
-four pieces: a fair same-upstream-candidate-stream, same-scoped-substrate
-benchmark with component-gated noisy-mode unlock; a formal policy-facing
-lookup-contract (PFLC) diagnostic showing that common clustering, retrieval,
-and answer-accuracy metrics can all pass while exact policy-query lookup
-agreement fails; a controlled external-transfer protocol that preserves
-negative results rather than rescuing them; and a cardinality-controlled repair
-pattern that pairs a preregistered interface variant with an independent
-control variant that reproduces the failure on a winning baseline. In the case
-study, the discipline detects CQ's contradiction-handling survival on internal
-noisy extraction; on LongMemEval, it surfaces a stable external-transfer loss
-on evidence completeness and isolates that loss as a readout-cardinality
-interface gap that a preregistered repair closes, corroborated by a
+demonstrate it on a consolidation-queue (CQ) case study. The discipline does
+four things. It runs every memory policy on the same candidate stream through
+the same substrate, and gates noisy-mode comparisons on extraction quality.
+It uses a formal policy-facing lookup-contract (PFLC) diagnostic to show that
+common clustering, retrieval, and answer-accuracy metrics can all pass while
+exact policy-query lookup fails. It transfers to an external benchmark
+(LongMemEval) under controls that preserve negative results rather than
+rescuing them. Finally, it pairs each interface repair with an independent
+control that reproduces the failure on a winning baseline. In the case study,
+the discipline detects CQ's contradiction-handling survival on internal noisy
+extraction. On LongMemEval, it surfaces a stable external-transfer loss on
+evidence completeness, isolates that loss as a readout-cardinality interface
+gap, and closes the gap with a preregistered repair corroborated by a
 capped-Reflection control. These results support the evaluation discipline
 rather than a broad generalization claim for CQ.

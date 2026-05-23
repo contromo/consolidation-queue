@@ -1,5 +1,14 @@
 \section{Introduction}
 
+An agent helping a user across months learns small facts incrementally. In
+March, the user mentions they prefer espresso; in August, they are cutting
+caffeine and want tea in the morning. A naive memory system overwrites the
+older preference; a less naive one stores both as parallel facts. Neither
+resolves the conflict when the user later asks what to order. The policy
+question for persistent memory is whether the system can keep both claims,
+scope them, contest one with the other, and demote a durable claim when the
+evidence shifts.
+
 Persistent-agent memory systems are usually judged by whether they recall
 facts, retrieve useful context, or answer held-out questions. Those metrics are
 important, but they can hide the policy question that matters for memory
@@ -26,7 +35,10 @@ High-scoring candidates promote to durable memory; lower-scoring but usable
 candidates can remain pending and still answer scoped lookups. Contradictory
 evidence contests earlier candidates and can demote active durable memories,
 while narrower pending overrides can shadow a wider durable claim without
-globally overwriting it.
+globally overwriting it. In the opening example, CQ keeps both the espresso
+preference and the morning-tea preference as scoped claims: the narrower
+morning-tea claim shadows the broader espresso claim at read time, and either
+can be contested or demoted when stronger evidence arrives.
 
 Internally, under a preregistered noisy policy comparison, CQ's
 contradiction-edge-driven contestation and demotion mechanism remains visible
