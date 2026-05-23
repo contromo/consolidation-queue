@@ -1,5 +1,32 @@
 \section{Method}
 
+\subsection{Notation and Evaluation Stages}
+
+The core unit is a \code{CandidateUpdate}: a proposed memory item with claim
+content, scope key, provenance, evidence links, and lifecycle state. A
+\emph{durable} memory is committed state. A \emph{pending} candidate is not
+durable, but CQ can still expose it to scoped lookup while it remains
+reversible. A \emph{same-stream} comparison gives every policy the same ordered
+\code{CandidateUpdate} stream; a \emph{same-substrate} comparison stores every
+policy's state through the same scoped memory interface.
+
+PFLC means policy-facing lookup contract: the identifier or handle a memory
+policy must expose so a query can be evaluated against the intended evidence.
+QR-canon is this paper's canonical-id PFLC instance. It reuses the
+set-membership metric and alias function from the earlier
+canonical-id/query-resolution replay audit (CQR), but it is a small committed
+diagnostic table rather than a replay of the large Phase~4 run payloads.
+
+The phase names are repository labels. Phase~A is the prompt-regression guard
+used before noisy component scoring. Phase~3 is the noisy component gate.
+Phase~4 is the gated noisy policy comparison. Phase~Y is the LongMemEval
+follow-up after the base external transfer result. Outcome buckets are
+preregistered interpretation labels: Bucket~A means a planned gate or thesis
+condition fired, Bucket~B means a completed mixed or partial result, and
+Bucket~D means an abort or surprise-lane boundary that prevents the stronger
+claim. The 7B and 32B labels denote the local extractor model cells used by
+the noisy pipeline, not memory-policy sizes.
+
 \subsection{Benchmark Objects}
 
 The benchmark centers on scoped candidate updates and a shared memory
@@ -13,10 +40,23 @@ The principal policies are \cq, \reflection, \memzero, \code{NaiveEagerWriteLite
 \code{NoMemoryLite}, and CQ ablations that remove contestation/demotion,
 pending lookup, source-independence gating, or wider-scope pending override.
 Two follow-up policies are explicitly outside the original headline set:
-\code{CQDatedContestation}, an oracle-mode dated-evidence repair, and
-\code{CQPendingMultiEvidence}, the LongMemEval pending-readout repair. The
-LongMemEval follow-up also includes \code{ReflectionEagerWriteCardinalityCapped}
+\cqdated{}, an oracle-mode dated-evidence repair, and \cqmulti{}, the
+LongMemEval pending-readout repair. The follow-up also includes \refcapped{}
 as a diagnostic control.
+
+\input{figures/cq_lifecycle.tex}
+
+\paragraph{CQ trace example.}
+Suppose a candidate says the user prefers espresso under the coffee-preference
+scope. With one source and moderate support, CQ can keep the candidate pending:
+it is answerable to scoped coffee queries, but it has not become durable memory.
+Later, a narrower morning-coffee candidate says the user prefers tea in the
+morning and carries stronger support plus a contradiction edge. CQ records the
+conflict, lets the narrower pending candidate shadow the broader coffee claim
+for morning lookups, and, if an older espresso claim had already promoted,
+demotes that durable record into contested state instead of deleting it. The
+record's source history remains inspectable. The eager baseline receives the
+same candidate stream, but writes immediately.
 
 \subsection{Oracle Stage}
 

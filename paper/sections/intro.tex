@@ -13,12 +13,12 @@ comparisons should hold the upstream candidate stream fixed, use the same
 storage substrate for the policies being compared, separate oracle-mode policy
 claims from noisy-pipeline claims, and preserve artifacts that make failure
 cases inspectable. The running case study is a lightweight consolidation queue
-policy, \cq,\footnote{A non-archival design sketch is available at
+policy (CQ),\footnote{A non-archival design sketch is available at
 \href{https://www.manavm.com/writing/the-consolidation-queue/}{The
 Consolidation Queue: How Persistent AI Earns Durable Change}.} compared with
-immediate-write baselines such as \reflection, \memzero, and ablations. We use
-CQ as a case-study policy for testing which memory-policy distinctions survive
-the interfaces around them.
+immediate-write Reflection, Mem0, and ablated variants. We use CQ as a
+case-study policy for testing which memory-policy distinctions survive the
+interfaces around them.
 
 Concretely, CQ is a staged-write policy. Incoming candidate memories enter a
 queue with scope, provenance, support, contradiction, and lifecycle metadata.
@@ -28,16 +28,15 @@ evidence contests earlier candidates and can demote active durable memories,
 while narrower pending overrides can shadow a wider durable claim without
 globally overwriting it.
 
-The empirical arc is deliberately mixed. Internally, under a preregistered noisy
-policy comparison, CQ's contradiction-edge-driven contestation and demotion
-mechanism remains visible on forced contradiction and partially visible on
-preference drift. Other rows stay recorded as nulls or policy-facing
-lookup-contract failures. Externally, a
+Internally, under a preregistered noisy policy comparison, CQ's
+contradiction-edge-driven contestation and demotion mechanism remains visible
+on forced contradiction and partially visible on preference drift. Other rows
+stay recorded as nulls or policy-facing lookup-contract failures. Externally, a
 controlled LongMemEval v1 transfer probe produces a stable negative result for
 base CQ on evidence completeness. A later preregistered follow-up repairs that
 specific failure by exposing all eligible same-slot pending evidence at answer
 time, while a cardinality-capped Reflection control reproduces the original
-loss. The failure and the repair are both part of the result.
+loss. The paper preserves the failure and the repair as separate evidence.
 
 The paper collapses the repository's detailed evidence ledger into four
 headline claims.
@@ -73,9 +72,10 @@ evidence session in every case, tying eager baselines on
 The follow-up preserves X.4 as a negative base-CQ result and tests a separately
 preregistered interface hypothesis: plural pending readout should close the
 evidence-completeness gap, and capping a winning eager baseline to one returned
-candidate should reproduce the loss. Both predictions hold. The result is a
-mechanism-local repair pattern for this interface gap; broader LongMemEval and
-natural-language QA generalization remain outside its scope.
+candidate should reproduce the loss. The follow-up results match both
+predictions. The result is a mechanism-local repair pattern for this interface
+gap; broader LongMemEval and natural-language QA generalization remain outside
+its scope.
 
 \input{figures/evidence_ledger_summary.tex}
 

@@ -25,6 +25,16 @@ a diagnostic question: do standard outputs expose the per-question identifiers
 needed to test whether a memory policy can query the right handle? The current
 answer is descriptive-only for the representative anchor set.
 
+\paragraph{Belief revision and truth maintenance.}
+CQ's contestation and demotion behavior is adjacent to classical truth
+maintenance and belief-revision work, which tracked reasons for beliefs,
+assumption sets, and revision under inconsistent or changing evidence
+\cite{doyle1979truth,dekleer1986atms,agm1985theorychange}. This paper does
+not claim a new general belief-revision logic. It uses that lineage as a local
+memory-policy pattern for LLM agents, adding scoped candidate streams,
+queryable pending state, and same-stream comparison against eager-write
+policies.
+
 \paragraph{Memory systems and write policies.}
 Mem0 proposes a production-oriented memory architecture with dynamic memory
 extraction, update, and retrieval, including a graph variant for relational

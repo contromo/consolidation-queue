@@ -4,7 +4,8 @@ Table~\ref{tab:claims} maps the paper's four claims to their principal evidence
 anchors. The full artifact index is in Appendix~\ref{app:artifacts}; this
 section emphasizes each result's supported scope.
 
-\begin{longtable}{p{0.18\linewidth} p{0.22\linewidth} p{0.30\linewidth} p{0.20\linewidth}}
+{\small
+\begin{longtable}{@{}p{0.16\linewidth} p{0.20\linewidth} p{0.31\linewidth} p{0.19\linewidth}@{}}
 \caption{Claim-level evidence ledger.}\label{tab:claims}\\
 \toprule
 Claim & Evidence & Readout & Boundary\\
@@ -20,9 +21,10 @@ PFLC diagnostics & QR-canon audit; PFLC proposition and field survey & Five of s
 \addlinespace
 Controlled external transfer & LongMemEval X.4 transfer & Methodology gates pass, but CQ minus Reflection on \code{all_hit_at_50} is -1.0 in all three cells. & Stable base-CQ transfer loss.\\
 \addlinespace
-Cardinality-controlled repair & Pending multi-evidence follow-up & \code{CQPendingMultiEvidence} moves base CQ from 0/71 to 71/71 on the primary cell; capped Reflection falls from 71/71 to 0/71. & Interface repair; external generalization out of scope.\\
+Cardinality-controlled repair & Pending multi-evidence follow-up & \cqmulti{} moves base CQ from 0/71 to 71/71 on the primary cell; capped Reflection falls from 71/71 to 0/71. & Interface repair; external generalization out of scope.\\
 \bottomrule
 \end{longtable}
+}
 
 \subsection{Oracle Results}
 
@@ -36,7 +38,7 @@ commitment under oracle inputs; broad answer-quality superiority over
 
 The adversarial upstream-noise sweep is similarly mixed. CQ wins retraction,
 witness conflict, scope narrowing, and pending competition, but loses temporal
-skew. The post-hoc \code{CQDatedContestation} follow-up repairs base CQ's
+skew. The post-hoc \cqdated{} follow-up repairs base CQ's
 temporal-skew abstention into a correct answer from fresher dated evidence and
 preserves the four original wins. The CQ-vs-Reflection win criterion remains
 unmet because Reflection also lands at the correctness ceiling.
@@ -73,12 +75,14 @@ the frozen-sentinel held-out tie).}
 \subsection{QR-Canon and PFLC}
 
 The QR-canon audit adds a second diagnostic layer to several tied rows. On
-\code{useful_pending_memory}, \code{memory_poisoning}, \code{false_corroboration},
-and the frozen sentinel, B-cubed F1 is at or near 1.00 while exact
+\splitcode{useful\_\allowbreak pending\_\allowbreak memory},
+\splitcode{memory\_\allowbreak poisoning},
+\splitcode{false\_\allowbreak corroboration}, and the frozen sentinel, B-cubed
+F1 is at or near 1.00 while exact
 policy-query canonical-id agreement is 0.00. The locked alias-normalized
 variant also stays at zero on those rows. This does not replace the dominant
 mechanism-audit labels in Figure~\ref{fig:phase4-audit}: the
-\code{false_corroboration} row remains descriptive-only source-proxy evidence,
+\splitcode{false\_\allowbreak corroboration} row remains descriptive-only source-proxy evidence,
 and the mechanism-diverse row remains the frozen sentinel aggregate. It means
 the extractor can look cluster-correct while the policy-facing lookup contract
 fails. The policy verdict does not change.
@@ -130,9 +134,9 @@ stable across the primary and denominator-sensitivity cells: -1.0 on
 
 \subsection{Pending Multi-Evidence Follow-Up}
 
-The follow-up tests that gap directly. \code{CQPendingMultiEvidence} changes
+The follow-up tests that gap directly. \cqmulti{} changes
 the no-durable pending fallback to expose all eligible same-slot pending
-candidates. \code{ReflectionEagerWriteCardinalityCapped} preserves Reflection's
+candidates. \refcapped{} preserves Reflection's
 write path and caps answer readout to one durable candidate id. Table~\ref{tab:y}
 summarizes the result.
 

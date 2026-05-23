@@ -9,10 +9,10 @@ Run from the repo root::
 
     python3 paper/repro/render_charts.py
 
-Requires ``matplotlib``. The four conceptual diagrams (evidence ledger,
-externalization protocol, PFLC formal gap, phase Y cardinality control) ship
-as TikZ source compiled inline by PDFLaTeX; see the matching ``.tex`` files
-under ``paper/figures/``.
+Requires ``matplotlib``. The five conceptual diagrams (CQ lifecycle, evidence
+ledger, externalization protocol, PFLC formal gap, phase Y cardinality control)
+ship as TikZ source compiled inline by PDFLaTeX; see the matching ``.tex``
+files under ``paper/figures/``.
 """
 
 from __future__ import annotations

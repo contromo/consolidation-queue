@@ -3,6 +3,8 @@
 
 The most important artifact paths for this draft are:
 
+\begin{sloppypar}
+\small
 \begin{itemize}
 \item \artifact{docs/predictions_vs_results.md}
 \item \artifact{docs/adversarial_upstream_noise_results.md}
@@ -35,12 +37,14 @@ The most important artifact paths for this draft are:
 \item \artifact{data/external/longmemeval/transfer_followup_per_case_rows.csv}
 \item \artifact{data/external/longmemeval/transfer_followup_manifest.json}
 \end{itemize}
+\end{sloppypar}
 
-Figures ship in two forms. The four conceptual diagrams (evidence ledger,
-externalization protocol, PFLC formal gap, phase Y cardinality control) are
-TikZ source files under \artifact{paper/figures/} that PDFLaTeX compiles
-inline at build time. The two quantitative charts (Phase 4 mechanism audit,
-LongMemEval X.4 cells) are matplotlib output committed as paired
+Figures ship in two forms. The five conceptual diagrams (CQ lifecycle,
+evidence ledger, externalization protocol, PFLC formal gap, phase Y
+cardinality control) are TikZ source files under \artifact{paper/figures/}
+that PDFLaTeX compiles inline at build time. The two quantitative charts
+(Phase 4 mechanism audit, LongMemEval X.4 cells) are matplotlib output
+committed as paired
 PNG/PDF and regenerated from the committed artifacts above by
 \artifact{paper/repro/render_charts.py}. All figure values trace to the
 documents and result JSONs listed in this index.

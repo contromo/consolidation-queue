@@ -21,8 +21,16 @@
   urlcolor=blue
 }
 
+\emergencystretch=2em
+\Urlmuskip=0mu plus 2mu\relax
+
 \newcommand{\code}[1]{\texttt{\detokenize{#1}}}
 \newcommand{\artifact}[1]{\path{#1}}
+\newcommand{\splitcode}[1]{\texttt{#1}}
+\newcommand{\lmexternalbranch}{\splitcode{longmemeval-\allowbreak externalization-\allowbreak gate}}
+\newcommand{\cqdated}{\splitcode{CQDated\allowbreak Contestation}}
+\newcommand{\cqmulti}{\splitcode{CQPending\allowbreak MultiEvidence}}
+\newcommand{\refcapped}{\splitcode{ReflectionEagerWrite\allowbreak CardinalityCapped}}
 \newcommand{\claim}[1]{\paragraph{#1.}}
 \newcommand{\cq}{\code{ConsolidationQueueLite}}
 \newcommand{\reflection}{\code{ReflectionEagerWriteLite}}

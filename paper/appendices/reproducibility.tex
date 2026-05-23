@@ -8,12 +8,14 @@ artifact hashes. Small headline verification artifacts are committed. Large
 per-scenario run payloads are regeneratable-only unless a preregistration
 requires byte-stable replay.
 
-The draft was prepared on branch \code{paper/ship-paper-draft}, based on
-\code{longmemeval-externalization-gate}. The Phase Z plan allowed either
-merging the LongMemEval follow-up branch into \code{main} or pinning the paper
-package to the exact branch and commit. Because \code{main} and
-\code{longmemeval-externalization-gate} diverged after the earlier merge, this
-draft uses the branch-pinning path. The reproducibility README in
+The draft was prepared on branch \code{paper/ship-paper-draft}, based on:
+\begin{center}
+\lmexternalbranch
+\end{center}
+The Phase Z plan allowed either merging the LongMemEval follow-up branch into
+\code{main} or pinning the paper package to the exact branch and commit.
+Because \code{main} and the pinned branch diverged after the earlier merge,
+this draft uses the branch-pinning path. The reproducibility README in
 \artifact{paper/repro/README.md} records that decision and lists the commands
 for local verification.
 
