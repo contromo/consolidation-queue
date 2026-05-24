@@ -1,9 +1,9 @@
 \section{Future Work}
 
 \paragraph{Closing bounded-null rows under stronger extraction.}
-Phase~4 leaves four rows---source-independence, scope-contamination,
-useful-pending, and poisoning---bounded by component evidence rather than by
-policy behavior. A preregistered extension would run these rows on a stronger
+The noisy same-stream policy comparison leaves four rows---source-independence,
+scope-contamination, useful-pending, and poisoning---bounded by component
+evidence rather than by policy behavior. A preregistered extension would run these rows on a stronger
 extractor cell, either a larger local model or an API-hosted extractor under
 the same redacted same-stream guarantee. The primary prediction is that at
 least scope-contamination and useful-pending separate CQ from Reflection
@@ -11,42 +11,44 @@ with a 95\% lower confidence bound above zero. A negative outcome
 re-attributes those rows from component evidence to policy ties, which is
 itself a stronger claim than the current bounded-null label.
 
-\paragraph{LongMemEval beyond X.4.}
+\paragraph{LongMemEval beyond the v1 transfer probe.}
 The pending multi-evidence repair is scoped to the v1 evidence-only split.
 LongMemEval-S introduces distractor sessions that can shift the dominant
 failure mode from completeness loss to precision loss. A preregistered
 extension keeps evidence-id completeness as the primary PFLC target, adds
 \code{all_hit_at_k} at small \(k\) as a precision-sensitive co-primary, and
 classifies the predicted failure mode before unblinding. Both capped
-Reflection and plural-pending CQ run in the same cells; Bucket~A requires a
-stable sign across at least two contract-sensitivity cells, matching the X.4
-criterion.
+Reflection and plural-pending CQ run in the same cells; the preregistered-gate
+condition (repo: Bucket~A) requires a stable sign across at least two
+contract-sensitivity cells, matching the transfer probe criterion.
 
 \paragraph{External-transfer boundary to conflict resolution.}
 MemoryAgentBench's conflict-resolution tasks are the closest external surface
 to CQ's contestation and demotion mechanism. A rigorous transfer must satisfy
 three preconditions before policy execution: an adapter that exposes
 per-question identifiers sufficient for PFLC scoring; hidden-answer
-verification analogous to the LongMemEval dual-path protocol; and a Bucket~D
-abort criterion if the source benchmark does not commit to a stable evidence
-id across releases. A transfer that cannot meet all three is labeled
+verification analogous to the LongMemEval dual-path protocol; and a
+preregistered abort criterion (repo: Bucket~D) if the source benchmark does
+not commit to a stable evidence id across releases. A transfer that cannot meet all three is labeled
 descriptive-only at preregistration time, not retroactively.
 
-\paragraph{Resolving CQR Bucket~D.}
-The blocked CQR cross-tab is the one outstanding internal lock. Two paths are
-acceptable. The first materializes the original locked Phase~4 run JSON
-payloads if recoverable. The second preregisters a fresh Phase~4 baseline
-that mandates payload archival and reports the QR-canon-versus-answer-success
-cross-tab as a primary readout. The second path removes the dependency on
-missing artifacts. Silently retiring the cross-tab without an explicit
-decision record is not acceptable under the same preregistration discipline
-that produced the rest of this paper's results.
+\paragraph{Resolving the resolution audit abort.}
+The blocked resolution audit cross-tab is the one outstanding internal lock
+(repo: CQR Bucket~D). Two paths are acceptable. The first materializes the
+original locked policy-comparison run JSON payloads if recoverable. The
+second preregisters a fresh policy-comparison baseline that mandates payload
+archival and reports the lookup-versus-answer-success cross-tab as a primary
+readout. The second path removes the
+dependency on missing artifacts. Silently retiring the cross-tab without an
+explicit decision record is not acceptable under the same preregistration
+discipline that produced the rest of this paper's results.
 
 \paragraph{PFLC as a benchmark output contract.}
-The field-level PFLC survey landed at B-3 because released artifacts do not
-expose per-question policy-facing identifiers. A concrete next step is a
-minimal PFLC output schema---per question, the gold evidence id set and the
-policy-returned id set---offered as a patch to one surveyed benchmark. The
+The field-level PFLC survey divides into an artifact-blocked majority and a
+PFLC-replayable subset (the AMB LoCoMo runs); the blocked subset is what
+prevents a uniform diagnostic. A concrete next step is a minimal PFLC output
+schema---per question, the gold evidence id set and the policy-returned id
+set---offered as a patch to one surveyed benchmark in the blocked subset. The
 success criterion is adoption by at least one benchmark maintainer. The
 acceptable failure criterion is principled rejection on the grounds that the
 schema cannot represent a specific task family. Silent neglect is the failure

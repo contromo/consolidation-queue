@@ -8,9 +8,10 @@ relevant policy-facing identifier, policy ties become evidence about the
 benchmark surface rather than about policy equivalence.
 
 The negative and mixed rows carry that evidence. The 7B gate shows that
-aggregate component metrics can hide concentrated failures. The 32B Bucket B
-audit leaves several ties as bounded nulls rather than convergence evidence.
-The QR-canon audit shows that clustering-quality metrics can pass perfectly
+aggregate component metrics can hide concentrated failures. The 32B
+mixed-support audit leaves several ties as bounded nulls rather than convergence
+evidence. The lookup diagnostic shows that clustering-quality
+metrics can pass perfectly
 while exact lookup handles fail. The LongMemEval transfer shows that an
 external adapter can pass methodology gates and still produce a stable
 CQ-negative result. The pending multi-evidence follow-up then isolates one
@@ -30,5 +31,8 @@ such as overwriting into a durable state that happens to include both evidence
 sessions, but the comparison is still valid because the baseline received the
 same stream and used the same substrate. The follow-up uses that interpretation
 directly: the interface change is registered before execution, and the
-capped-Reflection control tests readout cardinality without changing the
-candidate stream.
+capped-Reflection control serves as a preregistered mechanism falsifier ---
+it rules out CQ-only storage and asymmetric-input explanations by reproducing
+the original loss on a winning baseline through a single-variable readout
+change. This isolates answer-time readout cardinality as the mechanism, but
+does not generalize to a broader metric-fitting defense.

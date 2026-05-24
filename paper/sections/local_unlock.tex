@@ -1,6 +1,7 @@
-\section{Local Unlock Probe}
+\section{Extractor Reproducibility Check}
 
-The local unlock probe bridges failure-taxonomy evidence and noisy policy
+The extractor reproducibility check bridges failure-taxonomy evidence and
+noisy policy
 execution. It reruns the locked 7B anchor and two 32B primary cells under
 preregistered model tags, schema profiles, digest checks, and frozen sentinel
 requirements. The 7B anchor reproduces the locked failure counts. Both 32B
@@ -9,7 +10,7 @@ primary observed failures, zero aggregate failures, and zero frozen-sentinel
 observed failures.
 
 This section is intentionally short because the unlock is not itself a memory
-policy result. Its role is licensing. It shows that the later Phase 4 noisy
-policy comparison was not run on an extractor stream that the preregistration
-would have rejected, while the 7B anchor remains a clean example of an
-aggregate-passing false unlock that the full gate prevented.
+policy result. Its role is licensing. It shows that the later noisy
+same-stream policy comparison was not run on an extractor stream that the
+preregistration would have rejected, while the 7B anchor remains a clean
+example of an aggregate-passing false unlock that the full gate prevented.

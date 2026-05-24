@@ -12,20 +12,25 @@ policy's state through the same scoped memory interface.
 
 PFLC means policy-facing lookup contract: the identifier or handle a memory
 policy must expose so a query can be evaluated against the intended evidence.
-QR-canon is this paper's canonical-id PFLC instance. It reuses the
-set-membership metric and alias function from the earlier
-canonical-id/query-resolution replay audit (CQR), but it is a small committed
-diagnostic table rather than a replay of the large Phase~4 run payloads.
+The \emph{canonical-id lookup diagnostic} (repo label: QR-canon) is this
+paper's canonical-id PFLC instance. It reuses the set-membership metric and
+alias function from the earlier \emph{canonical-id resolution audit} (repo:
+CQR), but it is a small committed diagnostic table rather than a replay of
+the large noisy same-stream policy comparison run payloads.
 
-The phase names are repository labels. Phase~A is the prompt-regression guard
-used before noisy component scoring. Phase~3 is the noisy component gate.
-Phase~4 is the gated noisy policy comparison. Phase~Y is the LongMemEval
-follow-up after the base external transfer result. Outcome buckets are
-preregistered interpretation labels: Bucket~A means a planned gate or thesis
-condition fired, Bucket~B means a completed mixed or partial result, and
-Bucket~D means an abort or surprise-lane boundary that prevents the stronger
-claim. The 7B and 32B labels denote the local extractor model cells used by
-the noisy pipeline, not memory-policy sizes.
+This paper uses descriptive names in body text; repository labels appear
+once in parentheticals to keep the artifact trail navigable. The evaluation
+steps are: the \emph{prompt-regression guard} (repo: Phase~A) runs before
+noisy component scoring; the \emph{noisy extractor-quality gate} (repo:
+Phase~3) scores local extractor outputs and licenses downstream policy
+comparison; the \emph{noisy same-stream policy comparison} (repo: Phase~4)
+runs after that gate passes; and the \emph{cardinality-repair follow-up}
+(repo: Phase~Y) addresses a specific external-transfer interface gap.
+Preregistered interpretation labels are: a planned gate or thesis condition
+fired (repo: Bucket~A), a completed mixed or partial result
+(repo: Bucket~B), and an abort or surprise-lane boundary that prevents the
+stronger claim (repo: Bucket~D). The 7B and 32B labels denote local
+extractor model cells, not memory-policy sizes.
 
 \subsection{Benchmark Objects}
 
@@ -74,17 +79,17 @@ The noisy stage renders transcripts, scores local extractor outputs against
 component labels, converts accepted predictions into shared candidate streams,
 and only then runs policies. The component gate has layered checks: aggregate
 confidence-bound gates, per-family observed gates, frozen mechanism-diverse
-sentinels, Phase A prompt regression, deterministic replay, and exact adapter
+sentinels, prompt-regression checks, deterministic replay, and exact adapter
 pin validation. The 7B anchor passed aggregate gates but stayed locked because
 it had concentrated scenario errors and family/sentinel failures. The
-preregistered 32B cells cleared the gate and licensed the separate Phase 4
-policy comparison.
+preregistered 32B cells cleared the gate and licensed the separate noisy
+same-stream policy comparison.
 
 \subsection{Attribution Stage}
 
-Policy results require separate attribution. The Bucket B mechanism audit reads
-Phase 4 policy artifacts, component-eval artifacts, ablation patterns, exact
-policy-query canonical-id alignment, and representative traces. It attributes
+Policy results require separate attribution. The mixed-support mechanism audit
+reads policy-comparison artifacts, component-eval artifacts, ablation patterns,
+exact policy-query canonical-id alignment, and representative traces. It attributes
 forced contradiction cleanly to contradiction-edge preservation and
 contestation/demotion. Preference drift is partial survival: the policy delta
 remains, but absolute CQ performance drops relative to oracle and the 32B
@@ -94,9 +99,26 @@ stronger claim.
 
 \subsection{Policy-Facing Lookup Contracts}
 
+PFLC is operational rather than a metric nicety because the governance
+operations a persistent-agent memory must support all require identifier-bearing
+state, not just relevant content. The evaluated operations in this paper are
+contradiction handling, contestation, demotion, provenance preservation, and
+scoped override: each must address a specific prior claim by handle, not by
+paraphrase or similarity. Cluster-partition metrics cannot test this because
+they are invariant to relabeling; retrieval-at-k metrics cannot test it because
+they score content overlap, not handle identity; answer-accuracy metrics
+cannot test it because a correct answer can be produced from non-canonical
+state. Production deletion, right-to-be-forgotten, and enterprise compliance
+are motivating examples of why a queryable, identifier-bearing memory state
+matters in deployed systems; this paper does not evaluate them.
+
 PFLC diagnostics ask whether the system exposes the identifier or handle that a
-memory policy actually needs to query. The formal core has three parts.
-Proposition 1 shows that for non-singleton label alphabets and
+memory policy actually needs to query. In plain terms, clustering metrics
+treat labels as interchangeable, so a system that perfectly groups items into
+clusters $\{A, B, C\}$ scores 1.00 even if it called them $\{1, 2, 3\}$
+internally; a governance query that asks "is item X in slot $B$?" fails when
+the system has slot $2$ instead. The formal core makes this precise in three
+parts. Proposition 1 shows that for non-singleton label alphabets and
 cluster-partition metrics invariant to injective relabeling, the predicted
 partition can equal the gold partition while set-membership PFLC is zero for a
 queried gold id. Lemma 1 constructs the same gap for retrieval-at-k metrics:
@@ -105,10 +127,11 @@ missing. Lemma 2 constructs it for answer-accuracy metrics: a generated answer
 can be correct while the system fails to expose the handle needed for memory
 governance.
 
-QR-canon is the canonical-id PFLC instance used in the internal audit. It reuses
-the locked CQR Section A set-membership metric and alias function, reads a
-committed per-question source table, and reports Wilson intervals plus a joint
-B-cubed/lookup table. It is diagnostic and leaves the Phase 4 policy verdict
+The lookup diagnostic instantiates this PFLC class on canonical-id queries
+within the internal audit. It reuses the locked resolution audit's Section A
+set-membership metric and alias function, reads a committed per-question
+source table, and reports Wilson intervals plus a joint B-cubed/lookup table.
+It is diagnostic and leaves the noisy same-stream policy comparison verdict
 unchanged.
 
 \input{figures/pflc_formal_gap.tex}
@@ -123,7 +146,7 @@ ids. The v1 oracle split is evidence-only, so the PFLC metric measures whether
 policies preserve and expose gold evidence sessions they received, not whether
 they search through distractor haystacks.
 
-The X.4 transfer uses \code{all_hit_at_50} as the headline metric and preserves
+The LongMemEval transfer probe uses \code{all_hit_at_50} as the headline metric and preserves
 \code{answer_correct} as diagnostic-only because policy answers are structured
 memory traces. The follow-up keeps the same adapter, judge, and headline metric
 but changes the policy-facing readout interface under a new preregistration:

@@ -25,7 +25,8 @@ cases inspectable. The running case study is a lightweight consolidation queue
 policy (CQ),\footnote{A non-archival design sketch is available at
 \href{https://www.manavm.com/writing/the-consolidation-queue/}{The
 Consolidation Queue: How Persistent AI Earns Durable Change}.} compared with
-immediate-write Reflection, Mem0, and ablated variants. We use CQ as a
+immediate-write Reflection, a Mem0-style write-only baseline (\memzero{},
+not the production Mem0 system), and ablated variants. We use CQ as a
 case-study policy for testing which memory-policy distinctions survive the
 interfaces around them.
 
@@ -66,10 +67,12 @@ PFLC diagnostics name a class of metric blind spots. Proposition 1 proves a
 cluster-partition/lookup-contract gap: a relabeling can preserve the gold
 partition and therefore score 1.00 under partition metrics while failing exact
 policy-query set membership. Constructive lemmas extend the same pattern to
-retrieval-at-k and answer-accuracy metrics. The QR-canon audit is the
-canonical-id instance of this class in the CQ benchmark; the field-level PFLC
-survey shows why released memory-benchmark artifacts should expose
-per-question policy-facing identifiers.
+retrieval-at-k and answer-accuracy metrics. The lookup diagnostic instantiates
+this class on canonical-id queries within the CQ benchmark; the field-level PFLC
+survey divides into an artifact-blocked majority (no per-question evidence
+ids exposed) and a published-output replayable subset (AMB LoCoMo) that
+decomposes aggregate answer accuracy into evidence exposure, rank, and
+answer-generation residuals.
 
 \claim{Claim 3: Controlled external transfer with preserved negative results}
 The LongMemEval workstream builds a redacted same-stream adapter, dual-path
@@ -81,7 +84,7 @@ evidence session in every case, tying eager baselines on
 \code{all_hit_at_50} loss.
 
 \claim{Claim 4: Cardinality-controlled mechanism repair}
-The follow-up preserves X.4 as a negative base-CQ result and tests a separately
+The follow-up preserves the LongMemEval transfer probe as a negative base-CQ result and tests a separately
 preregistered interface hypothesis: plural pending readout should close the
 evidence-completeness gap, and capping a winning eager baseline to one returned
 candidate should reproduce the loss. The follow-up results match both

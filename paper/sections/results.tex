@@ -1,4 +1,4 @@
-\section{Evidence Ledger}
+\section{Results}
 
 Table~\ref{tab:claims} maps the paper's four claims to their principal evidence
 anchors. The full artifact index is in Appendix~\ref{app:artifacts}; this
@@ -15,11 +15,11 @@ Claim & Evidence & Readout & Boundary\\
 Claim & Evidence & Readout & Boundary\\
 \midrule
 \endhead
-Fair-stream evaluation & Frozen oracle sweep; Phase 3 component gate; Phase 4 noisy comparison & All 108 frozen oracle deltas matched. The 7B gate blocked a false unlock. The 32B-gated Phase 4 comparison reaches Bucket B. & Mechanism-local noisy support.\\
+Fair-stream evaluation & Frozen oracle sweep; noisy extractor-quality gate; noisy same-stream policy comparison & All 108 frozen oracle deltas matched. The 7B gate blocked a false unlock. The 32B-gated comparison reaches mixed/partial support. & Mechanism-local noisy support.\\
 \addlinespace
-PFLC diagnostics & QR-canon audit; PFLC proposition and field survey & Five of seven Phase 4 rows pass the B-cubed floor while QR-canon exact match is below 5 percent; formal and constructive counterexamples cover clustering, retrieval, and answer metrics. & Diagnostic PFLC; CQR verdict unchanged.\\
+PFLC diagnostics & Lookup diagnostic; PFLC proposition and field survey & Five of seven comparison rows pass the B-cubed floor while exact canonical-id match is below 5 percent; formal and constructive counterexamples cover clustering, retrieval, and answer metrics. & Diagnostic PFLC; resolution audit verdict unchanged.\\
 \addlinespace
-Controlled external transfer & LongMemEval X.4 transfer & Methodology gates pass, but CQ minus Reflection on \code{all_hit_at_50} is -1.0 in all three cells. & Stable base-CQ transfer loss.\\
+Controlled external transfer & LongMemEval transfer probe & Methodology gates pass, but CQ minus Reflection on \code{all_hit_at_50} is -1.0 in all three cells. & Stable base-CQ transfer loss.\\
 \addlinespace
 Cardinality-controlled repair & Pending multi-evidence follow-up & \cqmulti{} moves base CQ from 0/71 to 71/71 on the primary cell; capped Reflection falls from 71/71 to 0/71. & Interface repair; external generalization out of scope.\\
 \bottomrule
@@ -46,14 +46,15 @@ unmet because Reflection also lands at the correctness ceiling.
 \subsection{Noisy Component Gate and Policy Comparison}
 
 The component gate demonstrates why aggregate extractor metrics are
-insufficient. The locked 7B row passed Phase A, determinism, aggregate
+insufficient. The locked 7B row passed prompt-regression, determinism, aggregate
 confidence-bound gates, and aggregate observed gates. It still stayed locked
 because it had 45 primary scenario errors, eight per-family observed failures,
 and three frozen-sentinel observed failures. An aggregate-only rule would have
 authorized a false noisy policy comparison.
 
-The preregistered 32B rows cleared the gate and licensed Phase 4. Phase 4 then
-reached Bucket B: CQ wins against \reflection{} on forced contradiction
+The preregistered 32B rows cleared the gate and licensed the noisy
+same-stream policy comparison. The comparison reaches mixed/partial support:
+CQ wins against \reflection{} on forced contradiction
 (delta +0.93, lower confidence bound +0.88) and preference drift (delta +0.13,
 lower confidence bound +0.07), records no countable directional losses, ties
 \memzero{} on frozen sentinel primary metrics, and has no replicate
@@ -64,7 +65,7 @@ remaining rows stay null, descriptive, or bounded by component evidence.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\linewidth]{figures/phase4_mechanism_audit}
-\caption{Phase 4 mechanism audit summary. Only forced contradiction is a clean
+\caption{Noisy same-stream policy comparison mechanism audit summary. Only forced contradiction is a clean
 survival row; preference drift is partial, and other rows remain bounded,
 diagnostic, or descriptive evidence (component defects, lookup-contract
 failures, the descriptive-only event-source proxy for false corroboration, or
@@ -72,9 +73,9 @@ the frozen-sentinel held-out tie).}
 \label{fig:phase4-audit}
 \end{figure}
 
-\subsection{QR-Canon and PFLC}
+\subsection{Lookup Diagnostic and PFLC}
 
-The QR-canon audit adds a second diagnostic layer to several tied rows. On
+The lookup diagnostic adds a second diagnostic layer to several tied rows. On
 \splitcode{useful\_\allowbreak pending\_\allowbreak memory},
 \splitcode{memory\_\allowbreak poisoning},
 \splitcode{false\_\allowbreak corroboration}, and the frozen sentinel, B-cubed
@@ -89,22 +90,73 @@ fails. The policy verdict does not change.
 
 The field-level PFLC work generalizes this observation. Proposition 1 and
 Lemmas 1--2 show that clustering, retrieval, and answer-accuracy metrics are
-insufficient evidence of policy-facing lookup success. The four-anchor
-survey over LongMemEval, Mem0/LoCoMo, MemoryAgentBench, and MemBench lands at
-B-3, artifact-blocked/descriptive-only for released baseline outputs, while
-also shipping benchmark-targeted synthetic counterexample rows.
+insufficient evidence of policy-facing lookup success. The four-anchor survey
+over LongMemEval, Mem0/LoCoMo, MemoryAgentBench, and MemBench splits on
+artifact accessibility: most released baseline outputs are artifact-blocked,
+but a subset of published Agent Memory Benchmark (AMB) LoCoMo runs expose
+recoverable per-question evidence ids and support a published-output PFLC
+replay. The split is summarized below; benchmark-targeted synthetic
+counterexample rows ship alongside.
 
-\subsection{LongMemEval X.4 Transfer}
+\subsection{Released-Artifact PFLC: Blocked vs Replayable}
+\label{sec:amb-replay}
 
-The LongMemEval X.4 controlled-pilot transfer produces an inspectable negative
-external result. The run covers 1,935 policy/cell/case rows across
+Across the surveyed memory-benchmark artifacts, public outputs divide cleanly
+into two classes. Most rows---Mem0's \code{memory-benchmarks} platform,
+A-MEM/AgenticMemory, SNAP LoCoMo RAG, Backboard, MemoryLake, Engram, and
+external AMB comparison rows for Mem0, Zep, Letta, LangMem, and MemoryBank---do
+not commit per-question retrieved context, retrieved memory ids, or LoCoMo
+evidence ids in their released artifacts, and so admit no published-output
+PFLC replay. Three AMB LoCoMo runs do: Hindsight (1{,}540 cases),
+hybrid-search (1{,}540), and Cognee (152). Each injects per-question context
+whose source blocks carry recoverable LoCoMo \code{dia_id}s, enabling a
+context-derived PFLC replay against the official LoCoMo \code{qa[].evidence}
+field.
+
+\begin{table}[h]
+\centering
+\caption{Published-output PFLC on AMB LoCoMo runs (lookup-relevant denominator).}
+\label{tab:amb-pflc}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Run & Scored & Lookup-rel. & PFLC@10 & PFLC@20 & PFLC@50 \\
+\midrule
+AMB \code{locomo-hindsight}  & 1{,}540 & 1{,}536 & 65.8\% & 83.1\% & 97.6\% \\
+AMB \code{hybrid-search}     & 1{,}540 & 1{,}536 & 64.8\% & 75.7\% & 90.5\% \\
+AMB \code{cognee}            & 152     & 150     & 60.0\% & 73.3\% & 92.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The replayable runs are not lookup-contract collapses; they decompose
+LoCoMo's aggregate answer accuracy into three components that the aggregate
+conflates. For example, AMB hybrid-search produces 276 cases where the answer
+is wrong while every gold evidence \code{dia_id} is already present in the
+emitted context by PFLC@50, isolating an answering or judging residual from
+a retrieval-contract residual; conversely, 100 cases are correct while all
+gold evidence is missing at PFLC@50, flagging answer success not fully backed
+by the LoCoMo evidence contract as scored here. PFLC@10 and PFLC@20 carry the
+rank-sensitivity signal because Hindsight averages 36{,}235 context tokens
+per question.
+
+The operational claim is therefore narrow: once per-question context is
+published, PFLC decomposes LoCoMo scores into evidence exposure, evidence
+rank or context saturation, and answer-generation residuals. Without those
+artifacts, the same decomposition is impossible, which is why the
+artifact-blocked subset remains the headline survey gap.
+
+\subsection{LongMemEval Transfer Probe}
+
+The LongMemEval transfer probe produces an inspectable negative external
+result. The run covers 1,935 policy/cell/case rows across
 \code{primary_contract}, \code{path_a_only_denominator}, and
 \code{path_b_only_denominator}. Candidate-stream hash invariants pass in all
 cells. The headline result is shown in Table~\ref{tab:x4}.
 
 \begin{table}[h]
 \centering
-\caption{LongMemEval X.4 CQ-vs-Reflection result.}
+\caption{LongMemEval transfer probe: CQ-vs-Reflection result.}
 \label{tab:x4}
 \begin{tabular}{lrr}
 \toprule
@@ -117,7 +169,7 @@ Cell & \code{all_hit_at_50} delta & \code{any_hit_at_50} delta\\
 \end{tabular}
 \end{table}
 
-The stable sign fires Bucket A, but the sign is negative. CQ retrieves at least
+The stable sign fires the preregistered-gate condition, but the sign is negative. CQ retrieves at least
 one gold evidence session in every case and therefore ties eager baselines on
 \code{any_hit_at_50}. It never retrieves both evidence sessions, so it loses
 \code{all_hit_at_50}. The methodology gate passes, but transfer is CQ-negative
@@ -126,7 +178,7 @@ and isolates a policy-facing pending-readout gap.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\linewidth]{figures/longmemeval_x4_cells}
-\caption{LongMemEval X.4 sensitivity status. The CQ-vs-Reflection delta is
+\caption{LongMemEval transfer probe sensitivity status. The CQ-vs-Reflection delta is
 stable across the primary and denominator-sensitivity cells: -1.0 on
 \code{all_hit_at_50} and 0.0 on \code{any_hit_at_50}.}
 \label{fig:x4-cells}
@@ -134,15 +186,29 @@ stable across the primary and denominator-sensitivity cells: -1.0 on
 
 \subsection{Pending Multi-Evidence Follow-Up}
 
-The follow-up tests that gap directly. \cqmulti{} changes
-the no-durable pending fallback to expose all eligible same-slot pending
-candidates. \refcapped{} preserves Reflection's
-write path and caps answer readout to one durable candidate id. Table~\ref{tab:y}
-summarizes the result.
+The follow-up is structured around a paired pre-registration: a CQ-side
+\emph{repair} hypothesis and a Reflection-side \emph{symmetric falsifier}.
+The repair hypothesis is that the transfer-probe loss is induced by answer-time
+readout cardinality, not by CQ-only storage or asymmetric inputs. If that is
+correct, two things must hold in the same cells: (i) \cqmulti{} --- which
+changes the no-durable pending fallback to expose all eligible same-slot
+pending candidates, with no change to storage, adapter, judge, or headline
+metric --- must close the gap on \code{all_hit_at_50}; and (ii) \refcapped{}
+--- which preserves Reflection's winning write path and only caps answer
+readout to one durable candidate id --- must reproduce the original base-CQ
+loss with the same magnitude. The symmetric falsifier is the load-bearing
+half: it rules out CQ-only storage and asymmetric-input explanations for the
+loss by reproducing it on a baseline that previously won the metric.
+
+Both predictions hold (Table~\ref{tab:y}). Plural pending readout moves base
+CQ from $0/71$ to $71/71$ in the primary cell; capping Reflection moves it
+from $71/71$ to $0/71$ in the same cell. The pattern is stable across both
+denominator-sensitivity cells.
 
 \begin{table}[h]
 \centering
-\caption{Pending multi-evidence follow-up on \code{all_hit_at_50}.}
+\caption{Pending multi-evidence follow-up on \code{all_hit_at_50}: the
+repair (\cqmulti{}) and the symmetric falsifier (\refcapped{}).}
 \label{tab:y}
 \begin{tabular}{lrrrr}
 \toprule
@@ -160,7 +226,9 @@ forced contradiction, preference drift, mechanism-diverse held-out,
 adversarial upstream noise, and evidence-conflict spectrum. Focused
 negative-control tests confirm that below-floor poisoned siblings, contested
 siblings, wrong-scope siblings, mirrored-source weak siblings, and demoted
-siblings are not returned by plural pending lookup. The supported mechanism is
-readout cardinality rather than a richer CQ-only memory substrate.
+siblings are not returned by plural pending lookup. With the symmetric
+falsifier holding, the supported mechanism is answer-time readout cardinality,
+not a richer CQ-only memory substrate; the repair does not claim broader
+CQ-vs-Reflection superiority.
 
 \input{figures/phase_y_cardinality_control.tex}

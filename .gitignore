@@ -40,3 +40,14 @@ data/results/**/*.json
 !data/results/qr_canon_field_diagnostic_metrics_manifest.json
 !data/results/locomo_amb_pflc_rows.csv
 !data/results/locomo_amb_pflc_summary.json
+
+# LaTeX build artifacts (paper/)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz

@@ -12,7 +12,8 @@
 % Claim 3 (controlled external transfer) extends Claim 1's same-stream
 % protocol externally and uses Claim 2's PFLC scoring as the metric.
 % Claim 4 (cardinality-controlled repair) builds on Claim 3's stable
-% negative X.4 result via a preregistered interface variant + control.
+% negative LongMemEval transfer-probe result via a preregistered interface
+% variant + control.
 
 \begin{figure}[t]
 \centering
@@ -52,14 +53,14 @@
     {\footnotesize\bfseries\color{black!55} Claim 2}\\[-1pt]
     {\small\bfseries PFLC diagnostics}\\[2pt]
     {\scriptsize\color{black!75} Proposition 1 + lemmas}\\[-2pt]
-    {\scriptsize\color{black!75} QR-canon audit}\\[-2pt]
+    {\scriptsize\color{black!75} canonical-id lookup diagnostic}\\[-2pt]
     {\scriptsize\color{black!75} anchor benchmark survey}
   \end{tabular}};
 \node[c3, right=22mm of c2] (c3) {
   \begin{tabular}{@{}c@{}}
     {\footnotesize\bfseries\color{black!55} Claim 3}\\[-1pt]
     {\small\bfseries Controlled external transfer}\\[2pt]
-    {\scriptsize\color{black!75} LongMemEval X.4 pilot}\\[-2pt]
+    {\scriptsize\color{black!75} LongMemEval transfer probe}\\[-2pt]
     {\scriptsize\color{black!75} stable negative on $\mathtt{all\_hit\_at\_50}$}\\[-2pt]
     {\scriptsize\color{black!75} result preserved, not rescued}
   \end{tabular}};
@@ -78,9 +79,9 @@
 \draw[edge] (c1.east) -- node[edgelbl]
   {null rows motivate\\diagnostic} (c2.west);
 \draw[edge] (c2.east) -- node[edgelbl]
-  {PFLC scoring\\over X.4 ids} (c3.west);
+  {PFLC scoring\\over transfer ids} (c3.west);
 \draw[edge] (c3.east) -- node[edgelbl]
-  {X.4 negative\\motivates follow-up} (c4.west);
+  {transfer-probe negative\\motivates follow-up} (c4.west);
 
 % ---- Skip edge: Claim 1 also directly enables Claim 3 (same-stream protocol) ----
 \draw[edge, dashed, draw=black!55]
@@ -92,12 +93,12 @@
 \end{tikzpicture}%
 }
 \caption{Claim dependency graph. Claim~1 (fair-stream evaluation) is the
-  methodological foundation; its noisy Phase~4 null rows motivated Claim~2
-  (PFLC diagnostics), which then supplied the policy-facing scoring used by
-  Claim~3 (controlled external transfer). Claim~1's same-stream protocol
-  also carries over directly to Claim~3 (dashed edge). Claim~3's stable
-  negative X.4 result motivated the preregistered interface follow-up in
-  Claim~4 (cardinality-controlled repair). The contribution is the chain,
-  not any individual claim.}
+  methodological foundation; the noisy same-stream policy comparison's null
+  rows motivated Claim~2 (PFLC diagnostics), which then supplied the
+  policy-facing scoring used by Claim~3 (controlled external transfer).
+  Claim~1's same-stream protocol also carries over directly to Claim~3
+  (dashed edge). Claim~3's stable negative transfer-probe result motivated
+  the preregistered interface follow-up in Claim~4 (cardinality-controlled
+  repair). The contribution is the chain, not any individual claim.}
 \label{fig:evidence-ledger}
 \end{figure}

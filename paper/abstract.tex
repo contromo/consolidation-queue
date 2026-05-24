@@ -9,7 +9,9 @@ common clustering, retrieval, and answer-accuracy metrics can all pass while
 exact policy-query lookup fails. It transfers to an external benchmark
 (LongMemEval) under controls that preserve negative results rather than
 rescuing them. Finally, it pairs each interface repair with an independent
-control that reproduces the failure on a winning baseline. In the case study,
+control that reproduces the failure on a winning baseline.
+
+In the case study,
 the discipline detects CQ's contradiction-handling survival on internal noisy
 extraction. On LongMemEval, it surfaces a stable external-transfer loss on
 evidence completeness, isolates that loss as a readout-cardinality interface

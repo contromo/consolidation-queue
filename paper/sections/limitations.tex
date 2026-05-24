@@ -6,25 +6,29 @@ artifacts, ties \memzero{} on the frozen sentinel, and leaves
 source-independence, scope-contamination, useful-pending, and poisoning-defense
 rows unsupported under the current evidence.
 
-The LongMemEval result is also bounded. The completed X.4 transfer is stable
+The LongMemEval result is also bounded. The completed transfer probe is stable
 and negative for base CQ on evidence completeness. The pending multi-evidence
 follow-up supports a readout-cardinality repair for that loss. LongMemEval-V2,
 LongMemEval-S, distractor-heavy retrieval quality, and natural-language QA
 success remain future evaluation targets; the
-\code{answer_correct} surface is diagnostic-only in X.4 because policy answers
-are trace-shaped.
+\code{answer_correct} surface is diagnostic-only in the transfer probe
+because policy answers are trace-shaped.
 
 PFLC is a diagnostic class rather than a new pass/fail gate. The field-level
 survey records what released baseline artifacts expose. LoCoMo's evidence
 field is a clean gold-side target, and MemoryAgentBench's conflict-resolution
-tasks are PFLC-relevant. The B-3 outcome is about released artifact contracts
-and standard output surfaces.
+tasks are PFLC-relevant. The survey outcome splits: most released
+artifact contracts and standard output surfaces are blocked for PFLC, while
+the AMB LoCoMo subset admits a published-output replay that decomposes
+aggregate accuracy without resolving the blocked majority.
 
-The CQR replay repair remains Bucket D. The QR-canon audit leaves the aborted
-audit and the Phase 4 Bucket B verdict unchanged, and the blocked cross-tab of
-QR-canon hit versus per-policy answer success remains unrun. A third CQR
-attempt would require either materializing the original locked run JSON
-payloads or preregistering a fresh Phase 4 baseline with archived payloads.
+The resolution audit replay repair remains an abort (repo: Bucket~D). The
+lookup diagnostic leaves the aborted audit and the noisy same-stream policy
+comparison's mixed-support verdict unchanged, and the blocked cross-tab of
+lookup hit versus per-policy answer success remains unrun. A third resolution-
+audit attempt would require either materializing the original locked run
+JSON payloads or preregistering a fresh policy-comparison baseline with
+archived payloads.
 
 Finally, all experiments are local-first prototypes. Real-user weeks-long
 helpfulness, learned semantic scope inference, production retrieval stacks, and
