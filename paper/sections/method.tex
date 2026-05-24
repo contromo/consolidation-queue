@@ -19,7 +19,8 @@ CQR), but it is a small committed diagnostic table rather than a replay of
 the large noisy same-stream policy comparison run payloads.
 
 This paper uses descriptive names in body text; repository labels appear
-once in parentheticals to keep the artifact trail navigable. The evaluation
+once in parentheticals to keep the artifact trail navigable
+(Appendix~\ref{app:glossary} collects the full mapping). The evaluation
 steps are: the \emph{prompt-regression guard} (repo: Phase~A) runs before
 noisy component scoring; the \emph{noisy extractor-quality gate} (repo:
 Phase~3) scores local extractor outputs and licenses downstream policy
@@ -41,9 +42,11 @@ observations; they differ in when they promote, demote, contest, or expose
 these candidates. The load-bearing invariant is that CQ and the immediate-write
 baselines compare memory policy over the same inputs.
 
-The principal policies are \cq, \reflection, \memzero, \code{NaiveEagerWriteLite},
-\code{NoMemoryLite}, and CQ ablations that remove contestation/demotion,
-pending lookup, source-independence gating, or wider-scope pending override.
+The principal policies are \cq{}, \reflection{}, \memzero{},
+\splitcode{Naive\allowbreak EagerWrite\allowbreak Lite},
+\splitcode{No\allowbreak Memory\allowbreak Lite}, and CQ ablations that remove
+contestation/demotion, pending lookup, source-independence gating, or
+wider-scope pending override.
 Two follow-up policies are explicitly outside the original headline set:
 \cqdated{}, an oracle-mode dated-evidence repair, and \cqmulti{}, the
 LongMemEval pending-readout repair. The follow-up also includes \refcapped{}
