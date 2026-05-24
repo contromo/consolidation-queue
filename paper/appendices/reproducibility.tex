@@ -1,6 +1,11 @@
 \section{Reproducibility}
 \label{app:reproducibility}
 
+The full source repository, frozen at the tag matching this paper, is at
+\url{https://github.com/contromo/consolidation-queue/tree/paper-v1}. The
+\artifact{paper/repro/README.md} entry in that tree is the reviewer entry
+point and lists local verification commands.
+
 The repository records provenance at several layers: preregistration lock
 hashes, adapter pins, model tags and digests, prompt/schema profiles,
 candidate-stream hashes, clean-worktree checks, Python version, commands, and
@@ -8,18 +13,19 @@ artifact hashes. Small headline verification artifacts are committed. Large
 per-scenario run payloads are regeneratable-only unless a preregistration
 requires byte-stable replay.
 
-The draft was prepared on branch \code{paper/ship-paper-draft}, based on:
+The paper was prepared on branch \code{paper/ship-paper-draft}, based on:
 \begin{center}
 \lmexternalbranch
 \end{center}
-The Phase Z plan allowed either merging the LongMemEval follow-up branch into
+The release plan allowed either merging the LongMemEval follow-up branch into
 \code{main} or pinning the paper package to the exact branch and commit.
 Because \code{main} and the pinned branch diverged after the earlier merge,
-this draft uses the branch-pinning path. The reproducibility README in
-\artifact{paper/repro/README.md} records that decision and lists the commands
-for local verification.
+the paper package uses the branch-pinning path. The reproducibility README in
+\artifact{paper/repro/README.md} records that decision, the final pinned
+commit, and the commands for local verification.
 
-The CQR replay aborts are reproducibility evidence. The path-normalized repair
+The resolution audit replay aborts are reproducibility evidence. The
+path-normalized repair
 preserved stable checks and still refused to emit a verdict when locked run
 JSON payloads could not be reproduced. The paper treats that as support for
 strict replay discipline.

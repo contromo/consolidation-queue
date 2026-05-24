@@ -51,3 +51,7 @@ paper/*.toc
 paper/*.fls
 paper/*.fdb_latexmk
 paper/*.synctex.gz
+
+# arXiv submission staging (paper/)
+paper/arxiv-stage/
+paper/arxiv-source.tar.gz

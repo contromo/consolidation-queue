@@ -1,19 +1,20 @@
 # Paper Reproducibility Bundle
 
-This directory is the reviewer entry point for the draft in `paper/`.
+This directory is the reviewer entry point for the paper in `paper/`.
 
 ## Branch And Commit Policy
 
-The Phase Z plan allowed either merging `longmemeval-externalization-gate` into
+The release plan allowed either merging `longmemeval-externalization-gate` into
 `main` or pinning the paper package to the branch and commit that contain the
-Phase Y artifacts. A fast-forward merge into `main` was not possible from this
-worktree because the branches had diverged after the earlier LongMemEval merge.
+cardinality-repair follow-up artifacts. A fast-forward merge into `main` was
+not possible from this worktree because the branches had diverged after the
+earlier LongMemEval merge.
 
-This draft therefore follows the accepted pinning path:
+The paper package therefore follows the accepted pinning path:
 
 - working branch: `paper/ship-paper-draft`
 - source branch: `longmemeval-externalization-gate`
-- source branch head when drafting began: `cf949f9`
+- final pinned tag: [`paper-v1`](https://github.com/contromo/consolidation-queue/tree/paper-v1)
 
 ## Verify Artifact Paths
 
@@ -72,16 +73,13 @@ The script pulls numbers directly from
 cannot silently drift from the result documents. Numeric claims should be
 checked against the artifact index in `paper/appendices/artifacts.tex`.
 
-## Venue And Hosting Placeholders
+## Hosting
 
-The current draft uses the default `article` class for arXiv technical-report
-iteration. Before submission, replace it with the chosen venue style if needed
-and set the final reproducibility URL in the abstract/front matter. The
-expected hosting target is one of:
-
-- GitHub release attached to a tagged repo state
-- Zenodo DOI
-- both GitHub release and Zenodo DOI
+The paper source and reproducibility bundle are hosted at the tag
+[`paper-v1`](https://github.com/contromo/consolidation-queue/tree/paper-v1)
+on this repository. The paper uses the default `article` class; if a target
+venue requires a different style, swap it at submission time without
+changing the artifact pin.
 
 ## Artifact Symlinks
 
