@@ -393,7 +393,7 @@ def render_phase4() -> None:
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)
 
-    # Legend keyed to attribution classes used in this draft.
+    # Legend keyed to attribution classes used in the paper.
     seen: dict[str, str] = {}
     for fam in families:
         label, color = ATTRIBUTION[fam]
