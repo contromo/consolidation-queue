@@ -2,14 +2,15 @@ Persistent-agent memory systems can score well while hiding whether the
 underlying memory policy can govern, query, and repair the right evidence. We
 present a preregistered evaluation discipline for persistent-agent memory and
 demonstrate it on Consolidation Queue (CQ), a staged-write policy that keeps
-low-confidence claims pending and contestable. The discipline does four
-things. It runs every memory policy on the same candidate stream through
-the same substrate, and gates noisy-mode comparisons on extraction quality.
-It uses a formal policy-facing lookup-contract (PFLC) diagnostic to show that
-common clustering, retrieval, and answer-accuracy metrics can all pass while
-exact policy-query lookup fails. It transfers to an external benchmark
-(LongMemEval) under controls that preserve negative results rather than
-rescuing them. Finally, it pairs each interface repair with an independent
+low-confidence claims pending and contestable. The discipline has five components.
+Every policy receives the same candidate stream through the same storage
+substrate. An extractor-quality gate runs before any noisy comparison. A
+policy-facing lookup-contract (PFLC) diagnostic asks whether the system
+exposes the evidence handle the policy must actually query, not just whether
+retrieved text is semantically relevant; it shows that common clustering,
+retrieval, and answer-accuracy metrics can all pass while exact policy-query
+lookup fails. Controlled external transfer (LongMemEval) preserves negative
+results rather than rescuing them. Each interface repair is paired with a
 control that reproduces the failure on a winning baseline.
 
 In the case study,

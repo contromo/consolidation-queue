@@ -64,7 +64,10 @@ records lifecycle traces, manifests, failure examples, and replay checks rather
 than reducing the experiment to a single score.
 
 \claim{Claim 2: Policy-facing lookup contracts}
-PFLC diagnostics name a class of metric blind spots. Proposition 1 proves a
+A policy-facing lookup contract (PFLC) asks whether the system exposes the
+evidence handle the policy must actually query, not just whether retrieved
+text is semantically relevant. PFLC diagnostics name a class of metric blind
+spots. Proposition 1 proves a
 cluster-partition/lookup-contract gap: a relabeling can preserve the gold
 partition and therefore score 1.00 under partition metrics while failing exact
 policy-query set membership. Constructive lemmas extend the same pattern to
