@@ -32,7 +32,7 @@ Current-code note: the LongMemEval follow-up runner now emits
 diagnostics added after the committed follow-up artifacts were generated; these
 fields do not change the empirical counts, bucket, or candidate-stream hashes.
 
-## Build The Draft
+## Build The Paper
 
 From the repository root:
 
