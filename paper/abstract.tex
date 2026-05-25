@@ -1,8 +1,9 @@
 Persistent-agent memory systems can score well while hiding whether the
 underlying memory policy can govern, query, and repair the right evidence. We
 present a preregistered evaluation discipline for persistent-agent memory and
-demonstrate it on a consolidation-queue (CQ) case study. The discipline does
-four things. It runs every memory policy on the same candidate stream through
+demonstrate it on Consolidation Queue (CQ), a staged-write policy that keeps
+low-confidence claims pending and contestable. The discipline does four
+things. It runs every memory policy on the same candidate stream through
 the same substrate, and gates noisy-mode comparisons on extraction quality.
 It uses a formal policy-facing lookup-contract (PFLC) diagnostic to show that
 common clustering, retrieval, and answer-accuracy metrics can all pass while
