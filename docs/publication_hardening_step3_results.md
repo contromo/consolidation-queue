@@ -56,6 +56,10 @@ Publication-hardening preregistration Section 5 scopes this fresh archived CQR r
 ## Outcome
 
 - The cross-tab is not evaluable under the preregistered thesis-family gates.
+- `useful_pending_memory`: zero alias-CQR hits across a non-empty miss partition (0 hits / 60 misses) means no extracted canonical_id alias-matched any question's `relevant_canonical_id` under the locked alias function — this is a real null on alias hits, not an empty scenario pool.
+- `useful_pending_memory`: alias false-positive rate is undefined (0 matched candidate-question pairs); descriptive FPR figures are non-informative when Bucket B applies.
+- `memory_poisoning`: zero alias-CQR hits across a non-empty miss partition (0 hits / 60 misses) means no extracted canonical_id alias-matched any question's `relevant_canonical_id` under the locked alias function — this is a real null on alias hits, not an empty scenario pool.
+- `memory_poisoning`: alias false-positive rate is undefined (0 matched candidate-question pairs); descriptive FPR figures are non-informative when Bucket B applies.
 
 ## Limitation Text
 

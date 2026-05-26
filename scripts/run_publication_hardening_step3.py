@@ -727,6 +727,41 @@ def write_results_doc(
             lines.append(f"- `{family}` is populated and evaluable with {sign} lift `{_format_float(lift)}`.")
     elif bucket.startswith("B_"):
         lines.append("- The cross-tab is not evaluable under the preregistered thesis-family gates.")
+        # Distinguish the three Bucket B variants so a reader can interpret the
+        # specific failure mode without re-deriving it from the table.
+        for family in THESIS_FAMILIES:
+            row = per_family.get(family)
+            if row is None:
+                continue
+            hits = row["alias_hit_total"]
+            misses = row["alias_miss_total"]
+            if hits == 0 and misses > 0:
+                lines.append(
+                    f"- `{family}`: zero alias-CQR hits across a non-empty miss partition "
+                    f"({hits} hits / {misses} misses) means no extracted canonical_id "
+                    "alias-matched any question's `relevant_canonical_id` under the locked "
+                    "alias function — this is a real null on alias hits, not an empty "
+                    "scenario pool."
+                )
+            elif hits == 0 and misses == 0:
+                lines.append(
+                    f"- `{family}`: both partitions are empty "
+                    f"({hits} hits / {misses} misses) — the family has no in-denominator "
+                    "scenarios under the current alias function and extractor cell."
+                )
+            elif hits > 0 and misses == 0:
+                lines.append(
+                    f"- `{family}`: alias-CQR hits without any misses "
+                    f"({hits} hits / {misses} misses) leaves `P(success | miss)` undefined, "
+                    "so lift cannot be evaluated."
+                )
+            fp = row.get("alias_false_positive") or {}
+            if fp.get("alias_matched_pairs") == 0:
+                lines.append(
+                    f"- `{family}`: alias false-positive rate is undefined "
+                    "(0 matched candidate-question pairs); descriptive FPR figures are "
+                    "non-informative when Bucket B applies."
+                )
     else:
         lines.append("- Preconditions failed; no cross-tab verdict was emitted.")
         if failure_details:
