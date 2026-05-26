@@ -34,15 +34,19 @@ not commit to a stable evidence id across releases. A transfer that cannot meet 
 descriptive-only at preregistration time, not retroactively.
 
 \paragraph{Resolving the resolution audit abort.}
-The blocked resolution audit cross-tab is the one outstanding internal lock.
-Two paths are acceptable. The first materializes the
-original locked policy-comparison run JSON payloads if recoverable. The
-second preregisters a fresh policy-comparison baseline that mandates payload
-archival and reports the lookup-versus-answer-success cross-tab as a primary
-readout. The second path removes the
-dependency on missing artifacts. Silently retiring the cross-tab without an
-explicit decision record is not acceptable under the same preregistration
-discipline that produced the rest of this paper's results.
+The second of the two acceptable paths has been executed: a fresh archived
+policy-comparison baseline with mandated payload archival ran under the
+publication-hardening preregistration \S5 and is recorded as
+Bucket \code{B_inconclusive_min_n} in
+\artifact{docs/publication_hardening_step3_results.md}. The replay produced
+zero alias-CQR hits on either thesis family under the locked alias function
+and 32B extractor cell, so the lookup-versus-answer-success cross-tab is not
+evaluable. The remaining open question is narrower than before: either a
+post-hoc preregistered amendment to the alias function, or a stronger
+extractor cell that surfaces more canonical-id-aliasing candidates, could
+populate the cross-tab. The first path (materializing the original locked
+run JSON payloads) is no longer required, because Step 3's manifests now
+serve as the new archived canonical record.
 
 \paragraph{PFLC as a benchmark output contract.}
 The field-level PFLC survey divides into an artifact-blocked majority and a

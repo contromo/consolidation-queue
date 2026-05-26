@@ -26,11 +26,17 @@ aggregate accuracy without resolving the blocked majority.
 
 The resolution audit replay repair remains an abort. The
 lookup diagnostic leaves the aborted audit and the noisy same-stream policy
-comparison's mixed-support verdict unchanged, and the blocked cross-tab of
-lookup hit versus per-policy answer success remains unrun. A third resolution-
-audit attempt would require either materializing the original locked run
-JSON payloads or preregistering a fresh policy-comparison baseline with
-archived payloads.
+comparison's mixed-support verdict unchanged. A subsequent fresh archived
+replay was executed under the publication-hardening preregistration
+\S5 and is documented as Bucket \code{B_inconclusive_min_n}: zero
+alias-CQR hits surfaced for \splitcode{useful\_\allowbreak pending\_\allowbreak memory}
+or \splitcode{memory\_\allowbreak poisoning} under the locked alias function
+and the 32B extractor cell, leaving the cross-tab of lookup hit versus
+per-policy answer success non-evaluable under the preregistered minimum-N gate.
+Prior PFLC null rows for those families remain unattributed, and Claim 2's
+null-row attribution is unchanged. The full readout and skip carve-out are
+recorded in \artifact{docs/publication_hardening_step3_results.md} and
+\artifact{docs/publication_hardening_step3_precondition_skip.md}.
 
 Finally, all experiments are local-first prototypes. Real-user weeks-long
 helpfulness, learned semantic scope inference, production retrieval stacks, and
