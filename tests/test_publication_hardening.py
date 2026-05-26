@@ -210,6 +210,26 @@ locked line
             validate_api_model_pin(too_expensive),
         )
 
+    def test_api_model_pin_treats_fallback_as_optional(self) -> None:
+        # Preregistration says "fallback model id, if any". A pin without
+        # fallback_model_id must validate; one with an explicit null must too.
+        base_pin = {
+            "provider": "example-provider",
+            "model_id": "example-model",
+            "cost_ceiling_usd": 100.0,
+            "stability_check": "cached replay plus model/provider sensitivity cell",
+            "cache_required": True,
+        }
+        self.assertEqual(validate_api_model_pin(base_pin), [])
+        with_null_fallback = {**base_pin, "fallback_model_id": None}
+        self.assertEqual(validate_api_model_pin(with_null_fallback), [])
+        # But a non-string truthy-but-invalid value should still be rejected.
+        with_empty_fallback = {**base_pin, "fallback_model_id": ""}
+        self.assertIn(
+            "fallback_model_id, when provided, must be a non-empty string",
+            validate_api_model_pin(with_empty_fallback),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

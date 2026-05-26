@@ -390,6 +390,48 @@ class PublicationHardeningStep3OutputTests(unittest.TestCase):
                 header = next(reader)
         self.assertEqual(header, step3.CSV_COLUMNS)
 
+    def test_results_doc_table_header_has_no_unescaped_pipes_in_cells(self) -> None:
+        # Regression: an earlier version emitted "| P(success | hit) |" which
+        # broke Markdown table parsing because the literal "|" inside the cell
+        # is read as a column delimiter. Use Bucket B (which doesn't iterate
+        # per_family in the outcome section) so we can pass an empty fixture.
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "results.md"
+            step3.write_results_doc(
+                {},
+                "B_inconclusive_min_n",
+                "no limitation",
+                path,
+                preconditions={
+                    "publication_hardening_lock_sha256": "0" * 64,
+                    "alias_function_sha256": "0" * 64,
+                    "cqr_audit_preregistration_lock_sha256": "0" * 64,
+                    "noisy_comparison_preregistration_lock_sha256": "0" * 64,
+                    "skip_doc_path": "docs/skip.md",
+                    "skip_doc_sha256": "0" * 64,
+                    "git_commit": "abc",
+                    "pre_run_worktree_status": "",
+                },
+                regeneration_metadata={"regeneration_skipped": False, "ollama_server_version": "x"},
+            )
+            text = path.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        header_index = next(i for i, line in enumerate(lines) if line.startswith("| Family |"))
+        header_line = lines[header_index]
+        separator_line = lines[header_index + 1]
+        # Sanity: the separator row must look like a Markdown table separator.
+        self.assertTrue(
+            set(separator_line.replace("|", "").strip()) <= set("- :")
+            and "|" in separator_line,
+            f"Line after header should be a Markdown table separator, got: {separator_line!r}",
+        )
+        self.assertEqual(
+            header_line.count("|"),
+            separator_line.count("|"),
+            "Markdown table header pipe count must match the separator row "
+            "(literal pipes inside cells like 'P(success | hit)' break parsing)",
+        )
+
     def test_manifest_lists_source_run_artifacts(self) -> None:
         payload = self._write_manifest_payload()
         self.assertIn("useful_pending_memory", payload["source_run_artifacts"])

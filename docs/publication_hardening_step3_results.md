@@ -39,7 +39,7 @@ Publication-hardening preregistration Section 5 scopes this fresh archived CQR r
 
 ## Per-Family Cross-Tab
 
-| Family | Role | Hits | Misses | P(success | hit) | P(success | miss) | Lift | Alias FPR | Min N | Miss evaluable |
+| Family | Role | Hits | Misses | P(success given hit) | P(success given miss) | Lift | Alias FPR | Min N | Miss evaluable |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
 | `useful_pending_memory` | thesis | 0 | 60 | 0.000000 | 0.000000 | 0.000000 | 0.000000 | False | True |
 | `memory_poisoning` | thesis | 0 | 60 | 0.000000 | 0.600000 | -0.600000 | 0.000000 | False | True |
@@ -66,6 +66,32 @@ Step 3 did not emit a cross-tab verdict on memory_poisoning because the alias-CQ
 ## What This Means For Claim 2
 
 Claim 2 null rows remain unchanged because the Step 3 cross-tab is not evaluable.
+
+## Archival Semantics
+
+The publication-hardening preregistration Section 5 says the replay "must
+archive raw component outputs, candidate streams, policy outputs, lookup
+handles, answer traces, manifests, and hashes." Per the repository's artifact
+policy (see `reproducibility.tex` and `PROJECT_PLAN.md`), large per-scenario
+payloads — the noisy-comparison run JSONs, the component-eval predictions, and
+the per-family component-eval payloads — are not committed to git; only their
+content hashes and accompanying manifests are. Step 3's archival surface is:
+
+- the four noisy-comparison run manifests (committed) referenced from
+  `source_run_artifacts.<family>.run_manifest_path` in the Step 3 manifest;
+- per-family SHA256 hashes for the run JSON, run manifest, metrics CSV,
+  predictions, and component-eval payloads (`source_run_artifacts.<family>.*_sha256`);
+- the regeneration metadata (primary model digest, prompt SHA, candidate
+  adapter SHA, Ollama server version) copied from one fresh noisy-comparison
+  manifest into `regeneration_metadata`;
+- the Step 3 summary, family-rows CSV, and this results document, with their
+  own hashes recorded in the Step 3 manifest's `artifacts[]` list.
+
+The replay is reproducible from the committed component-gate caches plus the
+runner command captured in the Step 3 manifest's `runner_command` field. The
+content hashes pin every regeneratable input so any future replay can be
+verified byte-for-byte against this archival record without committing the
+underlying payloads.
 
 ## References
 

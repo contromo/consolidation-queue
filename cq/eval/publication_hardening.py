@@ -166,9 +166,15 @@ def evaluate_distractor_floor(
 
 def validate_api_model_pin(pin: Mapping[str, Any]) -> list[str]:
     errors: list[str] = []
-    for field in ("provider", "model_id", "fallback_model_id", "stability_check"):
+    for field in ("provider", "model_id", "stability_check"):
         if not _is_nonempty_string(pin.get(field)):
             errors.append(f"{field} must be a non-empty string")
+    # fallback_model_id is optional per preregistration §2 ("fallback model id, if
+    # any"). If supplied, it must be a non-empty string; if absent or explicitly
+    # null, the pin is still valid.
+    fallback = pin.get("fallback_model_id")
+    if fallback is not None and not _is_nonempty_string(fallback):
+        errors.append("fallback_model_id, when provided, must be a non-empty string")
     cost_ceiling = pin.get("cost_ceiling_usd")
     if not isinstance(cost_ceiling, (int, float)) or cost_ceiling <= 0:
         errors.append("cost_ceiling_usd must be a positive number")
