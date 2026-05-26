@@ -55,6 +55,39 @@ The contribution is the evaluation discipline; CQ is the case study used
 to test what the discipline can detect. The paper collapses the
 repository's detailed evidence ledger into four claims.
 
+\begin{table}[h]
+\centering
+\caption{Claim boundaries for the methods-first reading of this report.}
+\label{tab:nonclaims}
+\small
+\begin{tabular}{p{0.40\linewidth} p{0.50\linewidth}}
+\toprule
+This paper does not claim & Boundary used in the paper\\
+\midrule
+CQ is broadly superior to immediate-write memory systems. &
+CQ is a case-study policy. The supported noisy result is mechanism-local:
+forced contradiction survives cleanly and preference drift survives partially.\\
+\addlinespace
+The LongMemEval follow-up proves broad external generalization. &
+The follow-up repairs a v1 evidence-completeness loss caused by answer-time
+readout cardinality; distractor-heavy retrieval and natural-language QA remain
+out of scope.\\
+\addlinespace
+The Mem0-style baseline is a full reproduction of production Mem0. &
+The baseline is an ADD/UPDATE/NOOP published-family policy over the shared
+candidate stream and substrate, not the production system.\\
+\addlinespace
+PFLC is a replacement leaderboard metric or a new pass/fail gate. &
+PFLC is a diagnostic for whether the policy-facing evidence handle is exposed;
+it supplements clustering, retrieval, and answer metrics.\\
+\addlinespace
+The unresolved CQR replay supports Claim 2. &
+The fresh archived replay is inconclusive under the minimum-N gate and remains
+a limitation rather than supporting evidence.\\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \claim{Claim 1: Same-stream evaluation makes policy attribution inspectable}
 Same-stream, same-substrate, extractor-gated evaluation with preserved
 lifecycle traces removes the main stream, substrate, and extractor-quality
@@ -106,9 +139,11 @@ preregistered interface hypothesis: plural pending readout should close the
 evidence-completeness gap, and capping a winning eager baseline to one returned
 candidate should reproduce the loss. The follow-up results match both
 predictions. The result is a mechanism-local repair pattern for this interface
-gap. The 2026-05-25 LongMemEval-S feasibility gate did not authorize a held-out
-run because no local cleaned source artifact could be pinned, so broader
-LongMemEval and natural-language QA generalization remain outside its scope.
+gap on the LongMemEval v1 evidence-only transfer probe. The 2026-05-25
+LongMemEval-S feasibility gate did not authorize a held-out run because no
+local cleaned source artifact could be pinned, so broader LongMemEval,
+distractor-heavy retrieval, and natural-language QA generalization remain
+outside its scope.
 
 \input{figures/evidence_ledger_summary.tex}
 

@@ -1,5 +1,20 @@
 # Product Progress
 
+## 2026-05-26 — Paper claim-boundary tightening pass
+
+### What Shipped
+
+- tightened the paper subtitle and abstract around the methods-first claim
+- added an explicit non-claims table covering CQ superiority, LongMemEval
+  generalization, `Mem0Lite`, PFLC, and the inconclusive CQR replay
+- expanded limitations so likely reviewer objections are treated as claim
+  boundaries rather than implicit caveats
+
+### Framing Decision
+
+- the paper remains an evaluation-methods report with CQ as the case study
+- no empirical verdict changed, and no CQR result was promoted to support
+
 ## 2026-05-26 — Step 3 fresh CQR replay archives an inconclusive result
 
 ### What Shipped
