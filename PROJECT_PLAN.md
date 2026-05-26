@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-25 (publication hardening protocol lock)
+Last updated: 2026-05-26 (publication hardening Step 3 fresh replay)
 
 ## Goal
 
@@ -371,6 +371,19 @@ Implemented:
   rules; and makes the PFLC JSONL schema, policy-name mapping, Step 3 scope,
   API pin shape, and distractor-floor definition executable in tests. No new
   external policy run or hosted model call is authorized by this lock alone.
+- `scripts/run_publication_hardening_step3.py`,
+  `docs/publication_hardening_step3_precondition_skip.md`,
+  `docs/publication_hardening_step3_results.md`,
+  `data/results/publication_hardening_step3_summary.json`,
+  `data/results/publication_hardening_step3_family_rows.csv`, and
+  `data/runs/publication_hardening_step3_manifest.json`: the 2026-05-26
+  publication-hardening Step 3 fresh archived CQR cross-tab replay. The run
+  documents the preregistered skip branch for the unrecoverable 2026-05 CQR
+  byte-replay attempts, refreshes the noisy comparison manifests under the
+  locked local 32B backend, and records Bucket `B_inconclusive_min_n`: both
+  thesis families (`useful_pending_memory`, `memory_poisoning`) had zero
+  alias-CQR hits, below the preregistered minimum of five. Claim 2 is unchanged,
+  and prior PFLC null rows for those families remain unattributed.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
@@ -875,6 +888,14 @@ The first deterministic forced-contradiction local-model command/prompt, compone
     (`useful_pending_memory`, `memory_poisoning`) plus descriptive companions,
     and the optional API extractor lane is not authorized until a concrete
     provider/model/cost/stability pin is preregistered.
+13. The 2026-05-26 Step 3 fresh archived CQR replay completed as
+    Bucket `B_inconclusive_min_n`. The replay is now archived, but it does not
+    resolve the Claim 2 null-row attribution because both thesis families had
+    zero alias-CQR hits under the locked alias function. Treat
+    `docs/publication_hardening_step3_results.md` as the current Step 3 readout:
+    Claim 2 is unchanged, CQR remains a limitation for the thesis-family
+    attribution, and next paper-hardening work should proceed through Step 2 or
+    Step 4 rather than another CQR rescue attempt.
 
 ## Working Rules
 

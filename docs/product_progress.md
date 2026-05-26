@@ -1,5 +1,30 @@
 # Product Progress
 
+## 2026-05-26 — Step 3 fresh CQR replay archives an inconclusive result
+
+### What Shipped
+
+- added the Step 3 skip document, runner, tests, summary JSON, family-row CSV,
+  manifest, and results doc
+- refreshed the locked noisy comparison manifests through the local 32B backend
+  and archived source hashes for the four Step 3 readout families
+- recorded Bucket `B_inconclusive_min_n`: both thesis families had zero
+  alias-CQR hits, below the preregistered minimum of five
+
+### Framing Decision
+
+- Step 3 does not make the 2026-05 CQR byte-replay repair green; it creates a
+  fresh archived record under the publication-hardening preregistration
+- Claim 2 is unchanged, and prior PFLC null rows for `useful_pending_memory`
+  and `memory_poisoning` remain unattributed
+- the result is publishable as a limitation, not supporting evidence
+
+### Open Issues / Next
+
+- do not use this replay to strengthen Claim 2
+- continue paper-hardening through Step 2 or Step 4 rather than another CQR
+  rescue attempt
+
 ## 2026-05-25 — Publication-hardening protocol lock lands
 
 ### What Shipped

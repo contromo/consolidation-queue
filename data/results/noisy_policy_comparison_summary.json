@@ -1,65 +1,5 @@
 {
   "adapter_pin_path": "docs/noisy_policy_comparison_adapter_pin.json",
-  "bucket_decision": {
-    "bucket": "B",
-    "directional_loss_note": "Bucket C intentionally uses directional CQ-vs-Reflection losses before statistical loss gating; Bucket A still requires preregistered win size and LCB conditions.",
-    "frozen_mem0_non_inferior": true,
-    "frozen_mem0_superior": false,
-    "primary_reflection_wins": [
-      "forced_contradiction",
-      "preference_drift"
-    ],
-    "reason": "Completed result survived D/C but failed at least one Bucket A condition.",
-    "reflection_directional_losses": [],
-    "replicate_contradictions": []
-  },
-  "candidate_adapter_sha256": "4f1fc0f8f67ea6246268933f14fb0f20b514475b37153b4af0d29a8178c34de9",
-  "generated_at": "2026-05-15T01:58:39.130772Z",
-  "last_written_runs": [
-    {
-      "family": "forced_contradiction",
-      "manifest": "data/runs/noisy_policy_comparison_forced_contradiction_scenario_conditioned_manifest.json",
-      "metrics_csv": "data/results/noisy_policy_comparison_forced_contradiction_scenario_conditioned_metrics.csv",
-      "run_json": "data/runs/noisy_policy_comparison_forced_contradiction_scenario_conditioned.json"
-    },
-    {
-      "family": "scope_contamination",
-      "manifest": "data/runs/noisy_policy_comparison_scope_contamination_scenario_conditioned_manifest.json",
-      "metrics_csv": "data/results/noisy_policy_comparison_scope_contamination_scenario_conditioned_metrics.csv",
-      "run_json": "data/runs/noisy_policy_comparison_scope_contamination_scenario_conditioned.json"
-    },
-    {
-      "family": "preference_drift",
-      "manifest": "data/runs/noisy_policy_comparison_preference_drift_scenario_conditioned_manifest.json",
-      "metrics_csv": "data/results/noisy_policy_comparison_preference_drift_scenario_conditioned_metrics.csv",
-      "run_json": "data/runs/noisy_policy_comparison_preference_drift_scenario_conditioned.json"
-    },
-    {
-      "family": "useful_pending_memory",
-      "manifest": "data/runs/noisy_policy_comparison_useful_pending_memory_scenario_conditioned_manifest.json",
-      "metrics_csv": "data/results/noisy_policy_comparison_useful_pending_memory_scenario_conditioned_metrics.csv",
-      "run_json": "data/runs/noisy_policy_comparison_useful_pending_memory_scenario_conditioned.json"
-    },
-    {
-      "family": "false_corroboration",
-      "manifest": "data/runs/noisy_policy_comparison_false_corroboration_scenario_conditioned_manifest.json",
-      "metrics_csv": "data/results/noisy_policy_comparison_false_corroboration_scenario_conditioned_metrics.csv",
-      "run_json": "data/runs/noisy_policy_comparison_false_corroboration_scenario_conditioned.json"
-    },
-    {
-      "family": "memory_poisoning",
-      "manifest": "data/runs/noisy_policy_comparison_memory_poisoning_scenario_conditioned_manifest.json",
-      "metrics_csv": "data/results/noisy_policy_comparison_memory_poisoning_scenario_conditioned_metrics.csv",
-      "run_json": "data/runs/noisy_policy_comparison_memory_poisoning_scenario_conditioned.json"
-    },
-    {
-      "family": "mechanism_diverse_heldout",
-      "manifest": "data/runs/noisy_policy_comparison_mechanism_diverse_heldout_scenario_conditioned_manifest.json",
-      "metrics_csv": "data/results/noisy_policy_comparison_mechanism_diverse_heldout_scenario_conditioned_metrics.csv",
-      "run_json": "data/runs/noisy_policy_comparison_mechanism_diverse_heldout_scenario_conditioned.json"
-    }
-  ],
-  "last_schema_profile_run": "scenario_conditioned",
   "all_completed_runs": [
     {
       "family": "forced_contradiction",
@@ -161,12 +101,72 @@
     }
   ],
   "all_completed_runs_scope": "all completed schema-profile cells currently present",
+  "bucket_decision": {
+    "bucket": "B",
+    "directional_loss_note": "Bucket C intentionally uses directional CQ-vs-Reflection losses before statistical loss gating; Bucket A still requires preregistered win size and LCB conditions.",
+    "frozen_mem0_non_inferior": true,
+    "frozen_mem0_superior": false,
+    "primary_reflection_wins": [
+      "forced_contradiction",
+      "preference_drift"
+    ],
+    "reason": "Completed result survived D/C but failed at least one Bucket A condition.",
+    "reflection_directional_losses": [],
+    "replicate_contradictions": []
+  },
+  "candidate_adapter_sha256": "74790939cd8fc829e3ba46c20c49214aaaec5676d8e5978fe059e1d615b6dd4b",
+  "generated_at": "2026-05-26T02:11:11.265386Z",
+  "last_schema_profile_run": "default",
+  "last_written_runs": [
+    {
+      "family": "forced_contradiction",
+      "manifest": "data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json",
+      "metrics_csv": "data/results/noisy_policy_comparison_forced_contradiction_default_metrics.csv",
+      "run_json": "data/runs/noisy_policy_comparison_forced_contradiction_default.json"
+    },
+    {
+      "family": "scope_contamination",
+      "manifest": "data/runs/noisy_policy_comparison_scope_contamination_default_manifest.json",
+      "metrics_csv": "data/results/noisy_policy_comparison_scope_contamination_default_metrics.csv",
+      "run_json": "data/runs/noisy_policy_comparison_scope_contamination_default.json"
+    },
+    {
+      "family": "preference_drift",
+      "manifest": "data/runs/noisy_policy_comparison_preference_drift_default_manifest.json",
+      "metrics_csv": "data/results/noisy_policy_comparison_preference_drift_default_metrics.csv",
+      "run_json": "data/runs/noisy_policy_comparison_preference_drift_default.json"
+    },
+    {
+      "family": "useful_pending_memory",
+      "manifest": "data/runs/noisy_policy_comparison_useful_pending_memory_default_manifest.json",
+      "metrics_csv": "data/results/noisy_policy_comparison_useful_pending_memory_default_metrics.csv",
+      "run_json": "data/runs/noisy_policy_comparison_useful_pending_memory_default.json"
+    },
+    {
+      "family": "false_corroboration",
+      "manifest": "data/runs/noisy_policy_comparison_false_corroboration_default_manifest.json",
+      "metrics_csv": "data/results/noisy_policy_comparison_false_corroboration_default_metrics.csv",
+      "run_json": "data/runs/noisy_policy_comparison_false_corroboration_default.json"
+    },
+    {
+      "family": "memory_poisoning",
+      "manifest": "data/runs/noisy_policy_comparison_memory_poisoning_default_manifest.json",
+      "metrics_csv": "data/results/noisy_policy_comparison_memory_poisoning_default_metrics.csv",
+      "run_json": "data/runs/noisy_policy_comparison_memory_poisoning_default.json"
+    },
+    {
+      "family": "mechanism_diverse_heldout",
+      "manifest": "data/runs/noisy_policy_comparison_mechanism_diverse_heldout_default_manifest.json",
+      "metrics_csv": "data/results/noisy_policy_comparison_mechanism_diverse_heldout_default_metrics.csv",
+      "run_json": "data/runs/noisy_policy_comparison_mechanism_diverse_heldout_default.json"
+    }
+  ],
   "mode": "noisy_policy_comparison_summary",
   "preregistration_lock_sha256": "4bd2bbe64a542c6d8479c2c7c4b40b12c3c601fd35256a60b85bd1e30bfa9bff",
   "primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
   "primary_model_tag": "qwen2.5:32b-instruct-q4_K_M",
   "prompt_sha256": "ca9ec418156b4cc12bcf5457683844f023684bbc5cee2b7460a6c5030a475633",
-  "runner_command": "python3 scripts/run_noisy_policy_comparison.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile scenario_conditioned --include-frozen-sentinel --policy-set phase2_5",
+  "runner_command": "python3 scripts/run_noisy_policy_comparison.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --policy-set phase2_5",
   "schema_profiles": {
     "default": {
       "artifacts": {

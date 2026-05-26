@@ -2,9 +2,9 @@
   "archive_status": "regeneratable_only",
   "artifacts": [
     {
-      "bytes": 18073332,
+      "bytes": 18073294,
       "path": "data/runs/noisy_policy_comparison_forced_contradiction_default.json",
-      "sha256": "342fc97d15c51f315347597a0f278de089e5961a2f7e3f32d06be71147a7f479"
+      "sha256": "fa738ab89084b34440305ccb452046f5e343f1bf618f2152b6833a60edc1fb1c"
     },
     {
       "bytes": 15480,
@@ -12,7 +12,7 @@
       "sha256": "a8aaa7dbbbceef4273c38468acb74ce130c2efc5384ad99ea25016ba82587e1e"
     }
   ],
-  "candidate_adapter_sha256": "4f1fc0f8f67ea6246268933f14fb0f20b514475b37153b4af0d29a8178c34de9",
+  "candidate_adapter_sha256": "74790939cd8fc829e3ba46c20c49214aaaec5676d8e5978fe059e1d615b6dd4b",
   "candidate_stream_sha256": [
     {
       "adapter_drop_count": 0,
@@ -496,7 +496,7 @@
     }
   ],
   "expected_primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
-  "git_commit": "7583d3cdbb9db84e5875157931df35beb666dd8a",
+  "git_commit": "3b611311e18a689924c2a3dcad138d1e21869304",
   "manifest_version": 1,
   "ollama_server_version": "0.23.1",
   "predictions_path": "data/results/component_gate_decision_forced_contradiction_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json",
