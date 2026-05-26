@@ -42,8 +42,10 @@ preregistration \S5 and is recorded as Bucket \code{B_inconclusive_min_n} in
 artifact policy, large per-scenario run JSON, component-eval, and prediction
 payloads remain regeneratable rather than committed; the Step 3 manifest
 archives their content hashes alongside the noisy-comparison manifests so the
-replay can be reproduced from the committed component-gate caches and the
-runner command. The replay produced zero alias-CQR hits on either thesis
+replay can be verified byte-for-byte against locally retained component-gate
+caches plus the runner command, with the caveat that a clean clone must first
+regenerate the per-family prediction and component-eval payloads (gitignored)
+before Step 3 can re-execute. The replay produced zero alias-CQR hits on either thesis
 family under the locked alias function and 32B extractor cell, so the
 lookup-versus-answer-success cross-tab is not evaluable. The remaining open
 question is narrower than before: either a post-hoc preregistered amendment

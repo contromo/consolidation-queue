@@ -416,7 +416,18 @@ class PublicationHardeningStep3OutputTests(unittest.TestCase):
             )
             text = path.read_text(encoding="utf-8")
         lines = text.splitlines()
-        header_index = next(i for i, line in enumerate(lines) if line.startswith("| Family |"))
+        # The doc has two tables starting with "| Family |": the Scope table
+        # (two columns) and the Per-Family Cross-Tab table. The bug being
+        # regressed is in the SECOND one, so anchor on its section heading
+        # first to avoid silently validating the wrong table.
+        cross_tab_section = next(
+            i for i, line in enumerate(lines) if line.strip() == "## Per-Family Cross-Tab"
+        )
+        header_index = next(
+            i
+            for i, line in enumerate(lines[cross_tab_section:], start=cross_tab_section)
+            if line.startswith("| Family |")
+        )
         header_line = lines[header_index]
         separator_line = lines[header_index + 1]
         # Sanity: the separator row must look like a Markdown table separator.
@@ -424,6 +435,15 @@ class PublicationHardeningStep3OutputTests(unittest.TestCase):
             set(separator_line.replace("|", "").strip()) <= set("- :")
             and "|" in separator_line,
             f"Line after header should be a Markdown table separator, got: {separator_line!r}",
+        )
+        # Sanity: the header should have the wider cross-tab column count
+        # (at least 10 columns: Family, Role, Hits, Misses, P(hit), P(miss),
+        # Lift, Alias FPR, Min N, Miss evaluable) — not the 2-column Scope
+        # header. This guards against the anchor regressing onto the wrong table.
+        self.assertGreaterEqual(
+            header_line.count("|"),
+            11,
+            f"Cross-tab header should have >=11 pipes, got: {header_line!r}",
         )
         self.assertEqual(
             header_line.count("|"),
