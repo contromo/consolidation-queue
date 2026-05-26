@@ -40,6 +40,11 @@ data/results/**/*.json
 !data/results/qr_canon_field_diagnostic_metrics_manifest.json
 !data/results/locomo_amb_pflc_rows.csv
 !data/results/locomo_amb_pflc_summary.json
+!data/results/cqmulti_per_row_regression_summary.json
+!data/external/longmemeval/all_hit_random_floor.json
+!data/results/publication_hardening_step3_summary.json
+!data/results/publication_hardening_step3_family_rows.csv
+!data/runs/publication_hardening_step3_manifest.json
 
 # LaTeX build artifacts (paper/)
 paper/*.aux

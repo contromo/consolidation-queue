@@ -8,11 +8,13 @@ rows unsupported under the current evidence.
 
 The LongMemEval result is also bounded. The completed transfer probe is stable
 and negative for base CQ on evidence completeness. The pending multi-evidence
-follow-up supports a readout-cardinality repair for that loss. LongMemEval-V2,
-LongMemEval-S, distractor-heavy retrieval quality, and natural-language QA
-success remain future evaluation targets; the
-\code{answer_correct} surface is diagnostic-only in the transfer probe
-because policy answers are trace-shaped.
+follow-up supports a readout-cardinality repair for that v1 loss. LongMemEval-S
+is not evaluated here: the 2026-05-25 feasibility gate failed because no local
+source artifact was available to pin, so no held-out adapter or policy run is
+authorized in this revision. LongMemEval-V2, distractor-heavy retrieval
+quality, and natural-language QA success remain future evaluation targets; the
+\code{answer_correct} surface is diagnostic-only in the transfer probe because
+policy answers are trace-shaped.
 
 PFLC is a diagnostic class rather than a new pass/fail gate. The field-level
 survey records what released baseline artifacts expose. LoCoMo's evidence
@@ -22,7 +24,7 @@ artifact contracts and standard output surfaces are blocked for PFLC, while
 the AMB LoCoMo subset admits a published-output replay that decomposes
 aggregate accuracy without resolving the blocked majority.
 
-The resolution audit replay repair remains an abort (repo: Bucket~D). The
+The resolution audit replay repair remains an abort. The
 lookup diagnostic leaves the aborted audit and the noisy same-stream policy
 comparison's mixed-support verdict unchanged, and the blocked cross-tab of
 lookup hit versus per-policy answer success remains unrun. A third resolution-
@@ -32,6 +34,9 @@ archived payloads.
 
 Finally, all experiments are local-first prototypes. Real-user weeks-long
 helpfulness, learned semantic scope inference, production retrieval stacks, and
-API-hosted extractors remain future evaluation targets. The source package and
-branch-pinned reproduction path for the present claims are recorded in
+API-hosted extractors remain future evaluation targets. A PFLC-surface deletion
+experiment also remains future work: the current local policies do not expose
+pre-existing separable policy-facing query surfaces that would support such an
+experiment without refactoring. The source package and branch-pinned
+reproduction path for the present claims are recorded in
 Appendix~\ref{app:reproducibility}.

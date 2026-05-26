@@ -1,0 +1,15 @@
+{
+  "artifact": "longmemeval_s_dataset_pin",
+  "date": "2026-05-25",
+  "required_source_file": "longmemeval_s_cleaned.json",
+  "local_search_roots": [
+    "/Users/manav/code",
+    "/Users/manav/.cache",
+    "/private/tmp"
+  ],
+  "matched_source_files": [],
+  "sha256": null,
+  "pin_status": "not_pinned_no_local_source_file",
+  "gate_verdict": "no_go",
+  "reason": "The LongMemEval-S cleaned source file was not present in the local workspace, cache, or temporary roots inspected during the feasibility gate. No dataset hash can be locked and no adapter/preregistration work is authorized from this gate."
+}

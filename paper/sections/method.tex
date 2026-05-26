@@ -12,26 +12,23 @@ policy's state through the same scoped memory interface.
 
 PFLC means policy-facing lookup contract: the identifier or handle a memory
 policy must expose so a query can be evaluated against the intended evidence.
-The \emph{canonical-id lookup diagnostic} (repo label: QR-canon) is this
-paper's canonical-id PFLC instance. It reuses the set-membership metric and
-alias function from the earlier \emph{canonical-id resolution audit} (repo:
-CQR), but it is a small committed diagnostic table rather than a replay of
-the large noisy same-stream policy comparison run payloads.
+The \emph{canonical-id lookup diagnostic} is this paper's canonical-id PFLC
+instance. It reuses the set-membership metric and alias function from the
+earlier \emph{canonical-id resolution audit}, but it is a small committed
+diagnostic table rather than a replay of the large noisy same-stream policy
+comparison run payloads.
 
-This paper uses descriptive names in body text; repository labels appear
-once in parentheticals to keep the artifact trail navigable
-(Appendix~\ref{app:glossary} collects the full mapping). The evaluation
-steps are: the \emph{prompt-regression guard} (repo: Phase~A) runs before
-noisy component scoring; the \emph{noisy extractor-quality gate} (repo:
-Phase~3) scores local extractor outputs and licenses downstream policy
-comparison; the \emph{noisy same-stream policy comparison} (repo: Phase~4)
-runs after that gate passes; and the \emph{cardinality-repair follow-up}
-(repo: Phase~Y) addresses a specific external-transfer interface gap.
-Preregistered interpretation labels are: a planned gate or thesis condition
-fired (repo: Bucket~A), a completed mixed or partial result
-(repo: Bucket~B), and an abort or surprise-lane boundary that prevents the
-stronger claim (repo: Bucket~D). The 7B and 32B labels denote local
-extractor model cells, not memory-policy sizes.
+This paper uses descriptive names in body text; Appendix~\ref{app:glossary}
+collects the repository-label mapping for artifact navigation. The evaluation
+steps are: the \emph{prompt-regression guard} runs before noisy component
+scoring; the \emph{noisy extractor-quality gate} scores local extractor
+outputs and licenses downstream policy comparison; the \emph{noisy
+same-stream policy comparison} runs after that gate passes; and the
+\emph{cardinality-repair follow-up} addresses a specific external-transfer
+interface gap. Preregistered interpretation labels distinguish a planned gate
+or thesis condition firing, a completed mixed or partial result, and an abort
+or surprise-lane boundary that prevents the stronger claim. The 7B and 32B
+labels denote local extractor model cells, not memory-policy sizes.
 
 \subsection{Benchmark Objects}
 
@@ -108,18 +105,18 @@ state, not just relevant content. The evaluated operations in this paper are
 contradiction handling, contestation, demotion, provenance preservation, and
 scoped override: each must address a specific prior claim by handle, not by
 paraphrase or similarity. Cluster-partition metrics cannot test this because
-they are invariant to relabeling; retrieval-at-k metrics cannot test it because
-they score content overlap, not handle identity; answer-accuracy metrics
-cannot test it because a correct answer can be produced from non-canonical
-state. Production deletion, right-to-be-forgotten, and enterprise compliance
-are motivating examples of why a queryable, identifier-bearing memory state
-matters in deployed systems; this paper does not evaluate them.
+they are invariant to relabeling. Retrieval-at-k metrics cannot test it because
+they score content overlap, not handle identity. Answer-accuracy metrics cannot
+test it because a correct answer can be produced from non-canonical state.
+Production deletion, right-to-be-forgotten, and enterprise compliance are
+motivating examples of why a queryable, identifier-bearing memory state matters
+in deployed systems. This paper does not evaluate them.
 
 PFLC diagnostics ask whether the system exposes the identifier or handle that a
 memory policy actually needs to query. In plain terms, clustering metrics
 treat labels as interchangeable, so a system that perfectly groups items into
 clusters $\{A, B, C\}$ scores 1.00 even if it called them $\{1, 2, 3\}$
-internally; a governance query that asks "is item X in slot $B$?" fails when
+internally. A governance query that asks "is item X in slot $B$?" fails when
 the system has slot $2$ instead. The formal core makes this precise in three
 parts. Proposition 1 shows that for non-singleton label alphabets and
 cluster-partition metrics invariant to injective relabeling, the predicted

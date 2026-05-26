@@ -13,14 +13,15 @@ itself a stronger claim than the current bounded-null label.
 
 \paragraph{LongMemEval beyond the v1 transfer probe.}
 The pending multi-evidence repair is scoped to the v1 evidence-only split.
-LongMemEval-S introduces distractor sessions that can shift the dominant
-failure mode from completeness loss to precision loss. A preregistered
-extension keeps evidence-id completeness as the primary PFLC target, adds
-\code{all_hit_at_k} at small \(k\) as a precision-sensitive co-primary, and
-classifies the predicted failure mode before unblinding. Both capped
-Reflection and plural-pending CQ run in the same cells; the preregistered-gate
-condition (repo: Bucket~A) requires a stable sign across at least two
-contract-sensitivity cells, matching the transfer probe criterion.
+The 2026-05-25 LongMemEval-S feasibility gate did not find a local source
+artifact to pin, so this revision does not run a held-out -S adapter. A future
+extension must first pin the dataset, inspect the answer/evidence and
+distractor-session fields, and decide whether filler sessions enter the same
+candidate stream or only the retrieval surface. If that mechanism-alignment
+check passes, the extension should keep evidence-id completeness as the
+primary PFLC target, add \code{all_hit_at_k} at small \(k\) as a
+precision-sensitive co-primary, and classify the predicted failure mode before
+unblinding.
 
 \paragraph{External-transfer boundary to conflict resolution.}
 MemoryAgentBench's conflict-resolution tasks are the closest external surface
@@ -28,13 +29,13 @@ to CQ's contestation and demotion mechanism. A rigorous transfer must satisfy
 three preconditions before policy execution: an adapter that exposes
 per-question identifiers sufficient for PFLC scoring; hidden-answer
 verification analogous to the LongMemEval dual-path protocol; and a
-preregistered abort criterion (repo: Bucket~D) if the source benchmark does
+preregistered abort criterion if the source benchmark does
 not commit to a stable evidence id across releases. A transfer that cannot meet all three is labeled
 descriptive-only at preregistration time, not retroactively.
 
 \paragraph{Resolving the resolution audit abort.}
-The blocked resolution audit cross-tab is the one outstanding internal lock
-(repo: CQR Bucket~D). Two paths are acceptable. The first materializes the
+The blocked resolution audit cross-tab is the one outstanding internal lock.
+Two paths are acceptable. The first materializes the
 original locked policy-comparison run JSON payloads if recoverable. The
 second preregisters a fresh policy-comparison baseline that mandates payload
 archival and reports the lookup-versus-answer-success cross-tab as a primary
@@ -54,3 +55,12 @@ acceptable failure criterion is principled rejection on the grounds that the
 schema cannot represent a specific task family. Silent neglect is the failure
 mode this paper's survey already documents and is not acceptable evidence
 against the schema.
+
+\paragraph{Deployment realism and policy-facing surfaces.}
+Production deletion, right-to-be-forgotten, and enterprise compliance are the
+natural deployment-realism lane for PFLC. The current local policies are not
+ready for that experiment because they share the same \code{answer_question}
+surface and query the substrate directly, rather than exposing separable
+policy-facing lookup contracts. A future deletion experiment should first
+define those surfaces and deletion semantics, then preregister leakage metrics
+before any policy execution.

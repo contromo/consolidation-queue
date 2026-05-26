@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-20 (paper draft package started)
+Last updated: 2026-05-25 (publication hardening protocol lock)
 
 ## Goal
 
@@ -33,6 +33,9 @@ These are load-bearing. Do not violate them casually.
 6. Prefer reversible memory behavior over raw recall when tradeoffs are exposed.
 7. Keep v1 local-first and API-free by default.
 8. When adapting a published system into a `Lite` baseline, document what is and is not faithful.
+9. API-backed paper-hardening cells require an explicit preregistered exception,
+   cached raw responses, replay manifests, model/provider pins, cost records,
+   and claim boundaries before they can support any paper result.
 
 ## Research Question
 
@@ -339,6 +342,35 @@ Implemented:
   reproducibility README. The package is report integration only; it adds no
   new empirical result and keeps the LongMemEval X.4 loss plus the pending
   multi-evidence repair as separate claims.
+- `scripts/build_cqmulti_per_row_regression_table.py`,
+  `paper/figures/cqmulti_per_row_regression.tex`,
+  `data/results/cqmulti_per_row_regression_summary.json`,
+  `scripts/compute_all_hit_at_50_random_floor.py`,
+  `paper/figures/all_hit_random_floor.tex`,
+  `data/external/longmemeval/all_hit_random_floor.json`,
+  `docs/longmemeval_s_dataset_pin.json`,
+  `docs/longmemeval_s_feasibility_note.md`, and
+  `docs/pflc_surface_audit_note.md`: the 2026-05-25 paper-revision gate
+  package. It reframes the report as a methods paper, makes the CQ-Multi
+  internal regression claim per-family inspectable from aggregate rows, adds a
+  scorer-only all-hit random floor showing that LongMemEval v1's two-session
+  evidence-only pool gives random two-id readout a 100% floor while singleton
+  readout remains impossible, records LongMemEval-S as no-go because no local
+  cleaned source artifact could be pinned, and demotes the PFLC deletion
+  experiment to future work because current policies lack pre-existing
+  separable query surfaces. No new LongMemEval-S adapter, preregistration, or
+  policy run is authorized by this package.
+- `docs/publication_hardening_preregistration.md`,
+  `cq/eval/publication_hardening.py`, and
+  `tests/test_publication_hardening.py`: the 2026-05-25 publication-hardening
+  lock for a methods-archival submission path. It preserves Phase 4, X.4,
+  CQR aborts, CQ-Multi v1 follow-up, capped Reflection, the CQ-Multi
+  regression table, the LongMemEval v1 random floor, and AMB LoCoMo PFLC as
+  historical evidence; defines the gated distractor, CQR replay, PFLC output
+  contract, optional API-extractor, answerer-calibration, and API-caching
+  rules; and makes the PFLC JSONL schema, policy-name mapping, Step 3 scope,
+  API pin shape, and distractor-floor definition executable in tests. No new
+  external policy run or hosted model call is authorized by this lock alone.
 - `cq/eval/external/longmemeval/adapter.py`,
   `docs/longmemeval_adapter_pin.json`, and
   `tests/test_longmemeval_external_adapter.py`: Phase X.2 adapter construction
@@ -826,6 +858,23 @@ The first deterministic forced-contradiction local-model command/prompt, compone
     reproduces base CQ's loss, and internal regression checks match base CQ
     exactly on all checked overall metrics. Treat it as a separate follow-up,
     not a rewrite of X.4 or broad LongMemEval generalization.
+11. The 2026-05-25 paper-revision gates are complete. The LongMemEval-S held-out
+    probe is no-go until a local cleaned source artifact can be pinned and a
+    fresh feasibility gate confirms mechanism alignment. The PFLC deletion
+    lane is a design note until policies expose pre-existing separable
+    policy-facing query surfaces. The immediate report task is now consistency
+    polish and verification, not new empirical execution.
+12. The publication-hardening protocol is now locked in
+    `docs/publication_hardening_preregistration.md`. If the paper is hardened
+    beyond the current revision package, the next licensed empirical step is
+    Step 2 of that lock: a distractor-heavy CQ-Multi generalization test. The
+    current LongMemEval-S lane remains blocked by the missing source artifact;
+    MemoryAgentBench is available only if a separate conflict-resolution
+    annotation layer can be pinned before policy execution. The Step 3 CQR
+    cross-tab replay is scoped only to the original thesis families
+    (`useful_pending_memory`, `memory_poisoning`) plus descriptive companions,
+    and the optional API extractor lane is not authorized until a concrete
+    provider/model/cost/stability pin is preregistered.
 
 ## Working Rules
 

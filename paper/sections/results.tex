@@ -15,13 +15,13 @@ Claim & Evidence & Readout & Boundary\\
 Claim & Evidence & Readout & Boundary\\
 \midrule
 \endhead
-Fair-stream evaluation & Frozen oracle sweep; noisy extractor-quality gate; noisy same-stream policy comparison & All 108 frozen oracle deltas matched. The 7B gate blocked a false unlock. The 32B-gated comparison reaches mixed/partial support. & Mechanism-local noisy support.\\
+Same-stream evaluation makes policy attribution inspectable & Frozen oracle sweep; noisy extractor-quality gate; noisy same-stream policy comparison & All 108 frozen oracle deltas matched. The 7B gate blocked a false unlock. The 32B-gated comparison reaches mixed/partial support. & Mechanism-local noisy support.\\
 \addlinespace
-PFLC diagnostics & Lookup diagnostic; PFLC proposition and field survey & Five of seven comparison rows pass the B-cubed floor while exact canonical-id match is below 5 percent; formal and constructive counterexamples cover clustering, retrieval, and answer metrics. & Diagnostic PFLC; resolution audit verdict unchanged.\\
+Standard memory metrics can pass while policy-facing lookup fails & Lookup diagnostic; PFLC proposition and field survey & Five of seven comparison rows pass the B-cubed floor while exact canonical-id match is below 5 percent; formal and constructive counterexamples cover clustering, retrieval, and answer metrics. & Diagnostic PFLC; resolution audit verdict unchanged.\\
 \addlinespace
-Controlled external transfer & LongMemEval transfer probe & Methodology gates pass, but CQ minus Reflection on \code{all_hit_at_50} is -1.0 in all three cells. & Stable base-CQ transfer loss.\\
+Preserved negative transfer exposes interface failures & LongMemEval transfer probe & Methodology gates pass, but CQ minus Reflection on \code{all_hit_at_50} is -1.0 in all three cells. & Stable base-CQ transfer loss.\\
 \addlinespace
-Cardinality-controlled repair & Pending multi-evidence follow-up & \cqmulti{} moves base CQ from 0/71 to 71/71 on the primary cell; capped Reflection falls from 71/71 to 0/71. & Interface repair; external generalization out of scope.\\
+A paired repair/control isolates readout cardinality & Pending multi-evidence follow-up & \cqmulti{} moves base CQ from 0/71 to 71/71 on the primary cell; capped Reflection falls from 71/71 to 0/71. & Interface repair; external generalization out of scope.\\
 \bottomrule
 \end{longtable}
 }
@@ -129,12 +129,12 @@ AMB \code{cognee}            & 152     & 150     & 60.0\% & 73.3\% & 92.0\% \\
 \end{tabular}
 \end{table}
 
-The replayable runs are not lookup-contract collapses; they decompose
+The replayable runs are not lookup-contract collapses. They decompose
 LoCoMo's aggregate answer accuracy into three components that the aggregate
 conflates. For example, AMB hybrid-search produces 276 cases where the answer
 is wrong while every gold evidence \code{dia_id} is already present in the
 emitted context by PFLC@50, isolating an answering or judging residual from
-a retrieval-contract residual; conversely, 100 cases are correct while all
+a retrieval-contract residual. Conversely, 100 cases are correct while all
 gold evidence is missing at PFLC@50, flagging answer success not fully backed
 by the LoCoMo evidence contract as scored here. PFLC@10 and PFLC@20 carry the
 rank-sensitivity signal because Hindsight averages 36{,}235 context tokens
@@ -184,6 +184,21 @@ stable across the primary and denominator-sensitivity cells: -1.0 on
 \label{fig:x4-cells}
 \end{figure}
 
+\subsection{All-Hit Metric Floor}
+
+The LongMemEval v1 transfer probe is evidence-only: in the committed transfer
+rows, the observed unique session-id pool for each scored case contains exactly
+the two gold evidence sessions. A scorer-only random floor therefore exposes a
+sharp cardinality property of the metric. A singleton readout has zero chance
+to satisfy \code{all_hit_at_50}; a random two-session readout has a 100\%
+closed-form floor in all three cells, confirmed by five seeded draws per case.
+This does not weaken the original base-CQ loss, because base CQ returns only
+one session. It does bound the follow-up interpretation: \cqmulti{} succeeds on
+v1 by exposing plural same-slot evidence, not by demonstrating broad
+distractor-heavy retrieval quality.
+
+\input{figures/all_hit_random_floor.tex}
+
 \subsection{Pending Multi-Evidence Follow-Up}
 
 The follow-up is structured around a paired pre-registration: a CQ-side
@@ -201,7 +216,7 @@ half: it rules out CQ-only storage and asymmetric-input explanations for the
 loss by reproducing it on a baseline that previously won the metric.
 
 Both predictions hold (Table~\ref{tab:y}). Plural pending readout moves base
-CQ from $0/71$ to $71/71$ in the primary cell; capping Reflection moves it
+CQ from $0/71$ to $71/71$ in the primary cell. Capping Reflection moves it
 from $71/71$ to $0/71$ in the same cell. The pattern is stable across both
 denominator-sensitivity cells.
 
@@ -223,12 +238,18 @@ Cell & Base CQ & Follow-up CQ & Reflection & Capped Reflection\\
 
 The internal regression gate reports maximum checked overall delta 0.0 across
 forced contradiction, preference drift, mechanism-diverse held-out,
-adversarial upstream noise, and evidence-conflict spectrum. Focused
+adversarial upstream noise, and evidence-conflict spectrum. The committed
+metrics are aggregate policy rows rather than per-scenario CQ-Multi-vs-base-CQ
+pairs, so the regression table reports per-family overall deltas only.
+
+\input{figures/cqmulti_per_row_regression.tex}
+
+Focused
 negative-control tests confirm that below-floor poisoned siblings, contested
 siblings, wrong-scope siblings, mirrored-source weak siblings, and demoted
 siblings are not returned by plural pending lookup. With the symmetric
 falsifier holding, the supported mechanism is answer-time readout cardinality,
-not a richer CQ-only memory substrate; the repair does not claim broader
+not a richer CQ-only memory substrate. The repair does not claim broader
 CQ-vs-Reflection superiority.
 
 \input{figures/phase_y_cardinality_control.tex}

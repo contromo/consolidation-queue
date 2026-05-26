@@ -73,6 +73,24 @@ The script pulls numbers directly from
 cannot silently drift from the result documents. Numeric claims should be
 checked against the artifact index in `paper/appendices/artifacts.tex`.
 
+## Generated Tables
+
+Two report tables are generated from committed artifacts and checked into the
+paper source, so a paper-only build does not need to run these scripts. From the
+repository root, regenerate them with:
+
+```bash
+python3 scripts/build_cqmulti_per_row_regression_table.py
+python3 scripts/compute_all_hit_at_50_random_floor.py
+```
+
+The first command reads `data/results/cq_pending_multi_evidence_*_metrics.csv`
+and writes `paper/figures/cqmulti_per_row_regression.tex` plus
+`data/results/cqmulti_per_row_regression_summary.json`. The second reads
+`data/external/longmemeval/transfer_per_case_rows.csv` and writes
+`paper/figures/all_hit_random_floor.tex` plus
+`data/external/longmemeval/all_hit_random_floor.json`.
+
 ## Hosting
 
 The paper source and reproducibility bundle are hosted at the tag

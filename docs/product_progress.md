@@ -1,5 +1,68 @@
 # Product Progress
 
+## 2026-05-25 — Publication-hardening protocol lock lands
+
+### What Shipped
+
+- added `docs/publication_hardening_preregistration.md` with a locked
+  methods-archival hardening sequence for the paper
+- added executable contract checks for PFLC JSONL records, policy display-name
+  to runner-key mapping, the Step 3 CQR scope, API model-pin requirements, and
+  the post-adapter distractor-floor definition
+- recorded the paper-specific API exception in repo guidance without relaxing
+  the local-first default for ordinary work
+
+### Framing Decision
+
+- Phase 4, X.4, CQR aborts, CQ-Multi v1 follow-up, capped Reflection, the
+  CQ-Multi regression table, the LongMemEval v1 random floor, and AMB LoCoMo
+  PFLC replay remain preserved historical evidence
+- Step 2 is a new distractor-heavy generalization test, not a rerun or rewrite
+  of v1 LongMemEval
+- API-backed extractors/judges/answerers are not authorized unless a concrete
+  provider/model/cost/stability pin and cached replay contract are locked first
+
+### Open Issues / Next
+
+- LongMemEval-S remains blocked until a source artifact can be pinned
+- MemoryAgentBench fallback requires a preregistered annotation layer before
+  any policy run
+- the optional internal API-extractor lane still needs a concrete model pin
+
+## 2026-05-25 — Paper revision gates and report artifacts land
+
+### What Shipped
+
+- reframed the paper surfaces around the methods-paper identity: CQ remains the
+  controlled case study, with negative and mixed rows preserved as evidence
+- added a CQ-Multi aggregate regression table generator and committed table
+  artifact showing per-family max overall delta `0.000000` across the five
+  checked internal families
+- added a scorer-only LongMemEval `all_hit_at_50` random-floor generator and
+  committed floor artifact; on the v1 evidence-only transfer rows, singleton
+  readout has a `0.0%` all-hit floor and random two-session readout has a
+  `100.0%` floor in all three cells
+- ran the LongMemEval-S feasibility gate as no-go because no local
+  `longmemeval_s_cleaned.json` source artifact was available to pin
+- ran the PFLC-surface audit and demoted deletion PFLC to future work because
+  current local policies do not expose pre-existing separable query surfaces
+
+### Framing Decision
+
+- Claim 4 remains a LongMemEval v1 mechanism-local readout-cardinality
+  diagnosis, not a broad LongMemEval generalization claim
+- no LongMemEval-S adapter, preregistration, judge calibration, or policy run is
+  authorized by the no-go gate
+- PFLC deletion/compliance work requires a future surface-design step before
+  any preregistered policy execution
+
+### Open Issues / Next
+
+- finish PDF/path verification and final prose consistency checks before
+  treating the revision package as submission-ready
+- any held-out LongMemEval-S work must start from a pinned source artifact and
+  fresh preregistration
+
 ## 2026-05-20 — Initial arXiv paper draft package starts
 
 ### What Shipped

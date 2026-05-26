@@ -6,12 +6,14 @@
 %   \input{figures/evidence_ledger_summary.tex}
 %
 % The DAG shows how the four headline claims depend on each other.
-% Claim 1 (fair-stream evaluation) is the methodological foundation.
-% Claim 2 (PFLC) was registered post-hoc after Claim 1's noisy comparison
+% Claim 1 (same-stream evaluation makes policy attribution inspectable) is the
+% methodological foundation.
+% Claim 2 (standard memory metrics can pass while policy-facing lookup fails)
+% was registered post-hoc after Claim 1's noisy comparison
 % produced null rows that clustering metrics could not explain.
-% Claim 3 (controlled external transfer) extends Claim 1's same-stream
+% Claim 3 (preserved negative transfer exposes interface failures) extends Claim 1's same-stream
 % protocol externally and uses Claim 2's PFLC scoring as the metric.
-% Claim 4 (cardinality-controlled repair) builds on Claim 3's stable
+% Claim 4 (a paired repair/control isolates readout cardinality) builds on Claim 3's stable
 % negative LongMemEval transfer-probe result via a preregistered interface
 % variant + control.
 
@@ -43,7 +45,8 @@
 \node[c1] (c1) {
   \begin{tabular}{@{}c@{}}
     {\footnotesize\bfseries\color{black!55} Claim 1}\\[-1pt]
-    {\small\bfseries Fair-stream evaluation}\\[2pt]
+    {\small\bfseries Same-stream evaluation}\\[-1pt]
+    {\small\bfseries makes attribution inspectable}\\[2pt]
     {\scriptsize\color{black!75} same upstream stream}\\[-2pt]
     {\scriptsize\color{black!75} same scoped substrate}\\[-2pt]
     {\scriptsize\color{black!75} component-gated unlock}
@@ -51,7 +54,8 @@
 \node[c2, right=22mm of c1] (c2) {
   \begin{tabular}{@{}c@{}}
     {\footnotesize\bfseries\color{black!55} Claim 2}\\[-1pt]
-    {\small\bfseries PFLC diagnostics}\\[2pt]
+    {\small\bfseries Metrics can pass}\\[-1pt]
+    {\small\bfseries while lookup fails}\\[2pt]
     {\scriptsize\color{black!75} Proposition 1 + lemmas}\\[-2pt]
     {\scriptsize\color{black!75} canonical-id lookup diagnostic}\\[-2pt]
     {\scriptsize\color{black!75} anchor benchmark survey}
@@ -59,7 +63,8 @@
 \node[c3, right=22mm of c2] (c3) {
   \begin{tabular}{@{}c@{}}
     {\footnotesize\bfseries\color{black!55} Claim 3}\\[-1pt]
-    {\small\bfseries Controlled external transfer}\\[2pt]
+    {\small\bfseries Preserved negative transfer}\\[-1pt]
+    {\small\bfseries exposes interface failures}\\[2pt]
     {\scriptsize\color{black!75} LongMemEval transfer probe}\\[-2pt]
     {\scriptsize\color{black!75} stable negative on $\mathtt{all\_hit\_at\_50}$}\\[-2pt]
     {\scriptsize\color{black!75} result preserved, not rescued}
@@ -67,7 +72,8 @@
 \node[c4, right=22mm of c3] (c4) {
   \begin{tabular}{@{}c@{}}
     {\footnotesize\bfseries\color{black!55} Claim 4}\\[-1pt]
-    {\small\bfseries Cardinality-controlled repair}\\[2pt]
+    {\small\bfseries Paired repair/control}\\[-1pt]
+    {\small\bfseries isolates cardinality}\\[2pt]
     {\scriptsize\color{black!75} plural pending CQ (preregistered)}\\[-2pt]
     {\scriptsize\color{black!75} capped Reflection control}\\[-2pt]
     {\scriptsize\color{black!75} mechanism-local, not generalization}
@@ -92,13 +98,16 @@
 
 \end{tikzpicture}%
 }
-\caption{Claim dependency graph. Claim~1 (fair-stream evaluation) is the
-  methodological foundation; the noisy same-stream policy comparison's null
-  rows motivated Claim~2 (PFLC diagnostics), which then supplied the
-  policy-facing scoring used by Claim~3 (controlled external transfer).
+\caption{Claim dependency graph. Claim~1 (same-stream evaluation makes policy
+  attribution inspectable) is the methodological foundation; the noisy
+  same-stream policy comparison's null rows motivated Claim~2 (standard memory
+  metrics can pass while policy-facing lookup fails), which then supplied the
+  policy-facing scoring used by Claim~3 (preserved negative transfer exposes
+  interface failures).
   Claim~1's same-stream protocol also carries over directly to Claim~3
   (dashed edge). Claim~3's stable negative transfer-probe result motivated
-  the preregistered interface follow-up in Claim~4 (cardinality-controlled
-  repair). The contribution is the chain, not any individual claim.}
+  the preregistered interface follow-up in Claim~4 (a paired repair/control
+  isolates readout cardinality). The contribution is the chain, not any
+  individual claim.}
 \label{fig:evidence-ledger}
 \end{figure}

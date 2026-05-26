@@ -53,48 +53,62 @@ loss. The paper preserves the failure and the repair as separate evidence.
 
 The contribution is the evaluation discipline; CQ is the case study used
 to test what the discipline can detect. The paper collapses the
-repository's detailed evidence ledger into four headline claims.
+repository's detailed evidence ledger into four claims.
 
-\claim{Claim 1: Fair-stream memory-policy evaluation}
-The benchmark fixes the same upstream \code{CandidateUpdate} stream and the
-same scoped memory substrate across policies, then gates noisy-mode policy
-claims on component quality. This removes asymmetric inputs, asymmetric
-storage, and hidden extractor advantages from the policy comparison. It also
-records lifecycle traces, manifests, failure examples, and replay checks rather
-than reducing the experiment to a single score.
+\claim{Claim 1: Same-stream evaluation makes policy attribution inspectable}
+Same-stream, same-substrate, extractor-gated evaluation with preserved
+lifecycle traces removes the main stream, substrate, and extractor-quality
+confounds, making policy-level attribution inspectable. The benchmark fixes
+the same upstream \code{CandidateUpdate} stream and the same scoped memory
+substrate across policies, then gates noisy-mode policy claims on component
+quality. It also
+records lifecycle traces, manifests, failure examples, and replay checks
+rather than reducing the experiment to a single score.
 
-\claim{Claim 2: Policy-facing lookup contracts}
-A policy-facing lookup contract (PFLC) asks whether the system exposes the
-evidence handle the policy must actually query, not just whether retrieved
-text is semantically relevant. PFLC diagnostics name a class of metric blind
+\claim{Claim 2: Standard memory metrics can pass while policy-facing lookup fails}
+Cluster-partition, retrieval-at-k, and answer-accuracy metrics can all be
+passed by systems that fail exact policy-facing lookup. A policy-facing
+lookup contract (PFLC) asks whether the system exposes the evidence handle
+the policy must actually query, not just whether retrieved text is
+semantically relevant. PFLC diagnostics name this class of metric blind
 spots. Proposition 1 proves a
 cluster-partition/lookup-contract gap: a relabeling can preserve the gold
 partition and therefore score 1.00 under partition metrics while failing exact
 policy-query set membership. Constructive lemmas extend the same pattern to
 retrieval-at-k and answer-accuracy metrics. The lookup diagnostic instantiates
-this class on canonical-id queries within the CQ benchmark; the field-level PFLC
+this class on canonical-id queries within the CQ benchmark. The field-level PFLC
 survey divides into an artifact-blocked majority (no per-question evidence
 ids exposed) and a published-output replayable subset (AMB LoCoMo) that
 decomposes aggregate answer accuracy into evidence exposure, rank, and
 answer-generation residuals.
 
-\claim{Claim 3: Controlled external transfer with preserved negative results}
-The LongMemEval workstream builds a redacted same-stream adapter, dual-path
+\claim{Claim 3: Preserved negative transfer exposes interface failures}
+A controlled external-transfer pipeline that preserves negative results
+instead of rescuing them can surface stable interface failures that
+answer-only, any-hit, or semantic-relevance scoring would hide. The LongMemEval
+workstream builds a redacted same-stream adapter, dual-path
 annotation protocol, hidden-answer verifier, judge-calibration gate, PFLC
 scorer, and contract-sensitivity audit before policy execution. The result is
 stable and negative for base CQ on \code{all_hit_at_50}. CQ retrieves one gold
 evidence session in every case, tying eager baselines on
-\code{any_hit_at_50}; the missing second evidence session drives the
+\code{any_hit_at_50}. The missing second evidence session drives the
 \code{all_hit_at_50} loss.
 
-\claim{Claim 4: Cardinality-controlled mechanism repair}
-The follow-up preserves the LongMemEval transfer probe as a negative base-CQ result and tests a separately
+\claim{Claim 4: A paired repair/control isolates readout cardinality}
+When a transfer-probe loss is paired with both a single-variable interface
+repair and a capped-baseline control that reproduces the loss on a winning
+baseline, the loss can be attributed to an interface --- here, answer-time
+readout cardinality --- rather than to storage asymmetry or input
+asymmetry. The follow-up
+preserves the LongMemEval transfer probe as a negative base-CQ result and
+tests a separately
 preregistered interface hypothesis: plural pending readout should close the
 evidence-completeness gap, and capping a winning eager baseline to one returned
 candidate should reproduce the loss. The follow-up results match both
 predictions. The result is a mechanism-local repair pattern for this interface
-gap; broader LongMemEval and natural-language QA generalization remain outside
-its scope.
+gap. The 2026-05-25 LongMemEval-S feasibility gate did not authorize a held-out
+run because no local cleaned source artifact could be pinned, so broader
+LongMemEval and natural-language QA generalization remain outside its scope.
 
 \input{figures/evidence_ledger_summary.tex}
 
