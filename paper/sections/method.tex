@@ -7,7 +7,7 @@ content, scope key, provenance, evidence links, and lifecycle state. A
 \emph{durable} memory is committed state. A \emph{pending} candidate is not
 durable, but CQ can still expose it to scoped lookup while it remains
 reversible. A \emph{same-stream} comparison gives every policy the same ordered
-\code{CandidateUpdate} stream; a \emph{same-substrate} comparison stores every
+\code{CandidateUpdate} stream. A \emph{same-substrate} comparison stores every
 policy's state through the same scoped memory interface.
 
 PFLC means policy-facing lookup contract: the identifier or handle a memory
@@ -18,24 +18,29 @@ earlier \emph{canonical-id resolution audit}, but it is a small committed
 diagnostic table rather than a replay of the large noisy same-stream policy
 comparison run payloads.
 
-This paper uses descriptive names in body text; Appendix~\ref{app:glossary}
+This paper uses descriptive names in body text. Appendix~\ref{app:glossary}
 collects the repository-label mapping for artifact navigation. The evaluation
-steps are: the \emph{prompt-regression guard} runs before noisy component
-scoring; the \emph{noisy extractor-quality gate} scores local extractor
-outputs and licenses downstream policy comparison; the \emph{noisy
-same-stream policy comparison} runs after that gate passes; and the
-\emph{cardinality-repair follow-up} addresses a specific external-transfer
-interface gap. Preregistered interpretation labels distinguish a planned gate
-or thesis condition firing, a completed mixed or partial result, and an abort
-or surprise-lane boundary that prevents the stronger claim. The 7B and 32B
-labels denote local extractor model cells, not memory-policy sizes.
+has four steps:
+\begin{itemize}
+\item The \emph{prompt-regression guard} runs before noisy component scoring.
+\item The \emph{noisy extractor-quality gate} scores local extractor outputs
+and licenses downstream policy comparison.
+\item The \emph{noisy same-stream policy comparison} runs after that gate
+passes.
+\item The \emph{cardinality-repair follow-up} addresses a specific
+external-transfer interface gap.
+\end{itemize}
+Preregistered interpretation labels distinguish a planned gate or thesis
+condition firing, a completed mixed or partial result, and an abort or
+surprise-lane boundary that prevents the stronger claim. The 7B and 32B labels
+denote local extractor model cells, not memory-policy sizes.
 
 \subsection{Benchmark Objects}
 
 The benchmark centers on scoped candidate updates and a shared memory
 substrate. Candidate updates carry claim content, scope, provenance, evidence
 relations, and lifecycle state. All policies receive the same upstream
-observations; they differ in when they promote, demote, contest, or expose
+observations. They differ in when they promote, demote, contest, or expose
 these candidates. The load-bearing invariant is that CQ and the immediate-write
 baselines compare memory policy over the same inputs.
 

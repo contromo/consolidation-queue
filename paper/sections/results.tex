@@ -205,15 +205,15 @@ The follow-up is structured around a paired pre-registration: a CQ-side
 \emph{repair} hypothesis and a Reflection-side \emph{symmetric falsifier}.
 The repair hypothesis is that the transfer-probe loss is induced by answer-time
 readout cardinality, not by CQ-only storage or asymmetric inputs. If that is
-correct, two things must hold in the same cells: (i) \cqmulti{} --- which
-changes the no-durable pending fallback to expose all eligible same-slot
-pending candidates, with no change to storage, adapter, judge, or headline
-metric --- must close the gap on \code{all_hit_at_50}; and (ii) \refcapped{}
---- which preserves Reflection's winning write path and only caps answer
-readout to one durable candidate id --- must reproduce the original base-CQ
-loss with the same magnitude. The symmetric falsifier is the load-bearing
-half: it rules out CQ-only storage and asymmetric-input explanations for the
-loss by reproducing it on a baseline that previously won the metric.
+correct, two things must hold in the same cells. First, \cqmulti{} must close
+the gap on \code{all_hit_at_50}. Second, \refcapped{} must reproduce the
+original base-CQ loss with the same magnitude. \cqmulti{} changes the
+no-durable pending fallback to expose all eligible same-slot pending candidates,
+with no change to storage, adapter, judge, or headline metric. \refcapped{}
+preserves Reflection's winning write path and only caps answer readout to one
+durable candidate id. The symmetric falsifier is the load-bearing half: it
+rules out CQ-only storage and asymmetric-input explanations for the loss by
+reproducing it on a baseline that previously won the metric.
 
 Both predictions hold (Table~\ref{tab:y}). Plural pending readout moves base
 CQ from $0/71$ to $71/71$ in the primary cell. Capping Reflection moves it

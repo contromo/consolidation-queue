@@ -2,14 +2,15 @@
 
 \paragraph{Closing bounded-null rows under stronger extraction.}
 The noisy same-stream policy comparison leaves four rows---source-independence,
-scope-contamination, useful-pending, and poisoning---bounded by component
-evidence rather than by policy behavior. A preregistered extension would run these rows on a stronger
-extractor cell, either a larger local model or an API-hosted extractor under
-the same redacted same-stream guarantee. The primary prediction is that at
+scope-contamination, useful-pending, and poisoning---uninformative under the
+current extractor: the candidate stream collapses the policies to the same
+measured outcomes. A preregistered extension would rerun these rows with a
+stronger extractor, either a larger local model or an API-hosted extractor under
+the same redacted same-stream guarantee. The prediction is that at
 least scope-contamination and useful-pending separate CQ from Reflection
-with a 95\% lower confidence bound above zero. A negative outcome
-re-attributes those rows from component evidence to policy ties, which is
-itself a stronger claim than the current bounded-null label.
+with a 95\% lower confidence bound above zero. If not, we can conclude these
+rows are policy ties under this benchmark, not merely extraction-floor
+artifacts.
 
 \paragraph{LongMemEval beyond the v1 transfer probe.}
 The pending multi-evidence repair is scoped to the v1 evidence-only split.
@@ -30,8 +31,8 @@ three preconditions before policy execution: an adapter that exposes
 per-question identifiers sufficient for PFLC scoring; hidden-answer
 verification analogous to the LongMemEval dual-path protocol; and a
 preregistered abort criterion if the source benchmark does
-not commit to a stable evidence id across releases. A transfer that cannot meet all three is labeled
-descriptive-only at preregistration time, not retroactively.
+not commit to a stable evidence id across releases. If any precondition fails,
+we will preregister the transfer as descriptive-only and will not run policies.
 
 \paragraph{Resolving the resolution audit abort.}
 The second of the two acceptable paths has been executed: a fresh replay
@@ -42,9 +43,9 @@ artifact policy, large per-scenario run JSON, component-eval, and prediction
 payloads remain regeneratable rather than committed; the Step 3 manifest
 archives their content hashes alongside the noisy-comparison manifests so the
 replay can be verified byte-for-byte against locally retained component-gate
-caches plus the runner command, with the caveat that a clean clone must first
-regenerate the per-family prediction and component-eval payloads (gitignored)
-before Step 3 can re-execute. The replay produced zero alias-CQR hits on either thesis
+caches plus the runner command. A clean clone must first regenerate the
+gitignored per-family prediction and component-eval payloads before Step 3 can
+re-execute. The replay produced zero alias-CQR hits on either thesis
 family under the locked alias function and 32B extractor cell, so the
 lookup-versus-answer-success cross-tab is not evaluable. The remaining open
 question is narrower than before: either a post-hoc preregistered amendment
