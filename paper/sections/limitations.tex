@@ -2,24 +2,24 @@
 
 This is not a broad CQ superiority paper. The noisy-mode support is
 mechanism-local. CQ separates from \reflection{} on forced contradiction and
-partially on preference drift under the current 32B artifacts, ties \memzero{}
-on the frozen sentinel, and leaves source-independence, scope-contamination,
-useful-pending, and poisoning-defense rows unsupported under the current
-evidence. A stronger extractor could turn some of these bounded nulls into CQ
-separations, but it could also turn them into policy ties or CQ weaknesses;
-this revision does not claim either outcome.
+partially on preference drift under the current 32B artifacts, ties the
+Mem0-style baseline on the frozen sentinel, and leaves source-independence,
+scope-contamination, useful-pending, and poisoning-defense rows unsupported
+under the current evidence. A stronger extractor could turn those bounded nulls
+into CQ separations, policy ties, or CQ weaknesses; this revision does not
+claim any of those outcomes.
 
 The LongMemEval result is also bounded. The completed transfer probe is stable
-and negative for base CQ on evidence completeness. The pending multi-evidence
-follow-up supports a readout-cardinality repair for that v1 loss. LongMemEval-S
-is not evaluated here: the 2026-05-25 feasibility gate failed because no local
-source artifact was available to pin, so no held-out adapter or policy run is
-authorized in this revision. LongMemEval-V2, distractor-heavy retrieval
-quality, and natural-language QA success remain future evaluation targets; the
-\code{answer_correct} surface is diagnostic-only in the transfer probe because
-policy answers are trace-shaped. The follow-up is a mechanism-local interface
-repair on a controlled evidence-only probe, not a claim that CQ-Multi solves
-external long-memory retrieval.
+and negative for base CQ on evidence completeness, and the pending
+multi-evidence follow-up supports a readout-cardinality repair for that v1
+loss. LongMemEval-S is not evaluated here: the 2026-05-25 feasibility gate
+failed because no local source artifact was available to pin, so no held-out
+adapter or policy run is authorized in this revision. LongMemEval-V2,
+distractor-heavy retrieval quality, and natural-language QA success remain
+future evaluation targets; the \code{answer_correct} surface is diagnostic-only
+in the transfer probe because policy answers are trace-shaped. The follow-up is
+a controlled evidence-only repair, not a claim that CQ-Multi solves external
+long-memory retrieval.
 
 PFLC is a diagnostic class rather than a new pass/fail gate. The field-level
 survey records what released baseline artifacts expose. LoCoMo's evidence
@@ -47,12 +47,13 @@ null-row attribution is unchanged. The full readout and skip carve-out are
 recorded in \artifact{docs/publication_hardening_step3_results.md} and
 \artifact{docs/publication_hardening_step3_precondition_skip.md}.
 
-The baseline and deployment scope are deliberately narrow. \memzero{} is a
-rule-based ADD/UPDATE/NOOP baseline inspired by Mem0's write-policy framing,
-not a reproduction of the Mem0 system. The experiments do not evaluate
-real-user weeks-long helpfulness, learned semantic scope inference, production
-retrieval stacks, or API-hosted extractors. A PFLC-surface deletion experiment
-also remains future work: the current local policies do not expose pre-existing
-separable policy-facing query surfaces that would support such an experiment
-without refactoring. The source package and branch-pinned reproduction path for
-the present claims are recorded in Appendix~\ref{app:reproducibility}.
+The baseline and deployment scope are deliberately narrow. The Mem0-style
+write-only baseline (\memzero{}) is a rule-based ADD/UPDATE/NOOP baseline
+inspired by Mem0's write-policy framing, not a reproduction of the Mem0 system.
+The experiments do not evaluate real-user weeks-long helpfulness, learned
+semantic scope inference, production retrieval stacks, or API-hosted
+extractors. A PFLC-surface deletion experiment also remains future work: the
+current local policies do not expose pre-existing separable policy-facing query
+surfaces that would support such an experiment without refactoring. The source
+package and branch-pinned reproduction path for the present claims are recorded
+in Appendix~\ref{app:reproducibility}.

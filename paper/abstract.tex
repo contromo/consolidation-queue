@@ -3,21 +3,20 @@ underlying memory policy can govern, query, and repair the right evidence. This
 methods paper presents a preregistered evaluation discipline for
 persistent-agent memory and demonstrates it on Consolidation Queue (CQ), a
 staged-write policy that keeps low-confidence claims pending and contestable.
-The discipline has five components.
-Every policy receives the same candidate stream through the same storage
-substrate. An extractor-quality gate runs before any noisy comparison. A
-policy-facing lookup-contract (PFLC) diagnostic asks whether the system
-exposes the evidence handle the policy must actually query, not just whether
-retrieved text is semantically relevant. It shows that common clustering,
-retrieval, and answer-accuracy metrics can all pass while exact policy-query
-lookup fails. Preserved negative transfer on LongMemEval keeps losses visible
-rather than rescuing them. Each interface repair is paired with a
-control that reproduces the failure on a winning baseline.
+The discipline has five components: every policy receives the same candidate
+stream through the same storage substrate; an extractor-quality gate runs
+before any noisy comparison; a policy-facing lookup-contract (PFLC) diagnostic
+tests the policy-query surface; negative transfer on LongMemEval is preserved
+rather than rescued; and each interface repair is paired with a control that
+reproduces the failure on a winning baseline. PFLC asks whether the system
+exposes the evidence handle the policy must query, not just whether retrieved
+text is semantically relevant. It shows that common clustering, retrieval, and
+answer-accuracy metrics can all pass while exact policy-query lookup fails.
 
-In the case study,
-the discipline detects CQ's contradiction-handling survival on internal noisy
-extraction. On LongMemEval, it surfaces a stable external-transfer loss on
-evidence completeness, isolates the v1 loss as a readout-cardinality
-interface gap, and closes the gap with a preregistered repair corroborated by
-a capped-Reflection control. These results support the evaluation discipline
+In the case study, LongMemEval surfaces a stable external-transfer loss on
+evidence completeness,
+isolates the v1 loss as a readout-cardinality interface gap, and closes the
+gap with a preregistered repair corroborated by a capped-Reflection control.
+The same discipline also detects CQ's contradiction-handling survival on
+internal noisy extraction. These results support the evaluation discipline
 rather than a broad performance or deployment-readiness claim for CQ.

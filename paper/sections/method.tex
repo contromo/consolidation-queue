@@ -44,15 +44,16 @@ observations. They differ in when they promote, demote, contest, or expose
 these candidates. The load-bearing invariant is that CQ and the immediate-write
 baselines compare memory policy over the same inputs.
 
-The principal policies are \cq{}, \reflection{}, \memzero{},
+The principal policies are \cq{}, \reflection{}, the Mem0-style baseline
+(\memzero{}),
 \splitcode{Naive\allowbreak EagerWrite\allowbreak Lite},
 \splitcode{No\allowbreak Memory\allowbreak Lite}, and CQ ablations that remove
 contestation/demotion, pending lookup, source-independence gating, or
 wider-scope pending override.
 Two follow-up policies are explicitly outside the original headline set:
-\cqdated{}, an oracle-mode dated-evidence repair, and \cqmulti{}, the
-LongMemEval pending-readout repair. The follow-up also includes \refcapped{}
-as a diagnostic control.
+the oracle-mode dated-evidence repair (\cqdated{}) and the LongMemEval
+pending-readout repair (\cqmulti{}). The cardinality-repair follow-up also
+includes the capped Reflection control (\refcapped{}) as a diagnostic control.
 
 \input{figures/cq_lifecycle.tex}
 
