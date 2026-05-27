@@ -1,5 +1,46 @@
 # Product Progress
 
+## 2026-05-27 — Paper thesis-legibility refactor
+
+### What Shipped
+
+- refactored the paper front matter around the answer-vs-policy thesis:
+  existing memory benchmarks ask whether the system got the right answer; this
+  report asks whether the memory policy had the right governable evidence
+  handle
+- replaced the early five-row non-claims table with a four-row reader contract,
+  added a compact contribution map, and reframed the claim graph as a
+  method-stage diagram
+- tightened method, discussion, and limitations prose while preserving local
+  boundary statements for lookup-diagnostic verdicts, CQ-negative transfer, and
+  CQ-vs-Reflection non-superiority
+
+### Citation Verification
+
+- STATE-Bench — included after verifying the Microsoft Open Source post at
+  `https://opensource.microsoft.com/blog/2026/05/19/introducing-state-bench-a-benchmark-for-ai-agent-memory/`
+  resolves, is titled "Introducing STATE-Bench: A benchmark for AI agent
+  memory," is by Lewis Liu and Nishant Yadav, dated 2026-05-19, and frames
+  STATE-Bench as measuring whether memory improves reliability and task
+  completion in stateful enterprise tasks
+- MemGym — included after verifying `https://arxiv.org/abs/2605.20833`
+  resolves to "MemGym: a Long-Horizon Memory Environment for LLM Agents,"
+  submitted 2026-05-20, and frames the benchmark as long-horizon agentic memory
+  evaluation across tool-use dialogue, deep research, coding, and computer-use
+  tracks
+- EvoMemBench — included after verifying `https://arxiv.org/abs/2605.18421`
+  resolves to "EvoMemBench: Benchmarking Agent Memory from a Self-Evolving
+  Perspective," submitted 2026-05-18, and frames the benchmark as evaluating
+  self-evolving memory across scope and content axes
+
+### Framing Decision
+
+- the added citations are contextual related work only; they support the
+  broaden-vs-narrow positioning and do not change any empirical verdict,
+  artifact boundary, or claim numbering
+- `PROJECT_PLAN.md` is unchanged because research priorities and result
+  interpretations did not change
+
 ## 2026-05-26 — Paper claim-boundary tightening pass
 
 ### What Shipped

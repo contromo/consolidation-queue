@@ -1,11 +1,11 @@
 \section{Discussion}
 
-The results map the conditions under which CQ's mechanisms remain visible. When
-the noisy stream preserves contradiction edges and the policy-query surface
-stays aligned, CQ's contestation and demotion behavior survives. If the stream
-or interface omits canonical slots, source identity, scope handles, or the
-relevant policy-facing identifier, policy ties become evidence about the
-benchmark surface rather than about policy equivalence.
+The results map when CQ's mechanisms remain visible. When the noisy stream
+preserves contradiction edges and the policy-query surface stays aligned, CQ's
+contestation and demotion behavior survives. When the stream or interface omits
+canonical slots, source identity, scope handles, or the relevant
+policy-facing identifier, policy ties become evidence about the benchmark
+surface rather than about policy equivalence.
 
 The negative and mixed rows carry that evidence. The 7B gate shows that
 aggregate component metrics can hide concentrated failures, while the 32B
@@ -16,22 +16,19 @@ transfer shows that an external adapter can pass methodology gates and still
 produce a stable CQ-negative result; the pending multi-evidence follow-up then
 isolates one interface failure mechanism without rewriting the original result.
 
-The main claim is methodological. Same-stream memory-policy evaluation makes
-policy distinctions auditable. It surfaces positive mechanism survival
-(forced contradiction under 32B extraction) as well as cases where a policy
-distinction is hidden by the interface (exact policy-query canonical-id failure
-under perfect clustering, or evidence completeness failure under singleton
-pending readout). The benchmark reports both outcomes because both affect
-whether a memory policy can be evaluated.
+The main claim is methodological: same-stream memory-policy evaluation makes
+policy distinctions auditable. It surfaces both positive mechanism survival
+(forced contradiction under 32B extraction) and cases where an interface hides
+the distinction, such as exact policy-query canonical-id failure under perfect
+clustering or evidence-completeness failure under singleton pending readout.
 
 The CQ case study also illustrates why immediate-write baselines must be strong
-and fair. Reflection wins some rows for mechanistically uninteresting reasons,
+and fair. Reflection sometimes wins for mechanistically uninteresting reasons,
 such as overwriting into a durable state that happens to include both evidence
-sessions, but the comparison is still valid because the baseline received the
+sessions, but the comparison remains valid because the baseline received the
 same stream and used the same substrate. The follow-up uses that interpretation
 directly: the interface change is registered before execution, and the
-capped-Reflection control serves as a preregistered mechanism falsifier ---
-it rules out CQ-only storage and asymmetric-input explanations by reproducing
-the original loss on a winning baseline through a single-variable readout
-change. This isolates answer-time readout cardinality as the mechanism, but
-does not generalize to a broader metric-fitting defense.
+capped-Reflection control rules out CQ-only storage and asymmetric-input
+explanations by reproducing the original loss on a winning baseline through a
+single-variable readout change. This isolates answer-time readout cardinality
+as the mechanism, but does not generalize to a broader metric-fitting defense.

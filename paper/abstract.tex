@@ -1,22 +1,20 @@
-Persistent-agent memory systems can score well while hiding whether the
-underlying memory policy can govern, query, and repair the right evidence. This
-methods paper presents a preregistered evaluation discipline for
-persistent-agent memory and demonstrates it on Consolidation Queue (CQ), a
-staged-write policy that keeps low-confidence claims pending and contestable.
-The discipline has five components: every policy receives the same candidate
-stream through the same storage substrate; an extractor-quality gate runs
-before any noisy comparison; a policy-facing lookup-contract (PFLC) diagnostic
-tests the policy-query surface; negative transfer on LongMemEval is preserved
-rather than rescued; and each interface repair is paired with a control that
-reproduces the failure on a winning baseline. PFLC asks whether the system
-exposes the evidence handle the policy must query, not just whether retrieved
-text is semantically relevant. It shows that common clustering, retrieval, and
-answer-accuracy metrics can all pass while exact policy-query lookup fails.
+Existing agent-memory benchmarks ask whether the system got the right answer;
+this paper asks whether the memory policy had the right governable evidence
+handle. Persistent-agent memory systems can score well while hiding whether the
+underlying policy can govern, query, and repair the evidence it depends on. We
+present a preregistered attribution test for memory-policy claims and
+demonstrate it on Consolidation Queue (CQ), a staged-write policy that keeps
+low-confidence claims pending and contestable.
 
-In the case study, LongMemEval surfaces a stable external-transfer loss on
-evidence completeness,
-isolates the v1 loss as a readout-cardinality interface gap, and closes the
-gap with a preregistered repair corroborated by a capped-Reflection control.
-The same discipline also detects CQ's contradiction-handling survival on
-internal noisy extraction. These results support the evaluation discipline
-rather than a broad performance or deployment-readiness claim for CQ.
+The method holds the upstream candidate stream and scoped storage substrate
+fixed across policies, gates noisy comparisons on extractor quality, and adds a
+policy-facing lookup-contract (PFLC) diagnostic that asks whether the system
+exposes the evidence handle a policy must actually query. It preserves negative
+transfer on LongMemEval rather than rescuing it, and pairs interface repairs
+with controls that reproduce the failure on a previously winning baseline. In
+the case study, the discipline detects CQ's contradiction-handling survival on
+internal noisy extraction, surfaces a stable LongMemEval loss on evidence
+completeness, isolates that v1 loss as an answer-time readout-cardinality gap,
+and closes the gap with a preregistered repair corroborated by a capped
+Reflection control. These results support the attribution discipline, not a
+broad performance or deployment-readiness claim for CQ.

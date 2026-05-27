@@ -24,6 +24,16 @@ same-substrate constraints. The PFLC survey treats their released artifacts as
 a diagnostic question: do standard outputs expose the per-question identifiers
 needed to test whether a memory policy can query the right handle?
 
+Recent and concurrent benchmark efforts broaden this lane further. STATE-Bench
+measures whether memory improves reliability, task completion, efficiency, and
+user experience in stateful enterprise tasks \cite{statebench2026}. MemGym
+adds long-horizon agentic tracks across tool-use dialogue, deep research,
+coding, and computer-use settings \cite{memgym2026}. EvoMemBench evaluates
+self-evolving memory across in-episode/cross-episode and
+knowledge/execution-oriented axes \cite{evomembench2026}. These benchmarks
+broaden what memory systems are tested on; this report narrows how policy-level
+credit is assigned.
+
 The answer splits. Most surveyed released outputs are artifact-blocked, but
 published Agent Memory Benchmark (AMB) LoCoMo runs (Hindsight, hybrid-search,
 Cognee) inject context with recoverable LoCoMo \code{dia_id}s and admit a

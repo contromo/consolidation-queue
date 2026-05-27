@@ -1,113 +1,85 @@
-% Claim-dependency DAG (replaces evidence_ledger_summary.png).
+% Method-stage diagram for the four paper claims.
 %
-% Usage: requires the same preamble additions as the other TikZ figures.
-% Replace the existing \begin{figure}...\includegraphics{evidence_ledger_summary.png}...\end{figure}
-% block in paper/sections/intro.tex with
-%   \input{figures/evidence_ledger_summary.tex}
-%
-% The DAG shows how the four headline claims depend on each other.
-% Claim 1 (same-stream evaluation makes policy attribution inspectable) is the
-% methodological foundation.
-% Claim 2 (standard memory metrics can pass while policy-facing lookup fails)
-% was registered post-hoc after Claim 1's noisy comparison
-% produced null rows that clustering metrics could not explain.
-% Claim 3 (preserved negative transfer exposes interface failures) extends Claim 1's same-stream
-% protocol externally and uses Claim 2's PFLC scoring as the metric.
-% Claim 4 (a paired repair/control isolates readout cardinality) builds on Claim 3's stable
-% negative LongMemEval transfer-probe result via a preregistered interface
-% variant + control.
+% The figure preserves the preregistered claim numbering while making the
+% argument read as an attribution method rather than an evidence ledger:
+% fair attribution -> lookup-contract diagnostic -> preserved loss plus paired
+% repair/control.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[
   font=\small,
-  node distance=8mm,
-  claim/.style={
-    rounded corners=3pt, draw, line width=0.7pt,
-    minimum width=42mm, minimum height=22mm,
-    align=center, inner sep=2mm,
-    font=\small,
+  stage/.style={
+    rounded corners=3pt, draw, line width=0.8pt,
+    minimum width=56mm, minimum height=38mm,
+    align=center, inner sep=3mm,
   },
-  c1/.style={claim, draw=blue!55!black,   fill=blue!5},
-  c2/.style={claim, draw=purple!55!black, fill=purple!5},
-  c3/.style={claim, draw=orange!65!black, fill=orange!6},
-  c4/.style={claim, draw=green!50!black,  fill=green!6},
-  edge/.style={-{Stealth[length=2.4mm]}, line width=0.7pt},
-  edgelbl/.style={font=\scriptsize, align=center,
-                  fill=white, draw=none, inner sep=1.5pt, text=black!70},
-  ctitle/.style={font=\small\bfseries},
-  cnum/.style={font=\footnotesize\bfseries, color=black!55},
-  cbullet/.style={font=\scriptsize, align=center, color=black!75},
+  s1/.style={stage, draw=blue!55!black, fill=blue!5},
+  s2/.style={stage, draw=purple!55!black, fill=purple!5},
+  s3/.style={stage, draw=orange!65!black, fill=orange!6},
+  edge/.style={-{Stealth[length=2.6mm]}, line width=0.8pt},
+  edgelbl/.style={
+    font=\scriptsize, align=center,
+    fill=white, draw=none, inner sep=1.5pt, text=black!70
+  },
 ]
 
-% ---- Four claim boxes in a single row ----
-\node[c1] (c1) {
+\node[s1] (stage1) {
   \begin{tabular}{@{}c@{}}
-    {\footnotesize\bfseries\color{black!55} Claim 1}\\[-1pt]
-    {\small\bfseries Same-stream evaluation}\\[-1pt]
-    {\small\bfseries makes attribution inspectable}\\[2pt]
-    {\scriptsize\color{black!75} same upstream stream}\\[-2pt]
-    {\scriptsize\color{black!75} same scoped substrate}\\[-2pt]
-    {\scriptsize\color{black!75} component-gated unlock}
-  \end{tabular}};
-\node[c2, right=22mm of c1] (c2) {
-  \begin{tabular}{@{}c@{}}
-    {\footnotesize\bfseries\color{black!55} Claim 2}\\[-1pt]
-    {\small\bfseries Metrics can pass}\\[-1pt]
-    {\small\bfseries while lookup fails}\\[2pt]
-    {\scriptsize\color{black!75} Proposition 1 + lemmas}\\[-2pt]
-    {\scriptsize\color{black!75} canonical-id lookup diagnostic}\\[-2pt]
-    {\scriptsize\color{black!75} anchor benchmark survey}
-  \end{tabular}};
-\node[c3, right=22mm of c2] (c3) {
-  \begin{tabular}{@{}c@{}}
-    {\footnotesize\bfseries\color{black!55} Claim 3}\\[-1pt]
-    {\small\bfseries Preserved negative transfer}\\[-1pt]
-    {\small\bfseries exposes interface failures}\\[2pt]
-    {\scriptsize\color{black!75} LongMemEval transfer probe}\\[-2pt]
-    {\scriptsize\color{black!75} stable negative on $\mathtt{all\_hit\_at\_50}$}\\[-2pt]
-    {\scriptsize\color{black!75} result preserved, not rescued}
-  \end{tabular}};
-\node[c4, right=22mm of c3] (c4) {
-  \begin{tabular}{@{}c@{}}
-    {\footnotesize\bfseries\color{black!55} Claim 4}\\[-1pt]
-    {\small\bfseries Paired repair/control}\\[-1pt]
-    {\small\bfseries isolates cardinality}\\[2pt]
-    {\scriptsize\color{black!75} plural pending CQ (preregistered)}\\[-2pt]
-    {\scriptsize\color{black!75} capped Reflection control}\\[-2pt]
-    {\scriptsize\color{black!75} mechanism-local, not generalization}
-  \end{tabular}};
+    {\footnotesize\bfseries\color{black!55} Stage 1}\\[-1pt]
+    {\small\bfseries Fair attribution}\\[3pt]
+    {\footnotesize\bfseries Claim 1}\\[-1pt]
+    {\scriptsize Same stream}\\[-2pt]
+    {\scriptsize Same substrate}\\[-2pt]
+    {\scriptsize Extractor-gated unlock}\\[-2pt]
+    {\scriptsize Inspectable traces}
+  \end{tabular}
+};
 
-% ---- Direct chain edges 1 -> 2 -> 3 -> 4 ----
-% Labels are placed inline on the arrow with a small white fill so they mask
-% the line without overlapping box content.
-\draw[edge] (c1.east) -- node[edgelbl]
-  {null rows motivate\\diagnostic} (c2.west);
-\draw[edge] (c2.east) -- node[edgelbl]
-  {PFLC scoring\\over transfer ids} (c3.west);
-\draw[edge] (c3.east) -- node[edgelbl]
-  {transfer-probe negative\\motivates follow-up} (c4.west);
+\node[s2, right=18mm of stage1] (stage2) {
+  \begin{tabular}{@{}c@{}}
+    {\footnotesize\bfseries\color{black!55} Stage 2}\\[-1pt]
+    {\small\bfseries Lookup-contract diagnostic}\\[3pt]
+    {\footnotesize\bfseries Claim 2}\\[-1pt]
+    {\scriptsize PFLC asks for}\\[-2pt]
+    {\scriptsize the policy-facing}\\[-2pt]
+    {\scriptsize evidence handle}\\[-2pt]
+    {\scriptsize not only relevant text}
+  \end{tabular}
+};
 
-% ---- Skip edge: Claim 1 also directly enables Claim 3 (same-stream protocol) ----
+\node[s3, right=18mm of stage2] (stage3) {
+  \begin{tabular}{@{}c@{}}
+    {\footnotesize\bfseries\color{black!55} Stage 3}\\[-1pt]
+    {\small\bfseries Preserved loss + paired repair}\\[3pt]
+    {\footnotesize\bfseries Claim 3}\\[-1pt]
+    {\scriptsize LongMemEval loss}\\[-2pt]
+    {\scriptsize preserved, not rescued}\\[2pt]
+    {\footnotesize\bfseries Claim 4}\\[-1pt]
+    {\scriptsize plural CQ repair}\\[-2pt]
+    {\scriptsize capped Reflection control}
+  \end{tabular}
+};
+
+\draw[edge] (stage1.east) -- node[edgelbl]
+  {bounded nulls\\need handle tests} (stage2.west);
+\draw[edge] (stage2.east) -- node[edgelbl]
+  {PFLC scoring\\on transfer ids} (stage3.west);
+
 \draw[edge, dashed, draw=black!55]
-  (c1.south) .. controls +(20mm,-14mm) and +(-20mm,-14mm) ..
+  (stage1.south) .. controls +(22mm,-14mm) and +(-22mm,-14mm) ..
   node[edgelbl, pos=0.5]
-  {same-stream protocol\\carries over to external transfer}
-  (c3.south);
+  {same-stream protocol\\carries to transfer}
+  (stage3.south);
 
 \end{tikzpicture}%
 }
-\caption{Claim dependency graph. Claim~1 (same-stream evaluation makes policy
-  attribution inspectable) is the methodological foundation; the noisy
-  same-stream policy comparison's null rows motivated Claim~2 (standard memory
-  metrics can pass while policy-facing lookup fails), which then supplied the
-  policy-facing scoring used by Claim~3 (preserved negative transfer exposes
-  interface failures).
-  Claim~1's same-stream protocol also carries over directly to Claim~3
-  (dashed edge). Claim~3's stable negative transfer-probe result motivated
-  the preregistered interface follow-up in Claim~4 (a paired repair/control
-  isolates readout cardinality). The contribution is the chain, not any
-  individual claim.}
+\caption{Method-stage view of the four claims. Stage~1 makes policy attribution
+inspectable by fixing the stream, substrate, and extractor gate. Stage~2 adds
+PFLC to test whether the policy-facing evidence handle is exposed. Stage~3
+preserves the LongMemEval loss and then uses a paired repair/control to isolate
+answer-time readout cardinality. The figure preserves the claim numbering but
+frames the contribution as an attribution method.}
 \label{fig:evidence-ledger}
 \end{figure}

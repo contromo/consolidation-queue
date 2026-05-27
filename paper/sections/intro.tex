@@ -9,26 +9,26 @@ question for persistent memory is whether the system can keep both claims,
 scope them, contest one with the other, and demote a durable claim when the
 evidence shifts.
 
-Persistent-agent memory systems are usually judged by whether they recall
-facts, retrieve useful context, or answer held-out questions. Those metrics are
-important, but they can hide the policy question that matters for memory
-governance: did the system succeed because its memory policy handled
-contradiction, scope, source independence, and reversibility, or because it
-received easier inputs, richer private state, or a metric that did not inspect
-the policy-facing handle being queried?
+Most agent-memory benchmarks ask whether the system got the right answer; this
+report instead asks whether the memory policy had the right governable evidence
+handle. Recall, retrieval, and answer metrics are important, but they can hide
+whether a memory policy handled contradiction, scope, source independence, and
+reversibility, or merely benefited from easier inputs, richer private state, or
+a metric that did not inspect the handle the policy must query. Recent memory
+benchmarks broaden what systems are tested on; this report narrows how
+policy-level credit is assigned.
 
-This report argues for a stricter evaluation posture. Memory-policy
-comparisons should hold the upstream candidate stream fixed, use the same
-storage substrate for the policies being compared, separate oracle-mode policy
-claims from noisy-pipeline claims, and preserve artifacts that make failure
-cases inspectable. The running case study is a lightweight consolidation queue
-policy (CQ),\footnote{A non-archival design sketch is available at
-\href{https://www.manavm.com/writing/the-consolidation-queue/}{The
+This report therefore argues for a stricter attribution posture.
+Memory-policy comparisons should hold the upstream candidate stream fixed, use
+the same storage substrate for the policies being compared, separate
+oracle-mode policy claims from noisy-pipeline claims, and preserve artifacts
+that make failure cases inspectable. The running case study is a lightweight
+consolidation queue policy (CQ),\footnote{A non-archival design sketch is
+available at \href{https://www.manavm.com/writing/the-consolidation-queue/}{The
 Consolidation Queue: How Persistent AI Earns Durable Change}.} compared with
-immediate-write Reflection, a Mem0-style write-only baseline (\memzero{},
-not the production Mem0 system), and ablated variants. We use CQ as a
-case-study policy for testing which memory-policy distinctions survive the
-interfaces around them.
+immediate-write Reflection, a Mem0-style write-only baseline (\memzero{}, not
+the production Mem0 system), and ablated variants. We use CQ to test which
+memory-policy distinctions survive the interfaces around them.
 
 Concretely, CQ is a staged-write policy. Incoming candidate memories enter a
 queue with scope, provenance, support, contradiction, and lifecycle metadata.
@@ -51,13 +51,35 @@ specific failure by exposing all eligible same-slot pending evidence at answer
 time, while a cardinality-capped Reflection control reproduces the original
 loss. The paper preserves the failure and the repair as separate evidence.
 
-The contribution is the evaluation discipline; CQ is the case study used
-to test what the discipline can detect. The paper collapses the
-repository's detailed evidence ledger into four claims.
-
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{Claim boundaries for the methods-first reading of this report.}
+\caption{Contribution map.}
+\label{tab:contribution-map}
+\small
+\begin{tabular}{p{0.18\linewidth} p{0.72\linewidth}}
+\toprule
+Layer & Contribution\\
+\midrule
+Problem & Memory scores can hide whether policy-level governance succeeded.\\
+Method & Same-stream, same-substrate, extractor-gated comparison makes
+policy attribution inspectable.\\
+Diagnostic & PFLC checks whether the policy-facing evidence handle is exposed,
+not just whether text is relevant.\\
+Case study & CQ shows one clean noisy mechanism-survival row, bounded nulls,
+and a preserved LongMemEval loss.\\
+Repair pattern & A plural-readout repair plus capped Reflection control
+isolates answer-time readout cardinality.\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The contribution is the attribution discipline; CQ is the case study used
+to test what the discipline can detect. The paper collapses the repository's
+detailed evidence ledger into four claims, with the following reader contract.
+
+\begin{table}[H]
+\centering
+\caption{Reader contract for the methods-first reading of this report.}
 \label{tab:nonclaims}
 \small
 \begin{tabular}{p{0.40\linewidth} p{0.50\linewidth}}
@@ -80,10 +102,6 @@ candidate stream and substrate, not the production system.\\
 PFLC is a replacement leaderboard metric or a new pass/fail gate. &
 PFLC is a diagnostic for whether the policy-facing evidence handle is exposed;
 it supplements clustering, retrieval, and answer metrics.\\
-\addlinespace
-The unresolved CQR replay supports Claim 2. &
-The fresh archived replay is inconclusive under the minimum-N gate and remains
-a limitation rather than supporting evidence.\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -91,12 +109,10 @@ a limitation rather than supporting evidence.\\
 \claim{Claim 1: Same-stream evaluation makes policy attribution inspectable}
 Same-stream, same-substrate, extractor-gated evaluation with preserved
 lifecycle traces removes the main stream, substrate, and extractor-quality
-confounds, making policy-level attribution inspectable. The benchmark fixes
-the same upstream \code{CandidateUpdate} stream and the same scoped memory
-substrate across policies, then gates noisy-mode policy claims on component
-quality. It also
-records lifecycle traces, manifests, failure examples, and replay checks
-rather than reducing the experiment to a single score.
+confounds. Noisy policy comparison unlocks only after the extractor-quality
+gate records sufficient component quality. The benchmark fixes the upstream
+\code{CandidateUpdate} stream and the scoped memory substrate across policies,
+then records lifecycle traces, manifests, failure examples, and replay checks.
 
 \claim{Claim 2: Standard memory metrics can pass while policy-facing lookup fails}
 Cluster-partition, retrieval-at-k, and answer-accuracy metrics can all be
@@ -104,46 +120,28 @@ passed by systems that fail exact policy-facing lookup. A policy-facing
 lookup contract (PFLC) asks whether the system exposes the evidence handle
 the policy must actually query, not just whether retrieved text is
 semantically relevant. PFLC diagnostics name this class of metric blind
-spots. Proposition 1 proves a
-cluster-partition/lookup-contract gap: a relabeling can preserve the gold
-partition and therefore score 1.00 under partition metrics while failing exact
-policy-query set membership. Constructive lemmas extend the same pattern to
-retrieval-at-k and answer-accuracy metrics. The lookup diagnostic instantiates
-this class on canonical-id queries within the CQ benchmark. The field-level PFLC
-survey divides into an artifact-blocked majority (no per-question evidence
-ids exposed) and a published-output replayable subset (AMB LoCoMo) that
-decomposes aggregate answer accuracy into evidence exposure, rank, and
-answer-generation residuals.
+spots. Proposition 1 and Lemmas 1--2 formalize the gap for clustering,
+retrieval, and answer metrics; the field survey shows when released benchmark
+artifacts do or do not expose the handles needed to replay it.
 
 \claim{Claim 3: Preserved negative transfer exposes interface failures}
 A controlled external-transfer pipeline that preserves negative results
 instead of rescuing them can surface stable interface failures that
 answer-only, any-hit, or semantic-relevance scoring would hide. The LongMemEval
-workstream builds a redacted same-stream adapter, dual-path
-annotation protocol, hidden-answer verifier, judge-calibration gate, PFLC
-scorer, and contract-sensitivity audit before policy execution. The result is
-stable and negative for base CQ on \code{all_hit_at_50}. CQ retrieves one gold
-evidence session in every case, tying eager baselines on
-\code{any_hit_at_50}. The missing second evidence session drives the
-\code{all_hit_at_50} loss.
+workstream builds a redacted same-stream adapter, hidden-answer protocol, judge
+gate, PFLC scorer, and contract-sensitivity audit before policy execution. The
+result is stable and negative for base CQ on \code{all_hit_at_50}; the missing
+second evidence session drives the loss.
 
 \claim{Claim 4: A paired repair/control isolates readout cardinality}
 When a transfer-probe loss is paired with both a single-variable interface
 repair and a capped-baseline control that reproduces the loss on a winning
 baseline, the loss can be attributed to an interface --- here, answer-time
-readout cardinality --- rather than to storage asymmetry or input
-asymmetry. The follow-up
-preserves the LongMemEval transfer probe as a negative base-CQ result and
-tests a separately
-preregistered interface hypothesis: plural pending readout should close the
-evidence-completeness gap, and capping a winning eager baseline to one returned
-candidate should reproduce the loss. The follow-up results match both
-predictions. The result is a mechanism-local repair pattern for this interface
-gap on the LongMemEval v1 evidence-only transfer probe. The 2026-05-25
-LongMemEval-S feasibility gate did not authorize a held-out run because no
-local cleaned source artifact could be pinned, so broader LongMemEval,
-distractor-heavy retrieval, and natural-language QA generalization remain
-outside its scope.
+readout cardinality --- rather than to storage asymmetry or input asymmetry.
+The separately preregistered follow-up exposes plural pending evidence for CQ
+and caps a winning Reflection baseline to one returned candidate. Both
+predictions hold, supporting a mechanism-local repair pattern rather than
+broad external generalization.
 
 \input{figures/evidence_ledger_summary.tex}
 

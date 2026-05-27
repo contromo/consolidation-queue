@@ -49,7 +49,7 @@ Five conceptual diagrams ship as TikZ source. They are compiled inline by
 PDFLaTeX when the paper builds; no separate render step is needed.
 
 - `paper/figures/cq_lifecycle.tex` (CQ pending/durable lifecycle)
-- `paper/figures/evidence_ledger_summary.tex` (claim dependency DAG)
+- `paper/figures/evidence_ledger_summary.tex` (method-stage diagram)
 - `paper/figures/externalization_protocol.tex` (LongMemEval pipeline)
 - `paper/figures/pflc_formal_gap.tex` (Proposition 1 worked example)
 - `paper/figures/phase_y_cardinality_control.tex` (symmetric swap)
