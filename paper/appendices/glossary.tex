@@ -1,0 +1,85 @@
+\section{Glossary: Reader-Facing Names and Repository Labels}
+\label{app:glossary}
+
+The paper uses reader-facing descriptive names in body text and introduces the
+matching repository label once, in parentheses, on first use. This appendix
+collects the full mapping for readers who encounter a label in the codebase or
+in committed artifact paths.
+
+{\small
+\setlength{\LTpre}{6pt}
+\setlength{\LTpost}{6pt}
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth} >{\raggedright\arraybackslash}p{0.26\linewidth} >{\raggedright\arraybackslash}p{0.40\linewidth}@{}}
+\caption[Glossary: descriptive names and repository labels.]{Glossary:
+descriptive names and repository labels.}\label{tab:glossary}\\
+\toprule
+Reader-facing name & Repo label & Meaning \\
+\midrule
+\endfirsthead
+\toprule
+Reader-facing name & Repo label & Meaning \\
+\midrule
+\endhead
+prompt-regression guard & Phase~A & Pre-scoring check that the extractor's
+  prompt has not regressed against locked reference outputs. \\
+\addlinespace
+noisy extractor-quality gate & Phase~3 & Component-quality gate that scores
+  local extractor outputs and licenses downstream policy comparison. \\
+\addlinespace
+noisy same-stream policy comparison & Phase~4 & The main noisy-pipeline
+  policy comparison that runs only after the extractor-quality gate passes. \\
+\addlinespace
+cardinality-repair follow-up & Phase~Y & The LongMemEval follow-up that
+  isolates answer-time readout cardinality as the mechanism behind the
+  transfer-probe loss. \\
+\addlinespace
+LongMemEval transfer probe & X.4 & The controlled-pilot external transfer of
+  the same-stream protocol to LongMemEval v1. \\
+\addlinespace
+preregistered-gate condition fired & Bucket~A & A planned gate or thesis
+  condition fired during a preregistered comparison. \\
+\addlinespace
+mixed/partial support & Bucket~B & A completed result that is mixed or
+  partial; rows split between mechanism-survival, partial survival, and
+  bounded nulls. \\
+\addlinespace
+abort / unsupported claim & Bucket~D & A preregistered abort or surprise-lane
+  boundary that prevents the stronger claim. \\
+\addlinespace
+lookup diagnostic & QR-canon & The canonical-id PFLC instance: a small
+  committed diagnostic table over per-question canonical ids. \\
+\addlinespace
+resolution audit & CQR & The earlier canonical-id/query-resolution replay
+  audit whose set-membership metric and alias function the lookup diagnostic
+  reuses. \\
+\addlinespace
+Mem0-style write-only baseline & \splitcode{Mem0\allowbreak Lite} (repo);
+  \splitcode{Mem0\allowbreak Write\allowbreak Policy\allowbreak Lite} (paper)
+  & Narrow ADD/UPDATE/NOOP write-time baseline; \emph{not} an end-to-end
+  reproduction of the production Mem0 system. Repo identifier kept stable
+  for artifact compatibility; paper-facing label changed to remove brand
+  collision. \\
+\addlinespace
+oracle-mode dated-evidence repair & \splitcode{CQDated\allowbreak Contestation}
+  (macro \code{\textbackslash cqdated}) & Oracle-mode repair variant that
+  prefers dated evidence on temporal-skew rows; used in the adversarial
+  upstream-noise follow-up. \\
+\addlinespace
+CQ plural-pending readout variant & \splitcode{CQPending\allowbreak
+  MultiEvidence} (macro \code{\textbackslash cqmulti}) & CQ-side follow-up
+  that exposes all eligible same-slot pending candidates at answer time;
+  the repair half of the cardinality-repair follow-up. \\
+\addlinespace
+symmetric capped-Reflection control & \splitcode{Reflection\allowbreak
+  EagerWrite\allowbreak Cardinality\allowbreak Capped} (macro
+  \code{\textbackslash refcapped}) & Reflection-side control with answer
+  readout capped to one durable candidate id; the symmetric mechanism
+  falsifier in the cardinality-repair follow-up. \\
+\bottomrule
+\end{longtable}
+}
+
+The 7B and 32B labels in body text refer to local extractor model cells used
+by the noisy pipeline (Qwen2.5-7B-Instruct and Qwen2.5-32B-Instruct, both
+quantized), not memory-policy sizes.

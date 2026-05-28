@@ -1,0 +1,83 @@
+% CQ lifecycle diagram.
+%
+% This figure shows the object under study before the benchmark machinery:
+% candidates enter from the shared upstream stream, CQ keeps some candidates
+% queryable while pending, promotes sufficiently supported candidates, and
+% records contradiction edges that can contest or demote durable memory.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\small,
+  node distance=14mm,
+  box/.style={
+    rounded corners=3pt,
+    draw=black!55,
+    line width=0.7pt,
+    minimum width=36mm,
+    minimum height=15mm,
+    align=center,
+    inner sep=2.2mm,
+  },
+  stream/.style={box, draw=black!70, fill=black!4},
+  pending/.style={box, draw=orange!70!black, fill=orange!7},
+  durable/.style={box, draw=green!55!black, fill=green!8},
+  contested/.style={box, draw=red!65!black, fill=red!7},
+  lookup/.style={box, draw=blue!60!black, fill=blue!6},
+  edge/.style={-{Stealth[length=2.4mm]}, line width=0.75pt},
+  dottededge/.style={-{Stealth[length=2.2mm]}, densely dashed, line width=0.7pt},
+  label/.style={font=\scriptsize, align=center, fill=white, inner sep=1.3pt},
+]
+
+\node[stream] (stream) {
+  \textbf{Shared stream}\\[-1pt]
+  \scriptsize \code{CandidateUpdate}\\[-2pt]
+  \scriptsize scope + provenance + evidence
+};
+\node[pending, right=18mm of stream] (pending) {
+  \textbf{Pending}\\[-1pt]
+  \scriptsize queryable, reversible\\[-2pt]
+  \scriptsize not durable memory
+};
+\node[durable, right=18mm of pending] (durable) {
+  \textbf{Durable}\\[-1pt]
+  \scriptsize committed memory\\[-2pt]
+  \scriptsize survives ordinary lookup
+};
+\node[contested, below=16mm of durable] (contested) {
+  \textbf{Contested / demoted}\\[-1pt]
+  \scriptsize contradiction edge kept\\[-2pt]
+  \scriptsize provenance remains inspectable
+};
+\node[lookup, below=16mm of pending] (lookup) {
+  \textbf{Scoped lookup}\\[-1pt]
+  \scriptsize reads eligible pending\\[-2pt]
+  \scriptsize and durable candidates
+};
+
+\draw[edge] (stream) -- node[label] {same inputs\\for all policies} (pending);
+\draw[edge] (pending) -- node[label] {support +\\independence pass} (durable);
+\draw[edge] (durable) -- node[label, right=2mm] {stronger\\contradiction} (contested);
+\draw[dottededge] (pending) -- node[label, left=2mm] {answerable before\\promotion} (lookup);
+\draw[dottededge, draw=black!55]
+  (durable.south west) --
+  node[label, pos=0.62, left=1mm] {ordinary\\lookup}
+  (lookup.north east);
+
+\draw[dottededge, bend left=28]
+  (pending.north east) to node[label, above=2mm]
+  {narrower pending can shadow\\wider durable at read time}
+  (durable.north west);
+
+\end{tikzpicture}%
+}
+\caption{CQ lifecycle. Candidate updates come from the same upstream stream
+  used by every policy in the comparison. CQ differs from eager writing by
+  allowing a candidate to stay pending while still being queryable, by
+  promoting only when support is strong enough, and by preserving
+  contradiction edges so an active durable memory can be contested or demoted.
+  A narrower pending candidate may shadow a wider durable claim for scoped
+  lookup without globally overwriting it.}
+\label{fig:cq-lifecycle}
+\end{figure}

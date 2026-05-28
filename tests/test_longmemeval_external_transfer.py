@@ -1,13 +1,27 @@
 import json
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
+from typing import Optional
 
+from cq.eval.external.longmemeval.adapter import adapt_annotations
 from cq.eval.external.longmemeval.transfer import (
+    DEV_OVERRIDE_ENV,
+    FOLLOWUP_CQ_POLICY,
     HEADLINE_METRIC,
+    HEADLINE_POLICY,
     LongMemEvalTransferError,
+    REFLECTION_CAPPED_POLICY,
+    REFLECTION_POLICY,
+    _assert_candidate_stream_unchanged,
     _bucket_verdict,
+    _followup_outcome,
+    _load_gold_cases_for_transfer,
     _predicted_session_ids,
+    _reflection_capped_is_strict_subset,
+    _require_dev_override,
+    _scenario_candidate_stream_sha256,
     build_sensitivity_cells,
     validate_judge_report,
 )
@@ -103,6 +117,38 @@ class LongMemEvalTransferTests(unittest.TestCase):
 
         self.assertEqual(result, ["s2", "s1"])
 
+    def test_missing_oracle_json_reports_setup_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            missing = Path(tmpdir) / "missing_oracle.json"
+
+            with self.assertRaisesRegex(
+                LongMemEvalTransferError,
+                "LongMemEval oracle JSON is missing",
+            ):
+                _load_gold_cases_for_transfer(missing)
+
+    def test_dev_override_required_for_runtime_escape_hatches(self) -> None:
+        with mock.patch.dict("os.environ", {}, clear=True):
+            with self.assertRaisesRegex(LongMemEvalTransferError, DEV_OVERRIDE_ENV):
+                _require_dev_override("--skip-judge-validation")
+
+        with mock.patch.dict("os.environ", {DEV_OVERRIDE_ENV: "1"}, clear=True):
+            _require_dev_override("--skip-judge-validation")
+
+    def test_candidate_stream_mutation_check_detects_policy_side_mutation(self) -> None:
+        scenarios, _streams = adapt_annotations([_annotation_row("c1")])
+        scenario = scenarios[0]
+        expected_hash = _scenario_candidate_stream_sha256(scenario)
+        scenario.oracle_events[0].candidate.raw_claim = "Mutated by policy"
+
+        with self.assertRaisesRegex(LongMemEvalTransferError, "mutated the LongMemEval candidate stream"):
+            _assert_candidate_stream_unchanged(
+                scenario,
+                expected_hash,
+                policy_name="bad_policy",
+                cell_id="primary_contract",
+            )
+
     def test_bucket_verdict_reports_sign_flip(self) -> None:
         pairwise = {
             "primary_contract": {
@@ -120,6 +166,123 @@ class LongMemEvalTransferTests(unittest.TestCase):
         )
 
         self.assertEqual(bucket["bucket"], "C")
+
+    def test_reflection_capped_subset_helper_requires_strict_subset(self) -> None:
+        rows = [
+            _row("case-1", REFLECTION_POLICY, True, ["c1", "c2"]),
+            _row("case-1", REFLECTION_CAPPED_POLICY, False, ["c2"]),
+        ]
+
+        self.assertTrue(_reflection_capped_is_strict_subset(rows))
+
+    def test_followup_outcome_confirms_interface_repair_when_cardinality_control_fails(self) -> None:
+        payloads = {
+            cell_id: {
+                "rows": [
+                    _row("case-1", HEADLINE_POLICY, False, ["c1"]),
+                    _row("case-1", FOLLOWUP_CQ_POLICY, True, ["c1", "c2"]),
+                    _row("case-1", REFLECTION_POLICY, True, ["c1", "c2"]),
+                    _row("case-1", REFLECTION_CAPPED_POLICY, False, ["c2"]),
+                    _row("case-2", HEADLINE_POLICY, False, ["c3"]),
+                    _row("case-2", FOLLOWUP_CQ_POLICY, True, ["c3", "c4"]),
+                    _row("case-2", REFLECTION_POLICY, True, ["c3", "c4"]),
+                    _row("case-2", REFLECTION_CAPPED_POLICY, False, ["c4"]),
+                ]
+            }
+            for cell_id in [
+                "primary_contract",
+                "path_a_only_denominator",
+                "path_b_only_denominator",
+            ]
+        }
+
+        outcome = _followup_outcome(payloads)
+
+        self.assertEqual(outcome["bucket"], "A")
+        self.assertTrue(outcome["reflection_capped_strict_subset_on_primary"])
+
+    def test_followup_outcome_reports_d_when_capped_reflection_is_not_strict_subset(self) -> None:
+        outcome = _followup_outcome(
+            _followup_payloads(
+                denominator=2,
+                followup_hits=2,
+                capped_hits=0,
+                strict_subset=False,
+            )
+        )
+
+        self.assertEqual(outcome["bucket"], "D")
+
+    def test_followup_outcome_reports_a_weak_when_capped_reflection_still_passes(self) -> None:
+        outcome = _followup_outcome(
+            _followup_payloads(
+                denominator=2,
+                followup_hits=2,
+                capped_hits=2,
+            )
+        )
+
+        self.assertEqual(outcome["bucket"], "A-weak")
+
+    def test_followup_outcome_reports_b_when_primary_succeeds_but_sensitivity_fails(self) -> None:
+        outcome = _followup_outcome(
+            _followup_payloads(
+                denominator=2,
+                followup_hits=2,
+                capped_hits=0,
+                sensitivity_followup_hits=1,
+            )
+        )
+
+        self.assertEqual(outcome["bucket"], "B")
+        self.assertFalse(outcome["followup_success_all_cells"])
+
+    def test_followup_outcome_allows_preregistered_seventy_of_seventy_one_threshold(self) -> None:
+        outcome = _followup_outcome(
+            _followup_payloads(
+                denominator=71,
+                followup_hits=70,
+                capped_hits=0,
+            )
+        )
+
+        self.assertEqual(outcome["bucket"], "A")
+        self.assertTrue(outcome["followup_success_all_cells"])
+
+    def test_followup_outcome_reports_b_for_partial_large_improvement(self) -> None:
+        outcome = _followup_outcome(
+            _followup_payloads(
+                denominator=2,
+                followup_hits=1,
+                capped_hits=0,
+            )
+        )
+
+        self.assertEqual(outcome["bucket"], "B")
+        self.assertEqual(outcome["primary_improvement_points"], 0.5)
+
+    def test_followup_outcome_reports_b_for_modest_improvement(self) -> None:
+        outcome = _followup_outcome(
+            _followup_payloads(
+                denominator=10,
+                followup_hits=2,
+                capped_hits=0,
+            )
+        )
+
+        self.assertEqual(outcome["bucket"], "B")
+        self.assertEqual(outcome["primary_improvement_points"], 0.2)
+
+    def test_followup_outcome_reports_c_for_negligible_improvement(self) -> None:
+        outcome = _followup_outcome(
+            _followup_payloads(
+                denominator=10,
+                followup_hits=0,
+                capped_hits=0,
+            )
+        )
+
+        self.assertEqual(outcome["bucket"], "C")
 
 
 def _annotation_row(case_id: str) -> dict:
@@ -148,6 +311,60 @@ def _annotation_row(case_id: str) -> dict:
             }
         ],
     }
+
+
+def _row(case_id: str, policy_name: str, all_hit: bool, resolved_candidate_ids: list[str]) -> dict:
+    return {
+        "case_id": case_id,
+        "policy_name": policy_name,
+        HEADLINE_METRIC: all_hit,
+        "resolved_candidate_ids": resolved_candidate_ids,
+    }
+
+
+def _followup_payloads(
+    *,
+    denominator: int,
+    followup_hits: int,
+    capped_hits: int,
+    base_hits: int = 0,
+    reflection_hits: Optional[int] = None,
+    sensitivity_followup_hits: Optional[int] = None,
+    strict_subset: bool = True,
+) -> dict:
+    reflection_hits = denominator if reflection_hits is None else reflection_hits
+    cell_ids = [
+        "primary_contract",
+        "path_a_only_denominator",
+        "path_b_only_denominator",
+    ]
+    payloads = {}
+    for cell_id in cell_ids:
+        cell_followup_hits = (
+            followup_hits
+            if cell_id == "primary_contract" or sensitivity_followup_hits is None
+            else sensitivity_followup_hits
+        )
+        rows = []
+        for index in range(denominator):
+            case_id = "case-{}".format(index)
+            reflection_ids = ["r{}-a".format(index), "r{}-b".format(index)]
+            capped_ids = ["r{}-b".format(index)] if strict_subset else list(reflection_ids)
+            rows.extend(
+                [
+                    _row(case_id, HEADLINE_POLICY, index < base_hits, ["base-{}".format(index)]),
+                    _row(
+                        case_id,
+                        FOLLOWUP_CQ_POLICY,
+                        index < cell_followup_hits,
+                        ["f{}-a".format(index), "f{}-b".format(index)],
+                    ),
+                    _row(case_id, REFLECTION_POLICY, index < reflection_hits, reflection_ids),
+                    _row(case_id, REFLECTION_CAPPED_POLICY, index < capped_hits, capped_ids),
+                ]
+            )
+        payloads[cell_id] = {"rows": rows}
+    return payloads
 
 
 if __name__ == "__main__":

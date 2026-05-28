@@ -1,5 +1,244 @@
 # Product Progress
 
+## 2026-05-27 — Paper thesis-legibility refactor
+
+### What Shipped
+
+- refactored the paper front matter around the answer-vs-policy thesis:
+  existing memory benchmarks ask whether the system got the right answer; this
+  report asks whether the memory policy had the right governable evidence
+  handle
+- replaced the early five-row non-claims table with a four-row reader contract,
+  added a compact contribution map, and reframed the claim graph as a
+  method-stage diagram
+- tightened method, discussion, and limitations prose while preserving local
+  boundary statements for lookup-diagnostic verdicts, CQ-negative transfer, and
+  CQ-vs-Reflection non-superiority
+
+### Citation Verification
+
+- STATE-Bench — included after verifying the Microsoft Open Source post at
+  `https://opensource.microsoft.com/blog/2026/05/19/introducing-state-bench-a-benchmark-for-ai-agent-memory/`
+  resolves, is titled "Introducing STATE-Bench: A benchmark for AI agent
+  memory," is by Lewis Liu and Nishant Yadav, dated 2026-05-19, and frames
+  STATE-Bench as measuring whether memory improves reliability and task
+  completion in stateful enterprise tasks
+- MemGym — included after verifying `https://arxiv.org/abs/2605.20833`
+  resolves to "MemGym: a Long-Horizon Memory Environment for LLM Agents,"
+  submitted 2026-05-20, and frames the benchmark as long-horizon agentic memory
+  evaluation across tool-use dialogue, deep research, coding, and computer-use
+  tracks
+- EvoMemBench — included after verifying `https://arxiv.org/abs/2605.18421`
+  resolves to "EvoMemBench: Benchmarking Agent Memory from a Self-Evolving
+  Perspective," submitted 2026-05-18, and frames the benchmark as evaluating
+  self-evolving memory across scope and content axes
+
+### Framing Decision
+
+- the added citations are contextual related work only; they support the
+  broaden-vs-narrow positioning and do not change any empirical verdict,
+  artifact boundary, or claim numbering
+- `PROJECT_PLAN.md` is unchanged because research priorities and result
+  interpretations did not change
+
+## 2026-05-26 — Paper claim-boundary tightening pass
+
+### What Shipped
+
+- tightened the paper subtitle and abstract around the methods-first claim
+- added an explicit non-claims table covering CQ superiority, LongMemEval
+  generalization, `Mem0Lite`, PFLC, and the inconclusive CQR replay
+- expanded limitations so likely reviewer objections are treated as claim
+  boundaries rather than implicit caveats
+
+### Framing Decision
+
+- the paper remains an evaluation-methods report with CQ as the case study
+- no empirical verdict changed, and no CQR result was promoted to support
+
+## 2026-05-26 — Step 3 fresh CQR replay archives an inconclusive result
+
+### What Shipped
+
+- added the Step 3 skip document, runner, tests, summary JSON, family-row CSV,
+  manifest, and results doc
+- refreshed the locked noisy comparison manifests through the local 32B backend
+  and archived source hashes for the four Step 3 readout families
+- recorded Bucket `B_inconclusive_min_n`: both thesis families had zero
+  alias-CQR hits, below the preregistered minimum of five
+
+### Framing Decision
+
+- Step 3 does not make the 2026-05 CQR byte-replay repair green; it creates a
+  fresh archived record under the publication-hardening preregistration
+- Claim 2 is unchanged, and prior PFLC null rows for `useful_pending_memory`
+  and `memory_poisoning` remain unattributed
+- the result is publishable as a limitation, not supporting evidence
+
+### Open Issues / Next
+
+- do not use this replay to strengthen Claim 2
+- continue paper-hardening through Step 2 or Step 4 rather than another CQR
+  rescue attempt
+
+## 2026-05-25 — Publication-hardening protocol lock lands
+
+### What Shipped
+
+- added `docs/publication_hardening_preregistration.md` with a locked
+  methods-archival hardening sequence for the paper
+- added executable contract checks for PFLC JSONL records, policy display-name
+  to runner-key mapping, the Step 3 CQR scope, API model-pin requirements, and
+  the post-adapter distractor-floor definition
+- recorded the paper-specific API exception in repo guidance without relaxing
+  the local-first default for ordinary work
+
+### Framing Decision
+
+- Phase 4, X.4, CQR aborts, CQ-Multi v1 follow-up, capped Reflection, the
+  CQ-Multi regression table, the LongMemEval v1 random floor, and AMB LoCoMo
+  PFLC replay remain preserved historical evidence
+- Step 2 is a new distractor-heavy generalization test, not a rerun or rewrite
+  of v1 LongMemEval
+- API-backed extractors/judges/answerers are not authorized unless a concrete
+  provider/model/cost/stability pin and cached replay contract are locked first
+
+### Open Issues / Next
+
+- LongMemEval-S remains blocked until a source artifact can be pinned
+- MemoryAgentBench fallback requires a preregistered annotation layer before
+  any policy run
+- the optional internal API-extractor lane still needs a concrete model pin
+
+## 2026-05-25 — Paper revision gates and report artifacts land
+
+### What Shipped
+
+- reframed the paper surfaces around the methods-paper identity: CQ remains the
+  controlled case study, with negative and mixed rows preserved as evidence
+- added a CQ-Multi aggregate regression table generator and committed table
+  artifact showing per-family max overall delta `0.000000` across the five
+  checked internal families
+- added a scorer-only LongMemEval `all_hit_at_50` random-floor generator and
+  committed floor artifact; on the v1 evidence-only transfer rows, singleton
+  readout has a `0.0%` all-hit floor and random two-session readout has a
+  `100.0%` floor in all three cells
+- ran the LongMemEval-S feasibility gate as no-go because no local
+  `longmemeval_s_cleaned.json` source artifact was available to pin
+- ran the PFLC-surface audit and demoted deletion PFLC to future work because
+  current local policies do not expose pre-existing separable query surfaces
+
+### Framing Decision
+
+- Claim 4 remains a LongMemEval v1 mechanism-local readout-cardinality
+  diagnosis, not a broad LongMemEval generalization claim
+- no LongMemEval-S adapter, preregistration, judge calibration, or policy run is
+  authorized by the no-go gate
+- PFLC deletion/compliance work requires a future surface-design step before
+  any preregistered policy execution
+
+### Open Issues / Next
+
+- finish PDF/path verification and final prose consistency checks before
+  treating the revision package as submission-ready
+- any held-out LongMemEval-S work must start from a pinned source artifact and
+  fresh preregistration
+
+## 2026-05-20 — Initial arXiv paper draft package starts
+
+### What Shipped
+
+- added `paper/` with a compile-oriented LaTeX draft for the ship-now Phase Z
+  path: title page, abstract, main sections, appendices, bibliography stub,
+  draft SVG figure assets, and a reviewer-facing reproducibility README
+- added PDFLaTeX-compatible high-resolution PNG derivatives for the six figure
+  assets, wired the figures into the LaTeX draft, and added
+  `paper/repro/render_figures.py` so the PNGs can be regenerated without a
+  system SVG renderer
+- replaced the bibliography stub with populated arXiv/conference metadata for
+  LongMemEval, LoCoMo, Mem0, A-MEM, MemoryAgentBench, MemBench, MemGPT, Zep,
+  and Cognee, with related-work citations updated accordingly
+- structured the draft around the locked four-claim framing: fair-stream
+  evaluation, PFLC diagnostics, controlled external transfer with preserved
+  negative results, and the cardinality-controlled LongMemEval repair
+- recorded the branch-pinning route for the paper package because a
+  fast-forward merge from `longmemeval-externalization-gate` to `main` was not
+  possible in this worktree
+
+### Framing Decision
+
+- this is report integration, not a new empirical result
+- the draft keeps base CQ's X.4 `all_hit_at_50` loss and the
+  `CQPendingMultiEvidence` follow-up repair as separate claims
+- venue-specific formatting, final affiliation text if needed, and
+  reproducibility hosting remain open pre-submission items
+
+### Open Issues / Next
+
+- run a full cross-document numeric/path consistency sweep before submission
+- polish figure design and table layout once venue style and hosting decisions
+  are known
+- do not add new empirical claims to the paper unless they are backed by a
+  separately preregistered workstream
+
+## 2026-05-20 — Pending multi-evidence LongMemEval follow-up lands
+
+### What Shipped
+
+- added `docs/cq_pending_multi_evidence_preregistration.md` and locked it
+  before implementation (`84b3c44148494c1b6f72e8201a8da886f8e1f48e49ce00197f535c7e08638840`)
+- added `MemoryStore.strongest_pending_candidates`,
+  `CQPendingMultiEvidence`, `ReflectionEagerWriteCardinalityCapped`, and the
+  `phase2_5_followup` policy set
+- added focused positive and negative-control tests for plural pending lookup,
+  unsafe sibling exclusion, the capped Reflection control, runner wiring, and
+  LongMemEval transfer summary shape
+- after pre-landing review, hardened the LongMemEval transfer runner with an
+  explicit missing-oracle setup error, runtime candidate-stream mutation
+  checks, guarded dev escape hatches, and a policy-set warning for
+  `phase2_5_followup`
+- ran internal regression cells over forced contradiction, preference drift,
+  mechanism-diverse frozen held-out, adversarial upstream noise, and evidence
+  conflict spectrum
+- ran the full judged LongMemEval follow-up and saved
+  `data/external/longmemeval/transfer_followup_summary.json`,
+  `transfer_followup_per_case_rows.csv`, `transfer_followup_manifest.json`,
+  and the three sensitivity payloads under
+  `data/external/longmemeval/sensitivity_followup/`
+- added `docs/cq_pending_multi_evidence_results.md`
+
+### Result
+
+- follow-up outcome: Bucket A, interface repair confirmed
+- `cq_pending_multi_evidence` moves `all_hit_at_50` from base CQ's `0/71` to
+  `71/71` on the primary contract cell, and to `72/72` on both
+  denominator-sensitivity cells
+- `reflection_eager_write_cardinality_capped` falls from base Reflection's
+  `71/71` to `0/71` on the primary cell, reproducing base CQ's readout loss
+  while preserving Reflection's write path
+- the candidate-stream hash invariant passed in all three LongMemEval cells
+- internal regression metrics matched base CQ exactly on all checked overall
+  metrics across the five required families (`max_delta = 0.0`)
+
+### Framing Decision
+
+- this is a separate preregistered policy-interface repair, not a rewrite of
+  the original X.4 result
+- base `consolidation_queue_lite` still loses the completed X.4
+  evidence-completeness transfer probe by `-1.0` in every meaningful cell
+- the supported mechanism claim is readout cardinality: exposing all eligible
+  same-slot pending candidates closes the LongMemEval evidence-completeness
+  gap, and capping a winning eager baseline reproduces the loss
+
+### Open Issues / Next
+
+- finish report packaging around the follow-up as a mechanism-local repair with
+  explicit boundaries
+- do not promote the result into broad LongMemEval generalization, LongMemEval
+  V2/S claims, distractor-heavy retrieval claims, or natural-language QA claims
+- further LongMemEval work should require a new preregistration rather than
+  another rescue rerun
+
 ## 2026-05-19 — LongMemEval X.5 paper and methodology integration lands
 
 ### What Shipped

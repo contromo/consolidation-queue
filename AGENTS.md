@@ -34,7 +34,7 @@ That means CQ must not quietly win because it got better inputs, better storage,
 2. Keep the same storage substrate unless the task is explicitly about changing the shared substrate for both systems.
 3. Separate oracle-mode claims from noisy-mode claims.
 4. Do not claim noisy-mode success without checking component quality.
-5. Prefer local-first, API-free implementations unless the user explicitly asks otherwise.
+5. Prefer local-first, API-free implementations unless the user explicitly asks otherwise. Any API-backed paper-hardening work must be preregistered, cached, and replayable before it can support a claim.
 6. Keep the experiment inspectable through saved artifacts and traces.
 
 ## How To Work In This Repo

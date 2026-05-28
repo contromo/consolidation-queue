@@ -364,16 +364,34 @@ class MemoryStore:
         scope_level: ScopeLevel,
         scope_key: str,
     ) -> Optional[CandidateUpdate]:
-        allowed = self.scoped_candidates(
+        allowed = self._eligible_pending_candidates(canonical_id, scope_level, scope_key)
+        if not allowed:
+            return None
+        allowed.sort(key=lambda candidate: (candidate.strength, candidate.updated_at), reverse=True)
+        return allowed[0]
+
+    def strongest_pending_candidates(
+        self,
+        canonical_id: str,
+        scope_level: ScopeLevel,
+        scope_key: str,
+    ) -> List[CandidateUpdate]:
+        allowed = self._eligible_pending_candidates(canonical_id, scope_level, scope_key)
+        allowed.sort(key=lambda candidate: (candidate.strength, candidate.updated_at), reverse=True)
+        return allowed
+
+    def _eligible_pending_candidates(
+        self,
+        canonical_id: str,
+        scope_level: ScopeLevel,
+        scope_key: str,
+    ) -> List[CandidateUpdate]:
+        return self.scoped_candidates(
             canonical_id,
             scope_level,
             scope_key,
             excluded_states=[MemoryState.CONTESTED, MemoryState.DEMOTED, MemoryState.REJECTED, MemoryState.EXPIRED],
         )
-        if not allowed:
-            return None
-        allowed.sort(key=lambda candidate: (candidate.strength, candidate.updated_at), reverse=True)
-        return allowed[0]
 
     def snapshot(self) -> Dict[str, object]:
         return {

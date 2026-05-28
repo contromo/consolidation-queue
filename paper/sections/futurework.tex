@@ -1,0 +1,77 @@
+\section{Future Work}
+
+\paragraph{Closing bounded-null rows under stronger extraction.}
+The noisy same-stream policy comparison leaves four rows---source-independence,
+scope-contamination, useful-pending, and poisoning---uninformative under the
+current extractor: the candidate stream collapses the policies to the same
+measured outcomes. A preregistered extension would rerun these rows with a
+stronger extractor, either a larger local model or an API-hosted extractor under
+the same redacted same-stream guarantee. The prediction is that at
+least scope-contamination and useful-pending separate CQ from Reflection
+with a 95\% lower confidence bound above zero. If not, we can conclude these
+rows are policy ties under this benchmark, not merely extraction-floor
+artifacts.
+
+\paragraph{LongMemEval beyond the v1 transfer probe.}
+The pending multi-evidence repair is scoped to the v1 evidence-only split.
+The 2026-05-25 LongMemEval-S feasibility gate did not find a local source
+artifact to pin, so this revision does not run a held-out -S adapter. A future
+extension must first pin the dataset, inspect the answer/evidence and
+distractor-session fields, and decide whether filler sessions enter the same
+candidate stream or only the retrieval surface. If that mechanism-alignment
+check passes, the extension should keep evidence-id completeness as the
+primary PFLC target, add \code{all_hit_at_k} at small \(k\) as a
+precision-sensitive co-primary, and classify the predicted failure mode before
+unblinding.
+
+\paragraph{External-transfer boundary to conflict resolution.}
+MemoryAgentBench's conflict-resolution tasks are the closest external surface
+to CQ's contestation and demotion mechanism. A rigorous transfer must satisfy
+three preconditions before policy execution: an adapter that exposes
+per-question identifiers sufficient for PFLC scoring; hidden-answer
+verification analogous to the LongMemEval dual-path protocol; and a
+preregistered abort criterion if the source benchmark does
+not commit to a stable evidence id across releases. If any precondition fails,
+we will preregister the transfer as descriptive-only and will not run policies.
+
+\paragraph{Resolving the resolution audit abort.}
+The second of the two acceptable paths has been executed: a fresh replay
+with hash-pinned manifests ran under the publication-hardening
+preregistration \S5 and is recorded as Bucket \code{B_inconclusive_min_n} in
+\artifact{docs/publication_hardening_step3_results.md}. Per the repository's
+artifact policy, large per-scenario run JSON, component-eval, and prediction
+payloads remain regeneratable rather than committed; the Step 3 manifest
+archives their content hashes alongside the noisy-comparison manifests so the
+replay can be verified byte-for-byte against locally retained component-gate
+caches plus the runner command. A clean clone must first regenerate the
+gitignored per-family prediction and component-eval payloads before Step 3 can
+re-execute. The replay produced zero alias-CQR hits on either thesis
+family under the locked alias function and 32B extractor cell, so the
+lookup-versus-answer-success cross-tab is not evaluable. The remaining open
+question is narrower than before: either a post-hoc preregistered amendment
+to the alias function, or a stronger extractor cell that surfaces more
+canonical-id-aliasing candidates, could populate the cross-tab. The first
+path (materializing the original locked run JSON payloads) is no longer
+required, because Step 3's manifests now serve as the new archived canonical
+record.
+
+\paragraph{PFLC as a benchmark output contract.}
+The field-level PFLC survey divides into an artifact-blocked majority and a
+PFLC-replayable subset (the AMB LoCoMo runs); the blocked subset is what
+prevents a uniform diagnostic. A concrete next step is a minimal PFLC output
+schema---per question, the gold evidence id set and the policy-returned id
+set---offered as a patch to one surveyed benchmark in the blocked subset. The
+success criterion is adoption by at least one benchmark maintainer. The
+acceptable failure criterion is principled rejection on the grounds that the
+schema cannot represent a specific task family. Silent neglect is the failure
+mode this paper's survey already documents and is not acceptable evidence
+against the schema.
+
+\paragraph{Deployment realism and policy-facing surfaces.}
+Production deletion, right-to-be-forgotten, and enterprise compliance are the
+natural deployment-realism lane for PFLC. The current local policies are not
+ready for that experiment because they share the same \code{answer_question}
+surface and query the substrate directly, rather than exposing separable
+policy-facing lookup contracts. A future deletion experiment should first
+define those surfaces and deletion semantics, then preregister leakage metrics
+before any policy execution.

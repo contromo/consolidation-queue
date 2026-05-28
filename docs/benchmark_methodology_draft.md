@@ -37,6 +37,9 @@ inputs. The LongMemEval controlled-pilot result is deliberately negative for
 CQ on evidence completeness: the adapter and judge gates pass, CQ ties eager
 baselines on evidence exposure, and CQ loses the headline `all_hit_at_50`
 metric because pending lookup exposes only one of two gold evidence sessions.
+A separately preregistered pending multi-evidence follow-up then turns that
+negative result into a mechanism-local repair: plural pending readout closes
+the completeness gap, while cardinality-capped Reflection reproduces the loss.
 This is not a claim of broad noisy CQ superiority or a replacement
 persistent-agent memory system.
 
@@ -54,7 +57,10 @@ This draft consolidates the contribution the repo can defend today:
 7. a registered post-hoc QR-canon audit that names a required policy-facing
    query-contract diagnostic alongside clustering-quality component metrics,
 8. a controlled LongMemEval transfer probe that passes methodology gates but
-   records a stable CQ-negative evidence-completeness readout.
+   records a stable CQ-negative evidence-completeness readout, and
+9. a separately preregistered pending multi-evidence follow-up that repairs
+   that readout via answer-time evidence cardinality without changing the
+   original X.4 verdict.
 
 The 2026-05-15 noisy policy comparison fired Bucket B. That is a completed
 noisy-mode policy result, but it is not broad CQ superiority: CQ wins versus
@@ -139,6 +145,9 @@ workstream built the missing candidate stream, policy-query contract, PFLC
 scorer, and judge gate. The empirical result is not a CQ win: it is a stable
 negative readout on evidence completeness under the v1 controlled-pilot
 adapter.
+The pending multi-evidence follow-up is narrower still: it tests the observed
+readout-cardinality failure under the same controlled pilot, rather than
+claiming that CQ broadly transfers to LongMemEval.
 
 ## 4. Preregistration Discipline
 
@@ -715,6 +724,74 @@ Unsupported claims:
 - any follow-up CQ variant that changes pending multi-evidence retrieval
   without a fresh preregistration.
 
+### Pending Multi-Evidence LongMemEval Follow-Up
+
+Source: `docs/cq_pending_multi_evidence_results.md`.
+
+Specific cells:
+
+- `primary_contract`, 71 cases
+- `path_a_only_denominator`, 72 cases
+- `path_b_only_denominator`, 72 cases
+
+Artifacts:
+
+- `docs/cq_pending_multi_evidence_preregistration.md`
+- `docs/cq_pending_multi_evidence_results.md`
+- `data/external/longmemeval/transfer_followup_summary.json`
+- `data/external/longmemeval/transfer_followup_per_case_rows.csv`
+- `data/external/longmemeval/transfer_followup_manifest.json`
+- `data/external/longmemeval/sensitivity_followup/*.json`
+- `data/results/cq_pending_multi_evidence_*_metrics.csv`
+
+Posture:
+
+- this is a separately preregistered successor to the X.4 controlled pilot, not
+  a retrofit of the X.4 verdict.
+- the preregistration lock SHA is
+  `84b3c44148494c1b6f72e8201a8da886f8e1f48e49ce00197f535c7e08638840`.
+- the policy set is `phase2_5_followup`; the judge mode is `local_judge`.
+- the per-case CSV contains `2,365` policy/cell/case rows plus header.
+- the candidate-stream hash invariant passes in all three cells.
+
+Readout:
+
+| Cell | Base CQ | `cq_pending_multi_evidence` | Reflection | Reflection capped | `Mem0Lite` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `primary_contract` | `0/71` | `71/71` | `71/71` | `0/71` | `71/71` |
+| `path_a_only_denominator` | `0/72` | `72/72` | `72/72` | `0/72` | `72/72` |
+| `path_b_only_denominator` | `0/72` | `72/72` | `72/72` | `0/72` | `72/72` |
+
+Internal regression check:
+
+- `cq_pending_multi_evidence` matches base CQ exactly on every checked overall
+  metric across `forced_contradiction`, `preference_drift`,
+  `mechanism_diverse_heldout`, `adversarial_upstream_noise`, and
+  `evidence_conflict_spectrum`.
+- the maximum absolute checked overall delta is `0.0`.
+- negative-control unit tests confirm that below-floor poisoned siblings,
+  contested siblings, wrong-scope siblings, mirrored-source weak siblings, and
+  demoted siblings are not returned by plural pending lookup.
+
+Supported claims:
+
+- Base CQ's X.4 loss is repairable by exposing all eligible same-slot pending
+  evidence at answer time.
+- Readout cardinality is load-bearing: capping Reflection's answer readout
+  reproduces the same evidence-completeness loss while leaving its write path
+  intact.
+- The repair does not rely on a richer CQ-only substrate, changed annotation,
+  changed adapter, changed judge, or changed headline metric.
+
+Unsupported claims:
+
+- any retroactive change to the original X.4 negative transfer result.
+- broad CQ external generalization.
+- LongMemEval-S, LongMemEval-V2, distractor-heavy retrieval, or
+  natural-language answer-quality claims.
+- treating `cq_pending_multi_evidence` as a general new memory system rather
+  than a policy-interface follow-up.
+
 ## 6. Discussion
 
 The audit thesis should lead the writeup: the completed Bucket B result is a
@@ -820,8 +897,9 @@ Current unsupported claims:
 
 - broad noisy-mode end-to-end CQ superiority
 - noisy separation from `Mem0Lite` on the frozen sentinel
-- positive LongMemEval generalization for CQ; the completed controlled
-  transfer is stable but negative on evidence completeness
+- positive LongMemEval generalization for base CQ; the completed controlled
+  transfer is stable but negative on evidence completeness, and the follow-up
+  supports only a preregistered interface repair
 - broad external transfer beyond the LongMemEval v1 controlled-pilot adapter
 - real-user long-horizon helpfulness
 - learned semantic scope inference
@@ -882,10 +960,9 @@ second Bucket D. The following claims are explicitly **not** supported:
    path that does not exist yet; it is not licensed to be retried against
    the existing locked Phase 4 manifests.
 3. Treat the LongMemEval X.4 controlled-pilot result as a completed negative
-   transfer probe. The natural next experiment, if pursued, is not a rerun to
-   rescue the metric; it is a separately preregistered pending multi-evidence
-   retrieval follow-up that asks whether CQ can expose all same-slot pending
-   evidence without receiving a richer substrate than eager baselines.
+   transfer probe for base CQ, and treat the completed pending multi-evidence
+   follow-up as a separate answer-readout repair. Future LongMemEval variants
+   need new preregistration, not rescue reruns.
 
 The current shareable package is therefore a benchmark and methodology draft
 with honest oracle-policy results, a clear noisy-mode gate, a completed mixed
@@ -894,5 +971,6 @@ dated-evidence weakness, a second Bucket D CQR replay abort that the
 methodology refuses to wave away, and a registered post-hoc QR-canon audit
 that names a required policy-facing query-contract diagnostic alongside
 clustering-quality component metrics, plus a completed LongMemEval controlled
-transfer probe whose policy result is negative for CQ — not a completed
-persistent-agent memory-system claim.
+transfer probe whose base-CQ policy result is negative and a separate
+preregistered pending multi-evidence repair — not a completed persistent-agent
+memory-system claim.

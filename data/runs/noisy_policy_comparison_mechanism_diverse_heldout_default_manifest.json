@@ -2,9 +2,9 @@
   "archive_status": "regeneratable_only",
   "artifacts": [
     {
-      "bytes": 1537772,
+      "bytes": 1537734,
       "path": "data/runs/noisy_policy_comparison_mechanism_diverse_heldout_default.json",
-      "sha256": "b75be7652f5fccba8d6c78cdeb1143d4220c631190c4f3ce589e90f0c05a5ea1"
+      "sha256": "b425dad4956ccd8caadd03d866dd9886163a37aa8f478af6dbabcd0cd0674f8e"
     },
     {
       "bytes": 12599,
@@ -12,7 +12,7 @@
       "sha256": "bd8514419d083ee71be50da33f0c372675458e842288078ef07a74e4d827aa5a"
     }
   ],
-  "candidate_adapter_sha256": "4f1fc0f8f67ea6246268933f14fb0f20b514475b37153b4af0d29a8178c34de9",
+  "candidate_adapter_sha256": "74790939cd8fc829e3ba46c20c49214aaaec5676d8e5978fe059e1d615b6dd4b",
   "candidate_stream_sha256": [
     {
       "adapter_drop_count": 0,
@@ -40,7 +40,7 @@
     }
   ],
   "expected_primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
-  "git_commit": "7583d3cdbb9db84e5875157931df35beb666dd8a",
+  "git_commit": "3b611311e18a689924c2a3dcad138d1e21869304",
   "manifest_version": 1,
   "ollama_server_version": "0.23.1",
   "predictions_path": "data/results/component_gate_decision_mechanism_diverse_heldout_local_extractor_qwen2_5_32b_q4km_general_v1_default_frozen_n3_frozen_sentinel_primary_predictions.json",
@@ -52,6 +52,6 @@
   "run_name": "noisy_policy_comparison_mechanism_diverse_heldout_default",
   "runner_command": "python3 scripts/run_noisy_policy_comparison.py --primary-model-tag qwen2.5:32b-instruct-q4_K_M --schema-profile default --include-frozen-sentinel --policy-set phase2_5",
   "schema_profile": "default",
-  "working_tree_status": "clean",
+  "working_tree_status": "dirty",
   "working_tree_status_context": "manifest_write_after_outputs"
 }

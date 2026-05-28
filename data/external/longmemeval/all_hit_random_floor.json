@@ -1,0 +1,53 @@
+{
+  "cells": [
+    {
+      "analytic_empirical_abs_delta": 0.0,
+      "analytic_readout_1": 0.0,
+      "analytic_readout_2": 1.0,
+      "case_count": 72,
+      "cell_id": "path_a_only_denominator",
+      "empirical_readout_2_high": 1.0,
+      "empirical_readout_2_low": 1.0,
+      "empirical_readout_2_mean": 1.0,
+      "mean_gold_evidence_count": 2,
+      "mean_unique_session_pool": 2,
+      "under_observed_pool_cases": 0
+    },
+    {
+      "analytic_empirical_abs_delta": 0.0,
+      "analytic_readout_1": 0.0,
+      "analytic_readout_2": 1.0,
+      "case_count": 72,
+      "cell_id": "path_b_only_denominator",
+      "empirical_readout_2_high": 1.0,
+      "empirical_readout_2_low": 1.0,
+      "empirical_readout_2_mean": 1.0,
+      "mean_gold_evidence_count": 2,
+      "mean_unique_session_pool": 2,
+      "under_observed_pool_cases": 0
+    },
+    {
+      "analytic_empirical_abs_delta": 0.0,
+      "analytic_readout_1": 0.0,
+      "analytic_readout_2": 1.0,
+      "case_count": 71,
+      "cell_id": "primary_contract",
+      "empirical_readout_2_high": 1.0,
+      "empirical_readout_2_low": 1.0,
+      "empirical_readout_2_mean": 1.0,
+      "mean_gold_evidence_count": 2,
+      "mean_unique_session_pool": 2,
+      "under_observed_pool_cases": 0
+    }
+  ],
+  "gold_identity_note": "Seeded validation uses an arbitrary fixed gold subset of size gold_evidence_count within each case pool; the all-hit probability depends only on n, g, and readout size.",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "source_rows": "data/external/longmemeval/transfer_per_case_rows.csv",
+  "unit": "unique LongMemEval session ids"
+}

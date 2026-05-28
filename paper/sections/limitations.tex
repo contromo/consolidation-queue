@@ -1,0 +1,56 @@
+\section{Limitations}
+
+This is not a broad CQ superiority paper. The noisy-mode support is
+mechanism-local: CQ separates from \reflection{} on forced contradiction and
+partially on preference drift under the current 32B artifacts, ties the
+Mem0-style baseline on the frozen sentinel, and leaves source-independence,
+scope-contamination, useful-pending, and poisoning-defense rows unsupported.
+A stronger extractor could turn those bounded nulls into CQ separations,
+policy ties, or CQ weaknesses; this revision does not claim any outcome there.
+
+The LongMemEval result is also bounded. The completed transfer probe is stable
+and negative for base CQ on evidence completeness, and the pending
+multi-evidence follow-up supports a readout-cardinality repair for that v1
+loss. LongMemEval-S is not evaluated here: the 2026-05-25 feasibility gate
+failed because no local source artifact was available to pin, so no held-out
+adapter or policy run is authorized in this revision. LongMemEval-V2,
+distractor-heavy retrieval quality, and natural-language QA success remain
+future targets; \code{answer_correct} is diagnostic-only because policy answers
+are trace-shaped. The follow-up is a controlled evidence-only repair, not a
+claim that CQ-Multi solves external long-memory retrieval.
+
+PFLC is a diagnostic class rather than a new pass/fail gate. The field-level
+survey records what released baseline artifacts expose. LoCoMo's evidence
+field is a clean gold-side target, and MemoryAgentBench's conflict-resolution
+tasks are PFLC-relevant. Most released artifact contracts and standard output
+surfaces are blocked for PFLC, while the AMB LoCoMo subset admits a
+published-output replay that decomposes aggregate accuracy without resolving
+the blocked majority. PFLC is partly an obvious identifier requirement; the
+contribution is the practical consequence that common clustering, retrieval,
+and answer metrics do not test that identifier-bearing contract, and many
+released artifacts do not make it replayable.
+
+The resolution audit replay repair remains an abort. The
+lookup diagnostic leaves the aborted audit and the noisy same-stream policy
+comparison's mixed-support verdict unchanged. A subsequent fresh archived
+replay was executed under the publication-hardening preregistration
+\S5 and is documented as Bucket \code{B_inconclusive_min_n}: zero
+alias-CQR hits surfaced for \splitcode{useful\_\allowbreak pending\_\allowbreak memory}
+or \splitcode{memory\_\allowbreak poisoning} under the locked alias function
+and the 32B extractor cell, leaving the cross-tab of lookup hit versus
+per-policy answer success non-evaluable under the preregistered minimum-N gate.
+Prior PFLC null rows for those families remain unattributed, and Claim 2's
+null-row attribution is unchanged. The full readout and skip carve-out are
+recorded in \artifact{docs/publication_hardening_step3_results.md} and
+\artifact{docs/publication_hardening_step3_precondition_skip.md}.
+
+The baseline and deployment scope are deliberately narrow. The Mem0-style
+write-only baseline (\memzero{}) is a rule-based ADD/UPDATE/NOOP baseline
+inspired by Mem0's write-policy framing, not a reproduction of the Mem0 system.
+The experiments do not evaluate real-user weeks-long helpfulness, learned
+semantic scope inference, production retrieval stacks, or API-hosted
+extractors. A PFLC-surface deletion experiment also remains future work: the
+current local policies do not expose pre-existing separable policy-facing query
+surfaces that would support such an experiment without refactoring. The source
+package and branch-pinned reproduction path for the present claims are recorded
+in Appendix~\ref{app:reproducibility}.

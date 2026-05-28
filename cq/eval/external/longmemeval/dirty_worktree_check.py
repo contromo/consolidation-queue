@@ -29,7 +29,7 @@ def assert_clean_worktree(repo_root: Optional[Path] = None) -> None:
 
 
 def worktree_status_porcelain(repo_root: Optional[Path] = None) -> str:
-    repo = repo_root or _detect_repo_root()
+    repo = repo_root or detect_repo_root()
     try:
         completed = subprocess.run(
             ["git", "-C", str(repo), "status", "--porcelain"],
@@ -47,7 +47,7 @@ def worktree_status_porcelain(repo_root: Optional[Path] = None) -> str:
 
 
 def current_commit_sha(repo_root: Optional[Path] = None) -> str:
-    repo = repo_root or _detect_repo_root()
+    repo = repo_root or detect_repo_root()
     completed = subprocess.run(
         ["git", "-C", str(repo), "rev-parse", "HEAD"],
         check=True,
@@ -57,11 +57,16 @@ def current_commit_sha(repo_root: Optional[Path] = None) -> str:
     return completed.stdout.strip()
 
 
-def _detect_repo_root() -> Path:
+def detect_repo_root(start_path: Optional[Path] = None) -> Path:
+    """Return the git repository root containing ``start_path`` or cwd."""
+
+    start = (start_path or Path.cwd()).resolve()
+    if start.is_file():
+        start = start.parent
     completed = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"],
+        ["git", "-C", str(start), "rev-parse", "--show-toplevel"],
         check=True,
         capture_output=True,
         text=True,
     )
-    return Path(completed.stdout.strip())
+    return Path(completed.stdout.strip()).resolve()

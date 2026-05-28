@@ -1,0 +1,49 @@
+{
+  "base_policy": "consolidation_queue_lite",
+  "confidence_intervals": "not reported; committed metrics are aggregate rows, not per-scenario paired rows",
+  "families": [
+    {
+      "artifact_path": "data/results/cq_pending_multi_evidence_forced_contradiction_mixed_metrics.csv",
+      "checked_metric_count": 26,
+      "family": "forced_contradiction",
+      "max_abs_delta": 0.0,
+      "nonzero_metrics": [],
+      "scenario_count": 25
+    },
+    {
+      "artifact_path": "data/results/cq_pending_multi_evidence_preference_drift_mixed_metrics.csv",
+      "checked_metric_count": 26,
+      "family": "preference_drift",
+      "max_abs_delta": 0.0,
+      "nonzero_metrics": [],
+      "scenario_count": 25
+    },
+    {
+      "artifact_path": "data/results/cq_pending_multi_evidence_mechanism_diverse_heldout_frozen_metrics.csv",
+      "checked_metric_count": 26,
+      "family": "mechanism_diverse_heldout",
+      "max_abs_delta": 0.0,
+      "nonzero_metrics": [],
+      "scenario_count": 3
+    },
+    {
+      "artifact_path": "data/results/cq_pending_multi_evidence_adversarial_upstream_noise_mixed_metrics.csv",
+      "checked_metric_count": 26,
+      "family": "adversarial_upstream_noise",
+      "max_abs_delta": 0.0,
+      "nonzero_metrics": [],
+      "scenario_count": 25
+    },
+    {
+      "artifact_path": "data/results/cq_pending_multi_evidence_evidence_conflict_spectrum_mixed_metrics.csv",
+      "checked_metric_count": 26,
+      "family": "evidence_conflict_spectrum",
+      "max_abs_delta": 0.0,
+      "nonzero_metrics": [],
+      "scenario_count": 25
+    }
+  ],
+  "followup_policy": "cq_pending_multi_evidence",
+  "max_abs_delta": 0.0,
+  "scope": "overall aggregate policy rows"
+}

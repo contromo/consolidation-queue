@@ -1,0 +1,275 @@
+{
+  "alias_function_sha256": "8176c5a93ffbdbfd99d48f73836b954aa27aee4ab08de567ca47ec63d7896de0",
+  "archive_status": "tracked",
+  "artifacts": [
+    {
+      "bytes": 7278,
+      "path": "data/results/publication_hardening_step3_summary.json",
+      "sha256": "b0276967fa25f24e4a9afb73862a12043410177b537e8a871d61b97cc28b3924"
+    },
+    {
+      "bytes": 708,
+      "path": "data/results/publication_hardening_step3_family_rows.csv",
+      "sha256": "bf603a4b43eb858f75347f373468e310edc09af4c63870efcfb2f86b3460d27f"
+    },
+    {
+      "bytes": 4040,
+      "path": "docs/publication_hardening_step3_results.md",
+      "sha256": "8f92ad48c9eb52cf29aa5a155a9aa4b1428e12aa4998d3f0e9ccf13a49807ff9"
+    }
+  ],
+  "bucket": "B_inconclusive_min_n",
+  "cqr_audit_preregistration_lock_sha256": "5293b5577616c00a31065ddfe30e7f10c0d196dc458ad4481cb89595e97620f0",
+  "generated_at": "2026-05-26T02:11:11.789334Z",
+  "git_commit": "3b611311e18a689924c2a3dcad138d1e21869304",
+  "manifest_version": 1,
+  "mode": "publication_hardening_step3_manifest",
+  "noisy_comparison_preregistration_lock_sha256": "4bd2bbe64a542c6d8479c2c7c4b40b12c3c601fd35256a60b85bd1e30bfa9bff",
+  "per_family": {
+    "false_corroboration": {
+      "alias_false_positive": {
+        "alias_false_positive_rate": 0.0,
+        "alias_matched_pairs": 0,
+        "examples": [],
+        "false_positive_pairs": 0
+      },
+      "alias_hit_total": 0,
+      "alias_miss_total": 60,
+      "cross_tab": {
+        "alias_hit_total": 0,
+        "alias_miss_total": 60,
+        "answer_success_definition": {
+          "metric": "false_assertion_rate",
+          "primary_failure_filters": [
+            {
+              "failure_type": "false_assertion",
+              "reasons": null
+            }
+          ]
+        },
+        "answer_success_given_alias_hit": 0.0,
+        "answer_success_given_alias_miss": 1.0,
+        "cqr_alias_hit_rate": 0.0,
+        "hit_failure": 0,
+        "hit_success": 0,
+        "lift": -1.0,
+        "miss_failure": 0,
+        "miss_success": 60,
+        "policy_answer_success_rate": 1.0
+      },
+      "family": "false_corroboration",
+      "min_n_passed": false,
+      "miss_partition_evaluable": true,
+      "primary_metric": "false_assertion_rate",
+      "role": "descriptive"
+    },
+    "mechanism_diverse_heldout": {
+      "alias_false_positive": {
+        "alias_false_positive_rate": 0.0,
+        "alias_matched_pairs": 0,
+        "examples": [],
+        "false_positive_pairs": 0
+      },
+      "alias_hit_total": 0,
+      "alias_miss_total": 4,
+      "cross_tab": {
+        "alias_hit_total": 0,
+        "alias_miss_total": 4,
+        "answer_success_definition": {
+          "caveat": "Descriptive-only: `mechanism_diverse_heldout` is heterogeneous. `policy_answer_success` treats a question as failed if any of `incorrect_answer`, `false_assertion`, `scope_leakage`, or `premature_promotion` appears for that question in `failure_examples`. This tracks frozen-sentinel mechanisms better than `incorrect_answer` alone and does not gate Bucket A.",
+          "metric": "heterogeneous_frozen_sentinel",
+          "primary_failure_filters": [
+            {
+              "failure_type": "incorrect_answer",
+              "reasons": null
+            },
+            {
+              "failure_type": "false_assertion",
+              "reasons": null
+            },
+            {
+              "failure_type": "scope_leakage",
+              "reasons": null
+            },
+            {
+              "failure_type": "premature_promotion",
+              "reasons": null
+            }
+          ]
+        },
+        "answer_success_given_alias_hit": 0.0,
+        "answer_success_given_alias_miss": 0.25,
+        "cqr_alias_hit_rate": 0.0,
+        "hit_failure": 0,
+        "hit_success": 0,
+        "lift": -0.25,
+        "miss_failure": 3,
+        "miss_success": 1,
+        "policy_answer_success_rate": 0.25
+      },
+      "family": "mechanism_diverse_heldout",
+      "min_n_passed": false,
+      "miss_partition_evaluable": true,
+      "primary_metric": "heterogeneous_frozen_sentinel",
+      "role": "descriptive"
+    },
+    "memory_poisoning": {
+      "alias_false_positive": {
+        "alias_false_positive_rate": 0.0,
+        "alias_matched_pairs": 0,
+        "examples": [],
+        "false_positive_pairs": 0
+      },
+      "alias_hit_total": 0,
+      "alias_miss_total": 60,
+      "cross_tab": {
+        "alias_hit_total": 0,
+        "alias_miss_total": 60,
+        "answer_success_definition": {
+          "metric": "poison_promotion_rate",
+          "primary_failure_filters": [
+            {
+              "failure_type": "premature_promotion",
+              "reasons": [
+                "poison_candidate_promoted"
+              ]
+            }
+          ]
+        },
+        "answer_success_given_alias_hit": 0.0,
+        "answer_success_given_alias_miss": 0.6,
+        "cqr_alias_hit_rate": 0.0,
+        "hit_failure": 0,
+        "hit_success": 0,
+        "lift": -0.6,
+        "miss_failure": 24,
+        "miss_success": 36,
+        "policy_answer_success_rate": 0.6
+      },
+      "family": "memory_poisoning",
+      "min_n_passed": false,
+      "miss_partition_evaluable": true,
+      "primary_metric": "poison_promotion_rate",
+      "role": "thesis"
+    },
+    "useful_pending_memory": {
+      "alias_false_positive": {
+        "alias_false_positive_rate": 0.0,
+        "alias_matched_pairs": 0,
+        "examples": [],
+        "false_positive_pairs": 0
+      },
+      "alias_hit_total": 0,
+      "alias_miss_total": 60,
+      "cross_tab": {
+        "alias_hit_total": 0,
+        "alias_miss_total": 60,
+        "answer_success_definition": {
+          "metric": "answer_correctness",
+          "primary_failure_filters": [
+            {
+              "failure_type": "incorrect_answer",
+              "reasons": null
+            }
+          ]
+        },
+        "answer_success_given_alias_hit": 0.0,
+        "answer_success_given_alias_miss": 0.0,
+        "cqr_alias_hit_rate": 0.0,
+        "hit_failure": 0,
+        "hit_success": 0,
+        "lift": 0.0,
+        "miss_failure": 60,
+        "miss_success": 0,
+        "policy_answer_success_rate": 0.0
+      },
+      "family": "useful_pending_memory",
+      "min_n_passed": false,
+      "miss_partition_evaluable": true,
+      "primary_metric": "answer_correctness",
+      "role": "thesis"
+    }
+  },
+  "pre_run_worktree_status": "",
+  "publication_hardening_lock_sha256": "05671290ae8ebcc665c915521128c18c48b13be075ace55472b5931874672590",
+  "regeneration_metadata": {
+    "candidate_adapter_sha256": "74790939cd8fc829e3ba46c20c49214aaaec5676d8e5978fe059e1d615b6dd4b",
+    "expected_primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+    "ollama_server_version": "0.23.1",
+    "primary_model_digest": "sha256:9f13ba1299afea09d9a956fc6a85becc99115a6d596fae201a5487a03bdc4368",
+    "prompt_sha256": "ca9ec418156b4cc12bcf5457683844f023684bbc5cee2b7460a6c5030a475633",
+    "regeneration_skipped": false,
+    "source_manifest_path": "data/runs/noisy_policy_comparison_useful_pending_memory_default_manifest.json"
+  },
+  "runner_command": "python3 scripts/run_publication_hardening_step3.py",
+  "skip_doc_path": "docs/publication_hardening_step3_precondition_skip.md",
+  "skip_doc_sha256": "73f3b8c40a11e91b8af965581c2aa2ded975d1501e9cbe8887d7a639df0ebf68",
+  "source_run_artifacts": {
+    "false_corroboration": {
+      "component_eval_path": "data/results/component_gate_decision_false_corroboration_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
+      "component_eval_sha256": "a74aef67b4ffcbf286332bd9bb252285a37bc0e7894abe8aa969f7561ac64121",
+      "component_gate_manifest_path": "data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_manifest.json",
+      "component_gate_manifest_sha256": "45368ab7e779a50db1a8c65c1fa984bdbe3abb1de02d9a7e1c283cbc41cc03ab",
+      "component_gate_summary_path": "data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_summary.json",
+      "component_gate_summary_sha256": "b591909e777b1d22994b7395bb3675fff6a3ad3f716a3c2d85b87a79600e0481",
+      "metrics_csv_path": "data/results/noisy_policy_comparison_false_corroboration_default_metrics.csv",
+      "metrics_csv_sha256": "1323b3539bef15dec702a031944c6d636855b39936a9a9f2c8142f43c1cf6e4b",
+      "predictions_path": "data/results/component_gate_decision_false_corroboration_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json",
+      "predictions_sha256": "022052b9a996cede3f0be54904389e389f42fc3b3d0ed2f01249dfa1dcedee27",
+      "run_json_path": "data/runs/noisy_policy_comparison_false_corroboration_default.json",
+      "run_json_sha256": "e1c0c0e3bc9fe0b30f0a70f86bf61aa3077e946348cc8a22ed5adf3bca4d0c98",
+      "run_manifest_path": "data/runs/noisy_policy_comparison_false_corroboration_default_manifest.json",
+      "run_manifest_sha256": "c286feff111fa04fdeca574c319ea57d0cf819543bc8bae6d018843fa194e332"
+    },
+    "mechanism_diverse_heldout": {
+      "component_eval_path": "data/results/component_gate_decision_mechanism_diverse_heldout_local_extractor_qwen2_5_32b_q4km_general_v1_default_frozen_n3_frozen_sentinel_primary_component_eval.json",
+      "component_eval_sha256": "6e582a7896193333d01453ec7d0ee1be02ce8273a146d70fbc43695939c19860",
+      "component_gate_manifest_path": "data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_manifest.json",
+      "component_gate_manifest_sha256": "45368ab7e779a50db1a8c65c1fa984bdbe3abb1de02d9a7e1c283cbc41cc03ab",
+      "component_gate_summary_path": "data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_summary.json",
+      "component_gate_summary_sha256": "b591909e777b1d22994b7395bb3675fff6a3ad3f716a3c2d85b87a79600e0481",
+      "metrics_csv_path": "data/results/noisy_policy_comparison_mechanism_diverse_heldout_default_metrics.csv",
+      "metrics_csv_sha256": "bd8514419d083ee71be50da33f0c372675458e842288078ef07a74e4d827aa5a",
+      "predictions_path": "data/results/component_gate_decision_mechanism_diverse_heldout_local_extractor_qwen2_5_32b_q4km_general_v1_default_frozen_n3_frozen_sentinel_primary_predictions.json",
+      "predictions_sha256": "01db6a7511e0ff3bf717d15baecb627b250d6dc22fa144248d0bcdec680baa0e",
+      "run_json_path": "data/runs/noisy_policy_comparison_mechanism_diverse_heldout_default.json",
+      "run_json_sha256": "b425dad4956ccd8caadd03d866dd9886163a37aa8f478af6dbabcd0cd0674f8e",
+      "run_manifest_path": "data/runs/noisy_policy_comparison_mechanism_diverse_heldout_default_manifest.json",
+      "run_manifest_sha256": "f028cce9eabdd8bcd3b622d58d09ebb037eaf1ba37acc7358b871f899d0ea5cb"
+    },
+    "memory_poisoning": {
+      "component_eval_path": "data/results/component_gate_decision_memory_poisoning_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
+      "component_eval_sha256": "3dd918891d8716c8dfc094961aa61c86f3b4d2feb7a18dc504fefe99da9912d2",
+      "component_gate_manifest_path": "data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_manifest.json",
+      "component_gate_manifest_sha256": "45368ab7e779a50db1a8c65c1fa984bdbe3abb1de02d9a7e1c283cbc41cc03ab",
+      "component_gate_summary_path": "data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_summary.json",
+      "component_gate_summary_sha256": "b591909e777b1d22994b7395bb3675fff6a3ad3f716a3c2d85b87a79600e0481",
+      "metrics_csv_path": "data/results/noisy_policy_comparison_memory_poisoning_default_metrics.csv",
+      "metrics_csv_sha256": "23b49a5216319c1645fb8df1131f11cf9fb20b37a10338c066e5ce697de4dcd5",
+      "predictions_path": "data/results/component_gate_decision_memory_poisoning_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json",
+      "predictions_sha256": "93cd41ff2c572cd3d60afcba8ac9add59b09cbab06077a2729362a872b42ffe1",
+      "run_json_path": "data/runs/noisy_policy_comparison_memory_poisoning_default.json",
+      "run_json_sha256": "0c7cbec3ca53d7e7dce55a483ebbdf0c0bcbaaa0b4edb1be0a3997874b9611b1",
+      "run_manifest_path": "data/runs/noisy_policy_comparison_memory_poisoning_default_manifest.json",
+      "run_manifest_sha256": "044b2827fdf6da3b6a7751f0b26b2723e30590e1af8015772463fbdd3df093d0"
+    },
+    "useful_pending_memory": {
+      "component_eval_path": "data/results/component_gate_decision_useful_pending_memory_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_component_eval.json",
+      "component_eval_sha256": "4969f25c16caa1ff4d10cb9f43344f52b9c8c8f23c7b87fb5419926ec67d6432",
+      "component_gate_manifest_path": "data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_manifest.json",
+      "component_gate_manifest_sha256": "45368ab7e779a50db1a8c65c1fa984bdbe3abb1de02d9a7e1c283cbc41cc03ab",
+      "component_gate_summary_path": "data/results/component_gate_decision_qwen2_5_32b-instruct-q4_K_M_default_summary.json",
+      "component_gate_summary_sha256": "b591909e777b1d22994b7395bb3675fff6a3ad3f716a3c2d85b87a79600e0481",
+      "metrics_csv_path": "data/results/noisy_policy_comparison_useful_pending_memory_default_metrics.csv",
+      "metrics_csv_sha256": "918b653f2f9821cb860d7efeec34235a61db3e68930b501a23b8ed36c0eb64b2",
+      "predictions_path": "data/results/component_gate_decision_useful_pending_memory_local_extractor_qwen2_5_32b_q4km_general_v1_default_heldout_n60_primary_unlock_probe_predictions.json",
+      "predictions_sha256": "18cd0168e2179cbc66901c8090dcdf2cdf2234c483870631b74cc16956f66e44",
+      "run_json_path": "data/runs/noisy_policy_comparison_useful_pending_memory_default.json",
+      "run_json_sha256": "0f83d886f2785b7d2fce66830c36596efa2282384e19ba6519a22d62a168e865",
+      "run_manifest_path": "data/runs/noisy_policy_comparison_useful_pending_memory_default_manifest.json",
+      "run_manifest_sha256": "7bc598a61dc3f1751e26d42b28ac9144503802771acf8fab23af99d99899fc46"
+    }
+  },
+  "working_tree_status": "M data/results/noisy_policy_comparison_summary.json\n M data/runs/noisy_policy_comparison_false_corroboration_default_manifest.json\n M data/runs/noisy_policy_comparison_forced_contradiction_default_manifest.json\n M data/runs/noisy_policy_comparison_mechanism_diverse_heldout_default_manifest.json\n M data/runs/noisy_policy_comparison_memory_poisoning_default_manifest.json\n M data/runs/noisy_policy_comparison_preference_drift_default_manifest.json\n M data/runs/noisy_policy_comparison_scope_contamination_default_manifest.json\n M data/runs/noisy_policy_comparison_useful_pending_memory_default_manifest.json\n?? data/results/publication_hardening_step3_family_rows.csv\n?? data/results/publication_hardening_step3_summary.json\n?? docs/publication_hardening_step3_results.md",
+  "working_tree_status_context": "step3_after_outputs"
+}

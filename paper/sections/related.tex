@@ -1,0 +1,88 @@
+\section{Related Work}
+
+\paragraph{External memory benchmarks.}
+LongMemEval evaluates long-term chat memory across information extraction,
+multi-session reasoning, knowledge updates, temporal reasoning, and
+abstention \cite{longmemeval2024}. Here, the released v1 oracle split becomes
+a controlled-pilot anchor only after a preregistered adapter creates a redacted
+same candidate stream for all local policies. The resulting PFLC target is
+dialog-evidence-id completeness over the v1 evidence-only oracle split, so the
+result should be read as evidence exposure and completeness under a fixed
+policy surface, with distractor-heavy retrieval quality over LongMemEval-S or
+LongMemEval-V2 left to future work.
+LoCoMo is the other key long-conversation benchmark used in the PFLC survey:
+it collects very long multimodal conversations and evaluates question
+answering, event summarization, and multimodal dialogue generation
+\cite{locomo2024}.
+
+MemoryAgentBench and MemBench are important external-evaluation references
+because they stress incremental interaction, long-range memory, factual memory,
+and selective forgetting \cite{memoryagentbench2025,membench2025}. They occupy
+the benchmark lane, separate from this report's fair-policy-comparison lane,
+because standard benchmark outputs need not enforce same-candidate-stream and
+same-substrate constraints. The PFLC survey treats their released artifacts as
+a diagnostic question: do standard outputs expose the per-question identifiers
+needed to test whether a memory policy can query the right handle?
+
+Recent and concurrent benchmark efforts broaden this lane further. STATE-Bench
+measures whether memory improves reliability, task completion, efficiency, and
+user experience in stateful enterprise tasks \cite{statebench2026}. MemGym
+adds long-horizon agentic tracks across tool-use dialogue, deep research,
+coding, and computer-use settings \cite{memgym2026}. EvoMemBench evaluates
+self-evolving memory across in-episode/cross-episode and
+knowledge/execution-oriented axes \cite{evomembench2026}. These benchmarks
+broaden what memory systems are tested on; this report narrows how policy-level
+credit is assigned.
+
+The answer splits. Most surveyed released outputs are artifact-blocked, but
+published Agent Memory Benchmark (AMB) LoCoMo runs (Hindsight, hybrid-search,
+Cognee) inject context with recoverable LoCoMo \code{dia_id}s and admit a
+published-output PFLC replay, which decomposes aggregate answer accuracy into
+evidence exposure, rank, and answer-generation residuals
+(Section~\ref{sec:amb-replay}).
+
+\paragraph{Belief revision and truth maintenance.}
+CQ's contestation and demotion behavior is adjacent to classical truth
+maintenance and belief-revision work, which tracked reasons for beliefs,
+assumption sets, and revision under inconsistent or changing evidence
+\cite{doyle1979truth,dekleer1986atms,agm1985theorychange}. This paper does
+not claim a new general belief-revision logic. It uses that lineage as a local
+memory-policy pattern for LLM agents, adding scoped candidate streams,
+queryable pending state, and same-stream comparison against eager-write
+policies.
+
+\paragraph{Memory systems and write policies.}
+Mem0 proposes a production-oriented memory architecture with dynamic memory
+extraction, update, and retrieval, including a graph variant for relational
+memory \cite{mem02025}. A-MEM emphasizes dynamic indexing, memory linking, and
+memory evolution \cite{amem2025}. MemGPT/Letta frames stateful agents through
+virtual context management and self-editing memory tiers \cite{memgpt2024}.
+Zep/Graphiti and Cognee represent graph-oriented memory and retrieval stacks
+that motivate the related-system lane without defining this report's fair
+policy-comparison surface \cite{zep2025,cognee2025}. These systems motivate
+comparison targets and terminology. The local Mem0-style write-only baseline
+(\memzero{}) is a narrow ADD/UPDATE/NOOP write-time policy over the same
+candidate stream and substrate as CQ and \reflection; that narrowness keeps the
+policy comparison inspectable.
+\memzero{} is \emph{not} an end-to-end reproduction of the Mem0 system, and
+our results do not characterize production Mem0; we use this paper-facing
+label (renamed from the repo identifier \code{Mem0Lite}) to make that
+boundary unambiguous to readers.
+
+\paragraph{Preregistration and audit discipline.}
+The methodological stance is closer to a preregistered evaluation audit than to
+a recall leaderboard. The project locks prediction grids, outcome buckets,
+adapter pins, judge gates, and follow-up boundaries before running each major
+comparison. It also records aborts as evidence. The canonical-id resolution
+audit, for example, refused to emit a verdict twice when locked run JSON
+payloads could not be reproduced. That posture prevents a methodology repair
+from becoming a post-hoc result rescue.
+
+This is not a claim that preregistration itself is novel to machine learning.
+The ML Reproducibility Challenge, preregistration tracks hosted through
+OpenReview venues, and MLPerf-style standardized evaluation streams are all
+part of the existing methodological toolkit. The contribution here is narrower:
+PFLC as a metric-class concept for memory governance, same-stream and
+same-substrate controls applied to persistent-memory policy comparisons, and a
+case study that preserves negative external transfer while using paired
+controls to isolate a specific interface mechanism.
