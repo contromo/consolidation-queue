@@ -14,7 +14,7 @@ The paper package therefore follows the accepted pinning path:
 
 - working branch: `paper/ship-paper-draft`
 - source branch: `longmemeval-externalization-gate`
-- final pinned tag: [`paper-v1`](https://github.com/contromo/consolidation-queue/tree/paper-v1)
+- final pinned tag: [`paper-v2`](https://github.com/contromo/consolidation-queue/tree/paper-v2)
 
 ## Verify Artifact Paths
 
@@ -94,7 +94,7 @@ and writes `paper/figures/cqmulti_per_row_regression.tex` plus
 ## Hosting
 
 The paper source and reproducibility bundle are hosted at the tag
-[`paper-v1`](https://github.com/contromo/consolidation-queue/tree/paper-v1)
+[`paper-v2`](https://github.com/contromo/consolidation-queue/tree/paper-v2)
 on this repository. The paper uses the default `article` class; if a target
 venue requires a different style, swap it at submission time without
 changing the artifact pin.
