@@ -94,7 +94,7 @@ and writes `paper/figures/cqmulti_per_row_regression.tex` plus
 ## Hosting
 
 The paper source and reproducibility bundle are hosted at the tag
-[`paper-v2`](https://github.com/contromo/consolidation-queue/tree/paper-v2)
+[`paper-v3`](https://github.com/contromo/consolidation-queue/tree/paper-v3)
 on this repository. The paper uses the default `article` class; if a target
 venue requires a different style, swap it at submission time without
 changing the artifact pin.
