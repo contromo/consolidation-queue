@@ -1,29 +1,33 @@
 \section{Results}
 
-Table~\ref{tab:claims} maps the paper's four claims to their principal evidence
-anchors. The full artifact index is in Appendix~\ref{app:artifacts}; this
-section emphasizes each result's supported scope.
+The claim-level ledger below maps the paper's four claims to their principal
+evidence anchors. The full artifact index is in Appendix~\ref{app:artifacts};
+this section emphasizes each result's supported scope.
 
 {\small
-\begin{longtable}{@{}p{0.16\linewidth} p{0.20\linewidth} p{0.31\linewidth} p{0.19\linewidth}@{}}
-\caption{Claim-level evidence ledger.}\label{tab:claims}\\
-\toprule
-Claim & Evidence & Readout & Boundary\\
-\midrule
-\endfirsthead
-\toprule
-Claim & Evidence & Readout & Boundary\\
-\midrule
-\endhead
-Same-stream evaluation makes policy attribution inspectable & Frozen oracle sweep; noisy extractor-quality gate; noisy same-stream policy comparison & All 108 frozen oracle deltas matched. The 7B gate blocked a false unlock. The 32B-gated comparison reaches mixed/partial support. & Mechanism-local noisy support.\\
-\addlinespace
-Standard memory metrics can pass while policy-facing lookup fails & Internal handle-identity diagnostic; PFLC field survey; AMB LoCoMo published-output replay & Five of seven comparison rows pass the B-cubed floor while exact canonical-id match is below 5 percent; LoCoMo decomposes evidence-id exposure, rank, and answer residuals. & Identity-PFLC is internal; LoCoMo is evidence exposure.\\
-\addlinespace
-Preserved negative externalization exposes interface failures & LongMemEval v1 readout-cardinality probe & Methodology gates pass, but CQ minus Reflection on \code{all_hit_at_50} is -1.0 in all three cells. & Stable base-CQ evidence-completeness loss.\\
-\addlinespace
-A paired repair/control isolates readout cardinality & Pending multi-evidence follow-up & Plural pending readout moves base CQ from 0/71 to 71/71 on the primary cell; capped Reflection falls from 71/71 to 0/71. & Interface repair; external generalization out of scope.\\
-\bottomrule
-\end{longtable}
+\paragraph{Claim-level evidence ledger.}
+\begin{enumerate}
+\item \textbf{Same-stream evaluation makes policy attribution inspectable.}
+Evidence: frozen oracle sweep, noisy extractor-quality gate, and noisy
+same-stream policy comparison. Readout: all 108 frozen oracle deltas matched,
+the 7B gate blocked a false unlock, and the 32B-gated comparison reaches
+mixed/partial support. Boundary: mechanism-local noisy support.
+\item \textbf{Standard memory metrics can pass while policy-facing lookup fails.}
+Evidence: internal handle-identity diagnostic, PFLC field survey, and AMB
+LoCoMo published-output replay. Readout: five of seven comparison rows pass the
+B-cubed floor while exact canonical-id match is below 5 percent; LoCoMo
+decomposes evidence-id exposure, rank, and answer residuals. Boundary:
+identity-PFLC is internal; LoCoMo is evidence exposure.
+\item \textbf{Preserved negative externalization exposes interface failures.}
+Evidence: LongMemEval v1 readout-cardinality probe. Readout: methodology gates
+pass, but CQ minus Reflection on \code{all_hit_at_50} is -1.0 in all three
+cells. Boundary: stable base-CQ evidence-completeness loss.
+\item \textbf{A paired repair/control isolates readout cardinality.}
+Evidence: pending multi-evidence follow-up. Readout: plural pending readout
+moves base CQ from 0/71 to 71/71 on the primary cell; capped Reflection falls
+from 71/71 to 0/71. Boundary: interface repair; external generalization is out
+of scope.
+\end{enumerate}
 }
 
 Two empirical anchors carry the methods-first reading. First, the extractor

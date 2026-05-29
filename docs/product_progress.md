@@ -1,5 +1,25 @@
 # Product Progress
 
+## 2026-05-29 — arXiv polish pass for benchmark-adjacent positioning
+
+### What Shipped
+
+- added related-work positioning for MemoryArena, AMA-Bench,
+  scale-conditioned memory evaluation, and the 2026 autonomous-agent memory
+  survey so the paper distinguishes same-stream policy attribution from
+  action-coupled, trajectory-level, and scale-conditioned benchmark expansion
+- added a plain-English PFLC sentence to the abstract and a crisp
+  evaluation-methods-report boundary in the introduction
+- replaced the cramped claim-ledger table with a compact enumerated ledger
+  carrying the same claim/evidence/readout/boundary content
+
+### Framing Decision
+
+- the polish adds no experiments and changes no policy verdicts
+- the paper remains a methods report about attribution controls and
+  policy-facing lookup diagnostics, not a CQ superiority or benchmark
+  leaderboard claim
+
 ## 2026-05-29 — arXiv readiness citation and pin pass
 
 ### What Shipped

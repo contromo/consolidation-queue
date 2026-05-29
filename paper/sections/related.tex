@@ -34,9 +34,17 @@ user experience in stateful enterprise tasks \cite{statebench2026}. MemGym
 adds long-horizon agentic tracks across tool-use dialogue, deep research,
 coding, and computer-use settings \cite{memgym2026}. EvoMemBench evaluates
 self-evolving memory across in-episode/cross-episode and
-knowledge/execution-oriented axes \cite{evomembench2026}. These benchmarks
-broaden what memory systems are tested on; this report narrows how policy-level
-credit is assigned.
+knowledge/execution-oriented axes \cite{evomembench2026}. MemoryArena couples
+memory with later action in interdependent multi-session agent-environment
+loops, rather than testing recall alone \cite{memoryarena2026}. AMA-Bench moves
+from dialogue-centric memory to long-horizon trajectories of states, actions,
+observations, and tool outputs \cite{amabench2026}. Scale-conditioned
+evaluation holds task evidence fixed while adding irrelevant sessions, making
+claims conditional on scale, agent, interface, and interaction budget
+\cite{scaleconditioned2026}. The broader survey literature similarly describes
+agent memory as a write--manage--read loop coupled to perception and action
+\cite{memorysurvey2026}. These benchmarks and surveys broaden what memory
+systems are tested on; this report narrows how policy-level credit is assigned.
 
 \begin{table}[H]
 \centering
@@ -47,9 +55,14 @@ credit is assigned.
 \toprule
 Surface & What it emphasizes & Boundary in this paper\\
 \midrule
-STATE-Bench / MemGym / EvoMemBench &
-Stateful, long-horizon, and self-evolving memory tasks &
+STATE-Bench / MemGym / EvoMemBench / MemoryArena / AMA-Bench &
+Stateful, long-horizon, self-evolving, and action-coupled memory tasks &
 Context for why memory evaluation is broadening; not evidence for CQ.\\
+\addlinespace
+Scale-conditioned evaluation &
+Fixed evidence with added irrelevant sessions &
+Adjacent evidence-control framing; this paper instead fixes policy inputs and
+storage to attribute policy-level memory governance.\\
 \addlinespace
 MemoryAgentBench FactConsolidation &
 Revision and consolidation as explicit benchmark targets &
