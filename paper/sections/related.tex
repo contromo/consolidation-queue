@@ -110,6 +110,19 @@ Even memo-like stores need auditable identifiers, provenance, contradiction
 handling, and repair surfaces; otherwise errors can propagate downstream
 through future retrieval and policy decisions.
 
+\paragraph{Memory governance layers.}
+Recent governance-oriented proposals also identify contradiction, stale memory,
+semantic drift, and privacy as memory-management risks. SSGM frames governed
+memory as a safety architecture with verification, temporal decay, and dynamic
+access control before consolidation, while MemArchitect proposes a policy layer
+for decay, conflict resolution, and privacy controls
+\cite{ssgm2026,memarchitect2026}. This report is complementary: it does not
+propose a general deployment governance framework, but tests how to attribute
+policy-level credit when those governance mechanisms are evaluated. The
+same-stream, same-substrate, extractor-gated protocol and PFLC diagnostics are
+therefore evaluation controls for governed memory, not a competing governance
+architecture.
+
 \paragraph{Preregistration and audit discipline.}
 The methodological stance is closer to a preregistered evaluation audit than to
 a recall leaderboard. The project locks prediction grids, outcome buckets,

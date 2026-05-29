@@ -1,5 +1,22 @@
 # Product Progress
 
+## 2026-05-29 — arXiv readiness citation and pin pass
+
+### What Shipped
+
+- added related-work positioning against SSGM and MemArchitect so the paper
+  distinguishes its evaluation-control contribution from adjacent memory
+  governance architectures
+- updated the paper reproducibility pointer from stale `paper-v2` language to
+  the arXiv-ready `paper-v3` tag path
+
+### Framing Decision
+
+- the change adds no experiments and changes no policy verdicts
+- the paper remains an evaluation-methods report: same-stream attribution,
+  extractor-gated noisy comparison, and PFLC diagnostics rather than a general
+  memory-governance architecture
+
 ## 2026-05-29 — Paper two-layer methods framing pass
 
 ### What Shipped
