@@ -14,7 +14,7 @@ The pinned revision is:
 
 - working branch: `paper_revisions`
 - source branch: `longmemeval-externalization-gate`
-- final pinned tag: [`paper-v3`](https://github.com/contromo/consolidation-queue/tree/paper-v3)
+- final pinned tag: [`paper-v4`](https://github.com/contromo/consolidation-queue/tree/paper-v4)
 
 ## Verify Artifact Paths
 
@@ -75,7 +75,7 @@ checked against the artifact index in `paper/appendices/artifacts.tex`.
 
 ## Generated Tables
 
-Two report tables are generated from committed artifacts and checked into the
+Two paper tables are generated from committed artifacts and checked into the
 paper source, so a paper-only build does not need to run these scripts. From the
 repository root, regenerate them with:
 
@@ -94,7 +94,7 @@ and writes `paper/figures/cqmulti_per_row_regression.tex` plus
 ## Hosting
 
 The paper source and reproducibility bundle are hosted at the tag
-[`paper-v3`](https://github.com/contromo/consolidation-queue/tree/paper-v3)
+[`paper-v4`](https://github.com/contromo/consolidation-queue/tree/paper-v4)
 on this repository. The paper uses the default `article` class; if a target
 venue requires a different style, swap it at submission time without
 changing the artifact pin.

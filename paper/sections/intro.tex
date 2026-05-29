@@ -10,7 +10,7 @@ scope them, contest one with the other, and demote a durable claim when the
 evidence shifts.
 
 Most agent-memory benchmarks ask whether the system got the right answer; this
-report instead asks whether the memory policy had the right governable evidence
+paper instead asks whether the memory policy had the right governable evidence
 handle: the stored-claim identifier a policy uses to contest, scope, demote, or
 repair memory. Recall, retrieval, and answer metrics are important, but they can
 hide two different failures. Upstream, aggregate extractor scores can authorize a
@@ -18,7 +18,7 @@ candidate stream---the shared extracted-fact list every policy receives---that
 collapses the policy comparison. Downstream, memory-state metrics can expose
 relevant content while failing to certify the policy-facing handle identity
 needed for contradiction, scope, demotion, and repair. Recent memory benchmarks
-broaden what systems are tested on; this report narrows how policy-level credit
+broaden what systems are tested on; this paper narrows how policy-level credit
 is assigned.
 
 The broader benchmark landscape makes this narrower question timely. STATE-Bench
@@ -26,7 +26,8 @@ evaluates memory in stateful enterprise workflows, EvoMemBench frames memory as
 self-evolving state where no single memory form is uniformly sufficient, and
 MemoryAgentBench includes FactConsolidation as an explicit revision and
 consolidation target \cite{statebench2026,evomembench2026,memoryagentbench2025}.
-This report therefore argues for a stricter attribution posture.
+This empirical evaluation-methods paper therefore argues for a stricter
+attribution posture, with committed artifacts for each empirical claim.
 Memory-policy comparisons should hold the upstream candidate stream fixed and
 use the same storage substrate, the shared memory store for compared policies.
 They should separate oracle-mode policy claims (known scope, conflicts, and
@@ -98,14 +99,14 @@ isolates answer-time readout cardinality (how many items returned).\\
 \end{table}
 
 The contribution is the attribution discipline; CQ is the case study used
-to test what the discipline can detect. This is an evaluation-methods report,
-not a benchmark leaderboard or a deployable memory-system release. The paper
+to test what the discipline can detect. It is not a benchmark leaderboard or a
+deployable memory-system release. The paper
 collapses the repository's detailed evidence ledger into four claims, with the
 following reader contract.
 
 \begin{table}[H]
 \centering
-\caption{Reader contract for the methods-first reading of this report.}
+\caption{Reader contract for the methods-first reading of this paper.}
 \label{tab:nonclaims}
 \small
 \begin{tabular}{p{0.40\linewidth} p{0.50\linewidth}}

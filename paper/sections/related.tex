@@ -22,7 +22,7 @@ because they stress incremental interaction, long-range memory, factual memory,
 and selective forgetting \cite{memoryagentbench2025,membench2025}.
 MemoryAgentBench's FactConsolidation task makes revision and consolidation an
 explicit benchmark target. These benchmarks occupy the benchmark lane, separate
-from this report's fair-policy-comparison lane, because standard benchmark
+from this paper's fair-policy-comparison lane, because standard benchmark
 outputs need not enforce same-candidate-stream and same-substrate constraints.
 The PFLC survey treats their released artifacts as a diagnostic question: do
 standard outputs expose the per-question identifiers needed to test whether a
@@ -44,7 +44,7 @@ claims conditional on scale, agent, interface, and interaction budget
 \cite{scaleconditioned2026}. The broader survey literature similarly describes
 agent memory as a write--manage--read loop coupled to perception and action
 \cite{memorysurvey2026}. These benchmarks and surveys broaden what memory
-systems are tested on; this report narrows how policy-level credit is assigned.
+systems are tested on; this paper narrows how policy-level credit is assigned.
 
 \begin{table}[H]
 \centering
@@ -107,7 +107,7 @@ indexing, memory linking, and memory evolution \cite{amem2025}. MemGPT/Letta
 frames stateful agents through virtual context management and self-editing
 memory tiers \cite{memgpt2024}.
 Zep/Graphiti and Cognee represent graph-oriented memory and retrieval stacks
-that motivate the related-system lane without defining this report's fair
+that motivate the related-system lane without defining this paper's fair
 policy-comparison surface \cite{zep2025,cognee2025}. These systems motivate
 comparison targets and terminology. The local \memzero{} baseline is a narrow
 ADD/UPDATE/NOOP write-time policy over the same candidate stream and substrate
@@ -118,7 +118,7 @@ our results do not characterize production Mem0.
 \paragraph{Lookup-style memory boundaries.}
 Recent positioning work argues that many agentic memory systems behave more
 like memo or lookup substrates than true long-term learning systems
-\cite{memo2026}. This report uses that claim only as boundary-setting context.
+\cite{memo2026}. This paper uses that claim only as boundary-setting context.
 Even memo-like stores need auditable identifiers, provenance, contradiction
 handling, and repair surfaces; otherwise errors can propagate downstream
 through future retrieval and policy decisions.
@@ -129,7 +129,7 @@ semantic drift, and privacy as memory-management risks. SSGM frames governed
 memory as a safety architecture with verification, temporal decay, and dynamic
 access control before consolidation, while MemArchitect proposes a policy layer
 for decay, conflict resolution, and privacy controls
-\cite{ssgm2026,memarchitect2026}. This report is complementary: it does not
+\cite{ssgm2026,memarchitect2026}. This paper is complementary: it does not
 propose a general deployment governance framework, but tests how to attribute
 policy-level credit when those governance mechanisms are evaluated. The
 same-stream, same-substrate, extractor-gated protocol and PFLC diagnostics are

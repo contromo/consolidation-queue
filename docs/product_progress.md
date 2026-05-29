@@ -1,5 +1,54 @@
 # Product Progress
 
+## 2026-05-29 — final pre-upload source and citation audit pass
+
+### What Shipped
+
+- moved the artifact pointer onto the first page through an author footnote
+  with the final repository tag and a one-line local artifact-path check
+- updated the paper/reproducibility pointer from the stale `paper-v3` target to
+  the next final tag name, `paper-v4`, so the upload package can be pinned to
+  the commit that contains the final polish pass
+- folded a concise empirical evaluation-methods/artifact anchor into the
+  stricter-attribution paragraph while preserving the stronger ending that the
+  paper narrows policy-level credit
+- replaced reader-facing "report" wording with "paper" where it affected
+  first-impression positioning
+
+### Citation Verification
+
+- STATE-Bench — verified the Microsoft Open Source post resolves with the
+  title, authors, May 19, 2026 date, and claims about reliability, task
+  completion, efficiency, and user experience in stateful enterprise tasks
+- Mem0 delete docs — verified the public documentation page resolves and
+  describes deleting specific memories, lists of IDs, or filtered matches
+- MemGym — verified arXiv `2605.20833` resolves to "MemGym: a Long-Horizon
+  Memory Environment for LLM Agents"
+- EvoMemBench — verified arXiv `2605.18421` resolves to the self-evolving
+  memory benchmark with the in-episode/cross-episode and
+  knowledge/execution-oriented axes used in related work
+- MemoryArena — verified arXiv `2602.16313` resolves to the interdependent
+  multi-session agentic-task benchmark
+- AMA-Bench — verified arXiv `2602.22769` resolves to the long-horizon memory
+  benchmark for agentic applications and trajectories
+- scale-conditioned evaluation — verified arXiv `2605.07313` resolves to the
+  fixed-evidence plus irrelevant-session growth protocol
+- autonomous-agent memory survey — verified arXiv `2603.07670` resolves to the
+  write--manage--read survey framing coupled to perception and action
+- memo positioning paper — verified arXiv `2604.27707` resolves to
+  "Contextual Agentic Memory is a Memo, Not True Memory"
+- SSGM — verified arXiv `2603.11768` resolves to the stability and
+  safety-governed memory framework
+- MemArchitect — verified arXiv `2603.18330` resolves to the policy-driven
+  memory governance layer
+
+### Framing Decision
+
+- the pass changes no experiments, metrics, or policy verdicts
+- `paper-v4` should be created from the final committed paper package before
+  upload; the older `paper-v3` tag intentionally remains an archival pin for
+  the prior package
+
 ## 2026-05-29 — arXiv polish pass for benchmark-adjacent positioning
 
 ### What Shipped
