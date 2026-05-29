@@ -31,9 +31,10 @@ passes.
 LongMemEval v1 interface gap.
 \end{itemize}
 Preregistered interpretation labels distinguish a planned gate or thesis
-condition firing, a completed mixed or partial result, and an abort or
-surprise-lane boundary that prevents the stronger claim. The 7B and 32B labels
-denote local extractor model cells, not memory-policy sizes.
+condition firing, a completed mixed or partial result, where only some mechanism
+rows survive, and an abort or surprise-lane boundary that prevents the stronger
+claim. The 7B and 32B labels denote local extractor model cells, not
+memory-policy sizes.
 
 \subsection{Benchmark Objects}
 
@@ -96,9 +97,10 @@ The noisy stage renders transcripts, scores local extractor outputs against
 component labels, converts accepted predictions into shared candidate streams,
 and only then runs policies. The component gate has layered checks: aggregate
 confidence-bound gates, per-family observed gates, frozen mechanism-diverse
-sentinels, prompt-regression checks, deterministic replay, and exact adapter
-pin validation. The 7B anchor passed aggregate gates but stayed locked because
-it had concentrated scenario errors and family/sentinel failures. The
+sentinels, held-out checks that must not regress, prompt-regression checks,
+deterministic replay, and exact adapter pin validation. The 7B anchor passed
+aggregate gates but stayed locked because it had concentrated scenario errors
+and family/sentinel failures. The
 preregistered 32B cells cleared the gate and licensed the separate noisy
 same-stream policy comparison.
 
@@ -137,9 +139,10 @@ body uses the diagnostic as a named memory-state check.
 The lookup diagnostic instantiates this PFLC class on canonical-id queries
 within the internal audit. It reuses the locked resolution audit's Section A
 set-membership metric and alias function, reads a committed per-question
-source table, and reports Wilson intervals plus a joint B-cubed/lookup table.
-It is diagnostic and leaves the noisy same-stream policy comparison verdict
-unchanged.
+source table, and reports Wilson intervals (standard binomial confidence
+intervals) plus a joint B-cubed/lookup table (clustering agreement paired with
+exact lookup). It is diagnostic and leaves the noisy same-stream policy
+comparison verdict unchanged.
 
 \subsection{Controlled Externalization}
 

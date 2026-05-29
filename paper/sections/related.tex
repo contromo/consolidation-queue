@@ -3,13 +3,15 @@
 \paragraph{External memory benchmarks.}
 LongMemEval evaluates long-term chat memory across information extraction,
 multi-session reasoning, knowledge updates, temporal reasoning, and
-abstention \cite{longmemeval2024}. Here, the released v1 oracle split becomes
-a controlled-pilot anchor only after a preregistered adapter creates a redacted
-same candidate stream for all local policies. The resulting PFLC target is
+abstention \cite{longmemeval2024}. Here, the released v1 oracle split, a set of
+cases with known gold evidence structure, becomes a controlled-pilot anchor only
+after a preregistered adapter creates a redacted same candidate stream for all
+local policies. The resulting PFLC target is
 dialog-evidence-id completeness over the v1 evidence-only oracle split, so the
-result should be read as evidence exposure and completeness under a fixed
-policy surface, with distractor-heavy retrieval quality over LongMemEval-S or
-LongMemEval-V2 left to future work.
+result should be read as evidence exposure (whether returned items include the
+gold evidence ids) and completeness under a fixed policy surface, with
+distractor-heavy retrieval quality over LongMemEval-S or LongMemEval-V2 left to
+future work.
 LoCoMo is the other key long-conversation benchmark used in the PFLC survey:
 it collects very long multimodal conversations and evaluates question
 answering, event summarization, and multimodal dialogue generation
@@ -65,11 +67,12 @@ exposure, and an internal canonical-id handle-identity diagnostic.\\
 \end{tabular}
 \end{table}
 
-The answer splits. Most surveyed released outputs are artifact-blocked, but
-published Agent Memory Benchmark (AMB) LoCoMo runs (Hindsight, hybrid-search,
-Cognee) inject context with recoverable LoCoMo \code{dia_id}s and admit a
-published-output PFLC replay, which decomposes aggregate answer accuracy into
-evidence exposure, rank, and answer-generation residuals
+The answer splits. Most surveyed released outputs are artifact-blocked, meaning
+public outputs lack per-question ids for replay, but published Agent Memory
+Benchmark (AMB) LoCoMo runs (Hindsight, hybrid-search, Cognee) inject context
+with recoverable LoCoMo \code{dia_id}s and admit a published-output PFLC replay,
+which decomposes aggregate answer accuracy into evidence exposure, rank, and
+answer-generation residuals
 (Section~\ref{sec:amb-replay}).
 
 \paragraph{Belief revision and truth maintenance.}

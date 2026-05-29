@@ -190,11 +190,12 @@ Cell & \code{all_hit_at_50} delta & \code{any_hit_at_50} delta\\
 \end{tabular}
 \end{table}
 
-The stable sign fires the preregistered-gate condition, but the sign is negative. CQ retrieves at least
-one gold evidence session in every case and therefore ties eager baselines on
-\code{any_hit_at_50}. It never retrieves both evidence sessions, so it loses
-\code{all_hit_at_50}. The methodology gate passes, but the probe is
-CQ-negative and isolates a policy-facing pending-readout gap.
+The stable sign fires the preregistered-gate condition, but the sign is
+negative. CQ retrieves at least one gold evidence session in every case and
+therefore ties eager baselines on \code{any_hit_at_50}, which asks whether at
+least one required gold session is returned. It never retrieves both evidence
+sessions, so it loses \code{all_hit_at_50}. The methodology gate passes, but the
+probe is CQ-negative and isolates a policy-facing pending-readout gap.
 
 \begin{figure}[H]
 \centering
