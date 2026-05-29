@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-26 (publication hardening Step 3 fresh replay)
+Last updated: 2026-05-29 (paper two-layer methods framing pass)
 
 ## Goal
 
@@ -342,6 +342,12 @@ Implemented:
   reproducibility README. The package is report integration only; it adds no
   new empirical result and keeps the LongMemEval X.4 loss plus the pending
   multi-evidence repair as separate claims.
+- `paper/`: a later two-layer methods-framing pass keeps same-stream
+  evaluation and extractor-gating as the empirical attribution spine, preserves
+  identity-PFLC as a visible body-level memory-state diagnostic, moves only the
+  formal PFLC proof/figure to an appendix, and adds an explicit boundary that
+  AMB LoCoMo demonstrates evidence exposure rather than policy-facing
+  handle-identity certification. No empirical verdict changes.
 - `scripts/build_cqmulti_per_row_regression_table.py`,
   `paper/figures/cqmulti_per_row_regression.tex`,
   `data/results/cqmulti_per_row_regression_summary.json`,

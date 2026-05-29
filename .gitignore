@@ -60,3 +60,4 @@ paper/*.synctex.gz
 # arXiv submission staging (paper/)
 paper/arxiv-stage/
 paper/arxiv-source.tar.gz
+.gstack/

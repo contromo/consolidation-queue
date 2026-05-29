@@ -1,13 +1,13 @@
-\section{Extractor Reproducibility Check}
+\section{Extractor-Gate False-Unlock Check}
 
-The extractor reproducibility check bridges failure-taxonomy evidence and
-noisy policy
-execution. It reruns the locked 7B anchor and two 32B primary cells under
-preregistered model tags, schema profiles, digest checks, and frozen sentinel
-requirements. The 7B anchor reproduces the locked failure counts. Both 32B
-cells clear the preregistered gate, with zero primary scenario errors, zero
-primary observed failures, zero aggregate failures, and zero frozen-sentinel
-observed failures.
+The extractor gate is an empirical anchor because it shows how aggregate
+component metrics can falsely authorize downstream memory-policy comparison.
+It reruns the locked 7B anchor and two 32B primary cells under preregistered
+model tags, schema profiles, digest checks, and frozen sentinel requirements.
+The 7B anchor reproduces the locked failure counts: it passes aggregate checks
+but fails scenario-family and frozen-sentinel checks. Both 32B cells clear the
+preregistered gate, with zero primary scenario errors, zero primary observed
+failures, zero aggregate failures, and zero frozen-sentinel observed failures.
 
 This section is intentionally short because the unlock is not itself a memory
 policy result. Its role is licensing. It shows that the later noisy

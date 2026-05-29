@@ -1,5 +1,48 @@
 # Product Progress
 
+## 2026-05-29 — Paper two-layer methods framing pass
+
+### What Shipped
+
+- revised the paper framing so same-stream policy isolation and extractor-gate
+  false-unlock prevention carry the empirical methods spine, while
+  identity-PFLC remains visible in the body as the memory-state handle
+  diagnostic
+- moved the formal PFLC gap figure/proof apparatus to an appendix without
+  demoting the idea to a footnote
+- added an explicit LoCoMo boundary: the AMB LoCoMo replay demonstrates
+  evidence exposure over gold evidence ids, not policy-facing handle-identity
+  certification
+- renamed reader-facing LongMemEval language toward a controlled v1
+  readout-cardinality probe and cleaned body/figure labels for the
+  ADD/UPDATE/NOOP eager-write baseline
+
+### Citation Verification
+
+- MemoryAgentBench — used as the FactConsolidation anchor after verifying the
+  arXiv HTML lists FactConsolidation under the benchmark's selective-forgetting
+  dataset construction and validation sections
+- "Contextual Agentic Memory is a Memo, Not True Memory" — included as
+  positioning-only after verifying arXiv `2604.27707` resolves to that title
+  by Binyan Xu, Xilin Dai, and Kehuan Zhang, submitted 2026-04-30
+- Mem0 delete docs — used only to bound the local baseline after verifying the
+  public Mem0 documentation exposes delete operations in addition to the
+  published architecture paper
+- EvoMemBench — used as broadening-landscape context after verifying arXiv
+  `2605.18421` ("Benchmarking Agent Memory from a Self-Evolving Perspective",
+  Yuyao Wang et al., submitted 2026-05-18); the abstract states "no single
+  memory form works consistently across all settings" (paper paraphrase: "no
+  single memory form is uniformly sufficient") and organizes evaluation along
+  the in-episode/cross-episode and knowledge/execution-oriented axes cited in
+  related work; it notes retrieval methods stay strong for knowledge-intensive
+  settings, so it validates the broadening problem without endorsing CQ
+
+### Framing Decision
+
+- the revision does not add new experiments or change any policy verdict
+- LoCoMo remains a published-output evidence-exposure decomposition; the
+  internal canonical-id diagnostic carries the handle-identity failure claim
+
 ## 2026-05-27 — Paper thesis-legibility refactor
 
 ### What Shipped

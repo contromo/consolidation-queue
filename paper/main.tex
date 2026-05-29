@@ -36,10 +36,10 @@
 \newcommand{\claim}[1]{\paragraph{#1.}}
 \newcommand{\cq}{\splitcode{Consolidation\allowbreak QueueLite}}
 \newcommand{\reflection}{\splitcode{Reflection\allowbreak EagerWriteLite}}
-\newcommand{\memzero}{\splitcode{Mem0\allowbreak WritePolicy\allowbreak Lite}}
+\newcommand{\memzero}{\splitcode{ADD/UPDATE/NOOP\allowbreak EagerWrite}}
 
 \title{When Memory Metrics Hide Memory Policies\\
-\large A Same-Stream Evaluation Method and Policy-Facing Lookup Diagnostic for Persistent-Agent Memory}
+\large Same-Stream Evaluation and Policy-Facing Lookup Contracts for Persistent-Agent Memory}
 \author{\href{https://manavm.com}{Manav Malhotra}}
 \date{May 2026}
 
@@ -65,6 +65,7 @@
 
 \appendix
 \input{appendices/glossary}
+\input{appendices/pflc_formal_gap}
 \input{appendices/failure_taxonomy}
 \input{appendices/reproducibility}
 \input{appendices/prereg_locks}

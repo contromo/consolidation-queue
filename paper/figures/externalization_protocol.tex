@@ -1,7 +1,7 @@
 % Controlled externalization protocol (replaces externalization_protocol.png).
 %
-% Usage in main.tex: requires the same preamble additions as
-% pflc_formal_gap.tex (tikz + positioning, fit, backgrounds, arrows.meta, calc).
+% Usage in main.tex: requires TikZ with positioning, fit, backgrounds,
+% arrows.meta, and calc.
 % Replace the existing \includegraphics{figures/externalization_protocol.png}
 % block in paper/sections/method.tex with
 %   \input{figures/externalization_protocol.tex}
@@ -50,9 +50,9 @@
 % Three policies stacked
 \node[policy, above right=4mm and 10mm of adapter, anchor=west] (cq) {CQ};
 \node[policy, right=10mm of adapter] (refl) {Reflection};
-\node[policy, below right=4mm and 10mm of adapter, anchor=west] (mem0) {Mem0WritePolicyLite};
+\node[policy, below right=4mm and 10mm of adapter, anchor=west] (mem0) {ADD/UPDATE/NOOP};
 
-\node[score, right=24mm of refl] (scorer) {PFLC scorer\\and bucket};
+\node[score, right=24mm of refl] (scorer) {PFLC scorer\\and verdict};
 
 \node[stage, draw=gray!60!black, fill=gray!4, font=\footnotesize, right=8mm of scorer]
   (cells) {3 sensitivity\\cells};

@@ -12,7 +12,7 @@ with a 95\% lower confidence bound above zero. If not, we can conclude these
 rows are policy ties under this benchmark, not merely extraction-floor
 artifacts.
 
-\paragraph{LongMemEval beyond the v1 transfer probe.}
+\paragraph{LongMemEval beyond the v1 readout-cardinality probe.}
 The pending multi-evidence repair is scoped to the v1 evidence-only split.
 The 2026-05-25 LongMemEval-S feasibility gate did not find a local source
 artifact to pin, so this revision does not run a held-out -S adapter. A future
@@ -35,25 +35,13 @@ not commit to a stable evidence id across releases. If any precondition fails,
 we will preregister the transfer as descriptive-only and will not run policies.
 
 \paragraph{Resolving the resolution audit abort.}
-The second of the two acceptable paths has been executed: a fresh replay
-with hash-pinned manifests ran under the publication-hardening
-preregistration \S5 and is recorded as Bucket \code{B_inconclusive_min_n} in
-\artifact{docs/publication_hardening_step3_results.md}. Per the repository's
-artifact policy, large per-scenario run JSON, component-eval, and prediction
-payloads remain regeneratable rather than committed; the Step 3 manifest
-archives their content hashes alongside the noisy-comparison manifests so the
-replay can be verified byte-for-byte against locally retained component-gate
-caches plus the runner command. A clean clone must first regenerate the
-gitignored per-family prediction and component-eval payloads before Step 3 can
-re-execute. The replay produced zero alias-CQR hits on either thesis
-family under the locked alias function and 32B extractor cell, so the
-lookup-versus-answer-success cross-tab is not evaluable. The remaining open
-question is narrower than before: either a post-hoc preregistered amendment
-to the alias function, or a stronger extractor cell that surfaces more
-canonical-id-aliasing candidates, could populate the cross-tab. The first
-path (materializing the original locked run JSON payloads) is no longer
-required, because Step 3's manifests now serve as the new archived canonical
-record.
+A fresh archived replay with hash-pinned manifests has replaced the earlier
+unrecoverable replay path, but it still surfaced too few alias-resolution hits
+to evaluate the lookup-versus-answer-success cross-tab. The remaining open
+question is narrower than before: either a preregistered amendment to the alias
+function, or a stronger extractor cell that surfaces more canonical-id-aliasing
+candidates, could populate the cross-tab. Until then, the prior PFLC null rows
+remain unattributed rather than hidden wins.
 
 \paragraph{PFLC as a benchmark output contract.}
 The field-level PFLC survey divides into an artifact-blocked majority and a
@@ -68,10 +56,9 @@ mode this paper's survey already documents and is not acceptable evidence
 against the schema.
 
 \paragraph{Deployment realism and policy-facing surfaces.}
-Production deletion, right-to-be-forgotten, and enterprise compliance are the
-natural deployment-realism lane for PFLC. The current local policies are not
-ready for that experiment because they share the same \code{answer_question}
-surface and query the substrate directly, rather than exposing separable
-policy-facing lookup contracts. A future deletion experiment should first
-define those surfaces and deletion semantics, then preregister leakage metrics
-before any policy execution.
+Deletion and compliance are the natural deployment-realism lane for PFLC. The
+current local policies are not ready for that experiment because they share the
+same \code{answer_question} surface and query the substrate directly, rather
+than exposing separable policy-facing lookup contracts. A future deletion
+experiment should first define those surfaces and deletion semantics, then
+preregister leakage metrics before any policy execution.
