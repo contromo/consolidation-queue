@@ -8,16 +8,17 @@ comparisons on extractor quality, and add policy-facing lookup-contract
 (PFLC) diagnostics for handle identity.
 
 The method exposes hidden structure at two layers. At the extractor layer, an
-aggregate-passing 7B component row would have falsely authorized downstream
-policy comparison, while the full gate blocks it and licenses only the 32B
-cells. At the memory-state layer, PFLC shows why clustering, retrieval, and
-answer metrics can miss whether the policy-facing handle itself is available.
-A memory can contain the right text but still fail if the policy cannot name
-the exact stored claim it needs to retract, scope, or repair.
-A published-output replay on AMB LoCoMo decomposes aggregate answer accuracy
-into evidence exposure, rank/context saturation, and answer residuals; that
-replay demonstrates evidence-id exposure, while handle-identity failure is
-shown by the internal canonical-id diagnostic.
+aggregate-passing component row would have falsely authorized downstream
+policy comparison, while the full gate blocks it. At the memory-state layer,
+PFLC shows why clustering, retrieval, and answer metrics can miss whether the
+policy-facing handle itself is available. In internal diagnostic rows, B-cubed
+F1 is at or near 1.00 while exact policy-query canonical-id agreement is 0.00:
+a memory can contain the right text but still fail if the policy cannot name
+the exact stored claim it needs to retract, scope, or repair. A
+published-output replay on AMB LoCoMo decomposes aggregate answer accuracy into
+evidence exposure, rank/context saturation, and answer residuals; that replay
+demonstrates evidence-id exposure, while handle-identity failure is shown by
+the internal canonical-id diagnostic.
 
 We demonstrate the discipline on Consolidation Queue (CQ), a staged-write
 policy that keeps low-confidence claims pending and contestable. The case
