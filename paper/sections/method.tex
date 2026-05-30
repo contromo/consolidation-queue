@@ -10,10 +10,10 @@ reversible. A \emph{same-stream} comparison gives every policy the same ordered
 \code{CandidateUpdate} stream. A \emph{same-substrate} comparison stores every
 policy's state through the same scoped memory interface.
 
-PFLC means policy-facing lookup contract: the identifier or handle a memory
-policy must expose so a query can be evaluated against the intended evidence.
-The \emph{canonical-id lookup diagnostic} is this paper's canonical-id PFLC
-instance. It reuses the set-membership metric and alias function from the
+PFLC diagnostics check whether the governable evidence handle is exposed so a
+query can be evaluated against the intended evidence. The \emph{canonical-id
+lookup diagnostic} is this paper's canonical-id PFLC instance. It reuses the
+set-membership metric and alias function from the
 earlier \emph{canonical-id resolution audit}, but it is a small committed
 diagnostic table rather than a replay of the large noisy same-stream policy
 comparison run payloads.
@@ -112,29 +112,28 @@ exact policy-query canonical-id alignment, and representative traces. It attribu
 forced contradiction cleanly to contradiction-edge preservation and
 contestation/demotion. Preference drift is partial survival: the policy delta
 remains, but absolute CQ performance drops relative to oracle and the 32B
-artifacts show residual drift. Other rows remain null, descriptive, or
-policy-facing lookup-contract failures unless an artifact directly supports a
-stronger claim.
+artifacts show residual drift. Other rows remain null, descriptive, or PFLC
+failures unless an artifact directly supports a stronger claim.
 
-\subsection{Policy-Facing Lookup Contracts}
+\subsection{PFLC Diagnostics}
 
 PFLC is operational rather than a metric nicety because the evaluated
 governance operations require identifier-bearing state, not just relevant
 content. The operations in this paper are contradiction handling, contestation,
 demotion, provenance preservation, and scoped override: each must address a
-specific prior claim by handle, not by paraphrase or similarity.
+specific prior claim by identifier, not by paraphrase or similarity.
 
-PFLC diagnostics ask whether the system exposes the identifier or handle that a
-memory policy actually needs to query. This identity-PFLC gap is why the title
-says memory metrics can hide memory policies: a clustering metric treats labels
+PFLC diagnostics ask whether the system exposes the governable evidence handle
+that a memory policy actually needs to query. This identity-PFLC gap is why the
+title says memory metrics can hide memory policies: a clustering metric treats labels
 as interchangeable, so a system that perfectly groups items into clusters
 $\{A, B, C\}$ scores 1.00 even if it called them $\{1, 2, 3\}$ internally. A
 governance query that asks "is item X in slot $B$?" fails when the system has
 only slot $2$. Retrieval-at-k and answer-accuracy metrics have analogous gaps:
 they can expose useful content or a correct answer without certifying the
-policy-facing handle. Appendix~\ref{app:pflc-gap} proves the cluster-partition
-gap formally; the retrieval and answer gaps are analogous constructions, and the
-body uses the diagnostic as a named memory-state check.
+governable evidence handle. Appendix~\ref{app:pflc-gap} proves the
+cluster-partition gap formally. The retrieval and answer gaps are analogous
+constructions, and the body uses the diagnostic as a named memory-state check.
 
 The lookup diagnostic instantiates this PFLC class on canonical-id queries
 within the internal audit. It reuses the locked resolution audit's Section A
@@ -157,7 +156,7 @@ they search through distractor haystacks.
 The LongMemEval v1 readout-cardinality probe uses \code{all_hit_at_50} as the headline metric and preserves
 \code{answer_correct} as diagnostic-only because policy answers are structured
 memory traces. The follow-up keeps the same adapter, judge, and headline metric
-but changes the policy-facing readout interface under a new preregistration:
+but changes the answer readout interface under a new preregistration:
 CQ exposes all eligible same-slot pending candidates, and capped Reflection
 returns only one durable candidate id at answer time.
 

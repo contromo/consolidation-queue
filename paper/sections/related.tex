@@ -8,8 +8,8 @@ cases with known gold evidence structure, becomes a controlled-pilot anchor only
 after a preregistered adapter creates a redacted same candidate stream for all
 local policies. The resulting PFLC target is
 dialog-evidence-id completeness over the v1 evidence-only oracle split, so the
-result should be read as evidence exposure (whether returned items include the
-gold evidence ids) and completeness under a fixed policy surface, with
+result should be read as returned-evidence coverage (whether returned items
+include the gold evidence ids) and completeness under a fixed policy surface, with
 distractor-heavy retrieval quality over LongMemEval-S or LongMemEval-V2 left to
 future work.
 LoCoMo is the other key long-conversation benchmark used in the PFLC survey:
@@ -26,7 +26,7 @@ from this paper's fair-policy-comparison lane, because standard benchmark
 outputs need not enforce same-candidate-stream and same-substrate constraints.
 The PFLC survey treats their released artifacts as a diagnostic question: do
 standard outputs expose the per-question identifiers needed to test whether a
-memory policy can query the right handle?
+memory policy can query the right stored claim?
 
 Recent and concurrent benchmark efforts broaden this lane further. STATE-Bench
 measures whether memory improves reliability, task completion, efficiency, and
@@ -44,7 +44,7 @@ claims conditional on scale, agent, interface, and interaction budget
 \cite{scaleconditioned2026}. The broader survey literature similarly describes
 agent memory as a write--manage--read loop coupled to perception and action
 \cite{memorysurvey2026}. These benchmarks and surveys broaden what memory
-systems are tested on; this paper narrows how policy-level credit is assigned.
+systems are tested on. This paper narrows how policy-level credit is assigned.
 
 \begin{table}[H]
 \centering
@@ -57,25 +57,28 @@ Surface & What it emphasizes & Boundary in this paper\\
 \midrule
 STATE-Bench / MemGym / EvoMemBench / MemoryArena / AMA-Bench &
 Stateful, long-horizon, self-evolving, and action-coupled memory tasks &
-Context for why memory evaluation is broadening; not evidence for CQ.\\
+Context for why memory evaluation is broadening. CQ evidence comes from this
+paper's controlled comparisons.\\
 \addlinespace
 Scale-conditioned evaluation &
 Fixed evidence with added irrelevant sessions &
-Adjacent evidence-control framing; this paper instead fixes policy inputs and
+Adjacent evidence-control framing. This paper instead fixes policy inputs and
 storage to attribute policy-level memory governance.\\
 \addlinespace
 MemoryAgentBench FactConsolidation &
 Revision and consolidation as explicit benchmark targets &
-Future transfer target; no same-stream policy run here.\\
+Future transfer target. This paper has not run a same-stream policy comparison
+there.\\
 \addlinespace
 AMB LoCoMo replayable outputs &
 Per-question context with recoverable gold evidence ids &
-Evidence-exposure decomposition, not handle-identity certification.\\
+Third-party published-output replay for returned evidence ids and rank
+effects.\\
 \addlinespace
 This work &
 Same-stream policy isolation plus extractor-gated noisy comparison &
-One clean mechanism-survival row, a blocked false unlock, LoCoMo evidence
-exposure, and an internal canonical-id handle-identity diagnostic.\\
+One clean forced-contradiction survival row, a blocked false unlock, LoCoMo evidence
+exposure, and an internal canonical-id diagnostic.\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -84,24 +87,23 @@ The answer splits. Most surveyed released outputs are artifact-blocked, meaning
 public outputs lack per-question ids for replay, but published Agent Memory
 Benchmark (AMB) LoCoMo runs (Hindsight, hybrid-search, Cognee) inject context
 with recoverable LoCoMo \code{dia_id}s and admit a published-output PFLC replay,
-which decomposes aggregate answer accuracy into evidence exposure, rank, and
-answer-generation residuals
+which decomposes aggregate answer accuracy into returned gold evidence ids,
+rank, and answer-generation residuals
 (Section~\ref{sec:amb-replay}).
 
 \paragraph{Belief revision and truth maintenance.}
 CQ's contestation and demotion behavior is adjacent to classical truth
 maintenance and belief-revision work, which tracked reasons for beliefs,
 assumption sets, and revision under inconsistent or changing evidence
-\cite{doyle1979truth,dekleer1986atms,agm1985theorychange}. This paper does
-not claim a new general belief-revision logic. It uses that lineage as a local
-memory-policy pattern for LLM agents, adding scoped candidate streams,
-queryable pending state, and same-stream comparison against eager-write
-policies.
+\cite{doyle1979truth,dekleer1986atms,agm1985theorychange}. This paper uses
+that lineage as a local memory-policy pattern for LLM agents, adding scoped
+candidate streams, queryable pending state, and same-stream comparison against
+eager-write policies.
 
 \paragraph{Memory systems and write policies.}
 Mem0 proposes a production-oriented memory architecture with dynamic memory
 extraction, update, and retrieval, including a graph variant for relational
-memory \cite{mem02025}; its current documentation also exposes add, search,
+memory \cite{mem02025}. Its current documentation also exposes add, search,
 update, and delete operations \cite{mem0delete2026}. A-MEM emphasizes dynamic
 indexing, memory linking, and memory evolution \cite{amem2025}. MemGPT/Letta
 frames stateful agents through virtual context management and self-editing
@@ -111,16 +113,16 @@ that motivate the related-system lane without defining this paper's fair
 policy-comparison surface \cite{zep2025,cognee2025}. These systems motivate
 comparison targets and terminology. The local \memzero{} baseline is a narrow
 ADD/UPDATE/NOOP write-time policy over the same candidate stream and substrate
-as CQ and \reflection; that narrowness keeps the policy comparison inspectable.
-\memzero{} is \emph{not} an end-to-end reproduction of the Mem0 system, and
-our results do not characterize production Mem0.
+as CQ and \reflection. That narrowness keeps the policy comparison inspectable.
+\memzero{} is a local comparator, so the results characterize that comparator
+rather than production Mem0.
 
 \paragraph{Lookup-style memory boundaries.}
 Recent positioning work argues that many agentic memory systems behave more
 like memo or lookup substrates than true long-term learning systems
-\cite{memo2026}. This paper uses that claim only as boundary-setting context.
+\cite{memo2026}. This paper uses that claim as boundary-setting context.
 Even memo-like stores need auditable identifiers, provenance, contradiction
-handling, and repair surfaces; otherwise errors can propagate downstream
+handling, and repair surfaces. Otherwise errors can propagate downstream
 through future retrieval and policy decisions.
 
 \paragraph{Memory governance layers.}
@@ -129,12 +131,11 @@ semantic drift, and privacy as memory-management risks. SSGM frames governed
 memory as a safety architecture with verification, temporal decay, and dynamic
 access control before consolidation, while MemArchitect proposes a policy layer
 for decay, conflict resolution, and privacy controls
-\cite{ssgm2026,memarchitect2026}. This paper is complementary: it does not
-propose a general deployment governance framework, but tests how to attribute
-policy-level credit when those governance mechanisms are evaluated. The
-same-stream, same-substrate, extractor-gated protocol and PFLC diagnostics are
-therefore evaluation controls for governed memory, not a competing governance
-architecture.
+\cite{ssgm2026,memarchitect2026}. This paper complements those systems by
+testing how to attribute policy-level credit when governance mechanisms are
+evaluated. The protocol gives each policy the same stream and substrate, checks
+extractor quality before noisy comparison, and uses PFLC diagnostics as
+evaluation controls for governed memory.
 
 \paragraph{Preregistration and audit discipline.}
 The methodological stance is closer to a preregistered evaluation audit than to

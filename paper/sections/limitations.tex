@@ -1,53 +1,61 @@
 \section{Limitations}
+\label{sec:limitations}
 
 \begin{itemize}
-\item \textbf{CQ is not broadly superior.} The noisy-mode support is
-mechanism-local: CQ separates from \reflection{} on forced contradiction and
+\item \textbf{CQ support is narrow.} The noisy-mode support is limited to named
+mechanisms. CQ separates from \reflection{} on forced contradiction and
 partially on preference drift under the current 32B artifacts, ties the
 \memzero{} baseline on the frozen sentinel, and leaves source-independence,
 scope-contamination, useful-pending, and poisoning-defense rows unsupported.
 A stronger extractor could produce CQ separations, policy ties, or CQ
-weaknesses; this revision does not claim an outcome for those rows.
+weaknesses. This revision leaves the outcome for those rows open.
+
+\item \textbf{Scenario co-design remains a threat to external validity.}
+Same-stream fairness controls policy inputs and storage within a comparison,
+but it does not remove the fact that CQ, the protocol, and the oracle scenarios
+were designed in the same project. The external AMB LoCoMo replay is therefore
+important evidence about released benchmark artifacts, not a replacement for
+running more independently designed policy suites.
 
 \item \textbf{LongMemEval v1 is bounded and cardinality-sensitive.} The
 controlled v1 probe is stable and negative for base CQ on evidence
 completeness, and the pending multi-evidence follow-up supports a
-readout-cardinality repair for that v1 loss. The v1 oracle split used here is
-evidence-only, and the scorer-only random floor shows why returning two
-evidence sessions is enough in this cell. LongMemEval-S, LongMemEval-V2,
+change to the answer-time read interface for that v1 loss. The v1 oracle split
+used here is evidence-only, and the scorer-only random floor shows why
+returning two evidence sessions is enough in this cell. LongMemEval-S,
+LongMemEval-V2,
 distractor-heavy retrieval quality, and natural-language QA success remain
 future targets.
 
-\item \textbf{LoCoMo evidence exposure is not handle-identity certification.}
-The AMB LoCoMo replay demonstrates evidence exposure over gold evidence ids and
-decomposes aggregate answer accuracy into evidence exposure, rank/context
-saturation, and answer residuals. It does not certify policy-facing handle
-identity. Handle-identity failure is demonstrated by the internal canonical-id
-diagnostic.
+\item \textbf{LoCoMo covers returned evidence ids only.}
+The AMB LoCoMo replay demonstrates returned gold evidence ids in published
+contexts and decomposes aggregate answer accuracy into returned evidence,
+rank/context saturation, and answer residuals. It does not certify that a
+memory policy can name its own governable evidence handle. The internal
+canonical-id diagnostic tests that separate question.
 
-\item \textbf{PFLC is diagnostic, not a leaderboard.} The field-level survey
+\item \textbf{PFLC diagnoses artifact surfaces.} The field-level survey
 records what released baseline artifacts expose. Most released artifact
 contracts and standard output surfaces are blocked for PFLC replay, while the
 AMB LoCoMo subset admits a published-output replay that decomposes aggregate
 accuracy without resolving the blocked majority.
 
-\item \textbf{The ADD/UPDATE/NOOP baseline is not production Mem0.} The local
-baseline is a narrow rule-based comparator over the shared candidate stream and
-substrate. Production Mem0 exposes richer add, search, update, delete, and
-platform behavior, so this paper's results do not characterize the production
-system.
+\item \textbf{The ADD/UPDATE/NOOP baseline is narrow.} The local baseline is a
+rule-based comparator over the shared candidate stream and substrate.
+Production Mem0 exposes richer add, search, update, delete, and platform
+behavior, so this paper's results characterize only the local comparator.
 
-\item \textbf{Deployment surfaces are not evaluated.} The experiments do not
+\item \textbf{Deployment surfaces remain outside this evaluation.} The experiments do not
 measure real-user weeks-long helpfulness, learned semantic scope inference,
 production retrieval stacks, API-hosted extractors, deployment latency,
 deletion, or compliance. A future deletion experiment first needs separable
-policy-facing query surfaces and registered leakage metrics.
+lookup surfaces and registered leakage metrics.
 
 \item \textbf{The resolution audit remains inconclusive.} The lookup diagnostic
 leaves the aborted resolution audit and the noisy same-stream policy
 comparison's mixed-support verdict unchanged. A later archived replay surfaced
 too few alias-resolution hits to evaluate the lookup-versus-answer-success
-cross-tab under its preregistered minimum-count rule; prior PFLC null rows for
+cross-tab under its preregistered minimum-count rule. Prior PFLC null rows for
 those families remain unattributed. The archived readout is recorded in
 Appendix~\ref{app:reproducibility} and Appendix~\ref{app:artifacts}.
 \end{itemize}

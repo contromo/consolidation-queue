@@ -1,28 +1,31 @@
-Agent-memory benchmarks often ask whether a system produced the right answer
-or retrieved relevant text. This paper asks a narrower policy question:
-whether the memory system exposes the governable evidence handle needed to
-contest, scope, repair, and audit the state it uses. We present a
-preregistered attribution discipline for persistent-agent memory: hold the
-upstream candidate stream and scoped storage substrate fixed, gate noisy
-comparisons on extractor quality, and add policy-facing lookup-contract
-(PFLC) diagnostics for handle identity.
-
-The method exposes hidden structure at two layers. At the extractor layer, an
-aggregate-passing component row would have falsely authorized downstream
-policy comparison, while the full gate blocks it. At the memory-state layer,
-PFLC shows why clustering, retrieval, and answer metrics can miss whether the
-policy-facing handle itself is available. In internal diagnostic rows, B-cubed
+Standard clustering can score a memory system as nearly perfect while leaving
+governance with nothing stable to address. In internal diagnostic rows, B-cubed
 F1 is at or near 1.00 while exact policy-query canonical-id agreement is 0.00:
-a memory can contain the right text but still fail if the policy cannot name
-the exact stored claim it needs to retract, scope, or repair. A
-published-output replay on AMB LoCoMo decomposes aggregate answer accuracy into
-evidence exposure, rank/context saturation, and answer residuals; that replay
-demonstrates evidence-id exposure, while handle-identity failure is shown by
-the internal canonical-id diagnostic.
+the system groups the right text, but cannot expose the governable evidence
+handle for the stored claim. Agent-memory benchmarks often ask whether a
+system produced the right answer or retrieved relevant text. This paper asks a
+narrower policy question: whether the memory system exposes the governable
+evidence handle needed to contest, scope, repair, and audit the state it uses.
 
-We demonstrate the discipline on Consolidation Queue (CQ), a staged-write
-policy that keeps low-confidence claims pending and contestable. The case
-study finds one clean noisy mechanism-survival row, a stable LongMemEval v1
-evidence-completeness loss, and a preregistered readout-cardinality repair
-corroborated by a capped Reflection control. These results support the
-attribution discipline, not broad CQ superiority or deployment readiness.
+We use three controls for persistent-agent memory: hold the upstream candidate
+stream and scoped storage substrate fixed, compare noisy runs only after
+extractor-quality checks pass, and add a policy-facing lookup contract (PFLC)
+diagnostic. PFLC checks whether the governable evidence handle is exposed. The
+method catches failures at two layers. At the extractor layer, an
+aggregate-passing component row would have falsely authorized downstream policy
+comparison, while the full gate blocks it. At the memory-state layer, PFLC
+shows why clustering, retrieval, and answer metrics can miss the identifier
+needed to retract, scope, or repair a stored claim. A published-output replay
+on AMB LoCoMo re-analyzes third-party outputs and decomposes aggregate answer
+accuracy into returned gold evidence ids, rank/context saturation, and answer
+residuals.
+
+We demonstrate the controls on Consolidation Queue (CQ), a staged-write policy
+that keeps low-confidence claims pending and contestable. The case study finds
+one clean noisy row where CQ's forced-contradiction mechanism survives, a
+stable LongMemEval v1 evidence-completeness loss caused by returning only one
+of two needed items, and a preregistered follow-up that closes the gap when CQ
+can return both. A capped Reflection control fails in the same way. The
+supported conclusion is methodological: these controls make memory-policy
+failures inspectable without turning narrow CQ results into a broad
+superiority claim.
