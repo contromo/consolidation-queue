@@ -5,7 +5,7 @@ the system groups the right text, but cannot expose the governable evidence
 handle for the stored claim. Agent-memory benchmarks often ask whether a
 system produced the right answer or retrieved relevant text. This paper asks a
 narrower policy question: whether the memory system exposes the governable
-evidence handle needed to contest, scope, repair, and audit the state it uses.
+evidence handle needed to act on the state it uses.
 
 We use three controls for persistent-agent memory: hold the upstream candidate
 stream and scoped storage substrate fixed, compare noisy runs only after
@@ -17,8 +17,7 @@ comparison, while the full gate blocks it. At the memory-state layer, PFLC
 shows why clustering, retrieval, and answer metrics can miss the identifier
 needed to retract, scope, or repair a stored claim. A published-output replay
 on AMB LoCoMo re-analyzes third-party outputs and decomposes aggregate answer
-accuracy into returned gold evidence ids, rank/context saturation, and answer
-residuals.
+accuracy into returned evidence, rank effects, and residual answer errors.
 
 We demonstrate the controls on Consolidation Queue (CQ), a staged-write policy
 that keeps low-confidence claims pending and contestable. The case study finds

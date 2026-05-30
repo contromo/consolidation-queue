@@ -10,12 +10,12 @@ This section emphasizes each result's supported scope.
 \item The frozen oracle sweep, noisy extractor-quality gate, and noisy
 same-stream policy comparison all point to the same attribution story. All 108
 frozen oracle deltas matched. The 7B gate blocked a false unlock. The
-32B-gated comparison reaches mixed/partial support limited to named
-mechanisms.
+32B-gated comparison supports only the named mechanisms reported below.
 \item The formal counterexample and internal canonical-id diagnostic show the
 metric gap. Five of seven comparison rows pass the B-cubed floor while exact
 canonical-id match is below 5 percent. The AMB LoCoMo replay uses third-party
-outputs to quantify returned gold evidence ids and rank effects.
+outputs to show when the needed evidence was already in context and when rank
+still mattered.
 \item The LongMemEval v1 probe passes its methodology gates, but CQ minus
 Reflection on \code{all_hit_at_50} is -1.0 in all three cells. The result is a
 stable base-CQ evidence-completeness loss.
@@ -53,7 +53,7 @@ and three frozen-sentinel observed failures. An aggregate-only rule would have
 authorized a false noisy policy comparison.
 
 The preregistered 32B rows cleared the gate and licensed the noisy
-same-stream policy comparison. The comparison reaches mixed/partial support:
+same-stream policy comparison. The support is narrow:
 CQ wins against \reflection{} on forced contradiction
 (delta +0.93, lower confidence bound +0.88) and preference drift (delta +0.13,
 lower confidence bound +0.07), records no countable directional losses, ties
@@ -83,10 +83,11 @@ F1 is at or near 1.00 while exact
 policy-query canonical-id agreement is 0.00. The locked alias-normalized
 variant also stays at zero on those rows. The diagnostic does not replace the
 mechanism-audit labels in Figure~\ref{fig:phase4-audit}: the
-\splitcode{false\_\allowbreak corroboration} row remains descriptive-only
-source-proxy evidence, the mechanism-diverse row remains the frozen sentinel
-aggregate, and the policy verdict does not change. It shows that the extractor
-can look cluster-correct while the governable evidence handle is missing.
+\splitcode{false\_\allowbreak corroboration} row still describes the extractor
+surface rather than the policy direction. The mechanism-diverse row remains
+the frozen sentinel aggregate, and the policy verdict does not change. It shows
+that the extractor can look cluster-correct while the policy cannot name the
+stored claim it must address.
 
 The field-level PFLC work generalizes this observation. Identity-PFLC names the
 memory-state gap: clustering, retrieval, and answer-accuracy metrics can expose
@@ -143,12 +144,13 @@ rank-sensitivity signal because Hindsight averages 36{,}235 context tokens
 per question.
 
 The operational claim is therefore narrow: once per-question context is
-published, PFLC decomposes LoCoMo scores into returned gold evidence ids,
-evidence rank or context saturation, and answer-generation residuals. This
-replay does not certify that a memory policy can name its own governable
-evidence handle. The internal canonical-id diagnostic tests that separate
-question. Without per-question artifacts, the same decomposition is impossible,
-which is why the artifact-blocked subset remains the headline survey gap.
+published, PFLC can tell whether the answer had the needed evidence in context,
+whether rank or context limits mattered, or whether the remaining error sits
+downstream in answering or judging. This replay does not certify that a memory
+policy can name its own governable evidence handle. The internal canonical-id
+diagnostic tests that separate question. Without per-question artifacts, the
+same decomposition is impossible, which is why the artifact-blocked subset
+remains the headline survey gap.
 
 \subsection{Controlled Readout-Cardinality Probe on LongMemEval v1}
 

@@ -11,19 +11,17 @@ evidence shifts.
 
 Most agent-memory benchmarks ask whether the system got the right answer. This
 paper instead asks whether the memory policy had the right governable evidence
-handle: the stored-claim identifier a policy uses to contest, scope, demote, or
-repair memory. The gap shows up sharply in this paper's internal diagnostic
+handle: the stored-claim identifier used by governance operations. The gap
+shows up sharply in this paper's internal diagnostic
 rows: B-cubed F1 is at or near 1.00 while exact policy-query canonical-id
 agreement is 0.00. The system can group the right claims while failing to name
 the stored claim a governance operation must address. Recall, retrieval, and
 answer metrics remain important, but they can hide two different failures.
-Upstream, aggregate extractor scores can authorize a candidate stream, the
-shared extracted-fact list every policy receives, that collapses the policy
-comparison. Downstream, memory-state metrics can expose relevant content while
-failing to certify the governable evidence handle needed for contradiction,
-scope, demotion, and repair. Recent memory benchmarks
-broaden what systems are tested on. This paper narrows how policy-level credit
-gets assigned.
+Upstream, aggregate extractor scores can authorize a bad candidate stream and
+collapse the policy comparison. Downstream, memory-state metrics can expose
+relevant content while failing to certify the identifier those governance
+operations need. Recent memory benchmarks broaden what systems are tested on.
+This paper narrows how policy-level credit gets assigned.
 
 The broader benchmark landscape makes this narrower question timely. STATE-Bench
 evaluates memory in stateful enterprise workflows, EvoMemBench frames memory as
@@ -33,12 +31,12 @@ consolidation target \cite{statebench2026,evomembench2026,memoryagentbench2025}.
 This empirical evaluation-methods paper therefore argues for a stricter way to
 assign credit, with committed artifacts for each empirical claim.
 Memory-policy comparisons should hold the upstream candidate stream fixed and
-use the same storage substrate, the shared memory store for compared policies.
+use the same storage substrate for compared policies.
 They should separate oracle-mode policy claims (known scope, conflicts, and
 sources) from noisy-pipeline claims (real extracted inputs). Noisy comparison
-runs only after an extractor-quality gate, a check that the fact extractor is
-adequate. Artifacts stay inspectable so failure cases can be audited. The running
-case study is a lightweight consolidation queue policy
+runs only after an extractor-quality gate. Artifacts stay inspectable so
+failure cases can be audited. The running case study is a lightweight
+consolidation queue policy
 (CQ),\footnote{A non-archival design sketch is available at
 \href{https://www.manavm.com/writing/the-consolidation-queue/}{The
 Consolidation Queue: How Persistent AI Earns Durable Change}.} compared with
@@ -66,9 +64,9 @@ stay recorded as nulls or PFLC failures, where the policy cannot query the
 right stored claim. The same discipline also surfaces an
 extractor false-unlock, where aggregate scores clear but policy comparison
 should not be licensed. Externally, a controlled LongMemEval v1 probe tests
-readout cardinality, meaning how many evidence sessions are returned. It
-produces a stable negative result for base CQ on evidence completeness. A later
-preregistered follow-up repairs that specific failure by
+the number of evidence sessions returned. It produces a stable negative result
+for base CQ on evidence completeness. A later preregistered follow-up repairs
+that specific failure by
 exposing all eligible same-slot pending evidence at answer time,
 while a cardinality-capped Reflection control reproduces the original loss. The
 paper preserves the failure and the repair as separate evidence.
@@ -82,12 +80,12 @@ paper preserves the failure and the repair as separate evidence.
 \toprule
 Layer & Contribution\\
 \midrule
-Problem & Standard memory scores can pass while the governable evidence handle
-is missing.\\
-PFLC diagnostic & PFLC checks whether the governable evidence handle is exposed, with the
+Problem & Standard memory scores can pass while the policy lacks a stable claim
+identifier.\\
+PFLC diagnostic & PFLC checks whether that identifier is exposed, with the
 canonical-id diagnostic and formal counterexample showing the metric gap.\\
 External replay & AMB LoCoMo replays third-party published contexts to separate
-returned gold evidence ids, rank/context saturation, and answer residuals.\\
+returned evidence from rank effects and residual answer errors.\\
 CQ case study & CQ is the worked policy used to test whether
 same-input, same-store comparisons expose false unlocks, bounded nulls, and
 interface failures.\\
@@ -111,15 +109,15 @@ quality. That removes the main stream, substrate, and extractor-quality
 confounds while preserving lifecycle traces, manifests, failure examples, and
 replay checks.
 
-\claim{Claim 2: Standard memory metrics can pass while the governable evidence handle is missing}
+\claim{Claim 2: Standard memory metrics can pass while policy lookup fails}
 Cluster-partition, retrieval-at-k, and answer-accuracy metrics can all be
 passed by systems whose policy cannot name the stored claim it must address.
-PFLC asks whether the governable evidence handle is exposed, not just whether
+PFLC asks whether the corresponding identifier is exposed, not just whether
 retrieved text is semantically relevant.
 The identity-PFLC gap is the memory-state counterpart of the extractor-gating
-gap: the aggregate score looks good, but the governable evidence handle is
-missing. The field survey shows when released benchmark artifacts do or do not
-expose the per-question identifiers needed to replay such diagnostics.
+gap: the aggregate score looks good, but the policy still cannot name the
+stored claim. The field survey shows when released benchmark artifacts do or do
+not expose the per-question identifiers needed to replay such diagnostics.
 
 \claim{Claim 3: A preserved negative result exposes interface failures}
 The LongMemEval workstream adapts an external benchmark without rewriting away
