@@ -6,15 +6,15 @@ This directory is the reviewer entry point for the paper in `paper/`.
 
 The release plan allowed either merging `longmemeval-externalization-gate` into
 `main` or pinning the paper package to the branch and commit that contain the
-cardinality-repair follow-up artifacts. A fast-forward merge into `main` was
-not possible from this worktree because the branches had diverged after the
-earlier LongMemEval merge.
+cardinality-repair follow-up artifacts and arXiv-readiness edits. The paper
+package follows the tag-pinning path so the arXiv source archive, rendered PDF,
+and reviewer instructions resolve to the same revision.
 
-The paper package therefore follows the accepted pinning path:
+The pinned revision is:
 
-- working branch: `paper/ship-paper-draft`
+- working branch: `paper_revisions`
 - source branch: `longmemeval-externalization-gate`
-- final pinned tag: [`paper-v2`](https://github.com/contromo/consolidation-queue/tree/paper-v2)
+- final pinned tag: [`paper-v4`](https://github.com/contromo/consolidation-queue/tree/paper-v4)
 
 ## Verify Artifact Paths
 
@@ -75,7 +75,7 @@ checked against the artifact index in `paper/appendices/artifacts.tex`.
 
 ## Generated Tables
 
-Two report tables are generated from committed artifacts and checked into the
+Two paper tables are generated from committed artifacts and checked into the
 paper source, so a paper-only build does not need to run these scripts. From the
 repository root, regenerate them with:
 
@@ -94,7 +94,7 @@ and writes `paper/figures/cqmulti_per_row_regression.tex` plus
 ## Hosting
 
 The paper source and reproducibility bundle are hosted at the tag
-[`paper-v2`](https://github.com/contromo/consolidation-queue/tree/paper-v2)
+[`paper-v4`](https://github.com/contromo/consolidation-queue/tree/paper-v4)
 on this repository. The paper uses the default `article` class; if a target
 venue requires a different style, swap it at submission time without
 changing the artifact pin.

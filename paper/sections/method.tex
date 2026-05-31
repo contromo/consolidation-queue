@@ -10,10 +10,10 @@ reversible. A \emph{same-stream} comparison gives every policy the same ordered
 \code{CandidateUpdate} stream. A \emph{same-substrate} comparison stores every
 policy's state through the same scoped memory interface.
 
-PFLC means policy-facing lookup contract: the identifier or handle a memory
-policy must expose so a query can be evaluated against the intended evidence.
-The \emph{canonical-id lookup diagnostic} is this paper's canonical-id PFLC
-instance. It reuses the set-membership metric and alias function from the
+PFLC diagnostics check whether the governable evidence handle is exposed so a
+query can be evaluated against the intended evidence. The \emph{canonical-id
+lookup diagnostic} is this paper's canonical-id PFLC instance. It reuses the
+set-membership metric and alias function from the
 earlier \emph{canonical-id resolution audit}, but it is a small committed
 diagnostic table rather than a replay of the large noisy same-stream policy
 comparison run payloads.
@@ -28,12 +28,13 @@ and licenses downstream policy comparison.
 \item The \emph{noisy same-stream policy comparison} runs after that gate
 passes.
 \item The \emph{cardinality-repair follow-up} addresses a specific
-external-transfer interface gap.
+LongMemEval v1 interface gap.
 \end{itemize}
 Preregistered interpretation labels distinguish a planned gate or thesis
-condition firing, a completed mixed or partial result, and an abort or
-surprise-lane boundary that prevents the stronger claim. The 7B and 32B labels
-denote local extractor model cells, not memory-policy sizes.
+condition firing, a completed mixed or partial result, where only some mechanism
+rows survive, and an abort or surprise-lane boundary that prevents the stronger
+claim. The 7B and 32B labels denote local extractor model cells, not
+memory-policy sizes.
 
 \subsection{Benchmark Objects}
 
@@ -44,17 +45,18 @@ observations. They differ in when they promote, demote, contest, or expose
 these candidates. The load-bearing invariant is that CQ and the immediate-write
 baselines compare memory policy over the same inputs.
 
-The principal policies are \cq{}, \reflection{}, the Mem0-style baseline
+The principal policies are \cq{}, \reflection{}, the ADD/UPDATE/NOOP
+eager-write baseline
 (\memzero{}),
 \splitcode{Naive\allowbreak EagerWrite\allowbreak Lite},
 \splitcode{No\allowbreak Memory\allowbreak Lite}, and CQ ablations that remove
 contestation/demotion, pending lookup, source-independence gating, or
 wider-scope pending override.
-Two follow-up policies are explicitly outside the original headline set:
-an oracle-mode dated-evidence repair (artifact label \cqdated{}) and the
-LongMemEval plural-pending readout repair (artifact label \cqmulti{}). The
-cardinality-repair follow-up also includes a Reflection readout-cap control
-(artifact label \refcapped{}) as a diagnostic control.
+Two follow-up policies are explicitly outside the original headline set: an
+oracle-mode dated-evidence repair and the LongMemEval plural-pending readout
+repair. The cardinality-repair follow-up also includes a Reflection readout-cap
+control as a diagnostic control. Appendix~\ref{app:glossary} maps these
+reader-facing names to repository labels.
 
 \input{figures/cq_lifecycle.tex}
 
@@ -69,6 +71,15 @@ for morning lookups, and, if an older espresso claim had already promoted,
 demotes that durable record into contested state instead of deleting it. The
 record's source history remains inspectable. The eager baseline receives the
 same candidate stream, but writes immediately.
+
+\paragraph{Offline replay and deployment timing.}
+The staged-write policy is not a latency claim. In a deployed agent, extraction
+and provisional insertion may run on the request path, while support counting,
+contradiction checks, demotion, and promotion may run asynchronously. The
+contract tested here is read-time consistency: every policy sees the same
+candidate stream, lifecycle state is explicit, and eligible pending candidates
+are exposed according to the policy's read interface. The experiments are
+offline replay and do not measure production latency.
 
 \subsection{Oracle Stage}
 
@@ -86,9 +97,10 @@ The noisy stage renders transcripts, scores local extractor outputs against
 component labels, converts accepted predictions into shared candidate streams,
 and only then runs policies. The component gate has layered checks: aggregate
 confidence-bound gates, per-family observed gates, frozen mechanism-diverse
-sentinels, prompt-regression checks, deterministic replay, and exact adapter
-pin validation. The 7B anchor passed aggregate gates but stayed locked because
-it had concentrated scenario errors and family/sentinel failures. The
+sentinels, held-out checks that must not regress, prompt-regression checks,
+deterministic replay, and exact adapter pin validation. The 7B anchor passed
+aggregate gates but stayed locked because it had concentrated scenario errors
+and family/sentinel failures. The
 preregistered 32B cells cleared the gate and licensed the separate noisy
 same-stream policy comparison.
 
@@ -100,50 +112,38 @@ exact policy-query canonical-id alignment, and representative traces. It attribu
 forced contradiction cleanly to contradiction-edge preservation and
 contestation/demotion. Preference drift is partial survival: the policy delta
 remains, but absolute CQ performance drops relative to oracle and the 32B
-artifacts show residual drift. Other rows remain null, descriptive, or
-policy-facing lookup-contract failures unless an artifact directly supports a
-stronger claim.
+artifacts show residual drift. Other rows remain null, descriptive, or PFLC
+failures unless an artifact directly supports a stronger claim.
 
-\subsection{Policy-Facing Lookup Contracts}
+\subsection{PFLC Diagnostics}
 
-PFLC is operational rather than a metric nicety because the governance
-operations a persistent-agent memory must support all require identifier-bearing
-state, not just relevant content. The evaluated operations in this paper are
-contradiction handling, contestation, demotion, provenance preservation, and
-scoped override: each must address a specific prior claim by handle, not by
-paraphrase or similarity. Cluster-partition metrics cannot test this because
-they are invariant to relabeling. Retrieval-at-k metrics cannot test it because
-they score content overlap, not handle identity. Answer-accuracy metrics cannot
-test it because a correct answer can be produced from non-canonical state.
-Production deletion, right-to-be-forgotten, and enterprise compliance are
-motivating examples of why a queryable, identifier-bearing memory state matters
-in deployed systems. This paper does not evaluate them.
+PFLC is operational rather than a metric nicety because the evaluated
+governance operations require identifier-bearing state, not just relevant
+content. The operations in this paper are contradiction handling, contestation,
+demotion, provenance preservation, and scoped override: each must address a
+specific prior claim by identifier, not by paraphrase or similarity.
 
-PFLC diagnostics ask whether the system exposes the identifier or handle that a
-memory policy actually needs to query. In plain terms, clustering metrics
-treat labels as interchangeable, so a system that perfectly groups items into
-clusters $\{A, B, C\}$ scores 1.00 even if it called them $\{1, 2, 3\}$
-internally. A governance query that asks "is item X in slot $B$?" fails when
-the system has slot $2$ instead. The formal core makes this precise in three
-parts. Proposition 1 shows that for non-singleton label alphabets and
-cluster-partition metrics invariant to injective relabeling, the predicted
-partition can equal the gold partition while set-membership PFLC is zero for a
-queried gold id. Lemma 1 constructs the same gap for retrieval-at-k metrics:
-retrieved content can be relevant while the policy-facing evidence id is
-missing. Lemma 2 constructs it for answer-accuracy metrics: a generated answer
-can be correct while the system fails to expose the handle needed for memory
-governance.
+PFLC diagnostics ask whether the system exposes the governable evidence handle
+that a memory policy actually needs to query. This identity-PFLC gap is why the
+title says memory metrics can hide memory policies: a clustering metric treats labels
+as interchangeable, so a system that perfectly groups items into clusters
+$\{A, B, C\}$ scores 1.00 even if it called them $\{1, 2, 3\}$ internally. A
+governance query that asks "is item X in slot $B$?" fails when the system has
+only slot $2$. Retrieval-at-k and answer-accuracy metrics have analogous gaps:
+they can expose useful content or a correct answer without certifying the
+governable evidence handle. Appendix~\ref{app:pflc-gap} proves the
+cluster-partition gap formally. The retrieval and answer gaps are analogous
+constructions, and the body uses the diagnostic as a named memory-state check.
 
 The lookup diagnostic instantiates this PFLC class on canonical-id queries
 within the internal audit. It reuses the locked resolution audit's Section A
 set-membership metric and alias function, reads a committed per-question
-source table, and reports Wilson intervals plus a joint B-cubed/lookup table.
-It is diagnostic and leaves the noisy same-stream policy comparison verdict
-unchanged.
+source table, and reports Wilson intervals (standard binomial confidence
+intervals) plus a joint B-cubed/lookup table (clustering agreement paired with
+exact lookup). It is diagnostic and leaves the noisy same-stream policy
+comparison verdict unchanged.
 
-\input{figures/pflc_formal_gap.tex}
-
-\subsection{Controlled External Transfer}
+\subsection{Controlled Externalization}
 
 The LongMemEval workstream adapts an external benchmark into a controlled
 same-stream pilot. The protocol selects LongMemEval v1 as the primary anchor,
@@ -153,10 +153,10 @@ ids. The v1 oracle split is evidence-only, so the PFLC metric measures whether
 policies preserve and expose gold evidence sessions they received, not whether
 they search through distractor haystacks.
 
-The LongMemEval transfer probe uses \code{all_hit_at_50} as the headline metric and preserves
+The LongMemEval v1 readout-cardinality probe uses \code{all_hit_at_50} as the headline metric and preserves
 \code{answer_correct} as diagnostic-only because policy answers are structured
 memory traces. The follow-up keeps the same adapter, judge, and headline metric
-but changes the policy-facing readout interface under a new preregistration:
+but changes the answer readout interface under a new preregistration:
 CQ exposes all eligible same-slot pending candidates, and capped Reflection
 returns only one durable candidate id at answer time.
 

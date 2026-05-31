@@ -1,5 +1,134 @@
 # Product Progress
 
+## 2026-05-29 — final pre-upload source and citation audit pass
+
+### What Shipped
+
+- moved the artifact pointer onto the first page through an author footnote
+  with the final repository tag and a one-line local artifact-path check
+- updated the paper/reproducibility pointer from the stale `paper-v3` target to
+  the next final tag name, `paper-v4`, so the upload package can be pinned to
+  the commit that contains the final polish pass
+- folded a concise empirical evaluation-methods/artifact anchor into the
+  stricter-attribution paragraph while preserving the stronger ending that the
+  paper narrows policy-level credit
+- replaced reader-facing "report" wording with "paper" where it affected
+  first-impression positioning
+
+### Citation Verification
+
+- STATE-Bench — verified the Microsoft Open Source post resolves with the
+  title, authors, May 19, 2026 date, and claims about reliability, task
+  completion, efficiency, and user experience in stateful enterprise tasks
+- Mem0 delete docs — verified the public documentation page resolves and
+  describes deleting specific memories, lists of IDs, or filtered matches
+- MemGym — verified arXiv `2605.20833` resolves to "MemGym: a Long-Horizon
+  Memory Environment for LLM Agents"
+- EvoMemBench — verified arXiv `2605.18421` resolves to the self-evolving
+  memory benchmark with the in-episode/cross-episode and
+  knowledge/execution-oriented axes used in related work
+- MemoryArena — verified arXiv `2602.16313` resolves to the interdependent
+  multi-session agentic-task benchmark
+- AMA-Bench — verified arXiv `2602.22769` resolves to the long-horizon memory
+  benchmark for agentic applications and trajectories
+- scale-conditioned evaluation — verified arXiv `2605.07313` resolves to the
+  fixed-evidence plus irrelevant-session growth protocol
+- autonomous-agent memory survey — verified arXiv `2603.07670` resolves to the
+  write--manage--read survey framing coupled to perception and action
+- memo positioning paper — verified arXiv `2604.27707` resolves to
+  "Contextual Agentic Memory is a Memo, Not True Memory"
+- SSGM — verified arXiv `2603.11768` resolves to the stability and
+  safety-governed memory framework
+- MemArchitect — verified arXiv `2603.18330` resolves to the policy-driven
+  memory governance layer
+
+### Framing Decision
+
+- the pass changes no experiments, metrics, or policy verdicts
+- `paper-v4` should be created from the final committed paper package before
+  upload; the older `paper-v3` tag intentionally remains an archival pin for
+  the prior package
+
+## 2026-05-29 — arXiv polish pass for benchmark-adjacent positioning
+
+### What Shipped
+
+- added related-work positioning for MemoryArena, AMA-Bench,
+  scale-conditioned memory evaluation, and the 2026 autonomous-agent memory
+  survey so the paper distinguishes same-stream policy attribution from
+  action-coupled, trajectory-level, and scale-conditioned benchmark expansion
+- added a plain-English PFLC sentence to the abstract and a crisp
+  evaluation-methods-report boundary in the introduction
+- replaced the cramped claim-ledger table with a compact enumerated ledger
+  carrying the same claim/evidence/readout/boundary content
+
+### Framing Decision
+
+- the polish adds no experiments and changes no policy verdicts
+- the paper remains a methods report about attribution controls and
+  policy-facing lookup diagnostics, not a CQ superiority or benchmark
+  leaderboard claim
+
+## 2026-05-29 — arXiv readiness citation and pin pass
+
+### What Shipped
+
+- added related-work positioning against SSGM and MemArchitect so the paper
+  distinguishes its evaluation-control contribution from adjacent memory
+  governance architectures
+- updated the paper reproducibility pointer from stale `paper-v2` language to
+  the arXiv-ready `paper-v3` tag path
+
+### Framing Decision
+
+- the change adds no experiments and changes no policy verdicts
+- the paper remains an evaluation-methods report: same-stream attribution,
+  extractor-gated noisy comparison, and PFLC diagnostics rather than a general
+  memory-governance architecture
+
+## 2026-05-29 — Paper two-layer methods framing pass
+
+### What Shipped
+
+- revised the paper framing so same-stream policy isolation and extractor-gate
+  false-unlock prevention carry the empirical methods spine, while
+  identity-PFLC remains visible in the body as the memory-state handle
+  diagnostic
+- moved the formal PFLC gap figure/proof apparatus to an appendix without
+  demoting the idea to a footnote
+- added an explicit LoCoMo boundary: the AMB LoCoMo replay demonstrates
+  evidence exposure over gold evidence ids, not policy-facing handle-identity
+  certification
+- renamed reader-facing LongMemEval language toward a controlled v1
+  readout-cardinality probe and cleaned body/figure labels for the
+  ADD/UPDATE/NOOP eager-write baseline
+
+### Citation Verification
+
+- MemoryAgentBench — used as the FactConsolidation anchor after verifying the
+  arXiv HTML lists FactConsolidation under the benchmark's selective-forgetting
+  dataset construction and validation sections
+- "Contextual Agentic Memory is a Memo, Not True Memory" — included as
+  positioning-only after verifying arXiv `2604.27707` resolves to that title
+  by Binyan Xu, Xilin Dai, and Kehuan Zhang, submitted 2026-04-30
+- Mem0 delete docs — used only to bound the local baseline after verifying the
+  public Mem0 documentation exposes delete operations in addition to the
+  published architecture paper
+- EvoMemBench — used as broadening-landscape context after verifying arXiv
+  `2605.18421` ("Benchmarking Agent Memory from a Self-Evolving Perspective",
+  Yuyao Wang et al., submitted 2026-05-18); the abstract states "no single
+  memory form works consistently across all settings" (paper paraphrase: "no
+  single memory form is uniformly sufficient") and organizes evaluation along
+  the in-episode/cross-episode and knowledge/execution-oriented axes cited in
+  related work; it notes retrieval methods stay strong for knowledge-intensive
+  settings, so it validates the broadening problem without endorsing CQ
+
+### Framing Decision
+
+- the revision does not add new experiments or change any policy verdict
+- LoCoMo remains a published-output evidence-exposure decomposition; the
+  internal canonical-id diagnostic carries the handle-identity failure claim
+
 ## 2026-05-27 — Paper thesis-legibility refactor
 
 ### What Shipped

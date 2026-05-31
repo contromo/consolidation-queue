@@ -2,7 +2,7 @@
 \label{app:reproducibility}
 
 The full source repository, frozen at the tag matching this paper, is at
-\url{https://github.com/contromo/consolidation-queue/tree/paper-v2}. The
+\url{https://github.com/contromo/consolidation-queue/tree/paper-v4}. The
 \artifact{paper/repro/README.md} entry in that tree is the reviewer entry
 point and lists local verification commands.
 
@@ -13,16 +13,16 @@ artifact hashes. Small headline verification artifacts are committed. Large
 per-scenario run payloads are regeneratable-only unless a preregistration
 requires byte-stable replay.
 
-The paper was prepared on branch \code{paper/ship-paper-draft}, based on:
+The paper was prepared on branch \code{paper\_revisions}, based on:
 \begin{center}
 \lmexternalbranch
 \end{center}
 The release plan allowed either merging the LongMemEval follow-up branch into
 \code{main} or pinning the paper package to the exact branch and commit.
-Because \code{main} and the pinned branch diverged after the earlier merge,
-the paper package uses the branch-pinning path. The reproducibility README in
-\artifact{paper/repro/README.md} records that decision, the final pinned
-commit, and the commands for local verification.
+The paper package uses the tag-pinning path so the arXiv source archive,
+rendered PDF, and reviewer instructions resolve to the same revision. The
+reproducibility README in \artifact{paper/repro/README.md} records that
+decision, the final pinned tag, and the commands for local verification.
 
 The resolution audit replay aborts are reproducibility evidence. The
 path-normalized repair
@@ -35,7 +35,7 @@ archived per-family source-run hashes alongside its own outputs in
 \artifact{data/runs/publication_hardening_step3_manifest.json}, and emitted
 Bucket \code{B_inconclusive_min_n} rather than rescuing a verdict.
 
-The revision package also includes two deterministic report-generation
+The revision package also includes two deterministic table-generation
 scripts for the CQ-Multi aggregate regression table and the LongMemEval
 all-hit random floor. Both consume committed artifacts only and do not execute
 memory policies. The LongMemEval-S and PFLC-surface feasibility gates are
