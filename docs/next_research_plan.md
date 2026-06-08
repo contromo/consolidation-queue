@@ -415,6 +415,9 @@ Required pieces:
     plural pending readout closes the evidence-completeness gap, capped
     Reflection reproduces the loss, and internal regression checks match base
     CQ exactly.**
+15. Public preprint/artifact pointer for *When Memory Metrics Hide Memory
+    Policies*. **Landed as report-package discoverability only; no benchmark
+    result or policy verdict changed.**
 
 Next-next, none of which is licensed by this plan without a separate
 preregistration:

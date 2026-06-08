@@ -1,5 +1,20 @@
 # Product Progress
 
+## 2026-06-08 — paper-v4 preprint pointer added
+
+### What Shipped
+
+- added a README `Writing And Research` entry for **When Memory Metrics Hide
+  Memory Policies** with the public PDF, artifact branch, author, preprint date,
+  and CC BY 4.0 license
+- updated `PROJECT_PLAN.md` to record this as Phase 6 writing/research
+  packaging rather than a new benchmark result or policy verdict
+
+### Framing Decision
+
+- the entry publishes the current paper/artifact pointer for discoverability
+- no experiments, metrics, policy behavior, or claim boundaries changed
+
 ## 2026-05-29 — final pre-upload source and citation audit pass
 
 ### What Shipped

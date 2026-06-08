@@ -1,6 +1,6 @@
 # Consolidation Queue Project Plan
 
-Last updated: 2026-05-29 (paper two-layer methods framing pass)
+Last updated: 2026-06-08 (paper-v4 preprint pointer)
 
 ## Goal
 
@@ -348,6 +348,10 @@ Implemented:
   formal PFLC proof/figure to an appendix, and adds an explicit boundary that
   AMB LoCoMo demonstrates evidence exposure rather than policy-facing
   handle-identity certification. No empirical verdict changes.
+- `paper-v4` public preprint package for **When Memory Metrics Hide Memory
+  Policies** (Manav Malhotra, May 2026): the README now points to the PDF and
+  GitHub artifact branch under CC BY 4.0. This is Phase 6 writing/research
+  packaging, not a new benchmark result or policy verdict.
 - `scripts/build_cqmulti_per_row_regression_table.py`,
   `paper/figures/cqmulti_per_row_regression.tex`,
   `data/results/cqmulti_per_row_regression_summary.json`,
@@ -411,8 +415,8 @@ Not implemented yet:
 - lexical or embedding-based `TranscriptRAG`
 - broader scored local-model noisy pipeline beyond the locked 32B component-gate artifacts
 - optional 32B/70B routing
-- submission-ready final manuscript, polished figures, and hosted
-  reproducibility bundle
+- third-party archival mirror beyond the `paper-v4` GitHub-hosted preprint and
+  artifact branch
 
 ## Repository Map
 

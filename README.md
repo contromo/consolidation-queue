@@ -26,6 +26,21 @@ The first slice in this repository is intentionally narrow:
 
 The goal is to isolate the memory policy question before adding noisy extraction.
 
+## Writing And Research
+
+### When Memory Metrics Hide Memory Policies
+
+Manav Malhotra. Preprint, May 2026.
+
+This paper studies same-stream evaluation and policy-facing lookup diagnostics
+for persistent-agent memory. It shows how standard memory metrics can pass while
+the memory policy lacks the stable stored-claim handle needed for governance
+operations.
+
+- PDF: [When Memory Metrics Hide Memory Policies](https://raw.githubusercontent.com/contromo/consolidation-queue/paper-v4/paper/When_Memory_Metrics_Hide_Memory_Policies.pdf)
+- Artifacts: [paper-v4 branch](https://github.com/contromo/consolidation-queue/tree/paper-v4)
+- License: CC BY 4.0
+
 ## Quickstart
 
 Run the oracle benchmark:
